@@ -907,7 +907,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.stepTok++; this.narrTok++;
     this.q = null;
     this.cancelSpeech();
-    this.drag = null; this.conn = null; this.fd = null; this.walking = false; this.navAt = Date.now();
+    this.drag = null; this.snapId = null; this.conn = null; this.fd = null; this.walking = false; this.navAt = Date.now();
     let P;
     if (fwd || !this.snaps[i]) { P = this.clone(this.state.P); this.snaps[i] = this.clone(P); }
     else P = this.clone(this.snaps[i]);
@@ -1233,25 +1233,43 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (e.preventDefault) e.preventDefault();
     this.drag = { k: k, svg: svg, x0: this.state.P[k].x };
     this.touched = true; // the learner has started: no more demo hand
+    this.watchPointer();
     if (this.handId) { clearTimeout(this.handId); this.T.delete(this.handId); this.handId = null; }
     this.setState({ dragging: k, hand: null });
     this.sfx('tap');
+  }
+  // a drag never outlives its pointer: the window hears the pointer go up (or cancelled, or the page lose focus) even
+  // where the stage does not - a finger lifted off the card, a lost pointer capture - so nothing is left held
+  watchPointer() {
+    if (this._winUp) return;
+    this._winUp = (e) => { if (this.drag || this.fd || (this.conn && this.conn.live)) this.rootUp(e); };
+    window.addEventListener('pointerup', this._winUp);
+    window.addEventListener('pointercancel', this._winUp);
+    window.addEventListener('blur', () => { if (this.drag) this.up(); });
   }
   // B slides along the top side (the bases stay parallel), past C if need be - that is how the trapezium becomes a
   // parallelogram - within limits that keep the shape readable
   move(e) {
     if (!this.drag) return;
+    if (e && e.pointerType === 'mouse' && e.buttons === 0) return this.up(e); // (the button went up unseen)
     const p = this.toSvg(this.drag.svg, e);
     if (!p) return;
     const P = this.clone(this.state.P), Lm = CONFIG.limits;
     P.B.x = Math.max(P.A.x + Lm.minTop, P.C.x - Lm.maxLegRun, Math.min(Lm.maxTopX, P.C.x + Lm.maxLegRun, p.x));
     const tx = P.C.x + (P.A.x - P.D.x); // near the parallel place B holds there while still held
-    if (Math.abs(P.B.x - tx) < CONFIG.snap.parallelPx) P.B.x = tx;
+    const snapped = Math.abs(P.B.x - tx) < CONFIG.snap.parallelPx;
+    if (snapped) P.B.x = tx;
     if (Math.abs(P.B.x - this.drag.x0) > 25) this.drag.moved = true; // (this drag's own travel: a plain tap gets no tip)
     this.setState({ P: P, moved: this.state.moved || !!this.drag.moved });
+    // held in its place for a moment, B is placed (a finger that never lifts cleanly still finishes the task)
+    if (snapped && !this.snapId) {
+      const tok = this.stepTok;
+      this.snapId = this.tm(() => { this.snapId = null; if (tok === this.stepTok && this.drag && !this.state.done) this.up(); }, CONFIG.snap.holdMs);
+    } else if (!snapped && this.snapId) { clearTimeout(this.snapId); this.T.delete(this.snapId); this.snapId = null; }
   }
   up() {
     if (this.conn && this.conn.live) return;
+    if (this.snapId) { clearTimeout(this.snapId); this.T.delete(this.snapId); this.snapId = null; }
     if (!this.drag) return;
     const moved = !!this.drag.moved;
     this.drag = null;

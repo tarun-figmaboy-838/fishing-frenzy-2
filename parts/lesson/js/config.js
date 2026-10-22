@@ -27,7 +27,9 @@ const CONFIG = {
   // dropdown answers: one option's height, the menu's narrowest width, the lowest it may reach (stage px), close and
   // wrong-answer display times (ms)
   dropdown: { itemH: 52, minW: 130, maxBottom: 706, closeMs: 180, wrongMs: 1000 },
-  snap: { parallelPx: 26 },          // B this close to its place (held or let go) snaps into the parallelogram
+  // B this close to its place (board px) snaps into the parallelogram - held or let go - and held there this long is
+  // taken as placed (so a finger that never lifts cleanly still finishes the task)
+  snap: { parallelPx: 40, holdMs: 600 },
   // recorded sound effects (others are synthesised): 'good' = every correct action (with the confetti), 'bad' = every wrong one
   sounds: { good: 'assets/audio/correct.mp3', bad: 'assets/audio/incorrect.mp3' },
   soundVolume: 0.9,
