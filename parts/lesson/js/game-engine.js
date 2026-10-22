@@ -639,37 +639,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // the queue carries on with its next line, so a step's later lines and chips are never lost.
   // keep a number and its unit, and short equations, on one line ("5 cm", "AB = 6 cm" never split)
   toWords(t) { return t.replace(/(\d) (cm)\b/g, '$1\u00a0$2').replace(/ ([=+\u2212]) /g, '\u00a0$1\u00a0').split(/[ \t\n]+/).filter(Boolean); }
-  // The narration plate shows a long line in short parts, each as the voice reaches it, so no screen carries a heavy
-  // block of text: a line longer than CONFIG.plate.maxChars breaks after a sentence, else after a comma, else before a
-  // joining word ("where", "so", "is called", "with"...), as near its middle as it can, never leaving a part shorter
-  // than CONFIG.plate.minChars. Returns the index of each part's first word.
-  lineParts(words) {
-    const P = CONFIG.plate, len = (a, b) => words.slice(a, b).join(' ').length;
-    const breakAt = (i) => { // how good a break before word i is (null: none)
-      const prev = words[i - 1], next = words[i].toLowerCase().replace(/[^a-z]/g, ''), after = (words[i + 1] || '').toLowerCase();
-      if (/[.!?…]$/.test(prev)) return 24;
-      if (/[,;:]$/.test(prev)) return 12;
-      if (/^(where|so|because|but|which|until|with|called)$/.test(next) || (next === 'is' && /^called/.test(after))) return 0;
-      return null;
-    };
-    const cut = (a, b) => {
-      if (len(a, b) <= P.maxChars) return [a];
-      let best = null;
-      for (let i = a + 1; i < b; i++) {
-        const bonus = breakAt(i), l = len(a, i), r = len(i, b);
-        if (bonus == null || l < P.minChars || r < P.minChars) continue;
-        const score = Math.abs(l - r) - bonus;
-        if (!best || score < best.s) best = { i: i, s: score };
-      }
-      return best ? cut(a, best.i).concat(cut(best.i, b)) : [a];
-    };
-    return cut(0, words.length);
-  }
-  // the plate's width for the words it shows: measured on a hidden copy in the plate's own type (css/game.css
-  // .plate-measure), so it fits its line (no empty glass round a short one) and glides to the next part's size
-  plateWidth(words) {
+  // the plate's width and type size for its line: measured on a hidden copy in the plate's own type (css/game.css
+  // .plate-measure), so it fits its line (no empty glass round a short one) and glides to the next screen's size. The
+  // whole line sits on one line of 26 px; one too long for the card is set at 23 px, then 20 (as Fishing Frenzy's)
+  plateFit(words) {
     const shown = words.filter((d) => d.t), key = shown.map((d) => d.t + (/\bkey\b/.test(d.cls) ? '*' : '')).join(' ');
-    if (!shown.length) return this._pw || 1000; // (no line between screens: it keeps its size, so the next never stretches in)
+    if (!shown.length) return this._pw || { w: 1000, size: 26 }; // (no line between screens: it keeps its size, so the next never stretches in)
     if (this._pwKey === key) return this._pw;
     let m = this._pm;
     if (!m) {
@@ -680,7 +655,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
     m.innerHTML = shown.map((d) => '<span class="w' + (/\bkey\b/.test(d.cls) ? ' key' : '') + '">' + esc(d.t) + '</span>').join(''); // (as the plate: words spaced by their margins)
     this._pwKey = key;
-    return (this._pw = Math.round(Math.min(1200, Math.max(220, m.getBoundingClientRect().width + 4))));
+    let w = 0, size = 26;
+    for (const px of [26, 23, 20]) { size = px; m.style.fontSize = px + 'px'; w = m.getBoundingClientRect().width + 4; if (w <= CONFIG.plateMaxW) break; }
+    return (this._pw = { w: Math.round(Math.min(CONFIG.plateMaxW, Math.max(220, w))), size: size });
   }
   // the screen's question or instruction (its last line), which the plate shows in full once it has been asked
   question(st) { const L = (st.lines || []).filter((x) => !x.keep && x.t).pop(); return L ? L.t : null; }
@@ -1984,15 +1961,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.toWords(part).forEach((w) => { const i = wi++, key = KEY_WORDS.test(w.toLowerCase().replace(/[^a-z0-9°]/g, '')) ? ' key' : '';
         words.push({ t: w, cls: (i < s.reveal - 1 ? 'on' : (i === s.reveal - 1 ? (s.talking ? 'cur' : 'on') : '')) + key }); });
     });
-    // the narration plate: a long line in short parts, the one the voice is in (lineParts); once the screen's last line
-    // (a rule, a question, a tip) has been said it shows whole, to read before the screen moves on or while answering
-    if (this.isPlate(st)) {
-      const flat = words.filter((w) => w.cls !== 'brk'), starts = this.lineParts(flat.map((w) => w.t));
-      const whole = !s.talking && s.reveal >= flat.length && (!this.q || this.q.i >= this.q.lines.length);
-      let k = 0;
-      while (k + 1 < starts.length && starts[k + 1] <= Math.max(0, s.reveal - 1)) k++;
-      words = whole ? flat : flat.slice(starts[k], k + 1 < starts.length ? starts[k + 1] : flat.length);
-    }
+    // the narration plate: the whole line on one line (its own breaks ignored), each word popping in as it is said
+    if (this.isPlate(st)) words = words.filter((w) => w.cls !== 'brk');
+    const plate = this.isPlate(st) ? this.plateFit(words) : null;
     const G = isLesson ? this.geo() : { g: {}, tags: [], V: {} };
     // chips
     let chips = s.chips.slice();
@@ -2049,7 +2020,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       endNext: !!(st.end && JOURNEY && s.endNext && !this.handedOff),
       endGo: () => { if (!this.handedOff) { this.sfx('tap'); this.setState({ endNext: false }); this.handOff(); } },
       g: G.g, tags: G.tags,
-      words: words, plateW: this.isPlate(st) ? this.plateWidth(words) : 0,
+      words: words, plateW: plate ? plate.w : 0,
       // a line with its own breaks keeps exactly those lines: the bubble widens instead of wrapping again
       bubCls: s.bub + ((s.line || '').indexOf('\n') >= 0 ? ' manual' : ''),
       // lesson steps share one board, so it only fades in when it first appears; each check fades in fresh
@@ -2062,7 +2033,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           /^(AD|BC) [∥=] (AD|BC)$/.test(c.t) ? Object.assign({}, c, { k: c.k + ' pairB' }) : c))
         .map((c) => ((v) => Object.assign(v, { k: v.k + (v.cap ? ' hascap' : '') }))(Object.assign({ t: c.t, k: c.k + (c.t.length > 20 ? ' long' : '') + (c.t && c.t === s.chipHi ? ' hi' : '') }, this.chipView(c)))),
       rootDown: (e) => this.rootDown(e),
-      wordSize: wi > 15 || (s.line || '').length > 80 ? 22 : 24, // long lines get the smaller size
+      wordSize: plate ? plate.size : wi > 15 || (s.line || '').length > 80 ? 22 : 24, // the plate's fit; a long bubble line gets the smaller size
       c1: c1, hasOpts: hasOpts, opts: opts,
       // the answers (and answer boxes) in a row under the shape, centred on the card
       optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap) : 376,

@@ -60,9 +60,9 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   goodbye); she speaks once she has landed. On screen 14 she walks onto the shape and measures each side with her tape
   (`js/walker.js`).
 - **The narration plate.** On screens without Swiftee her line is the navy plate across the top of the card, key words
-  in gold. A long line shows in short parts, each as the voice reaches it (after a sentence, a comma or before a joining
-  word: `lineParts`, `CONFIG.plate`), and the plate fits itself to each part; a question shows whole once it has been
-  asked, and comes back, shown not said, after a tip.
+  in gold. The whole line sits on one line, each word popping in as the voice reaches it (as the game's own plate); the
+  plate fits its line, measured on a hidden copy in its own type (`plateFit`, `CONFIG.plateMaxW`), and a line too long
+  for the card is set smaller. A question comes back, shown not said, after a tip.
 - **The voice** (`docs/VOICEOVER.md`): every line is a recorded clip in Swiftee's studio voice; words appear as the
   clip's own playhead reaches them, and each clip starts just before its first word. One voice: while the recordings are
   on, a line whose clip cannot play shows silently, and the journey never uses the device's speech voice.

@@ -45,8 +45,7 @@ const CONFIG = {
   // are live answersMs after the screen starts (while Swiftee asks). In the journey, the lesson's last screen hands over
   // to the fishing on its Next.
   flow: { advanceMs: 1600, answersMs: 900 },
-  // the narration plate: a line longer than maxChars is shown in parts, none shorter than minChars (lineParts)
-  plate: { maxChars: 50, minChars: 12 },
+  plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 2600 },
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
