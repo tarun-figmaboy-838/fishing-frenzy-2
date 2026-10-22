@@ -10,6 +10,9 @@
 //     blade group on its own speed and phase
 // The picture is fitted to the stage by height, so the water line sits exactly where it is in the painting (about
 // 23 px of the painting's width is beyond each side of the 16:9 stage; that overscan also hides the row shifts).
+// Where WebGL works the painting runs through the fishing games' own water pass instead (js/water-gl.js, canvas.water-gl:
+// rolling waves, refraction growing with depth, a caustic net on the sand, light shafts and glints, as on their lakes),
+// and this canvas only adds the swaying grass and the rising bubbles over it.
 // Time only advances while frames are drawn, so a hidden tab resumes without a jump. Static for
 // prefers-reduced-motion and in thumbnail captures. If the frame rate drops, it draws every other frame.
 // =====================================================================
@@ -46,8 +49,30 @@
   }
 
   var cv = null, ctx = null, t = 0, last = 0, slow = 0, skip = false, staticDone = false, zoom = 1;
+  // the WebGL water pass (js/water-gl.js), and the painting fitted to its world (1672 x 941) as this canvas fits it
+  var glCv = null, GL = null, PAINT = null, glOn = false;
+  // found once the page's markup is drawn (the template runtime renders it after this script runs), and again if the
+  // canvas is replaced
+  function glScene() {
+    var c = document.querySelector('canvas.water-gl');
+    if (c !== glCv) {
+      glCv = c; GL = null; glOn = false;
+      try { if (c && window.PopoGame && PopoGame.WaterScene) GL = new PopoGame.WaterScene(c); } catch (e) { GL = null; }
+      if (GL && !GL.ok) GL = null;
+      if (c && zoom !== 1) c.style.transform = 'scale(' + zoom + ')';
+    }
+    return GL;
+  }
+  var WORLD = window.PopoGame || {}, WATERLINE = 250; // the painted surface in the world (its crest is at painting row 178)
+  function painting() {
+    if (PAINT) return PAINT;
+    var w = WORLD.STAGE_W, h = WORLD.STAGE_H, k = h / M.h;
+    PAINT = document.createElement('canvas'); PAINT.width = w; PAINT.height = h;
+    var c = PAINT.getContext('2d'); c.imageSmoothingQuality = 'high'; c.drawImage(bg, (w - M.w * k) / 2, 0, M.w * k, h);
+    return PAINT;
+  }
   // the session's opening dives the camera under the water (zoom about the bottom middle of the page)
-  window.Water = { dive: function (z) { if (z !== zoom) { zoom = z; staticDone = false; } } };
+  window.Water = { dive: function (z) { if (z !== zoom) { zoom = z; staticDone = false; if (glCv) glCv.style.transform = z === 1 ? '' : 'scale(' + z + ')'; } } };
   function canvas() {
     if (cv && cv.isConnected) return cv;
     cv = document.querySelector('canvas.water-bg');
@@ -85,10 +110,17 @@
   }
   function scene(motion) {
     // the camera (js/opening.js): zoomed about the bottom middle, the sand, as it dives under the surface
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // the lake through the fishing games' water pass; over it, only the grass and the bubbles
+    if (glScene() && motion) {
+      glOn = GL.ok && GL.render({ from: painting(), to: null, mix: 0, time: t, waterline: WATERLINE, plants: [], amplitude: 1 });
+      GL.show(glOn);
+      if (glOn) { cv.style.background = 'none'; ctx.clearRect(0, 0, CW, CH); }
+    }
     ctx.setTransform(zoom, 0, 0, zoom, (CW / 2) * (1 - zoom), CH * (1 - zoom));
     ctx.globalCompositeOperation = 'source-over';
-    ctx.drawImage(base(), BX, 0);
-    if (motion) {
+    if (!glOn) ctx.drawImage(base(), BX, 0);
+    if (motion && !glOn) {
       // surface: still at the shoreline, strongest across the waves, settling below the crest
       rows(WATER.top + 2, WATER.crest + 14, 2, function (y) {
         var f = Math.min(1, (y - WATER.top) / 38) * (y > WATER.crest ? Math.max(0.25, 1 - (y - WATER.crest) / 14) : 1);
@@ -102,7 +134,7 @@
     // light shafts: a soft beam (fades out sideways and downward, no hard edges), slanted, breathing and drifting
     var SH = shaftSprite(), top = Y(WATER.crest - 2), H = Y(520) - top;
     ctx.globalCompositeOperation = 'lighter';
-    SHAFTS.forEach(function (s, i) {
+    if (!glOn) SHAFTS.forEach(function (s, i) {
       var a = motion ? s.a * (0.55 + 0.45 * Math.sin(t * 6.283 / s.p + i * 2)) : s.a * 0.6, sway = motion ? Math.sin(t * s.s * 6.283 + i) * 8 : 0;
       var w = s.w * K * 2.2, lean = -60;
       ctx.globalAlpha = a / 0.1;
@@ -112,7 +144,7 @@
       ctx.restore();
     });
     ctx.globalAlpha = 1;
-    if (motion) {
+    if (motion && !glOn) {
       // glints on the surface: short soft streaks that fade in and out
       glints.forEach(function (g) {
         var u = g.age / g.life, a = Math.sin(Math.PI * Math.min(1, Math.max(0, u))) * 0.5;

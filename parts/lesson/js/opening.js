@@ -20,7 +20,7 @@
   const CARD = { x: 836, y: 470, w: 1494, h: 1494 * 828 / 1618 }; // the card keeps the sea card's own proportions
   const PEARL = { x: 836, y: 929, size: 1.12 };
   const BUBBLE = { radius: 290, seed: 62, blow: 0.3, pop: 0.78 };
-  const DIVE_ZOOM = 1.85, DIM = 0.55, SEABED_Y = 805;
+  const DIVE_ZOOM = 1.85, DIM = 0.55, DIM_OPEN = 0.25, SEABED_Y = 805; // DIM_OPEN: the lake round the open card, lighter so its water shows moving
   const ART = new Image(); ART.src = 'assets/images/sea-card.webp'; // the sea card (assets/Sea Card.png, 1618 x 828, transparent corners)
   const reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const ease = {
@@ -373,7 +373,7 @@
       tok++; busy = false;
       S.on = true; S.open = true; staticDrawn = false; S.spawning = false;
       Object.assign(S.shell, { alpha: 0, open: 1, rock: 0, squash: 0, leak: 0, pearl: 1 });
-      Object.assign(S, { dim: DIM, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
+      Object.assign(S, { dim: DIM_OPEN, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
       if (!(ART.complete && ART.naturalWidth)) ART.addEventListener('load', () => { staticDrawn = false; }, { once: true });
       run();
     },
@@ -414,6 +414,8 @@
       // the shell and the pearl's light fade; the card stays for the lesson
       const beam0 = S.beam, glow0 = S.glow;
       if (!await tw(350, (t) => { S.shell.alpha = 1 - t; S.beam = beam0 * (1 - t); S.glow = glow0 * (1 - t); })) return;
+      // the lake round the card lightens again, so its water is seen rolling behind the lesson
+      tw(900, (t) => { S.dim = DIM + (DIM_OPEN - DIM) * ease.inOut(t); });
       S.open = true; busy = false;
       if (done) done();
     }
