@@ -1,6 +1,6 @@
 // =====================================================================
 // WATER — the live background behind every screen (one shared Canvas 2D layer, canvas.water-bg in index.html).
-// The painted scene (js/water-manifest.js, built by dev/tools/build-water.js) is redrawn each frame with:
+// The painted scene (js/water-manifest.js, built by tools/build-water.js) is redrawn each frame with:
 //   · the water surface gently refracting: the surface band is redrawn in thin rows, each nudged sideways on two
 //     slow sine waves, so the painted ripples ripple (the shoreline and mountains stay still)
 //   · the underwater light lines shimmering the same way, much more softly

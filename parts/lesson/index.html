@@ -41,25 +41,15 @@
 <canvas class="op-scene" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <canvas class="op-curtain" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <div class="stage {{sceneCls}}" style="position: absolute; left: 0px; top: 0px; width: 1280px; height: 720px; transform: translate(225.07px, 126.32px) scale(1.14833); transform-origin: 0 0" onPointerDown="{{rootDown}}" onPointerMove="{{rootMove}}" onPointerUp="{{rootUp}}" onPointerCancel="{{rootUp}}">
-<img class="panel-img" src="assets/images/ice-panel.webp" alt="" style="position: absolute; left: 108px; top: 78px; width: 1064px; height: 561px; pointer-events: none">
 
 <sc-if value="{{isLesson}}" hint-placeholder-val="{{ true }}">
 <svg class="{{boardCls}}" viewBox="0 0 520 420" width="520" height="420" style="position: absolute; left: 640px; top: 104px; overflow: visible; touch-action: none; transform-origin: 0px 0px; transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1); transform: {{boardTf}}" aria-label="Parallelogram ABCD">
-<g class="pop-g {{popCls}}" style="transform-origin: {{popO}}">
-<polygon class="shape-fill {{spotFill}}" sc-camel-points="{{g.poly}}" fill="rgba(229,205,234,0.92)" stroke="none"></polygon>
-<line class="xleg" sc-camel-x1="{{g.xA.x1}}" sc-camel-y1="{{g.xA.y1}}" sc-camel-x2="{{g.xA.x2}}" sc-camel-y2="{{g.xA.y2}}" sc-camel-display="{{g.xA.d}}" stroke="#e8643c" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"></line>
-<line class="xleg" sc-camel-x1="{{g.xB.x1}}" sc-camel-y1="{{g.xB.y1}}" sc-camel-x2="{{g.xB.x2}}" sc-camel-y2="{{g.xB.y2}}" sc-camel-display="{{g.xB.d}}" stroke="#e8643c" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"></line>
-<line class="xleg" sc-camel-x1="{{g.xAB.x1}}" sc-camel-y1="{{g.xAB.y1}}" sc-camel-x2="{{g.xAB.x2}}" sc-camel-y2="{{g.xAB.y2}}" sc-camel-display="{{g.xAB.d}}" stroke="#e8643c" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"></line>
-<line class="xleg" sc-camel-x1="{{g.xCD.x1}}" sc-camel-y1="{{g.xCD.y1}}" sc-camel-x2="{{g.xCD.x2}}" sc-camel-y2="{{g.xCD.y2}}" sc-camel-display="{{g.xCD.d}}" stroke="#e8643c" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"></line>
-<rect class="fadein" sc-camel-x="{{g.apex.x}}" sc-camel-y="{{g.apex.y}}" width="13" height="13" rx="2" fill="#e8643c" sc-camel-display="{{g.apex.d}}"></rect>
+<g class="pop-g" style="transform-origin: {{popO}}">
+<polygon class="shape-fill" sc-camel-points="{{g.poly}}" fill="rgba(229,205,234,0.92)" stroke="none"></polygon>
 <path sc-camel-d="{{g.aA.p}}" pathLength="100" class="{{g.aA.cls}}" style="transform-origin: {{g.aA.o}}" sc-camel-display="{{g.aA.d}}" fill="none" stroke="#f08a24" stroke-width="7" stroke-linecap="round"></path>
 <path sc-camel-d="{{g.aB.p}}" pathLength="100" class="{{g.aB.cls}}" style="transform-origin: {{g.aB.o}}" sc-camel-display="{{g.aB.d}}" fill="none" stroke="#8e44d6" stroke-width="7" stroke-linecap="round"></path>
 <path sc-camel-d="{{g.aC.p}}" pathLength="100" class="{{g.aC.cls}}" style="transform-origin: {{g.aC.o}}" sc-camel-display="{{g.aC.d}}" fill="none" stroke="#2b7bd6" stroke-width="7" stroke-linecap="round"></path>
 <path sc-camel-d="{{g.aD.p}}" pathLength="100" class="{{g.aD.cls}}" style="transform-origin: {{g.aD.o}}" sc-camel-display="{{g.aD.d}}" fill="none" stroke="#2e9e4f" stroke-width="7" stroke-linecap="round"></path>
-<path sc-camel-d="{{g.rA.p}}" class="fadein" sc-camel-display="{{g.rA.d}}" fill="none" stroke="#2e9e4f" stroke-width="3"></path>
-<path sc-camel-d="{{g.rB.p}}" class="fadein" sc-camel-display="{{g.rB.d}}" fill="none" stroke="#2e9e4f" stroke-width="3"></path>
-<path sc-camel-d="{{g.rC.p}}" class="fadein" sc-camel-display="{{g.rC.d}}" fill="none" stroke="#2e9e4f" stroke-width="3"></path>
-<path sc-camel-d="{{g.rD.p}}" class="fadein" sc-camel-display="{{g.rD.d}}" fill="none" stroke="#2e9e4f" stroke-width="3"></path>
 <line sc-camel-x1="{{g.eAB.x1}}" sc-camel-y1="{{g.eAB.y1}}" sc-camel-x2="{{g.eAB.x2}}" sc-camel-y2="{{g.eAB.y2}}" sc-camel-display="{{g.eAB.d}}" class="edge {{g.eAB.cls}}" style="stroke: {{g.eAB.c}}" stroke-width="5" stroke-linecap="round"></line>
 <line sc-camel-x1="{{g.eBC.x1}}" sc-camel-y1="{{g.eBC.y1}}" sc-camel-x2="{{g.eBC.x2}}" sc-camel-y2="{{g.eBC.y2}}" sc-camel-display="{{g.eBC.d}}" class="edge {{g.eBC.cls}}" style="stroke: {{g.eBC.c}}" stroke-width="5" stroke-linecap="round"></line>
 <line sc-camel-x1="{{g.eCD.x1}}" sc-camel-y1="{{g.eCD.y1}}" sc-camel-x2="{{g.eCD.x2}}" sc-camel-y2="{{g.eCD.y2}}" sc-camel-display="{{g.eCD.d}}" class="edge {{g.eCD.cls}}" style="stroke: {{g.eCD.c}}" stroke-width="5" stroke-linecap="round"></line>
@@ -96,17 +86,6 @@
 <path sc-camel-d="{{g.ch2.p}}" class="fadein par-ch ch-b" sc-camel-display="{{g.ch2.d}}" fill="none" stroke="#f08a24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
 <path sc-camel-d="{{g.arw.p}}" sc-camel-display="{{g.arw.d}}" class="nudge" fill="none" stroke="#f08a24" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"></path>
 <path sc-camel-d="{{g.arw.h}}" sc-camel-display="{{g.arw.d}}" class="nudge" fill="#f08a24" stroke="none"></path>
-<g class="{{g.rl.cls}}" sc-camel-transform="{{g.rl.tf}}" sc-camel-display="{{g.rl.d}}" data-qa="ruler" onPointerDown="{{g.rl.down}}" style="cursor: {{g.rl.cur}}"><rect x="-8" y="0" width="416" height="27" rx="4" fill="#ffd36b" stroke="#c9961e" stroke-width="2"></rect><path d="M0,0 L0,13 M20,0 L20,8 M40,0 L40,13 M60,0 L60,8 M80,0 L80,13 M100,0 L100,8 M120,0 L120,13 M140,0 L140,8 M160,0 L160,13 M180,0 L180,8 M200,0 L200,13 M220,0 L220,8 M240,0 L240,13 M260,0 L260,8 M280,0 L280,13 M300,0 L300,8 M320,0 L320,13 M340,0 L340,8 M360,0 L360,13 M380,0 L380,8 M400,0 L400,13" stroke="#7a5a10" stroke-width="1.8" stroke-linecap="round"></path><text x="0" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">0</text><text x="40" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">1</text><text x="80" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">2</text><text x="120" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">3</text><text x="160" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">4</text><text x="200" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">5</text><text x="240" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">6</text><text x="280" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">7</text><text x="320" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">8</text><text x="360" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">9</text><text x="400" y="23" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#6b4c0c">10</text></g>
-<g class="callout" sc-camel-display="{{g.cal.d}}" pointer-events="none">
-<path sc-camel-d="{{g.cal.p1.stem}}" fill="none" stroke="#f3c552" stroke-width="2.5" stroke-linecap="round"></path>
-<rect class="cal-pill" sc-camel-x="{{g.cal.p1.x}}" sc-camel-y="{{g.cal.p1.y}}" sc-camel-width="{{g.cal.w}}" height="32" rx="16" fill="#fde49b" stroke="#f3c552" stroke-width="2"></rect>
-<text sc-camel-display="{{g.cal.tb}}" sc-camel-x="{{g.cal.p1.tx}}" sc-camel-y="{{g.cal.p1.ty}}" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="18" fill="#123b63">Base</text>
-<text sc-camel-display="{{g.cal.tl}}" sc-camel-x="{{g.cal.p1.tx}}" sc-camel-y="{{g.cal.p1.ty}}" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="18" fill="#123b63">Leg</text>
-<path sc-camel-d="{{g.cal.p2.stem}}" fill="none" stroke="#c99be9" stroke-width="2.5" stroke-linecap="round"></path>
-<rect class="cal-pill" sc-camel-x="{{g.cal.p2.x}}" sc-camel-y="{{g.cal.p2.y}}" sc-camel-width="{{g.cal.w}}" height="32" rx="16" fill="#e5c9f8" stroke="#c99be9" stroke-width="2"></rect>
-<text sc-camel-display="{{g.cal.tb}}" sc-camel-x="{{g.cal.p2.tx}}" sc-camel-y="{{g.cal.p2.ty}}" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="18" fill="#123b63">Base</text>
-<text sc-camel-display="{{g.cal.tl}}" sc-camel-x="{{g.cal.p2.tx}}" sc-camel-y="{{g.cal.p2.ty}}" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="18" fill="#123b63">Leg</text>
-</g>
 <circle sc-camel-cx="{{g.halo.x}}" sc-camel-cy="{{g.halo.y}}" r="19" sc-camel-display="{{g.halo.d}}" class="halo" fill="none" stroke="#8e44d6"></circle>
 <!-- point O: above the diagonals and their halves, like the corner points -->
 <circle class="fadein" sc-camel-cx="{{g.oDot.x}}" sc-camel-cy="{{g.oDot.y}}" r="6" sc-camel-display="{{g.oDot.d}}" fill="#fff" stroke="#123b63" stroke-width="3" pointer-events="none"></circle>
@@ -114,10 +93,6 @@
 <circle class="vdot" sc-camel-cx="{{g.vB.x}}" sc-camel-cy="{{g.vB.y}}" sc-camel-r="{{g.vB.r}}" fill="#fff" stroke="{{g.vB.c}}" sc-camel-stroke-width="{{g.vB.w}}"></circle>
 <circle class="vdot" sc-camel-cx="{{g.vC.x}}" sc-camel-cy="{{g.vC.y}}" sc-camel-r="{{g.vC.r}}" fill="#fff" stroke="{{g.vC.c}}" sc-camel-stroke-width="{{g.vC.w}}"></circle>
 <circle class="vdot" sc-camel-cx="{{g.vD.x}}" sc-camel-cy="{{g.vD.y}}" sc-camel-r="{{g.vD.r}}" fill="#fff" stroke="{{g.vD.c}}" sc-camel-stroke-width="{{g.vD.w}}"></circle>
-<line sc-camel-x1="{{g.tAB.x1}}" sc-camel-y1="{{g.tAB.y1}}" sc-camel-x2="{{g.tAB.x2}}" sc-camel-y2="{{g.tAB.y2}}" data-qa="edge-AB" sc-camel-display="{{g.tAB.d}}" class="{{g.tAB.cls}}" onClick="{{g.tAB.click}}" stroke="rgba(0,0,0,0.001)" stroke-width="36" stroke-linecap="round" style="cursor: pointer"></line>
-<line sc-camel-x1="{{g.tBC.x1}}" sc-camel-y1="{{g.tBC.y1}}" sc-camel-x2="{{g.tBC.x2}}" sc-camel-y2="{{g.tBC.y2}}" data-qa="edge-BC" sc-camel-display="{{g.tBC.d}}" class="{{g.tBC.cls}}" onClick="{{g.tBC.click}}" stroke="rgba(0,0,0,0.001)" stroke-width="36" stroke-linecap="round" style="cursor: pointer"></line>
-<line sc-camel-x1="{{g.tCD.x1}}" sc-camel-y1="{{g.tCD.y1}}" sc-camel-x2="{{g.tCD.x2}}" sc-camel-y2="{{g.tCD.y2}}" data-qa="edge-CD" sc-camel-display="{{g.tCD.d}}" class="{{g.tCD.cls}}" onClick="{{g.tCD.click}}" stroke="rgba(0,0,0,0.001)" stroke-width="36" stroke-linecap="round" style="cursor: pointer"></line>
-<line sc-camel-x1="{{g.tDA.x1}}" sc-camel-y1="{{g.tDA.y1}}" sc-camel-x2="{{g.tDA.x2}}" sc-camel-y2="{{g.tDA.y2}}" data-qa="edge-DA" sc-camel-display="{{g.tDA.d}}" class="{{g.tDA.cls}}" onClick="{{g.tDA.click}}" stroke="rgba(0,0,0,0.001)" stroke-width="36" stroke-linecap="round" style="cursor: pointer"></line>
 <circle sc-camel-cx="{{g.kA.x}}" sc-camel-cy="{{g.kA.y}}" r="28" data-qa="vtx-A" sc-camel-display="{{g.kA.d}}" class="{{g.kA.cls}}" onClick="{{g.kA.click}}" onPointerDown="{{g.kA.down}}" fill="rgba(0,0,0,0.001)" style="cursor: {{g.kA.cur}}"></circle>
 <circle sc-camel-cx="{{g.kB.x}}" sc-camel-cy="{{g.kB.y}}" r="28" data-qa="vtx-B" sc-camel-display="{{g.kB.d}}" class="{{g.kB.cls}}" onClick="{{g.kB.click}}" onPointerDown="{{g.kB.down}}" fill="rgba(0,0,0,0.001)" style="cursor: {{g.kB.cur}}"></circle>
 <circle sc-camel-cx="{{g.kC.x}}" sc-camel-cy="{{g.kC.y}}" r="28" data-qa="vtx-C" sc-camel-display="{{g.kC.d}}" class="{{g.kC.cls}}" onClick="{{g.kC.click}}" onPointerDown="{{g.kC.down}}" fill="rgba(0,0,0,0.001)" style="cursor: {{g.kC.cur}}"></circle>
@@ -125,7 +100,7 @@
 </g>
 </svg>
 <div class="board {{boardCls}}" style="position: absolute; left: 640px; top: 104px; width: 520px; height: 420px; pointer-events: none; transform: {{boardTf}}">
-<div class="pop-g {{popCls}}" style="position: absolute; left: 0px; top: 0px; width: 520px; height: 420px; transform-origin: {{popO}}">
+<div class="pop-g" style="position: absolute; left: 0px; top: 0px; width: 520px; height: 420px; transform-origin: {{popO}}">
 <sc-for list="{{tags}}" as="tg" hint-placeholder-count="4">
 <div class="tag {{tg.cls}}" style="left: {{tg.x}}px; top: {{tg.y}}px">{{tg.t}}</div>
 </sc-for>
@@ -150,13 +125,6 @@
 <svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="32,65 116,21 160,35 170,75 66,99" fill="#ffe5bd" stroke="#d27a14" stroke-width="4" stroke-linejoin="round"></polygon></svg>
 </button>
 </div>
-</sc-if>
-
-
-
-
-<sc-if value="{{cpOn}}" hint-placeholder-val="{{ false }}">
-<div class="cp-title {{fadeCls}}" style="position: absolute; left: 364px; top: 92px; width: 552px">{{cpTitle}}</div>
 </sc-if>
 
 <sc-if value="{{fillOn}}" hint-placeholder-val="{{ false }}">
@@ -192,40 +160,6 @@
 </div>
 </sc-if>
 
-
-<sc-if value="{{celebrate}}" hint-placeholder-val="{{ false }}">
-<div class="celebrate" aria-hidden="true">
-<span class="cf" style="left: 120px; background: #f2b51c; animation-delay: 0.00s; transform: rotate(0deg)"></span>
-<span class="cf" style="left: 517px; background: #2b7bd6; animation-delay: 0.12s; transform: rotate(53deg)"></span>
-<span class="cf" style="left: 914px; background: #e8643c; animation-delay: 0.24s; transform: rotate(106deg)"></span>
-<span class="cf" style="left: 271px; background: #2e9e4f; animation-delay: 0.36s; transform: rotate(159deg)"></span>
-<span class="cf" style="left: 668px; background: #8e44d6; animation-delay: 0.48s; transform: rotate(212deg)"></span>
-<span class="cf" style="left: 1065px; background: #56bdf4; animation-delay: 0.60s; transform: rotate(265deg)"></span>
-<span class="cf" style="left: 422px; background: #f2b51c; animation-delay: 0.72s; transform: rotate(318deg)"></span>
-<span class="cf" style="left: 819px; background: #2b7bd6; animation-delay: 0.00s; transform: rotate(11deg)"></span>
-<span class="cf" style="left: 176px; background: #e8643c; animation-delay: 0.12s; transform: rotate(64deg)"></span>
-<span class="cf" style="left: 573px; background: #2e9e4f; animation-delay: 0.24s; transform: rotate(117deg)"></span>
-<span class="cf" style="left: 970px; background: #8e44d6; animation-delay: 0.36s; transform: rotate(170deg)"></span>
-<span class="cf" style="left: 327px; background: #56bdf4; animation-delay: 0.48s; transform: rotate(223deg)"></span>
-<span class="cf" style="left: 724px; background: #f2b51c; animation-delay: 0.60s; transform: rotate(276deg)"></span>
-<span class="cf" style="left: 1121px; background: #2b7bd6; animation-delay: 0.72s; transform: rotate(329deg)"></span>
-<span class="cf" style="left: 478px; background: #e8643c; animation-delay: 0.00s; transform: rotate(22deg)"></span>
-<span class="cf" style="left: 875px; background: #2e9e4f; animation-delay: 0.12s; transform: rotate(75deg)"></span>
-<span class="cf" style="left: 232px; background: #8e44d6; animation-delay: 0.24s; transform: rotate(128deg)"></span>
-<span class="cf" style="left: 629px; background: #56bdf4; animation-delay: 0.36s; transform: rotate(181deg)"></span>
-<span class="cf" style="left: 1026px; background: #f2b51c; animation-delay: 0.48s; transform: rotate(234deg)"></span>
-<span class="cf" style="left: 383px; background: #2b7bd6; animation-delay: 0.60s; transform: rotate(287deg)"></span>
-<span class="cf" style="left: 780px; background: #e8643c; animation-delay: 0.72s; transform: rotate(340deg)"></span>
-<span class="cf" style="left: 137px; background: #2e9e4f; animation-delay: 0.00s; transform: rotate(33deg)"></span>
-<span class="cf" style="left: 534px; background: #8e44d6; animation-delay: 0.12s; transform: rotate(86deg)"></span>
-<span class="cf" style="left: 931px; background: #56bdf4; animation-delay: 0.24s; transform: rotate(139deg)"></span>
-<span class="cf" style="left: 288px; background: #f2b51c; animation-delay: 0.36s; transform: rotate(192deg)"></span>
-<span class="cf" style="left: 685px; background: #2b7bd6; animation-delay: 0.48s; transform: rotate(245deg)"></span>
-<div class="big-stars"><svg class="bs s1" width="86" height="86" viewBox="0 0 24 24"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.3l-5.8 3 1.1-6.4-4.7-4.6 6.5-.9z" fill="#f2b51c" stroke="#c48f05" stroke-width="0.8" stroke-linejoin="round"></path></svg><svg class="bs s2" width="118" height="118" viewBox="0 0 24 24"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.3l-5.8 3 1.1-6.4-4.7-4.6 6.5-.9z" fill="#f2b51c" stroke="#c48f05" stroke-width="0.8" stroke-linejoin="round"></path></svg><svg class="bs s3" width="86" height="86" viewBox="0 0 24 24"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.3l-5.8 3 1.1-6.4-4.7-4.6 6.5-.9z" fill="#f2b51c" stroke="#c48f05" stroke-width="0.8" stroke-linejoin="round"></path></svg></div>
-</div>
-</sc-if>
-
-
 <sc-if value="{{isEnd}}" hint-placeholder-val="{{ false }}">
 <div class="{{fadeCls}}" style="position: absolute; left: 670px; top: 140px; width: 460px; height: 360px; border-radius: 28px; background: rgba(255,255,255,0.9); border: 3px solid #cfe6f7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 10px 30px rgba(18,59,99,0.15)">
 <div style="font-family: 'Baloo 2', 'Noto Sans Math', system-ui, sans-serif; font-weight: 800; font-size: 42px; line-height: 1.05; color: #123b63; text-align: center">Lesson complete!</div>
@@ -246,7 +180,7 @@
 </div>
 
 <div class="{{swCls}}" style="position: absolute; top: 401px; width: 259px; height: 259px; pointer-events: none">
-<img class="{{birdCls}} swiftee-still" src="assets/images/swiftee.webp" alt="Swiftee the bird" style="position: absolute; left: 42px; top: 29px; width: 180px; height: 198px">
+<img class="bird swiftee-still" src="assets/images/swiftee.webp" alt="Swiftee the bird" style="position: absolute; left: 42px; top: 29px; width: 180px; height: 198px">
 <canvas class="swiftee-sprite" width="256" height="256" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 259px; height: 259px"></canvas>
 </div>
 <div class="bubble {{bubCls}} {{bubHide}}" style="position: absolute; left: 240px; bottom: 322px; pointer-events: none">
@@ -263,7 +197,6 @@
      screen that asks for something waits for it; ?dev=1 on the journey's page jumps to any screen) -->
 
 <div class="walker" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 120px; height: 120px; pointer-events: none; visibility: hidden; z-index: 12"><canvas width="512" height="512" style="width: 100%; height: 100%; display: block"></canvas></div>
-
 
 <sc-if value="{{handOn}}" hint-placeholder-val="{{ false }}">
 <div class="{{hand.cls}}" style="left: {{hand.x}}px; top: {{hand.y}}px; --dx: {{hand.dx}}px; --dy: {{hand.dy}}px" aria-hidden="true">

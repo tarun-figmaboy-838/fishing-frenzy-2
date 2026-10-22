@@ -4,7 +4,7 @@
 // and reverts every inline style it set, so a screen never inherits half-finished motion from the one before.
 // Only unbound style properties are animated (opacity, transform, filter, stroke-width, text-shadow): the template
 // runtime binds left/top and stroke colour, so the two never fight. Hover/tap feedback stays in CSS.
-// prefers-reduced-motion: entrances jump to their end state, value tweens still run (they carry the lesson state).
+// prefers-reduced-motion: entrances jump to their end state.
 // =====================================================================
 (function () {
   const G = window.gsap;
@@ -28,7 +28,6 @@
   const ANIMATED_SVG = '.edge, .vdot, .shape-fill, .outline-settle, svg g.pop-g, .par-ch';
 
   const Motion = {
-    ok: !!G,
     reduced: reduced,
     // stop everything the current screen started and put every element back as the stylesheet draws it.
     // revert() alone is not enough: it restores each tween's recorded "before" state, and when one tween started
@@ -43,15 +42,6 @@
       $(ANIMATED_SVG).forEach((el) => el.style.removeProperty('transform-origin'));
       ctx = G ? G.context(() => {}) : null;
     },
-
-    // a tween on plain values (pen position, trace length...): onUpdate(value) each frame, onDone at the end
-    value(from, to, duration, ease, onUpdate, onDone) {
-      if (!G) { onUpdate(to); if (onDone) onDone(); return; }
-      const o = { v: from };
-      add(() => G.to(o, { v: to, duration: duration, ease: ease, onUpdate: () => onUpdate(o.v), onComplete: onDone }));
-    },
-    // a pause that dies with the screen
-    wait(seconds, fn) { if (!G) { fn(); return; } add(() => G.delayedCall(seconds, fn)); },
 
     // screen 1: once the pen has closed the outline, a soft glow settles round it and the fill fades in
     hideFill() { if (G) add(() => G.set($('.shape-fill'), { opacity: 0 })); },
@@ -84,31 +74,7 @@
       });
     },
 
-    // the corner letters come softly back, A -> B -> C -> D (screen 4, as Swiftee invites a closer look)
-    labelsIn() {
-      const els = $('.board .tag.vlab');
-      if (G && els.length) add(() => G.to(els, { opacity: 1, duration: reduced ? 0 : 0.45, stagger: 0.15, ease: 'sine.out', overwrite: 'auto' }));
-    },
-
-    // soft exit (no cut) for labels leaving with the screen change, e.g. numbers and letters on screen 3
-    fadeOut(sel) { const els = $(sel); if (G && els.length) add(() => G.to(els, { opacity: 0, duration: 0.35, ease: 'sine.out' })); },
-
-    // screen 3: a corner letter arrives on its voice cue from its own corner, then a soft glow settles on it once
-    letterIn(k, onLand) {
-      const el = $('.tag.vlab.c' + k)[0];
-      if (!G || !el) { if (onLand) onLand(); return; }
-      const d = { A: [-44, -44], B: [44, -44], C: [44, 44], D: [-44, 44] }[k];
-      add(() => {
-        centred(el);
-        const tl = G.timeline();
-        tl.fromTo(el, { opacity: 0, x: d[0], y: d[1], scale: 0.9 }, Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, overwrite: 'auto' }, ENTER, { duration: reduced ? 0 : 0.55 }))
-          .call(() => onLand && onLand(), null, 0.48)
-          .fromTo(el, { textShadow: '0px 0px 0px ' + tint(0) }, { textShadow: '0px 0px 10px ' + tint(0.8), duration: 0.4, ease: 'sine.out', yoyo: true, repeat: 1 }, 0.45);
-        return tl;
-      });
-    },
-
-    // screen 4: the previous shape fades out, then the four sides fly in - top from above, right from the right,
+    // screen 3: the previous shape fades out, then the four sides fly in - top from above, right from the right,
     // bottom from below, left from the left - each a glowing stroke that settles into the outline, starting just
     // before the previous one lands; a glow settles on the closed outline, then the corner dots and the fill fade in
     // onLand(i): side i has landed (its sound); onSettle(): the closed outline starts to glow
@@ -136,9 +102,9 @@
       });
     },
 
-    // screen 4: while the sides assemble, the whole shape is held slightly small and soft (it is still forming).
+    // screen 3: while the sides assemble, the whole shape is held slightly small and soft (it is still forming).
     // Applied only once the previous shape has faded out (assemble's 0.3 s exit), so the size change is never seen
-    // and screen 3 -> 4 hands over without a jump.
+    // and screen 2 -> 3 hands over without a jump.
     holdSmall(cx, cy) {
       if (!G) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];
@@ -192,17 +158,6 @@
         if (d) tl.fromTo(d, { scale: 1 }, { scale: 1.07, transformOrigin: cx + 'px ' + cy + 'px', duration: 0.28, ease: 'sine.out', yoyo: true, repeat: 1, repeatDelay: 0.04 }, 0);
         return tl;
       });
-    },
-
-    // dragged the wrong way: that side gives one short, small wiggle about its middle
-    wiggle(side) {
-      const el = $('.e' + side)[0];
-      if (!G || !el || reduced) return;
-      add(() => G.timeline()
-        .to(el, { rotation: 1.6, transformOrigin: '50% 50%', duration: 0.09, ease: 'sine.out' })
-        .to(el, { rotation: -1.4, duration: 0.11, ease: 'sine.inOut' })
-        .to(el, { rotation: 0.8, duration: 0.1, ease: 'sine.inOut' })
-        .to(el, { rotation: 0, duration: 0.12, ease: 'sine.out' }));
     }
   };
   window.Motion = Motion;

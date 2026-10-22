@@ -1,5 +1,5 @@
 // =====================================================================
-// VOICE — recorded voice-over player (clips in assets/vo/, map in js/vo_lines.js, see dev/VOICEOVER.md).
+// VOICE — recorded voice-over player (clips in assets/vo/, map in js/vo_lines.js, see docs/VOICEOVER.md).
 // One reused <audio> element. A line is looked up by the exact plain text the bubble shows (a voice-only line by its
 // spoken text). The engine's say() (js/game-engine.js) uses it as the clock for the line; when a clip is missing or
 // cannot play, say() falls back to the device's built-in voice.
@@ -14,7 +14,8 @@
   let canOgg = false;
   try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); } catch (e) {}
   const lines = typeof VO_LINES !== 'undefined' ? VO_LINES : {};
-  const src = (id) => 'assets/vo/' + id + '.ogg';
+  // absolute, so it resolves against the lesson's page even on the shell's <audio> (in the journey)
+  const src = (id) => new URL('assets/vo/' + id + '.ogg', location.href).href;
   let tok = 0, played = false, unlocked = !!shared, unlocking = null; // unlocking: the muted unlock play() still settling
 
   const VO = {
@@ -22,7 +23,7 @@
     rate: Math.max(0.5, Math.min(4, parseFloat(q('speed')) || 1)),
     has(key) { return VO.on && !!lines[key]; },
     seconds(key) { const v = lines[key]; return v ? v[1] : 0; },
-    // when each displayed word starts in the clip (s), measured from the audio by dev/tools/vo_build.js
+    // when each displayed word starts in the clip (s), measured from the audio by tools/vo_build.js
     times(key) { const v = lines[key]; return v && v[2] ? v[2] : null; },
     // the first tap: play muted, then pause - tablets refuse audio until an element has played in a gesture
     unlock() {

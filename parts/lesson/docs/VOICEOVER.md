@@ -6,10 +6,10 @@ mono). The game plays the clip for a line and types the words at the clip's pace
 | File | What it is |
 |---|---|
 | `assets/vo/voNNN.ogg` | one clip per line, numbered in the order a learner first hears them |
-| `dev/tools/vo_script.json` | the script: `id`, `line` (exactly as the bubble shows it), `spoken` (what the voice was given), `devanagari` (what the studio actually spoke), `where` (screen and moment) |
+| `tools/vo_script.json` | the script: `id`, `line` (exactly as the bubble shows it), `spoken` (what the voice was given), `devanagari` (what the studio actually spoke), `where` (screen and moment) |
 | `js/vo_lines.js` | generated map, line as shown → `[clip, seconds, start of each word]`; never edit by hand |
 | `js/voice.js` | the player |
-| `dev/tools/vo_build.js` | rebuild tool: studio zip(s) → clips + map |
+| `tools/vo_build.js` | rebuild tool: studio zip(s) → clips + map |
 
 ## How the clips were made
 
@@ -47,7 +47,7 @@ One note: in vo070 the script step dropped the sentence break ("… सेवे
 
 ## Conversion
 
-`dev/tools/vo_build.js` turns the studio's MP3s (24 kHz, mono, 128 kbps) into Ogg Opus, 32 kbps, mono, with no ffmpeg:
+`tools/vo_build.js` turns the studio's MP3s (24 kHz, mono, 128 kbps) into Ogg Opus, 32 kbps, mono, with no ffmpeg:
 headless Chromium decodes the MP3, resamples to 48 kHz and encodes Opus (WebCodecs `AudioEncoder`); the tool writes the
 Ogg pages itself (RFC 7845: OpusHead with the encoder's pre-skip, granule positions at 48 kHz, the last page's granule
 set to the real length so the padding is trimmed). Each new clip is decoded back and its length checked against the
@@ -81,14 +81,14 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 
 ## Remake a line
 
-1. Edit the line's `spoken` in `dev/tools/vo_script.json` (keep `id` and `line`; for a new line, add a row with the
+1. Edit the line's `spoken` in `tools/vo_script.json` (keep `id` and `line`; for a new line, add a row with the
    next id and its `line` exactly as the bubble shows it).
 2. In the studio's Batch Generation tab, upload a two-column `.xlsx` (`filename`, `text`) with that id and spoken form,
    choose the settings above, generate, and download `voiceovers_batch.zip`.
 3. In the game folder: `npm i --no-save playwright` (once), then
 
    ```
-   node dev/tools/vo_build.js voiceovers_batch.zip
+   node tools/vo_build.js voiceovers_batch.zip
    ```
 
    (`CHROME=/path/to/chrome` if Playwright's own Chromium is not installed). Several zips can be passed at once.
