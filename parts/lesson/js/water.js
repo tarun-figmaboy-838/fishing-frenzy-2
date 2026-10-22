@@ -1,12 +1,12 @@
 // =====================================================================
-// WATER - the lake behind the lesson's card is the fishing game's own lake: its first waters (Snowy Bay,
-// assets/images/lake.webp, with its open-water mask lake-water.png) rolling through the game's water pass
+// WATER - the lake behind the lesson's card is the fishing game's own lake: its first waters (Snowy Bay, with its
+// open-water mask, js/lake-data.js) rolling through the game's water pass
 // (js/water-gl.js: waves on the surface, refraction growing with depth, a caustic net and light shafts, the weed on the
 // lake floor swaying), so the lesson plays on the very lake the warm-up was fished on, as Fishing Frenzy's lesson plays
 // over its game's lake. The view starts as the game frames that lake (the painting 170 px down the stage, sky above
 // it), so the game's empty lake dissolves into the lesson's without a seam; the opening then glides the camera down to
 // the sand, where the seashell lies (Water.pan, 1 -> 0), and dives after the card (Water.dive, zoomed about the bottom
-// middle). Without WebGL the painting is drawn still on canvas.water-bg.
+// middle). Without WebGL (or if it fails) the painting is drawn still on canvas.water-bg, the camera moving over it.
 // Time only advances while frames are drawn, so a hidden tab resumes without a jump. Still for prefers-reduced-motion,
 // and in the journey until the lesson begins (it waits unseen behind the game). A slow device draws every other frame.
 // =====================================================================
@@ -19,12 +19,12 @@
 
   var lake = new Image(), mask = new Image(), ready = 0;
   lake.onload = mask.onload = function () { ready++; };
-  lake.src = 'assets/images/lake.webp';
-  mask.src = 'assets/images/lake-water.png';
+  lake.src = window.LAKE_DATA.lake; // (js/lake-data.js)
+  mask.src = window.LAKE_DATA.mask;
   lake.waterMask = mask; // (the water pass waves only the open water: the shore, ice and mountains stay put)
 
   var cv = null, ctx = null, t = 0, last = 0, slow = 0, skip = false, staticDone = false, zoom = 1, pan = 1;
-  var glCv = null, GL = null, glOn = false, lowRes = false;
+  var glCv = null, GL = null, glOn = false, glFailed = false, lowRes = false;
   // the water pass draws at the stage's size (sharp when the camera dives, as in the fishing game); a device that
   // can't keep up drops it to half size, stretched (lowRes). It is found once the page's markup is drawn (the template
   // runtime renders it after this script runs), and again if replaced.
@@ -54,11 +54,13 @@
   };
   function scene(motion) {
     var s = SHIFT * pan; // the painting this far down the stage (the game's view at pan 1)
-    if (glScene()) {
-      glOn = GL.ok && GL.render({
-        from: lake, to: null, mix: 0, time: t, waterline: WATERLINE + s, seabed: SEABED + s, shift: s, amplitude: motion ? 1 : 0,
-        plants: WEED.map(function (p) { return { left: p[0], right: p[1], top: p[2] + s, root: p[3] + s }; })
-      });
+    if (!glFailed && glScene()) {
+      try {
+        glOn = GL.ok && GL.render({
+          from: lake, to: null, mix: 0, time: t, waterline: WATERLINE + s, seabed: SEABED + s, shift: s, amplitude: motion ? 1 : 0,
+          plants: WEED.map(function (p) { return { left: p[0], right: p[1], top: p[2] + s, root: p[3] + s }; })
+        });
+      } catch (e) { glFailed = true; glOn = false; } // (once: the painting is drawn plainly from then on)
       GL.show(glOn);
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
