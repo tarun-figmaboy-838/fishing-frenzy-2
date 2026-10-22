@@ -300,7 +300,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .hlp.hl.on{stroke-width:15px;stroke-dasharray:.4 300;animation:hlPen .55s cubic-bezier(.45,0,.35,1) both;filter:drop-shadow(0 0 2px #ff9d00) drop-shadow(0 0 5px #ffb300)}
 @keyframes hlPen{0%{stroke-dashoffset:0;opacity:1}90%{stroke-dashoffset:-100;opacity:1}100%{stroke-dashoffset:-100;opacity:0}}
 /* dim with stroke-opacity: GSAP animates opacity on the sides (entrances), and a CSS opacity transition would lag them */
-.edge.dim{stroke-opacity:.38}
+.board .tag.tapme{pointer-events:auto;cursor:pointer}
+.edge.dim{stroke-opacity:.38;filter:none} /* (the navy outline would smudge a stepped-back side darker) */
 .vdot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke .25s ease,stroke-width .25s ease}
 @media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none}.hlp.hl.on{display:none}.vdot{transition:none}}
 
@@ -603,6 +604,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card.scene.plate .w.cur{color:#fff8ec}
 .stage.in-card.scene.plate .w.key,.stage.in-card.scene.plate .w.cur.key{color:#ffd166;font-weight:700}
 .stage.in-card .bubble:not(:has(.w.on,.w.cur)){opacity:0}
+/* (and hidden outright off the plate: the bubA/bubB pop animates opacity, which would show it empty for its 0.26 s) */
+.stage.in-card:not(.plate) .bubble:not(:has(.w.on,.w.cur)){visibility:hidden}
 
 /* ---- the shape: bright blue lines, an ice-white fill with a soft drop shadow (teal legs come from the palette) ---- */
 .stage.in-card .shape-fill{fill:#e4fbff!important;fill-opacity:.96;filter:drop-shadow(0 6px 10px rgba(0,60,110,.22))}
@@ -670,8 +673,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* each new line, and each part of a long line (engine lineParts), fades in afresh: the class flips between .txA and .txB */
 .stage.in-card.scene.plate .txA .bubble-text{animation:plateTextA .3s ease-out both}
 .stage.in-card.scene.plate .txB .bubble-text{animation:plateTextB .3s ease-out both}
-@keyframes plateTextA{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-@keyframes plateTextB{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+/* (from a third, not from nothing: the navy plate never stands empty between parts) */
+@keyframes plateTextA{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes plateTextB{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
 .stage.in-card.scene.plate.plate-enter .bubble{animation:plateEnter .42s cubic-bezier(.22,1,.36,1) both}
 @keyframes plateEnter{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble-text,.stage.in-card.scene.plate .bubble-text .w{animation:none!important;transition:none!important}}

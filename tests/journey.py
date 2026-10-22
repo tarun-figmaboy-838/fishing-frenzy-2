@@ -187,7 +187,13 @@ class Run:
     def shot(self, name):
         SHOTS.mkdir(parents=True, exist_ok=True)
         path = SHOTS / f'{self.tag}-{name}.png'
-        self.page.screenshot(path=str(path))
+        # (a screenshot is for looking at, not a check: WebKit's waits for every frame's fonts, and a frame the test
+        # holds back never has any)
+        try:
+            self.page.screenshot(path=str(path), timeout=10000)
+        except Exception as e:
+            print(f'  (no screenshot {path.name}: {str(e).splitlines()[0]})')
+            return None
         return path
 
     def tap(self, x, y):

@@ -19,7 +19,7 @@
   },
   {
     "id": "vo003",
-    "line": "This is a special type of quadrilateral called Trapezium.",
+    "line": "This is a special type of quadrilateral called trapezium.",
     "spoken": "This is a special type of quadrilateral called Trapezium.",
     "where": [
       "screen 3 special: line"
@@ -136,7 +136,7 @@
   },
   {
     "id": "vo016",
-    "line": "We call this a Parallelogram.",
+    "line": "We call this a parallelogram.",
     "spoken": "We call this a Parallelogram.",
     "where": [
       "screen 9 defPg: line"

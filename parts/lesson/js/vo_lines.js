@@ -4,7 +4,7 @@
 const VO_LINES = {
   "We learnt about quadrilaterals earlier.": ["vo001",3.22,[0.33,0.52,0.95,1.33,2.26],2.83],
   "Any polygon with 4 sides is called a quadrilateral.": ["vo002",4.37,[0.32,0.59,1.12,1.45,1.79,2.19,2.39,2.86,2.99],4],
-  "This is a special type of quadrilateral called Trapezium.": ["vo003",4.73,[0.32,0.67,0.88,1.02,1.58,1.93,2.14,3.13,3.62],4.4],
+  "This is a special type of quadrilateral called trapezium.": ["vo003",4.73,[0.32,0.67,0.88,1.02,1.58,1.93,2.14,3.13,3.62],4.4],
   "A trapezium has one pair of opposite sides parallel.": ["vo004",4.34,[0.32,0.45,1.13,1.39,1.66,2,2.2,2.81,3.21],3.89],
   "Which pair of sides are parallel to each other?": ["vo005",3.62,[0.34,0.7,1,1.19,1.55,1.79,2.33,2.52,2.82],3.25],
   "Look again. AD and BC lean towards each other, so they would meet if we made them longer.": ["vo006",7.1,[0.4,0.66,1.56,1.86,2.15,2.45,2.81,3.4,3.77,4.72,4.86,5.1,5.38,5.62,5.76,5.91,6.14,6.38],6.77],
@@ -17,7 +17,7 @@ const VO_LINES = {
   "Well done! Now BC is parallel to AD.": ["vo013",4.66,[0.32,0.59,1.44,1.85,2.25,2.56,3.47,3.77],4.29],
   "Now both pairs of opposite sides are parallel.": ["vo014",3.94,[0.32,0.59,0.93,1.34,1.55,2.16,2.57,2.84],3.53],
   "A D is parallel to B C.": ["vo015",3.1,[0.31,0.51,0.71,1.01,1.9,2.2,2.4],2.71],
-  "We call this a Parallelogram.": ["vo016",3.02,[0.32,0.55,0.93,1.32,1.47],2.63],
+  "We call this a parallelogram.": ["vo016",3.02,[0.32,0.55,0.93,1.32,1.47],2.63],
   "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.": ["vo017",6.74,[0.32,0.45,1.38,1.78,2.11,2.51,2.71,3.31,3.71,3.97,4.57,4.77,5.23,5.36],6.37],
   "But what about the side lengths?": ["vo018",3.26,[0.32,0.62,1,1.45,1.75,2.12],2.81],
   "Are they equal too?": ["vo019",2.18,[0.33,0.62,0.99,1.43],1.81],

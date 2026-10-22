@@ -105,7 +105,7 @@
 <div class="board {{boardCls}}" style="position: absolute; left: 640px; top: 104px; width: 520px; height: 420px; pointer-events: none; transform: {{boardTf}}">
 <div class="pop-g" style="position: absolute; left: 0px; top: 0px; width: 520px; height: 420px; transform-origin: {{popO}}">
 <sc-for list="{{tags}}" as="tg" hint-placeholder-count="4">
-<div class="tag {{tg.cls}}" style="left: {{tg.x}}px; top: {{tg.y}}px">{{tg.t}}</div>
+<div class="tag {{tg.cls}}" onClick="{{tg.click}}" style="left: {{tg.x}}px; top: {{tg.y}}px">{{tg.t}}</div>
 </sc-for>
 </div>
 </div>
@@ -113,16 +113,17 @@
 
 <sc-if value="{{isCfu1}}" hint-placeholder-val="{{ false }}">
 <!-- check 1 picture grid: 2x2 equal cards, the whole group centred in the ice panel (panel centre 876,344);
-     each shape is centred in its 200x120 drawing, so it sits in the middle of its card with even padding -->
+     each shape is centred in its 200x120 drawing, so it sits in the middle of its card with even padding. The two
+     parallelograms (A, C) mark both pairs of sides parallel: double arrows on one pair, single on the other -->
 <div class="grid4 {{gridCls}}" style="position: absolute; left: 394px; top: 138px; width: 492px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
 <button data-qa="opt-A" class="opt gridopt {{c1.A.cls}}" disabled="{{c1.A.dis}}" onClick="{{c1.A.pick}}" aria-label="Shape A" style="position: relative; height: 196px; display: flex; align-items: center; justify-content: center">
-<svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="24,96 142,96 176,24 58,24" fill="#e4d6ff" stroke="#7a4fe0" stroke-width="4" stroke-linejoin="round"></polygon><path d="M114,18 L120,24 L114,30 M108,18 L114,24 L108,30 M80,90 L86,96 L80,102 M74,90 L80,96 L74,102" fill="none" stroke="#ec2f84" stroke-width="2.8" stroke-linecap="round"></path><path d="M36,55 L46,61 M154,55 L164,61" stroke="#2f80ed" stroke-width="2.8" stroke-linecap="round"></path></svg>
+<svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="24,96 142,96 176,24 58,24" fill="#e4d6ff" stroke="#7a4fe0" stroke-width="4" stroke-linejoin="round"></polygon><path d="M114,18 L120,24 L114,30 M108,18 L114,24 L108,30 M80,90 L86,96 L80,102 M74,90 L80,96 L74,102" fill="none" stroke="#ec2f84" stroke-width="2.8" stroke-linecap="round"></path><path d="M45.1,65.3 L42.7,56.4 L34.3,60.1 M163.1,65.3 L160.7,56.4 L152.3,60.1" fill="none" stroke="#2f80ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 </button>
 <button data-qa="opt-B" class="opt gridopt {{c1.B.cls}}" disabled="{{c1.B.dis}}" onClick="{{c1.B.pick}}" aria-label="Shape B" style="position: relative; height: 196px; display: flex; align-items: center; justify-content: center">
 <svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="26,95 174,95 140,25 60,25" fill="#d5ebff" stroke="#2f6fc8" stroke-width="4" stroke-linejoin="round"></polygon></svg>
 </button>
 <button data-qa="opt-C" class="opt gridopt {{c1.C.cls}}" disabled="{{c1.C.dis}}" onClick="{{c1.C.pick}}" aria-label="Shape C" style="position: relative; height: 196px; display: flex; align-items: center; justify-content: center">
-<svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="24,98 150,98 176,22 50,22" fill="#d3f4d8" stroke="#1f9a49" stroke-width="4" stroke-linejoin="round"></polygon><path d="M110,16 L116,22 L110,28 M104,16 L110,22 L104,28 M90,92 L96,98 L90,104 M84,92 L90,98 L84,104" fill="none" stroke="#ec2f84" stroke-width="2.8" stroke-linecap="round"></path><path d="M30,57 L42,62 M156,57 L168,62" stroke="#ec2f84" stroke-width="2.8" stroke-linecap="round"></path></svg>
+<svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="24,98 150,98 176,22 50,22" fill="#d3f4d8" stroke="#1f9a49" stroke-width="4" stroke-linejoin="round"></polygon><path d="M110,16 L116,22 L110,28 M104,16 L110,22 L104,28 M90,92 L96,98 L90,104 M84,92 L90,98 L84,104" fill="none" stroke="#ec2f84" stroke-width="2.8" stroke-linecap="round"></path><path d="M41.7,64.8 L38.3,56.2 L30.3,60.9 M167.7,64.8 L164.3,56.2 L156.3,60.9" fill="none" stroke="#2f80ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 </button>
 <button data-qa="opt-D" class="opt gridopt {{c1.D.cls}}" disabled="{{c1.D.dis}}" onClick="{{c1.D.pick}}" aria-label="Shape D" style="position: relative; height: 196px; display: flex; align-items: center; justify-content: center">
 <svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true"><polygon points="32,65 116,21 160,35 170,75 66,99" fill="#ffe5bd" stroke="#d27a14" stroke-width="4" stroke-linejoin="round"></polygon></svg>

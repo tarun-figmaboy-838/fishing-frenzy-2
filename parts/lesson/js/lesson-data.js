@@ -40,6 +40,8 @@ const deg = Math.PI / 180;
 const tilt = (a) => ({ A: { x: 90, y: 112 }, B: { x: 390, y: 112 },
   C: { x: 390 + 170 * Math.cos(a * deg), y: 112 + 170 * Math.sin(a * deg) }, D: { x: 90 + 170 * Math.cos(a * deg), y: 112 + 170 * Math.sin(a * deg) } });
 const FIG_SIDES = { A: { x: 150, y: 112 }, B: { x: 440, y: 112 }, C: { x: 380, y: 282 }, D: { x: 90, y: 282 } };
+// checkpoint 3b: AO = 5 cm and BO = 3 cm, so AC is drawn the longer diagonal (halves about 208 : 124, as 5 : 3)
+const FIG_HALVES = { A: { x: 70, y: 112 }, B: { x: 350, y: 112 }, C: { x: 450, y: 282 }, D: { x: 170, y: 282 } };
 const CP = { cp: 1 };
 
 const LESSON = {
@@ -51,7 +53,7 @@ const LESSON = {
     { pdf: 2, id: 'quadSides', sideNums: 1, skin: 'intro', lines: [{ m: 'happy', t: 'Any polygon with 4 sides is\ncalled a quadrilateral.' }], f: { noLetters: 1, noDots: 1 } },
     // screens 3-4: the name caption is a word cue, as on screen 10 - "Trapezium" pops in exactly as Swiftee says it and
     // the outline glows once. Screen 4 never lights up AB/CD on "parallel": screen 5 asks which pair is parallel.
-    { pdf: 3, id: 'special', assemble: 1, voiceDelay: 3000, skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called Trapezium.', growAt: 'special',
+    { pdf: 3, id: 'special', assemble: 1, voiceDelay: 3000, skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called trapezium.', growAt: 'special',
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1, noDots: 1 } },
     { pdf: 4, id: 'onePair', skin: 'intro', lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.',
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: { noLetters: 1, noDots: 1 } },
@@ -74,7 +76,7 @@ const LESSON = {
     // pops in as AB and CD glow; "this": AD ∥ BC as AD and BC glow (the shape she points at); "Parallelogram": the
     // name lands on its own row below the pair, the whole outline glows once and the shape pulses
     { pdf: 10, id: 'defPg', chipRows: 1, chipTop: 428,
-      lines: [{ t: 'We call this a Parallelogram.', cues: [
+      lines: [{ t: 'We call this a parallelogram.', cues: [
         { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
         { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'], hi: 'AD ∥ BC' },
         { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: PG },
@@ -246,7 +248,7 @@ const LESSON = {
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAO = 5 cm and BO = 3 cm.\nFind the lengths of\nOC and OD.' }],
       idle: 'OC is the other half of AC, and OD is the other half of BD.',
       ok: 'Well done! OC = AO = 5 cm\nand OD = BO = 3 cm.',
-      fig: { P: FIG_SIDES, diag: 1, halves: { A: '5 cm', B: '3 cm' }, hticks: 1 },
+      fig: { P: FIG_HALVES, diag: 1, halves: { A: '5 cm', B: '3 cm' }, hticks: 1 },
       fill: { blanks: [{ id: 'OC', pre: 'OC =', post: 'cm', ans: '5' }, { id: 'OD', pre: 'OD =', post: 'cm', ans: '3' }], tiles: ['3', '5', '6', '10'],
         fb: { any: 'OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.' } } }, CP),
     Object.assign({ pdf: 50, id: 'cp3c', multi: 1, cpTitle: 'Checkpoint 3 · Choose the Correct Statements',
