@@ -44,6 +44,19 @@ def serve():
     return srv, 'http://127.0.0.1:%d/' % srv.server_address[1]
 
 
+def launch(p, which):
+    """The browser, or for WebKit the newest installed build if Playwright's own isn't there."""
+    try:
+        return getattr(p, which).launch()
+    except Exception:
+        if which != 'webkit':
+            raise
+        builds = sorted(Path.home().glob('Library/Caches/ms-playwright/webkit-*/pw_run.sh'))
+        if not builds:
+            raise
+        return p.webkit.launch(executable_path=str(builds[-1]))
+
+
 STATE = '''() => { const e = window.lessonDebug, s = e.state, st = e.cur();
   return { step: s.step, id: st.id, done: s.done, listen: !!s.listen, talking: !!s.talking, line: s.line, started: s.started,
            results: s.results, of: e.steps().length }; }'''
@@ -59,7 +72,7 @@ def main():
     SHOTS.mkdir(parents=True, exist_ok=True)
     srv, url = serve()
     with sync_playwright() as p:
-        browser = getattr(p, BROWSER).launch()
+        browser = launch(p, BROWSER)
         ctx = browser.new_context(viewport={'width': SIZE[0], 'height': SIZE[1]}, has_touch=TOUCH, is_mobile=False)
         page = ctx.new_page()
         errs = []

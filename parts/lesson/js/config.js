@@ -3,14 +3,16 @@
 // =====================================================================
 const CONFIG = {
   pxPerCm: 60,                       // board scale: 1 cm = 60 board px
-  // shape palette (Fishing Frenzy's lesson look: bright blue lines, an ice-white fill, teal legs once the parallel pair is
-  // found). line = every side and corner ring; slate = the trapezium's legs once its parallel pair is found; pair2 = the
-  // second parallel pair (AD, BC) once both pairs are marked, so the two pairs read apart; hl / hlRing = the gold of a
+  // shape palette (Fishing Frenzy's lesson colours: bright blue sides, an ice-white fill, teal legs once the parallel pair
+  // is found, vivid angles). line = every side and corner ring; slate = the trapezium's legs once its parallel pair is
+  // found; pair2 = the second parallel pair (AD, BC) once both pairs are marked: Fishing Frenzy's leg teal, so the two
+  // pairs read apart; hl / hlRing = the gold of a
   // named corner's ring; ink = dark navy for marks on the lines and card text; panel = the cards' face. vA..vD = each
-  // corner's own colour (its angle arc, its half of a diagonal); once opposite angles / halves are shown equal, A and C
+  // corner's own colour (its angle's wedge, its half of a diagonal: Fishing Frenzy's orange, green, violet and amber);
+  // once opposite angles / halves are shown equal, A and C
   // share vA and B and D share vB. Applied on load as CSS variables (--pg-line, --pg-fill, --pg-vA ...) for css/game.css.
-  palette: { pair2: '#7C3AED', line: '#1E7BFF', slate: '#00B8A9', fill: '#E4FBFF', dot: '#1E7BFF', hl: '#FFD43B', hlRing: '#FFB800', ink: '#123B63', panel: '#FFF8EC',
-    vA: '#e11d48', vB: '#7c3aed', vC: '#0284c7', vD: '#059669' },
+  palette: { pair2: '#00B8A9', line: '#1E7BFF', slate: '#00B8A9', fill: '#E4FBFF', dot: '#1E7BFF', hl: '#FFD43B', hlRing: '#FFB800', ink: '#123B63', panel: '#FFF8EC',
+    vA: '#ff7a00', vB: '#00c853', vC: '#9d4dff', vD: '#ffab00' },
   // opening shape: the storyboard's symmetric trapezium (pages 1-8): CD 6 cm, both legs 3 cm, base angles 70°, centred in
   // the panel. Dragging B until BC ∥ AD makes the parallelogram of the storyboard: AB = CD = 6 cm, AD = BC = 3 cm,
   // ∠A = ∠C = 110°, ∠B = ∠D = 70°
@@ -59,6 +61,13 @@ const CONFIG = {
   // ms per cm along a side, the pause on each corner, the wait before she sets off and after she is home again
   walker: { size: 110, homeX: 244, homeY: 639, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550, startMs: 850, homeMs: 850,
     tips: [[488, 272], [484, 281], [494, 273], [489, 270], [486, 278], [483, 279], [491, 281], [489, 281]] }, // tape exit per walk frame (@2x cell px)
+  // screen 24's protractor walk (js/angle-walker.js, as in Fishing Frenzy's lesson): scale = stage px per drawing px
+  // (so the protractor covers the angle); homeK = her size at her spot against her size on the shape; carryPx =
+  // protractor offset from the corner between corners; hop = how far her path bows out round a side; bob = px of bob
+  // every stepPx; tiltMax = most a drawing may turn (deg); leadMs = wait after her line; firstMs = shortest walk to or
+  // from her spot; the rest are move timings
+  angleWalk: { scale: 1.6, homeK: 1.52, carryPx: 28, hop: 60, stepPx: 45, bob: 5, tiltMax: 33, leadMs: 900,
+    firstMs: 950, moveMs: 600, placeMs: 400, alignMs: 420, measureMs: 300, holdMs: 900, liftMs: 350, fadeMs: 250 },
   hand: { idleMs: 8000, showMs: 4400, maxShows: 4, // hand nudge: wait with no touch, time on screen, showings per step
     onceDelayMs: 500, onceMs: 2300 },                 // handOnce screens: a single demo gesture this long after the line ends
   stars: [[8, 3], [5, 2], [0, 1]],   // [checkpoint challenges right on the first try >=, stars] (9 challenges)

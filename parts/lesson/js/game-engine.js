@@ -96,6 +96,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.clearT();
     this.cancelSpeech();
     if (this.wk) this.wk.hide();
+    if (this.aw) this.aw.cancel();
     if (this.sw) this.sw.destroy();
     if (window.Motion) Motion.clear();
   }
@@ -870,6 +871,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     Motion.clear(); // the previous screen's animations stop and leave no inline styles behind
     this.idleId = null; this.idleCount = 0; this.handId = null; this.handShown = 0; this.touched = false;
     if (this.wk) this.wk.hide();
+    if (this.aw) this.aw.cancel();
     this.stepTok++; this.narrTok++;
     this.q = null;
     this.cancelSpeech();
@@ -878,7 +880,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (fwd || !this.snaps[i]) { P = this.clone(this.state.P); this.snaps[i] = this.clone(P); }
     else P = this.clone(this.snaps[i]);
     this.setState({
-      step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null, lenOn: {}, supp: null, tap: {}, ang: {}, diag: {}, chips: [],
+      step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null, lenOn: {}, supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
       moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
     });
     this.pose(this.restPose());
@@ -886,6 +888,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const lines = () => this.playLines(st.lines, () => {
       if (this.state.listen) this.setState({ listen: false }, () => this.armHand());
       if (st.task === 'measure' && st.auto) this.tm(() => this.autoMeasure(), 400);
+      // screen 24: after her line her bubble fades, then she measures the angles with the protractor
+      else if (st.task === 'measureAngles' && st.auto) this.tm(() => { this.setState({ bubOff: true }); this.tm(() => this.autoAngles(), 400); }, CONFIG.angleWalk.leadMs);
       else if (st.end && JOURNEY) this.tm(() => this.handOff(), CONFIG.flow.handOffMs); // on to the fishing
       else this.maybeAdvance(true);
     });
@@ -1095,7 +1099,40 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   walker() {
     if (typeof document === 'undefined' || !window.SwifteeWalker || !document.querySelector('.walker')) return null;
     return this.wk || (this.wk = new window.SwifteeWalker(CONFIG.swiftee.base));
+  }  // Screen 24: Swiftee carries a protractor round A, B, C, D (js/angle-walker.js, as in Fishing Frenzy's lesson): each
+  // angle is traced on the protractor in its own colour while its size counts up where its label goes, and comes in as
+  // she lifts the protractor off it; then she walks home and the screen moves on. With reduced motion, or no page, all
+  // four come in at once.
+  autoAngles() {
+    const tok = this.stepTok, live = () => tok === this.stepTok && !this.state.done;
+    if (!live()) return;
+    const keys = ['A', 'B', 'C', 'D'], P = this.state.P, aw = this.angleWalker(), PAL = CONFIG.palette;
+    const verts = aw ? keys.map((k) => this.boardToStage(P[k])) : [];
+    const end = () => { if (live()) this.finishTask(); };
+    const show = (ks) => { this.setState({ angIn: Object.assign({}, this.state.angIn, ks.reduce((o, k) => { o[k] = 1; return o; }, {})) }); this.sfx('pop'); };
+    if (!aw || Motion.reduced || verts.some((v) => !v)) { show(keys); this.tm(end, 2600); return; }
+    const o = this.boardToStage({ x: 0, y: 0 }), u = this.boardToStage({ x: 100, y: 0 }), k = Math.hypot(u.x - o.x, u.y - o.y) / 100; // board px -> stage px
+    aw.start({
+      verts: verts, home: this.homeBody(), homeEl: document.querySelector('.stage .swiftee'), colors: [PAL.vA, PAL.vB, PAL.vC, PAL.vD],
+      radiusAt: (i) => ((this.arcR && this.arcR[keys[i]]) || 24) * k, // the angle mark's own radius
+      labelPx: 22 * k, // its value's size (css .tag.alab on the card: 22 px on the board)
+      labelAt: (i) => (this.alabAt && this.alabAt[keys[i]] ? this.boardToStage(this.alabAt[keys[i]]) : null), // where its size lands
+      onReading: (i) => { if (live()) { show([keys[i]]); this.emphasize(['a' + keys[i]]); } },
+      onDone: () => { if (live()) { this.pose(this.restPose()); this.tm(end, 200); } }
+    });
   }
+  angleWalker() {
+    if (typeof document === 'undefined' || !window.AngleWalker || !window.AngleMeasuringFrames || !document.querySelector('.angle-walk')) return null;
+    return this.aw || (this.aw = new window.AngleWalker());
+  }
+  // where Swiftee stands (her torso's centre, stage px) and her size there against her size with the protractor:
+  // where the protractor walk starts and ends
+  homeBody() {
+    const el = typeof document !== 'undefined' && document.querySelector('.stage .swiftee .swiftee-still'), b = el && this.elBox(el);
+    const k = CONFIG.angleWalk.homeK * (b ? b.h / 198 : 1); // homeK is for her full size (the still is 198 px tall)
+    return b ? { x: b.x + b.w / 2, y: b.y + b.h / 2 + 14 * b.h / 198, k: k } : { x: CONFIG.walker.homeX + 3, y: CONFIG.walker.homeY - 95, k: k };
+  }
+
 
   // ---------- geometry ----------
   dist(p, q) { return Math.hypot(p.x - q.x, p.y - q.y); }
@@ -1607,34 +1644,33 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.htk = { p: tick(O, A, true) + tick(O, C, true) + tick(O, B) + tick(O, D), d: dsp(f.hticks) };
     // angles
     const V = this.vals(P);
-    const arcSet = f.arcs || '';
+    const arcSet = (f.arcs || '') + Object.keys(s.angIn || {}).join(''); // angIn: measured with the protractor (screen 24)
     const foundAC = f.pairCol || f.pairA || (task === 'tapEq' && st.ref === 'A' && s.done);
     const foundBD = f.pairCol || (task === 'tapEq' && st.ref === 'D' && s.done);
     const pairCls = (k) => ((k === 'A' || k === 'C') ? (foundAC ? ' pa' : '') : (foundBD ? ' pb' : ''));
     const unit = (p, q) => { const L = this.dist(p, q) || 1; return { x: (q.x - p.x) / L, y: (q.y - p.y) / L }; };
     const aTag = {}, em = s.emph || {}; // parts the voice-over is naming right now
-    // angle focus: while a line names angles ("∠A and ∠D..."), the other arcs and their values fade back (s.aFocus)
+    // angle focus: while a line names angles ("∠A and ∠D..."), the other angles and their values fade back (s.aFocus)
     const aDim = (k) => (s.aFocus && !s.aFocus[k] ? ' dim' : '');
-    // Angle marks are laid out from the corner's own geometry so they always sit inside the shape:
-    //  - the arc is centred on the vertex and its sweep is trimmed at both ends, so its round caps (and the
-    //    1.3x voice-over emphasis) stay clear of the two sides instead of poking across them;
-    //  - the degree label rides the interior bisector, pushed out just far enough that its whole box clears both
-    //    sides and the arc; a corner too tight for that gets the smaller label size.
-    const AS = { arcW: 7, edgeW: 5, gap: 5, labH: 24, labHsm: 20 };
+    // Angle marks (as in Fishing Frenzy's lesson): the angle filled in as a wedge in its corner's own colour (A orange,
+    // B green, C violet, D amber; once opposite angles are shown equal, A and C share A's and B and D share B's), edged
+    // in navy, and its size in a darker shade of that colour. The size rides the interior bisector, pushed out just far
+    // enough that its whole box clears both sides and the wedge; a corner too tight for that gets the smaller size.
+    const AS = { arcW: 7, edgeW: 5, gap: 5, labH: 24, labHsm: 20 }; // arcW: the wedge's outer band (its rim past R)
     ['A', 'B', 'C', 'D'].forEach((k) => {
       const n = this.nb(k), Vk = P[k], u = unit(Vk, P[n[0]]), v = unit(Vk, P[n[1]]);
       const cross = u.x * v.y - u.y * v.x;
       const half = Math.acos(Math.max(-1, Math.min(1, u.x * v.x + u.y * v.y))) / 2; // half the interior angle
-      const R = half < 0.35 ? 30 : 24; // very sharp corners: a little wider, so the arc clears the corner dot
-      // trim each end by the angle that keeps the cap + half the side's stroke off that side
-      const trim = Math.min(half * 0.8, Math.asin(Math.min(1, (AS.arcW / 2 + AS.edgeW / 2 + 1) / R)));
-      const rot = (w, a) => ({ x: w.x * Math.cos(a) - w.y * Math.sin(a), y: w.x * Math.sin(a) + w.y * Math.cos(a) });
-      const sgn = cross > 0 ? 1 : -1, us = rot(u, sgn * trim), ve = rot(v, -sgn * trim); // both turned toward the inside
-      const sx = Vk.x + us.x * R, sy = Vk.y + us.y * R, ex = Vk.x + ve.x * R, ey = Vk.y + ve.y * R;
+      const R = half < 0.35 ? 30 : 24; // very sharp corners: a little wider, so the wedge shows past the corner dot
+      const RW = R + 3.5, ws = { x: Vk.x + u.x * RW, y: Vk.y + u.y * RW }, we = { x: Vk.x + v.x * RW, y: Vk.y + v.y * RW };
+      (this.arcR = this.arcR || {})[k] = RW; // (screen 24's protractor traces each angle out to its wedge's edge)
       const show = arcSet.indexOf(k) >= 0;
-      // when several angles light up together they draw in one after another
+      // when several angles come in together they grow in one after another
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
-      g['a' + k] = { p: 'M' + r1(sx) + ',' + r1(sy) + ' A' + R + ',' + R + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(ex) + ',' + r1(ey), d: dsp(show), cls: 'arc k' + k + stag + pairCls(k) + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
+      g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + RW + ',' + RW + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
+        d: dsp(show), cls: 'wedge k' + k + stag + pairCls(k) + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
+      // its size wears the darker shade of the wedge's colour (lA..lD; equal opposite angles share A's or B's)
+      const lk = /\bpa\b/.test(pairCls(k)) ? 'A' : /\bpb\b/.test(pairCls(k)) ? 'B' : k;
       let bx = u.x + v.x, by = u.y + v.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
       const at = fig ? this.figVal(this.cur(), k, (fig.angles || {})[k] || '') : V[k] + '°';
       // how far along the bisector the label's centre must be: its box (w x h, estimated from the text) has to clear
@@ -1651,7 +1687,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const len = Math.max(4, at.length || 1), wN = 14 + 10.5 * len, wS = 12 + 8.6 * len; // at least '110°' wide: the same radius for every label
       let small = false, dl = need(wN, AS.labH);
       if (dl > room) { small = true; dl = need(wS, AS.labHsm); }
-      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab' + (small ? ' sm' : '') + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
+      (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
+      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + (small ? ' sm' : '') + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
     });
     // vertices
     const dk = this.dragKey();
@@ -1719,18 +1756,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, outside the shape)
     const isM = st.task === 'measure';
-    tags.push(side(D, A, this.cm(ad), 'mtag', isM && !!s.tap.DA)); // values only, no side names
-    tags.push(side(B, C, this.cm(bc), 'mtag', isM && !!s.tap.BC));
+    // lengths wear their sides' colours, as in Fishing Frenzy: AB, CD blue; AD, BC teal (mleg)
+    tags.push(side(D, A, this.cm(ad), 'mtag mleg', isM && !!s.tap.DA)); // values only, no side names
+    tags.push(side(B, C, this.cm(bc), 'mtag mleg', isM && !!s.tap.BC));
     tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag', isM && !!s.tap.AB));
     tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag', isM && !!s.tap.CD)); // all four outside their sides
     const lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
-    tags.push(side(D, A, this.cm(ad), 'mtag', !!f.legLen && lon('DA')));
-    tags.push(side(B, C, this.cm(bc), 'mtag', !!f.legLen && lon('BC')));
+    tags.push(side(D, A, this.cm(ad), 'mtag mleg', !!f.legLen && lon('DA')));
+    tags.push(side(B, C, this.cm(bc), 'mtag mleg', !!f.legLen && lon('BC')));
     tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag', !!f.sideLen && lon('AB')));
     tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag', !!f.sideLen && lon('CD')));
     if (fig && fig.sides) {
       const E = { AB: [A, B], BC: [B, C], CD: [D, C], DA: [D, A] };
-      Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); tags.push(side(E[k][0], E[k][1], t, 'mtag fig' + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true)); });
+      Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); tags.push(side(E[k][0], E[k][1], t, 'mtag fig' + (k === 'BC' || k === 'DA' ? ' mleg' : '') + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true)); });
     }
     // sideNums (screen 2): the four sides numbered clockwise from the left (storyboard page 2): 1 left, 2 top, 3 right,
     // 4 bottom - each number flies in from its
@@ -1772,8 +1810,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const w = x1 - x0 + 2 * padX, h = y1 - y0 + padT + padB;
     const above = (st.chipTop && st.chipTop < 200 && !st.practice) || (st.practice && st.okChips); // name tags above the shape
     const top = above ? C.topChips : C.top, below = this.belowH(st);
-    const cxS = st.id === 'intro' ? C.introCx : st.task === 'measure' ? C.measureCx : 640;
-    const maxW = st.id === 'intro' ? C.introW : st.task === 'measure' ? C.measureW : C.maxW;
+    const walk = st.task === 'measure' || st.task === 'measureAngles'; // Swiftee measures: the shape sits right of her
+    const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
+    const maxW = st.id === 'intro' ? C.introW : walk ? C.measureW : C.maxW;
     const k = Math.min(C.scale, maxW / w, (C.bottom - top - below) / h);
     const y = top + Math.max(0, (C.bottom - top - h * k - below) / 2);
     return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: y + h * k };
@@ -1821,7 +1860,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this._plateStep !== step) { this._plateIn = !this._plateWas; this._plateWas = this.isPlate(st); this._plateStep = step; }
     return this._plateIn && this._plateWas;
   }
-  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && !st.end); }
+  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.end); }
   renderVals() {
     const s = this.state, steps = this.steps(), st = this.cur();
     const isLesson = !st.grid && !st.end;

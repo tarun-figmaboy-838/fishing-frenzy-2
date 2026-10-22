@@ -12,6 +12,7 @@
 //   skin:  'intro' = the opening look (storyboard pages 1-8): white bubble, light-blue shape with a thin blue outline
 //   task:  dragB  = drag B until BC ∥ AD (the trapezium becomes a parallelogram; snaps when close)
 //          measure (+auto) = Swiftee walks every side with her tape measure
+//          measureAngles (+auto) = Swiftee measures every angle with a protractor (js/angle-walker.js)
 //          tapEq  = tap the corner whose angle equals ∠ref (want = the right corner, wrong = tip for a wrong tap)
 //          handOnce: 1 = one demo gesture of the hand once the instruction ends; idle = Swiftee's hint after a quiet spell
 //          connect = draw both diagonals: drag (or tap, tap) from a corner to the opposite corner
@@ -142,7 +143,8 @@ const LESSON = {
     // ---------- Part 4 · opposite angles (pages 22-31) ----------
     { pdf: 22, id: 'sidesDone', lines: [{ m: 'happy', t: 'We learnt all about the\nsides of a parallelogram.' }] },
     { pdf: 23, id: 'angles', lines: [{ m: 'thinking', t: 'But what about its angles?\nAre they equal too?' }] },
-    { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's measure the angles\nand find out." }] },
+    // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
+    { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's measure the angles\nand find out." }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
     { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.' }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },

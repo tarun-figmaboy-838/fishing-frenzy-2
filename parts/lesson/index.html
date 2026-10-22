@@ -25,6 +25,8 @@
 <script src="js/costume.js"></script>
 <script src="js/swiftee.js"></script>
 <script src="js/walker.js"></script>
+<script src="js/angle-frames.js"></script>
+<script src="js/angle-walker.js"></script>
 <script src="js/motion.js"></script>
 <script src="js/sfx.js"></script>
 <script src="js/vo_lines.js"></script>
@@ -46,10 +48,10 @@
 <svg class="{{boardCls}}" viewBox="0 0 520 420" width="520" height="420" style="position: absolute; left: 640px; top: 104px; overflow: visible; touch-action: none; transform-origin: 0px 0px; transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1); transform: {{boardTf}}" aria-label="Parallelogram ABCD">
 <g class="pop-g" style="transform-origin: {{popO}}">
 <polygon class="shape-fill" sc-camel-points="{{g.poly}}" fill="rgba(229,205,234,0.92)" stroke="none"></polygon>
-<path sc-camel-d="{{g.aA.p}}" pathLength="100" class="{{g.aA.cls}}" style="transform-origin: {{g.aA.o}}" sc-camel-display="{{g.aA.d}}" fill="none" stroke="#f08a24" stroke-width="7" stroke-linecap="round"></path>
-<path sc-camel-d="{{g.aB.p}}" pathLength="100" class="{{g.aB.cls}}" style="transform-origin: {{g.aB.o}}" sc-camel-display="{{g.aB.d}}" fill="none" stroke="#8e44d6" stroke-width="7" stroke-linecap="round"></path>
-<path sc-camel-d="{{g.aC.p}}" pathLength="100" class="{{g.aC.cls}}" style="transform-origin: {{g.aC.o}}" sc-camel-display="{{g.aC.d}}" fill="none" stroke="#2b7bd6" stroke-width="7" stroke-linecap="round"></path>
-<path sc-camel-d="{{g.aD.p}}" pathLength="100" class="{{g.aD.cls}}" style="transform-origin: {{g.aD.o}}" sc-camel-display="{{g.aD.d}}" fill="none" stroke="#2e9e4f" stroke-width="7" stroke-linecap="round"></path>
+<path sc-camel-d="{{g.aA.p}}" class="{{g.aA.cls}}" style="transform-origin: {{g.aA.o}}" sc-camel-display="{{g.aA.d}}" fill="#ff7a00" stroke="none"></path>
+<path sc-camel-d="{{g.aB.p}}" class="{{g.aB.cls}}" style="transform-origin: {{g.aB.o}}" sc-camel-display="{{g.aB.d}}" fill="#00c853" stroke="none"></path>
+<path sc-camel-d="{{g.aC.p}}" class="{{g.aC.cls}}" style="transform-origin: {{g.aC.o}}" sc-camel-display="{{g.aC.d}}" fill="#9d4dff" stroke="none"></path>
+<path sc-camel-d="{{g.aD.p}}" class="{{g.aD.cls}}" style="transform-origin: {{g.aD.o}}" sc-camel-display="{{g.aD.d}}" fill="#ffab00" stroke="none"></path>
 <line sc-camel-x1="{{g.eAB.x1}}" sc-camel-y1="{{g.eAB.y1}}" sc-camel-x2="{{g.eAB.x2}}" sc-camel-y2="{{g.eAB.y2}}" sc-camel-display="{{g.eAB.d}}" class="edge {{g.eAB.cls}}" style="stroke: {{g.eAB.c}}" stroke-width="5" stroke-linecap="round"></line>
 <line sc-camel-x1="{{g.eBC.x1}}" sc-camel-y1="{{g.eBC.y1}}" sc-camel-x2="{{g.eBC.x2}}" sc-camel-y2="{{g.eBC.y2}}" sc-camel-display="{{g.eBC.d}}" class="edge {{g.eBC.cls}}" style="stroke: {{g.eBC.c}}" stroke-width="5" stroke-linecap="round"></line>
 <line sc-camel-x1="{{g.eCD.x1}}" sc-camel-y1="{{g.eCD.y1}}" sc-camel-x2="{{g.eCD.x2}}" sc-camel-y2="{{g.eCD.y2}}" sc-camel-display="{{g.eCD.d}}" class="edge {{g.eCD.cls}}" style="stroke: {{g.eCD.c}}" stroke-width="5" stroke-linecap="round"></line>
@@ -196,6 +198,7 @@
 <!-- (no screen list, Back or Next: each screen moves on by itself once its voice and animations are done, and a
      screen that asks for something waits for it; ?dev=1 on the journey's page jumps to any screen) -->
 
+<canvas class="angle-walk" width="1280" height="720" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1280px; height: 720px; pointer-events: none; z-index: 12"></canvas>
 <div class="walker" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 120px; height: 120px; pointer-events: none; visibility: hidden; z-index: 12"><canvas width="512" height="512" style="width: 100%; height: 100%; display: block"></canvas></div>
 
 <sc-if value="{{handOn}}" hint-placeholder-val="{{ false }}">

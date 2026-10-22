@@ -54,16 +54,17 @@ set to the real length so the padding is trimmed). Each new clip is decoded back
 granule length. It then measures every clip and regenerates `js/vo_lines.js`, deletes clips no line uses, and lists
 lines that have no clip yet, and lesson lines missing from the script. Safe to run again.
 
-Older Safari / iPad cannot play Ogg Opus; there the game speaks with the device voice instead (below).
+A browser that cannot play Ogg Opus shows each line's words without a voice in the journey (below).
 
 ## How the game uses the clips
 
 All in `say()` (`js/game-engine.js`), the one function that puts a line in Swiftee's bubble, and `js/voice.js`:
 
 1. **Lookup** by the exact plain text the bubble shows (line breaks as spaces); a voice-only line (`keep`) by its `s`.
-2. **One reused audio element**, unlocked by the learner's first tap anywhere (played muted, then paused; tablets
-   refuse audio otherwise). Browsers block audio before that first tap, so on a fresh load screen 1 may type without
-   its voice (the device voice is blocked too). Every clip is prefetched quietly, one at a time, from the start.
+2. **One reused audio element.** In the journey it is the shell's, unlocked by the Play tap on the front page, so the
+   lesson is heard from its first line; on the lesson's own page (`?solo`) its Next tap unlocks it. Every clip is
+   prefetched quietly, one at a time, from the start. Each clip starts 60 ms before its first word (a `#t=` media
+   fragment): the studio's clips open with ~0.3 s of quiet, which Fishing Frenzy trims from its own.
 3. **Words when they are said:** `vo_build.js` measures every clip's loudness (10 ms steps): where speech starts and
    ends (each clip opens with ~0.3 s of silence) and its pauses, which it matches in order to the line's commas and full
    stops (88 of 97 found); inside each phrase the words share the time by their spoken length. The map stores each
@@ -72,11 +73,12 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
    pulses, the angle focus - fires on its word. A line without timings falls back to its share of the spoken
    characters, `max(16, (seconds − 0.35) × 1000 / characters)` ms each. Screen 1's outline is drawn in the clip's length.
 4. **The clip is the clock:** the line ends when the clip ends (safety: its length + 600 ms), and only then does a
-   screen move on, an answer unlock, or the next line start. A new line, a screen change, mute, Back/Next or restart
+   screen move on, an answer unlock, or the next line start. A new line, a screen change, mute, a jump or restart
    stops the voice.
-5. **Fallbacks:** no clip, a missing file, `play()` refused, a clip that never starts (2.5 s), no Ogg Opus support, or
-   `?vo=0` → the device's built-in voice speaks the line, as before; with no voice at all the words reveal on a timer.
-   Nothing ever blocks the lesson.
+5. **One voice (as in Fishing Frenzy's lesson):** while the recordings are on, a line with no clip, a missing file,
+   `play()` refused or a clip that never starts (2.5 s) shows its words on a timer, silently, never in the device's
+   voice. Only on the lesson's own page with the recordings off (no Ogg Opus support, or `?vo=0`) does the device's
+   speech voice read the lines; in the journey, never. Nothing ever blocks the lesson.
 6. `?speed=2` plays clips faster (0.5–4), for QA. There is no background music, so nothing needs ducking.
 
 ## Remake a line

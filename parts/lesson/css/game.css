@@ -50,7 +50,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes chipIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 .edge{transition:stroke .35s ease,stroke-width .3s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
 
-.arc{stroke-dasharray:100 100;animation:arcIn .5s ease-out backwards}
+/* an angle's wedge grows out of its corner (Fishing Frenzy's lesson); several come in one after another (.d1-.d3) */
+.wedge{animation:wedgeIn .45s cubic-bezier(.3,1.35,.5,1) backwards}
 .d1{animation-delay:.15s}
 .d2{animation-delay:.3s}
 .d3{animation-delay:.45s}
@@ -58,7 +59,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .alab.d1{animation-delay:.25s}
 .alab.d2{animation-delay:.4s}
 .alab.d3{animation-delay:.55s}
-@keyframes arcIn{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes wedgeIn{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
 .fadein{animation:fade .35s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .fadeA{animation:fadeA .3s ease-out}
@@ -156,13 +157,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 
 /* voice-over sync (s.emph): the part being named grows, holds briefly (CONFIG.emph.holdMs), then eases back.
    Same .3s easing for every part: angle arc (+ its degree tag), side, vertex dot */
-.arc{transition:stroke-width .3s cubic-bezier(.3,0,.3,1),transform .3s cubic-bezier(.3,0,.3,1)}
-.arc.emph{stroke-width:10px;transform:scale(1.3)}
+/* a named angle: a navy rim (Fishing Frenzy's lesson) */
+.wedge.emph{stroke:#123b63;stroke-width:5px;paint-order:stroke}
 .edge.emph{stroke-width:9px}
 .tag.alab{transition:transform .3s cubic-bezier(.3,0,.3,1)}
 .tag.alab.emph{transform:translate(-50%,-50%) scale(1.2)}
 .vdot{transition:r .3s cubic-bezier(.3,0,.3,1)}
-@media (prefers-reduced-motion: reduce){.arc,.edge,.tag.alab,.vdot{transition:none}}
+@media (prefers-reduced-motion: reduce){.wedge,.edge,.tag.alab,.vdot{transition:none;animation:none}}
 /* qFocus check screens (screen 34): the question shape glides to the centre once the bubble has gone,
    then the answers come in one by one under it */
 
@@ -187,8 +188,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 
 /* ===== Parallelogram lesson additions ===== */
 /* equal angles share a colour once found: A, C orange; B, D blue (CSS beats the arcs' own stroke) */
-.arc.kA{stroke:var(--pg-vA,#e11d48)}.arc.kB{stroke:var(--pg-vB,#7c3aed)}.arc.kC{stroke:var(--pg-vC,#0284c7)}.arc.kD{stroke:var(--pg-vD,#059669)}
-.arc.pa{stroke:var(--pg-vA,#e11d48)}.arc.pb{stroke:var(--pg-vB,#7c3aed)}
+.wedge.kA{fill:var(--pg-vA,#ff7a00)}.wedge.kB{fill:var(--pg-vB,#00c853)}.wedge.kC{fill:var(--pg-vC,#9d4dff)}.wedge.kD{fill:var(--pg-vD,#ffab00)}
+.wedge.pa{fill:var(--pg-vA,#ff7a00)}.wedge.pb{fill:var(--pg-vB,#00c853)}
+/* the sides and wedges are edged in navy, so the vivid colours stand out on the aqua card (Fishing Frenzy's lesson) */
+.edge,.wedge{filter:drop-shadow(0 0 0.7px #0b2a55) drop-shadow(0 0 0.7px #0b2a55)}
 /* a checkpoint's unknown ('?') labels */
 .tag.q{color:#6a2bb0;border-color:#b98be6;background:#f6efff;font-weight:900}
 .mtag.fig{animation:none}
@@ -304,9 +307,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* parallel chevrons wear their pair's colour (AB, CD: sideA; AD, BC: sideB) */
 .par-ch.ch-a{stroke:var(--pg-ink,#1d2f52)}.par-ch.ch-b{stroke:var(--pg-ink,#1d2f52)}
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
-.arc.dim{opacity:.25}.tag.alab.dim{opacity:.35}
-.arc,.tag.alab{transition:opacity .3s ease,stroke-width .3s cubic-bezier(.3,0,.3,1),transform .3s cubic-bezier(.3,0,.3,1)}
-@media (prefers-reduced-motion: reduce){.arc,.tag.alab{transition:none}}
+.wedge.dim{opacity:.22}.tag.alab.dim{opacity:.42}
+.wedge,.tag.alab{transition:opacity .3s ease,transform .3s cubic-bezier(.3,0,.3,1)}
+@media (prefers-reduced-motion: reduce){.wedge,.tag.alab{transition:none}}
 /* pair cards (AB ∥ CD, AB = CD / AD ∥ BC, AD = BC) carry their sides' colour, as in the colour key */
 
 .chip.pairA.hi,.chip.pairB.hi{border-color:var(--pg-hlRing,#FFAF53)}
@@ -611,6 +614,8 @@ a{color:#123b63}a:hover{color:#0b2742}
   font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:22px;font-weight:900;color:#1656e0;
   text-shadow:0 0 3px #fff,0 0 3px #fff,2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,1.5px 1.5px 0 #fff,-1.5px -1.5px 0 #fff,1.5px -1.5px 0 #fff,-1.5px 1.5px 0 #fff}
 .stage.in-card .tag.mtag.q{color:#00806d}
+.stage.in-card .tag.alab.lA{color:#e65100}.stage.in-card .tag.alab.lB{color:#00963f}.stage.in-card .tag.alab.lC{color:#6a35b8}.stage.in-card .tag.alab.lD{color:#b86e00}
+.stage.in-card .tag.mtag.mleg{color:#00806d}
 .stage.in-card .tag.vlab{color:#123b63;font-size:23px}
 
 /* ---- name tags: navy glass with a gold rim; names in gold, statements in white with their signs in gold ---- */

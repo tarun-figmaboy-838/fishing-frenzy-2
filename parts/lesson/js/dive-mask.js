@@ -29,10 +29,19 @@
       const lw = R * 2.9, lh = R * 2.7, lr = lh * 0.42, rim = Math.max(1, R * 0.13); // a lens, round its eye
       const half = S / 2, outer = half + lw / 2;
       c.save();
+      const cellTf = c.getTransform();
       c.translate(cx, cy);
       c.rotate(ang);
-      // the strap: round the back of her head, only where she is (source-atop), so it wraps rather than floats
+      // the strap: round the back of her head, only where she is (source-atop), so it wraps rather than floats; never
+      // across the protractor she measures with (it touches her head in those poses: js/angle-frames.js)
       c.save();
+      const held = anim === 'protractor' && window.AngleMeasuringFrames && AngleMeasuringFrames.poses[frame];
+      if (held) {
+        const tf = c.getTransform(), off = new Path2D();
+        off.rect(0, 0, cell, cell);
+        off.arc(held.centre.x, held.centre.y, held.faceR * 1.4, 0, TAU);
+        c.setTransform(cellTf); c.clip(off, 'evenodd'); c.setTransform(tf);
+      }
       c.globalCompositeOperation = 'source-atop';
       const sy = -R * 0.1, sh = R * 0.62;
       const strap = c.createLinearGradient(0, sy - sh / 2, 0, sy + sh / 2);

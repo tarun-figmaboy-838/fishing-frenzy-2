@@ -53,7 +53,10 @@
         if (!live()) return;
         el.muted = false;
         try {
-          el.src = src(lines[key][0]);
+          // each clip opens with ~0.3 s of quiet: it starts 60 ms before its first word (as Fishing Frenzy trims its clips),
+          // so Swiftee answers at once; the word timings follow the clip's own playhead, so they stay exact
+          const first = lines[key][2] && lines[key][2][0], lead = first ? Math.max(0, first - 0.06) : 0;
+          el.src = src(lines[key][0]) + (lead ? '#t=' + lead.toFixed(2) : '');
           el.playbackRate = VO.rate;
           // an interrupted play() (AbortError: a pause or a new load got in first) is retried once before giving up
           let retried = false;
