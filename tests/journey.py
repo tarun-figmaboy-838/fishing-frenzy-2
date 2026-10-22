@@ -563,7 +563,7 @@ def dev_panel(p, engine, url):
     r.shot('2-lesson-screen-10')
     game_btn('L3').click()
     st = until(r.shell, lambda s: s['current'] == 'fishing' and s['lesson'] != 'ready' or s['frames'][-1:] == ['lesson+leaving'], 5, 'a game level takes the lesson away')
-    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 2, 15, 'the game at level 3')
+    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 3, 15, 'the game at net 3')  # (index 0 is the warm-up)
     check(fs['running'] and not fs['held'] and fs['hud'] and fs['music'], f'{r.tag}: a game level: the lesson goes, the game wakes there (drawing, music, HUD)')
     st = until(r.shell, lambda s: 'lesson+leaving' not in s['frames'], 3, 'the lesson gone')
     r.shot('3-level-3')

@@ -24,16 +24,17 @@
   lake.waterMask = mask; // (the water pass waves only the open water: the shore, ice and mountains stay put)
 
   var cv = null, ctx = null, t = 0, last = 0, slow = 0, skip = false, staticDone = false, zoom = 1, pan = 1;
-  var glCv = null, GL = null, glOn = false;
-  // the water pass draws at half size, stretched to the stage: soft painted water, mostly behind the card, looks the
-  // same, and a tablet's GPU shades a quarter of the pixels (canvas.water-gl in index.html is 960 x 540). It is found
-  // once the page's markup is drawn (the template runtime renders it after this script runs), and again if replaced.
+  var glCv = null, GL = null, glOn = false, lowRes = false;
+  // the water pass draws at the stage's size (sharp when the camera dives, as in the fishing game); a device that
+  // can't keep up drops it to half size, stretched (lowRes). It is found once the page's markup is drawn (the template
+  // runtime renders it after this script runs), and again if replaced.
   function glScene() {
     var c = document.querySelector('canvas.water-gl');
     if (c !== glCv) {
       glCv = c; GL = null; glOn = false;
       try { if (c && window.PopoGame && PopoGame.WaterScene) GL = new PopoGame.WaterScene(c); } catch (e) { GL = null; }
       if (GL && !GL.ok) GL = null;
+      if (GL && lowRes) GL.resize(CW / 2, CH / 2, CW + 'px', CH + 'px');
       if (c && zoom !== 1) c.style.transform = 'scale(' + zoom + ')';
     }
     return GL;
@@ -82,6 +83,7 @@
     // slow device: draw every other frame (time still runs at full speed)
     slow = slow * 0.95 + dt * 0.05;
     skip = slow > 0.024 ? !skip : false;
+    if (!lowRes && slow > 0.03 && GL) { lowRes = true; GL.resize(CW / 2, CH / 2, CW + 'px', CH + 'px'); } // (once, for good)
     t += dt;
     if (!skip) scene(true);
   }
