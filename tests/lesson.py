@@ -77,7 +77,8 @@ def main():
         page = ctx.new_page()
         errs = []
         page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
-        page.on('console', lambda m: errs.append(m.type + ': ' + m.text) if m.type in ('error', 'warning') else None)
+        # (not the GPU driver's notices: screenshots read the WebGL water back)
+        page.on('console', lambda m: errs.append(m.type + ': ' + m.text) if m.type in ('error', 'warning') and 'GL Driver Message' not in m.text else None)
         page.on('requestfailed', lambda r: errs.append('failed: ' + r.url) if 'fonts.g' not in r.url and not r.url.endswith('.ogg') else None)
         page.goto(url + 'parts/lesson/index.html?solo&debug&speed=3')
         page.wait_for_function('() => !!window.lessonDebug', timeout=20000)

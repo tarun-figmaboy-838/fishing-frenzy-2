@@ -271,7 +271,7 @@ const LESSON = {
     { pdf: 52, id: 'recEq', autoNext: 900, lines: [{ t: 'Opposite sides are equal.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'BC = AD', k: 'gold' }] }],
       lenSeq: [[300, ['AB', 'CD']], [1500, ['DA', 'BC']]], f: Object.assign({ ticks: 1, lenSeq: 1 }, LENS) },
     { pdf: 52, id: 'recAng', autoNext: 900, lines: [{ t: 'Opposite angles are equal.', chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠B = ∠D', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
-    { pdf: 52, id: 'recSupp', autoNext: 900, lines: [{ t: 'Adjacent angles are\nsupplementary.', s: 'Adjacent angles are supplementary. They add up to 180 degrees.',
+    { pdf: 52, id: 'recSupp', autoNext: 900, lines: [{ t: 'Adjacent angles are supplementary.\nThey add up to 180°.',
       chips: [{ t: '∠A + ∠B = 180°', k: 'gold sm' }, { t: '∠B + ∠C = 180°', k: 'gold sm' }] }], f: { arcs: 'ABCD', supp: ['AB', 'BC'] } },
     { pdf: 52, id: 'recDiag', lines: [{ t: 'Diagonals bisect each other.', chips: [{ t: 'AO = OC', k: 'gold' }, { t: 'BO = OD', k: 'gold' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },

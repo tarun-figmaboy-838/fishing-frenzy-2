@@ -1036,7 +1036,7 @@
   },
   {
     "id": "vo116",
-    "line": "Adjacent angles are supplementary.",
+    "line": "Adjacent angles are supplementary. They add up to 180°.",
     "spoken": "Adjacent angles are supplementary. They add up to one hundred and eighty degrees.",
     "where": [
       "screen 57 recSupp: line"

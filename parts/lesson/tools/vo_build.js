@@ -142,9 +142,11 @@ const saidLen = (w) => w.replace(/ /g, ' ').replace(/∠\s?([A-DO])/g, 'angle $
   .replace(/\bcm\b/g, 'centimetres').replace(/°/g, ' degrees').replace(/=/g, ' equals ').replace(/\+/g, ' plus ')
   .replace(/\d+(\.\d+)?/g, (m) => (m.includes('.') ? numWords(+m.split('.')[0]) + ' point ' + m.split('.')[1].split('').map((d) => ONES[+d]).join(' ') : numWords(+m)))
   .replace(/\s+/g, ' ').trim().length + 1;
-// Word start times (s) for a line from its clip's loudness: speech runs from the first to the last loud frame; pauses
-// (quiet runs >= 120 ms) are matched in order to the line's commas / full stops by a small alignment (an unmatched pause
-// or boundary just costs a little), and inside each phrase the words share the time by their spoken length.
+// Word start times (s) for a line from its clip's loudness, and where its speech ends: speech runs from the first to
+// the last loud frame; pauses (quiet runs >= 120 ms) are matched in order to the line's commas / full stops by a small
+// alignment that weighs how long each pause is as well as where it falls (a full stop takes the long pause after it,
+// not a short breath nearer its expected place; an unmatched long pause costs more than a short one), and inside each
+// phrase the words share the time by their spoken length.
 function timeWords(key, env) {
   const words = toWords(key), w = words.map(saidLen), n = env.length;
   const sorted = env.slice().sort((a, b) => a - b), th = Math.max(0.006, 0.08 * sorted[Math.floor(n * 0.95)]);
@@ -155,17 +157,23 @@ function timeWords(key, env) {
     if (env[i] < th) { if (q < 0) q = i; } else if (q >= 0) { if (i - q >= 12) pauses.push([q, i]); q = -1; }
   }
   const cum = []; let tot = 0; w.forEach((x) => { cum.push(tot); tot += x; });
-  const bnd = []; words.forEach((x, i) => { if (i < words.length - 1 && /[.,!?;:…]$/.test(x)) bnd.push(cum[i] + w[i]); });
+  const bnd = [], full = [];
+  words.forEach((x, i) => { if (i < words.length - 1 && /[.,!?;:…]$/.test(x)) { bnd.push(cum[i] + w[i]); full.push(/[.!?…]$/.test(x)); } });
   const span = Math.max(1, s1 - s0), expect = bnd.map((c) => s0 + span * c / tot);
-  // alignment (frames): match boundary b to pause p in order; skipping a pause costs 25, a boundary 40
-  const B = bnd.length, Pn = pauses.length, INF = 1e9, dp = [], bk = [];
+  // alignment (frames): match boundary b to pause p in order. Skipping a pause costs 10 + 2 per frame of it; skipping a
+  // full stop 80, a comma 40; a match costs its distance from the expected place, less 1.5 (full stop) or 0.5 (comma)
+  // per frame of the pause
+  const B = bnd.length, Pn = pauses.length, INF = 1e9, dp = [], bk = [], plen = (j) => pauses[j][1] - pauses[j][0];
   for (let i = 0; i <= B; i++) { dp.push(new Array(Pn + 1).fill(INF)); bk.push(new Array(Pn + 1).fill(0)); }
   dp[0][0] = 0;
   for (let i = 0; i <= B; i++) for (let j = 0; j <= Pn; j++) {
     const v = dp[i][j]; if (v >= INF) continue;
-    if (j < Pn && v + 25 < dp[i][j + 1]) { dp[i][j + 1] = v + 25; bk[i][j + 1] = 1; }
-    if (i < B && v + 40 < dp[i + 1][j]) { dp[i + 1][j] = v + 40; bk[i + 1][j] = 2; }
-    if (i < B && j < Pn) { const c = v + Math.abs(expect[i] - (pauses[j][0] + pauses[j][1]) / 2); if (c < dp[i + 1][j + 1]) { dp[i + 1][j + 1] = c; bk[i + 1][j + 1] = 3; } }
+    if (j < Pn) { const c = v + 10 + 2 * plen(j); if (c < dp[i][j + 1]) { dp[i][j + 1] = c; bk[i][j + 1] = 1; } }
+    if (i < B) { const c = v + (full[i] ? 80 : 40); if (c < dp[i + 1][j]) { dp[i + 1][j] = c; bk[i + 1][j] = 2; } }
+    if (i < B && j < Pn) {
+      const c = v + Math.abs(expect[i] - (pauses[j][0] + pauses[j][1]) / 2) - (full[i] ? 1.5 : 0.5) * plen(j);
+      if (c < dp[i + 1][j + 1]) { dp[i + 1][j + 1] = c; bk[i + 1][j + 1] = 3; }
+    }
   }
   const anchors = [[0, s0, s0]]; // [chars, time leaving the previous phrase, time entering the next]
   const matched = [];
@@ -179,7 +187,7 @@ function timeWords(key, env) {
     }
     return s0;
   };
-  return { t: cum.map((c) => Math.round(at(c)) / 100), matched: matched.length, bounds: B };
+  return { t: cum.map((c) => Math.round(at(c)) / 100), end: (s1 + 1) / 100, matched: matched.length, bounds: B };
 }
 
 // ---------- the lesson's own lines (to spot new or changed ones) ----------
@@ -231,14 +239,15 @@ function lessonLines() {
     const f = path.join(VO, r.id + '.ogg');
     if (!fs.existsSync(f)) { missing.push(r.id + '  ' + r.line); return; }
     const e = [r.id, Math.round(oggSeconds(f) * 100) / 100];
-    if (env && env[r.id]) { const tw = timeWords(r.line, env[r.id]); e.push(tw.t); aligned += tw.matched; bounds += tw.bounds; }
-    else if (prev[r.line] && prev[r.line][0] === r.id && prev[r.line][2]) e.push(prev[r.line][2]);
+    if (env && env[r.id]) { const tw = timeWords(r.line, env[r.id]); e.push(tw.t, tw.end); aligned += tw.matched; bounds += tw.bounds; }
+    else if (prev[r.line] && prev[r.line][0] === r.id && prev[r.line][2]) e.push(...prev[r.line].slice(2));
     map[r.line] = e;
   });
   if (env) console.log('word timings: measured from the audio (' + aligned + ' of ' + bounds + ' comma / full-stop pauses found in the speech)');
   else console.log('word timings: Playwright not found, kept the existing ones');
   fs.writeFileSync(MAP, '// GENERATED by tools/vo_build.js from tools/vo_script.json. Do not edit by hand.\n' +
-    '// line as shown (plain text; a voice-only line by its spoken text) -> [clip in assets/vo/, seconds, start of each word (s)]\n' +
+    '// line as shown (plain text; a voice-only line by its spoken text) -> [clip in assets/vo/, seconds, start of each word (s),\n' +
+    '// end of its speech (s)]\n' +
     'const VO_LINES = {\n' + Object.keys(map).map((k) => '  ' + JSON.stringify(k) + ': ' + JSON.stringify(map[k])).join(',\n') + '\n};\n');
   const total = Object.values(map).reduce((t, v) => t + v[1], 0);
   const bytes = fs.readdirSync(VO).reduce((t, f) => t + fs.statSync(path.join(VO, f)).size, 0);

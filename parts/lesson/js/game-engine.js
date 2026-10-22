@@ -467,7 +467,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const finish = () => {
       if (!live() || fin || !rDone || !sDone) return;
-      fin = true;
+      fin = true; this.lineEnd = performance.now();
       mouth(false);
       highlight(); // in case the word was never reached (voice cut short)
       cues.forEach(fireCue); // likewise every word cue
@@ -564,7 +564,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // recorded voice-over (js/voice.js): the clip is the clock. Words appear at the clip's pace - each word at its share
     // of the spoken characters, max(16, (seconds - 0.35) * 1000 / characters) ms per character - so word cues fire as
     // the voice says them; the line ends when the clip does (safety: what is left of it + 600 ms). A clip that never
-    // starts (missing file, play() refused) hands the line to the device voice below.
+    // starts (missing file, play() refused) hands the line to device() below, which shows its words silently.
     const voKey = keep ? L.s : text.replace(/\s*\n\s*/g, ' ').trim();
     if (!this.state.muted && window.VO && VO.has(voKey)) {
       const sec = VO.seconds(voKey), rate = VO.rate;
@@ -583,11 +583,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           // each word at its measured start in the clip (tools/vo_build.js); else at its share of the spoken characters
           const tw = VO.times(voKey), show = (k) => { if (live() && k + 1 > i) { i = k + 1; setReveal(i); } };
           if (tw && tw.length === words.length) {
-            // follow the clip's own playhead (not a wall clock), so words stay with the voice through start-up lag or buffering
+            // follow the clip's own playhead (not a wall clock), so words stay with the voice through start-up lag or
+            // buffering; the line ends where its speech does
+            const sEnd = VO.speechEnd(voKey);
             const follow = () => {
               if (!live() || sDone) return;
               const ct = VO.now();
               if (ct >= 0) while (i < tw.length && tw[i] <= ct + 0.04) show(i);
+              if (sEnd && ct >= sEnd) { end(); return; }
               this.tm(follow, 30);
             };
             follow();
@@ -703,7 +706,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.idleId = null;
       if (tok !== this.stepTok || !this.needsInput()) return;
       if (this.state.swAway) return; // Swiftee is out measuring on the shape: no spoken reminder
-      if (this.drag || this.walking || this.state.talking) { this.armIdle(); return; }
+      // (nor in the beat after a line ends: a tip's own end restores the question then)
+      if (this.drag || this.walking || this.state.talking || performance.now() - (this.lineEnd || 0) < 1000) { this.armIdle(); return; }
       if ((this.idleCount || 0) >= CONFIG.timing.idleMaxHints) return;
       this.idleCount = (this.idleCount || 0) + 1;
       const t = this.cur().idle;
@@ -940,10 +944,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.goTo(i + 1, true);
     }, Math.max(0, wait - (afterLine ? 420 : 0))); // a finished line has already paused 420 ms
   }
-  // a wrong tap or line: the incorrect sound and Swiftee's tip
-  oops(text) {
+  // a wrong tap or line: the incorrect sound and Swiftee's tip (m: her pose; null keeps it). The same tip still being
+  // said is not started over: the wrong move gets only its sound
+  oops(text, m) {
     this.sfx('bad');
-    this.interject({ m: CONFIG.swiftee.wrong, t: text });
+    if (this.state.talking && this.curLine && this.curLine.t === text) return;
+    this.interject({ m: m === undefined ? CONFIG.swiftee.wrong : m, t: text });
   }
 
 
@@ -1220,7 +1226,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.setState({ P: P });
       this.finishTask();
     } else if (s.moved) {
-      this.sfx('bad'); this.interject({ t: P.B.x < tx ? 'BC is not parallel to AD yet. Keep dragging B to the right.' : 'B went too far. Drag it back a little.' });
+      this.oops(P.B.x < tx ? 'BC is not parallel to AD yet. Keep dragging B to the right.' : 'B went too far. Drag it back a little.', null);
     }
   }
 

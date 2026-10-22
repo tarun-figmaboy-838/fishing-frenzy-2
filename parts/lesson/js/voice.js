@@ -2,7 +2,7 @@
 // VOICE — recorded voice-over player (clips in assets/vo/, map in js/vo_lines.js, see docs/VOICEOVER.md).
 // One reused <audio> element. A line is looked up by the exact plain text the bubble shows (a voice-only line by its
 // spoken text). The engine's say() (js/game-engine.js) uses it as the clock for the line; when a clip is missing or
-// cannot play, say() falls back to the device's built-in voice.
+// cannot play, say() shows the line's words silently at a speaking pace.
 // Off when the browser cannot play Ogg Opus (older Safari / iPad) or with ?vo=0. ?speed=2 plays clips faster (QA).
 // =====================================================================
 (function () {
@@ -25,6 +25,8 @@
     seconds(key) { const v = lines[key]; return v ? v[1] : 0; },
     // when each displayed word starts in the clip (s), measured from the audio by tools/vo_build.js
     times(key) { const v = lines[key]; return v && v[2] ? v[2] : null; },
+    // where the line's speech ends in its clip (s; 0 = unknown): the clip's last ~0.35 s of quiet is not waited for
+    speechEnd(key) { const v = lines[key]; return v && v[3] ? v[3] : 0; },
     // the first tap: play muted, then pause - tablets refuse audio until an element has played in a gesture
     unlock() {
       if (!VO.on || unlocked || played) return;
@@ -55,8 +57,10 @@
         try {
           // each clip opens with ~0.3 s of quiet: it starts 60 ms before its first word (as Fishing Frenzy trims its clips),
           // so Swiftee answers at once; the word timings follow the clip's own playhead, so they stay exact
+          // (a seek once the clip's header has loaded, not a #t= fragment: Safari lands a fragment on the next 1 s Ogg
+          // page and cut the line's first words)
           const first = lines[key][2] && lines[key][2][0], lead = first ? Math.max(0, first - 0.06) : 0;
-          el.src = src(lines[key][0]) + (lead ? '#t=' + lead.toFixed(2) : '');
+          el.src = src(lines[key][0]);
           el.playbackRate = VO.rate;
           // an interrupted play() (AbortError: a pause or a new load got in first) is retried once before giving up
           let retried = false;
@@ -69,7 +73,14 @@
               tok++; if (cb.fail) cb.fail();
             });
           };
-          tryPlay();
+          if (!lead) { tryPlay(); return; }
+          const seek = () => {
+            el.removeEventListener('loadedmetadata', seek);
+            if (!live()) return;
+            try { el.currentTime = lead; } catch (e) {}
+            tryPlay();
+          };
+          if (el.readyState >= 1) seek(); else el.addEventListener('loadedmetadata', seek);
         } catch (e) { tok++; if (cb.fail) cb.fail(); }
       };
       // the first line usually arrives during the first tap's muted unlock: changing the element's source while that
