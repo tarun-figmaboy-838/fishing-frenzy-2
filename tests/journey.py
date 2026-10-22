@@ -164,7 +164,8 @@ class Run:
         pg = self.page
         pg.on('console', self.console)
         pg.on('pageerror', lambda e: self.problems.append(f'pageerror: {e}'))
-        pg.on('requestfailed', lambda r: None if any(i in r.url for i in IGNORE) else self.problems.append(f'request failed: {r.url} ({r.failure})'))
+        # (nor a voice clip cut off by a jump or a new line: its <audio> moved on)
+        pg.on('requestfailed', lambda r: None if any(i in r.url for i in IGNORE) or (r.url.endswith('.ogg') and 'ABORTED' in (r.failure or '')) else self.problems.append(f'request failed: {r.url} ({r.failure})'))
         pg.on('response', lambda r: self.problems.append(f'HTTP {r.status}: {r.url}') if r.status >= 400 and not any(i in r.url for i in IGNORE) else None)
 
     def console(self, m):
