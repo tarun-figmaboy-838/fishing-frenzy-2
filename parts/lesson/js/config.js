@@ -38,8 +38,6 @@ const CONFIG = {
   // begins; rushMs = how fast it closes if the voice ends early; settleMs = the outline's glow
   // (the side numbers' and the assembly's own timings live with their GSAP timelines in js/motion.js)
   build: { pxPerMs: 0.36, delayMs: 450, settleMs: 1300, ofLine: 0.85, minMs: 1600, maxMs: 3600, rushMs: 450 },
-  // idle hints: after idleMs with nothing done, Swiftee says the screen's idle line (at most idleMaxHints times)
-  timing: { idleMs: 9000, idleMaxHints: 3 },
   // flow: a finished screen moves on advanceMs after its last line (voice-over) ends (explanation screens by themselves; a
   // question or task waits for the learner, then moves on after its feedback). In the journey, the lesson hands over to
   // the fishing handOffMs after Swiftee's goodbye.
@@ -84,7 +82,6 @@ const CONFIG = {
     praise: 'happy',       // a task is completed
     correct: 'celebrating',// a check is answered correctly
     wrong: 'confused',     // a wrong answer or tap: encouraging, never punishing
-    nudge: 'curious',      // idle hint
     done: 'happy',         // the lesson-complete screen, after the closing line
     reactMs: 1600,         // how long the line's expression shows after speaking (lip-sync talks during the voice)
     minHoldMs: 900

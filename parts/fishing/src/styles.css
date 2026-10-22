@@ -520,7 +520,7 @@ html, body {
 /* The generated panel artwork is scaled whole; its frame takes the outer tenth, so the
    content keeps clear of it. */
 .card, .card.celebrate {
-  background: url('../assets/generated/panel.png') center / 100% 100% no-repeat;
+  background: url('../assets/generated-web/panel.webp') center / 100% 100% no-repeat;
   border: 0; border-radius: 3em; padding: 10em 7em 9.5em;
   box-shadow: none;
   filter: drop-shadow(0 1.2em 2.4em rgba(7, 59, 87, 0.35));

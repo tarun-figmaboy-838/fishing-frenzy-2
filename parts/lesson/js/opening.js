@@ -201,7 +201,7 @@
 
   // ---------- state ----------
   const S = {
-    on: false, t: 0, pan: 1, dive: 0, dim: 0, glow: 0, beam: 0, flash: 0, emerge: 0, open: false, spawning: false,
+    on: false, t: 0, pan: 1, dive: 0, dim: 0, glow: 0, beam: 0, flash: 0, emerge: 0, close: 0, open: false, spawning: false,
     shell: { alpha: 0, open: 0, rock: 0, squash: 0, leak: 0, pearl: 1 }, motes: [], pops: [], fish: [], bubbles: [], bubbleDue: 0
   };
   for (let i = 0; i < 6; i++) S.fish.push({ x: Math.random() * W, y: 470 + Math.random() * 280, v: (14 + Math.random() * 16) * (Math.random() < 0.5 ? -1 : 1), k: 0.7 + Math.random() * 0.6, ph: Math.random() * TAU });
@@ -210,7 +210,17 @@
   const pearlScreen = () => screenOf(PEARL.x + SHELL.pearl[0] * PEARL.size, PEARL.y + SHELL.pearl[1] * PEARL.size);
 
   // the bubble and the card by emerge 0..1 (reference recallBubble)
+  // the lesson over (Opening.close): the card shrinks into a bubble, which floats up and pops
+  function closingAt() {
+    const small = (BUBBLE.radius * 1.55) / CARD.w, k = S.close;
+    const shrink = Math.min(1, k / 0.55), rise = Math.max(0, (k - 0.55) / 0.45);
+    return {
+      x: CARD.x + (reduced ? 0 : Math.sin(rise * Math.PI * 2) * 16 * rise), y: CARD.y - 560 * rise * rise,
+      radius: BUBBLE.radius * Math.min(1, shrink * 1.6), card: 1 - (1 - small) * ease.inOut(shrink)
+    };
+  }
   function bubbleAt(sx, sy) {
+    if (S.close > 0) return closingAt();
     const small = (BUBBLE.radius * 1.55) / CARD.w;
     if (S.emerge <= 0) return { x: sx, y: sy, radius: 0, card: 0 };
     const blow = Math.min(1, S.emerge / BUBBLE.blow);
@@ -380,6 +390,26 @@
       Object.assign(S, { pan: 0, dim: DIM_OPEN, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
       if (!(ART.complete && ART.naturalWidth)) ART.addEventListener('load', () => { staticDrawn = false; }, { once: true });
       run();
+    },
+    // The lesson is over (as in Fishing Frenzy): the card shrinks into its bubble, which floats up and pops, while the
+    // camera rises back up through the water to the lake's surface - the game's own view - for the journey to dissolve
+    // back into the game. done: once the camera is up.
+    async close(sound, done) {
+      const my = ++tok, live = () => my === tok;
+      const tw = (ms, f) => tween(ms, (t) => { if (live()) f(t); }).then(live);
+      const q = reduced, snd = (k) => { try { if (live() && sound) sound(k); } catch (e) {} };
+      busy = true;
+      S.open = false; // (the curtain is drawn every frame again)
+      const dive0 = S.dive, pan0 = S.pan, dim0 = S.dim;
+      snd('bubbles');
+      const up = tw(q ? 400 : 2200, (t) => { const k = ease.inOut(t); S.dive = dive0 * (1 - k); S.pan = pan0 + (1 - pan0) * k; S.dim = dim0 * (1 - k); });
+      if (!await tw(q ? 300 : 1400, (t) => { S.close = t; })) return;
+      const b = closingAt();
+      burst(b.x, b.y, b.radius); snd('pop');
+      S.close = 0; S.emerge = 0;
+      await up;
+      busy = false;
+      if (live() && done) done();
     },
     async play(sound, done) {
       if (S.on || busy) { if (done) done(); return; }

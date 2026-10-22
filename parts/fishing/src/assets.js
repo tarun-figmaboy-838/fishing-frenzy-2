@@ -77,7 +77,7 @@ async function loadCoreAssets(progress = () => {}) {
   loadImage('assets/sprites/swiftee.webp').then((img) => { assets.swiftee = img; }).catch(() => {});
   // the pause and final cards' panel (a CSS background) loads now, in the background, so the
   // first pause never shows a card without its frame
-  loadImage('assets/generated/panel.png').catch(() => {});
+  loadImage('assets/generated-web/panel.webp').catch(() => {});
   return bg0;
 }
 

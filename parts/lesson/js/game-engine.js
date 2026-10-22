@@ -71,7 +71,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (window.SwifteeMascot) {
       this.sw = new window.SwifteeMascot({ base: C.base, idle: C.idle, minHoldMs: C.minHoldMs, find: () => document.querySelector('.swiftee') });
       // every expression the lesson can ask for, so reactions never wait on the network
-      const want = ['measuring', C.talk, C.waiting, C.praise, C.correct, C.wrong, C.nudge, C.done];
+      const want = ['measuring', C.talk, C.waiting, C.praise, C.correct, C.wrong, C.done];
       LESSON.steps.forEach((st) => (st.lines || []).concat(st.after || []).forEach((L) => { if (L.m) want.push(L.m); }));
       this.sw.warm(want.filter((x, i) => want.indexOf(x) === i));
     }
@@ -112,8 +112,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (!JOURNEY || this.handedOff) return;
     this.handedOff = true;
     this.depart();
-    const results = Object.assign({}, this.state.results);
-    setTimeout(() => JOURNEY.finish({ results: results }), Motion.reduced ? 0 : 1150);
+    const results = Object.assign({}, this.state.results), finish = () => JOURNEY.finish({ results: results });
+    if (!window.Opening || !Opening.open) { setTimeout(finish, Motion.reduced ? 0 : 1150); return; }
+    // as in Fishing Frenzy: once Swiftee has flown out, the card's content fades and the card shrinks into its bubble,
+    // which floats up and pops, as the camera rises back to the lake's surface; then the journey dissolves back into
+    // the game, on the same view, and the giant wave brings Popo in
+    setTimeout(() => {
+      const card = document.querySelector('.stage');
+      if (card && window.gsap) gsap.to(card, { opacity: 0, duration: Motion.reduced ? 0 : 0.35, ease: 'sine.out' });
+      Opening.close((k) => this.sfx(k), finish);
+    }, Motion.reduced ? 0 : 1150);
   }
   // she crouches, then takes off out of the right of the card, rising as she goes
   depart() {
@@ -699,12 +707,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     return this.state.started && !this.state.done && this.asks(st);
   }
   // A quiet spell brings the pointing hand (armHand), never the voice again: an instruction is said once, as its screen
-  // opens (as in Fishing Frenzy's lesson). (The screens' idle lines are not said.)
-  armIdle() {
-    this.armHand();
-    if (this.idleId) { clearTimeout(this.idleId); this.T.delete(this.idleId); this.idleId = null; }
-  }
-  poke() { this.idleCount = 0; this.hideHand(); this.armIdle(); }
+  // opens (as in Fishing Frenzy's lesson)
+  armIdle() { this.armHand(); }
+  poke() { this.hideHand(); this.armIdle(); }
 
   // ---------- hand nudge ----------
   // After CONFIG.hand.idleMs with no touch while a tap or drag is expected, a hand shows exactly where
@@ -862,7 +867,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.fromPlate = !!(was && this.isPlate(was)); // Swiftee was off that screen: where she is back, she dives in
     if (this.diveTl) { this.diveTl.kill(); this.diveTl = null; const sw = document.querySelector('.stage .swiftee'); if (sw && window.gsap) { gsap.set(sw, { clearProps: 'transform' }); sw.classList.remove('flying'); } }
     Motion.clear(); // the previous screen's animations stop and leave no inline styles behind
-    this.idleId = null; this.idleCount = 0; this.handId = null; this.handShown = 0; this.touched = false;
+    this.handId = null; this.handShown = 0; this.touched = false;
     if (this.wk) this.wk.hide();
     if (this.aw) this.aw.cancel();
     this.stepTok++; this.narrTok++;

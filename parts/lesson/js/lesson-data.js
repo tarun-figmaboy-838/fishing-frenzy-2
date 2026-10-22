@@ -14,7 +14,7 @@
 //          measure (+auto) = Swiftee walks every side with her tape measure
 //          measureAngles (+auto) = Swiftee measures every angle with a protractor (js/angle-walker.js)
 //          tapEq  = tap the corner whose angle equals ∠ref (want = the right corner, wrong = tip for a wrong tap)
-//          handOnce: 1 = one demo gesture of the hand once the instruction ends; idle = Swiftee's hint after a quiet spell
+//          handOnce: 1 = one demo gesture of the hand once the instruction ends
 //          connect = draw both diagonals: drag (or tap, tap) from a corner to the opposite corner
 //   opts:  answer buttons (ok = right; fb = tip for a wrong one; soloOk: 1 = once right, only the right answer stays,
 //          centred; okGlow: [[sides], ...] = side pairs pulse in turn after it; calmOk: 1 = no confetti). multi: 1 = select every right answer
@@ -67,7 +67,7 @@ const LESSON = {
     { pdf: 7, id: 'whatIf', skin: 'intro', lines: [{ m: 'thinking', t: 'What if we made the other pair\nof opposite sides parallel too?', glow: ['DA', 'BC'] }], f: { par: 1 } },
     // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram
     { pdf: 8, id: 'dragPar', skin: 'intro', lines: [{ m: 'curious', t: 'Drag vertex B to make\nBC parallel to AD.' }],
-      task: 'dragB', handOnce: 1, idle: 'Drag B to the right until BC leans the same way as AD.',
+      task: 'dragB', handOnce: 1,
       after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.' }], f: { par: 1 } },
     { pdf: 9, id: 'bothPar', lines: [
       { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
@@ -119,7 +119,6 @@ const LESSON = {
     // ---------- Checkpoint 1 · Are you ready? (page 21) ----------
     Object.assign({ pdf: 21, id: 'cp1a', grid: 1, multi: 1, cpTitle: 'Checkpoint 1 · Find the Parallelograms',
       lines: [{ m: 'curious', t: 'Which of these are\nparallelograms? Select\nall that apply.' }],
-      idle: 'Look for shapes where both pairs of opposite sides are parallel.',
       ok: 'Yes! Shapes A and C both have\ntwo pairs of parallel sides.',
       opts: [
         { id: 'A', ok: true },
@@ -129,14 +128,12 @@ const LESSON = {
       ] }, CP),
     Object.assign({ pdf: 21, id: 'cp1b', cpTitle: 'Checkpoint 1 · Find the Missing Side',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 7 cm. What is the\nlength of CD?' }],
-      idle: 'CD is opposite AB. Opposite sides of a parallelogram are equal.',
       ok: "That's right! Opposite sides\nare equal, so CD = 7 cm.",
       fig: { P: FIG_SIDES, sides: { AB: '7 cm', CD: '? cm' }, ticks: 1 },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '7' }], tiles: ['3.5', '7', '14'],
         fb: { '3.5': 'CD is not half of AB. Opposite sides of a parallelogram are equal.', '14': 'CD is not double AB. Opposite sides of a parallelogram are equal.' } } }, CP),
     Object.assign({ pdf: 21, id: 'cp1c', cpTitle: 'Checkpoint 1 · Find the Missing Sides',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 8 cm and BC = 5 cm.\nFind the lengths of\nCD and AD.' }],
-      idle: 'CD is opposite AB, and AD is opposite BC.',
       ok: 'Brilliant! CD = AB = 8 cm\nand AD = BC = 5 cm.',
       fig: { P: FIG_SIDES, sides: { AB: '8 cm', BC: '5 cm', CD: '?', DA: '?' }, ticks: 1 },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '8' }, { id: 'AD', pre: 'AD =', post: 'cm', ans: '5' }], tiles: ['3', '5', '8', '13'],
@@ -152,11 +149,9 @@ const LESSON = {
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     { pdf: '27-28', id: 'tapEqA', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
-      idle: 'Find the angle that is the same size as ∠A, and tap it.',
       after: [{ m: 'happy', t: "That's correct! ∠A is\nequal to ∠C.", chips: [{ t: '∠A = ∠C', k: 'gold' }] }], f: { arcs: 'ABCD' } },
     { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
       wrong: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.',
-      idle: 'Find the angle that is the same size as ∠D, and tap it.',
       after: [{ m: 'happy', t: "That's correct! ∠D is\nequal to ∠B.", chips: [{ t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairA: 1 } },
     { pdf: 31, id: 'oppAng', lines: [{ m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.',
       chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
@@ -167,7 +162,6 @@ const LESSON = {
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.' }], f: { arcs: 'ABCD', eq: 'AD', supp: ['AD'] } },
     Object.assign({ pdf: 35, id: 'askAdj', multi: 1, lines: [{ m: 'curious', t: 'Which other angles\nadd up to 180°?' }],
-      idle: 'Add the two angles in each card. Which pairs make 180°?',
       ok: 'Yes! ∠B + ∠C = 180° and\n∠A + ∠B = 180°.', okChips: [{ t: '∠B + ∠C = 180°', k: 'gold sm' }, { t: '∠A + ∠B = 180°', k: 'gold sm' }],
       opts: [
         { id: 'BC', t: '∠B & ∠C', ok: true },
@@ -182,7 +176,6 @@ const LESSON = {
     // ---------- Checkpoint 2 · Let's use what we learnt! (page 37) ----------
     Object.assign({ pdf: 37, id: 'cp2a', cpTitle: 'Checkpoint 2 · Find the Opposite Angle',
       lines: [{ m: 'curious', t: 'In this parallelogram,\n∠A = 68°. What is the\nmeasure of ∠C?' }],
-      idle: '∠C is opposite ∠A. What do you know about opposite angles?',
       ok: "That's right! Opposite angles\nare equal, so ∠C = 68°.",
       fig: { P: tilt(68), angles: { A: '68°', C: '?' } },
       opts: [
@@ -192,7 +185,6 @@ const LESSON = {
       ] }, CP),
     Object.assign({ pdf: 37, id: 'cp2b', cpTitle: 'Checkpoint 2 · Find the Adjacent Angle',
       lines: [{ m: 'curious', t: 'In this parallelogram,\n∠A = 72°. What is the\nmeasure of ∠B?' }],
-      idle: '∠B is next to ∠A. Adjacent angles add up to 180°.',
       ok: 'Correct! 72° + 108° = 180°.',
       fig: { P: tilt(72), angles: { A: '72°', B: '?' } },
       opts: [
@@ -202,7 +194,6 @@ const LESSON = {
       ] }, CP),
     Object.assign({ pdf: 37, id: 'cp2c', cpTitle: 'Checkpoint 2 · Find All the Angles',
       lines: [{ m: 'curious', t: 'In this parallelogram,\n∠A = 65°. Find the measures\nof ∠B, ∠C and ∠D.' }],
-      idle: 'Opposite angles are equal, and adjacent angles add up to 180°.',
       ok: 'Amazing! ∠B = 115°, ∠C = 65°\nand ∠D = 115°.',
       fig: { P: tilt(65), angles: { A: '65°', B: '?', C: '?', D: '?' } },
       fill: { blanks: [{ id: 'B', pre: '∠B =', post: '°', ans: '115' }, { id: 'C', pre: '∠C =', post: '°', ans: '65' }, { id: 'D', pre: '∠D =', post: '°', ans: '115' }],
@@ -213,7 +204,6 @@ const LESSON = {
     { pdf: 38, id: 'explored', lines: [{ m: 'happy', t: 'We have explored all about\nthe sides and angles of\na parallelogram.' }] },
     { pdf: 39, id: 'diagIntro', lines: [{ m: 'curious', t: "Let's learn about its\ndiagonals." }] },
     { pdf: 40, id: 'drawDiag', lines: [{ m: 'curious', t: 'Draw all the diagonals\nof this parallelogram.' }], task: 'connect', handOnce: 1,
-      idle: 'A diagonal joins two opposite corners. Drag from A to C.',
       wrong: 'That is a side. A diagonal joins two opposite corners.',
       after: [{ m: 'happy', t: 'Great! You drew both\ndiagonals.' }] },
     { pdf: 41, id: 'diagNames', lines: [{ t: 'AC and BD are the diagonals\nof this parallelogram.' }], f: { diag: 1 } },
@@ -223,7 +213,6 @@ const LESSON = {
     { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's measure each segment." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     { pdf: 45, id: 'compare', lines: [{ m: 'thinking', t: "Let's compare the lengths\nof these segments." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     Object.assign({ pdf: '46-47', id: 'matchSeg', lines: [{ m: 'curious', t: 'Drag the segments to\ntheir correct place.' }],
-      idle: 'Compare the lengths. Which two segments are the same length?',
       ok: "That's correct! The segments\nof the same diagonal\nare equal.", okChips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }], okF: { halfPairs: 1, hticks: 1 },
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
@@ -236,7 +225,6 @@ const LESSON = {
     // ---------- Checkpoint 3 · Let's use the diagonals! (page 50) ----------
     Object.assign({ pdf: 50, id: 'cp3a', cpTitle: 'Checkpoint 3 · Find the Other Half',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAO = 6 cm. What is the\nlength of OC?' }],
-      idle: 'O is where the diagonals meet. The diagonals bisect each other.',
       ok: 'Yes! The diagonals bisect each\nother, so OC = AO = 6 cm.',
       fig: { P: FIG_SIDES, diag: 1, halves: { A: '6 cm' }, hticks: 1 },
       opts: [
@@ -246,14 +234,12 @@ const LESSON = {
       ] }, CP),
     Object.assign({ pdf: 50, id: 'cp3b', cpTitle: 'Checkpoint 3 · Find Both Halves',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAO = 5 cm and BO = 3 cm.\nFind the lengths of\nOC and OD.' }],
-      idle: 'OC is the other half of AC, and OD is the other half of BD.',
       ok: 'Well done! OC = AO = 5 cm\nand OD = BO = 3 cm.',
       fig: { P: FIG_HALVES, diag: 1, halves: { A: '5 cm', B: '3 cm' }, hticks: 1 },
       fill: { blanks: [{ id: 'OC', pre: 'OC =', post: 'cm', ans: '5' }, { id: 'OD', pre: 'OD =', post: 'cm', ans: '3' }], tiles: ['3', '5', '6', '10'],
         fb: { any: 'OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.' } } }, CP),
     Object.assign({ pdf: 50, id: 'cp3c', multi: 1, cpTitle: 'Checkpoint 3 · Choose the Correct Statements',
       lines: [{ m: 'curious', t: 'Which of the following are\ntrue for this parallelogram?\nSelect all that apply.' }],
-      idle: 'The diagonals bisect each other. Which statements say that?',
       ok: 'Perfect! AO = OC, BO = OD,\nso the diagonals bisect\neach other.',
       fig: { P: FIG_SIDES, diag: 1, hticks: 1 },
       opts: [

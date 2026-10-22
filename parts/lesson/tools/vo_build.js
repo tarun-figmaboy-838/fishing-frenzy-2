@@ -202,7 +202,7 @@ function lessonLines() {
   LESSON.steps.forEach((st) => {
     (st.lines || []).concat(st.after || []).forEach(shown);
     (ENGINE[st.task] || []).forEach((t) => keys.add(t));
-    [st.wrong, st.ok, st.idle || (st.hint && st.hint + '.')].forEach((t) => { if (t) keys.add(plain(t)); });
+    [st.wrong, st.ok].forEach((t) => { if (t) keys.add(plain(t)); });
     (st.opts || []).forEach((o) => { if (o.fb) keys.add(plain(o.fb)); });
     if (st.fill && st.fill.fb) Object.keys(st.fill.fb).forEach((k) => keys.add(plain(st.fill.fb[k])));
   });

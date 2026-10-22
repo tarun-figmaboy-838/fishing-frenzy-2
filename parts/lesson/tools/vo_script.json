@@ -270,15 +270,6 @@
     "devanagari": "शेप डी हैज फाइव साइड्स, सो इट इज नॉट इवन अ क्वाड्रिलैटरल।"
   },
   {
-    "id": "vo031",
-    "line": "Look for shapes where both pairs of opposite sides are parallel.",
-    "spoken": "Look for shapes where both pairs of opposite sides are parallel.",
-    "where": [
-      "screen 19 cp1a: idle reminder"
-    ],
-    "devanagari": "लुक फॉर शेप्स वेयर बोथ पेयर्स ऑफ़ ऑपोजिट साइड्स आर पैरेलल."
-  },
-  {
     "id": "vo032",
     "line": "Yes! Shapes A and C both have two pairs of parallel sides.",
     "spoken": "Yes! Shapes A and C both have two pairs of parallel sides.",
@@ -432,15 +423,6 @@
     "devanagari": "नॉट क्वाइट। कंपेयर इट्स साइज विद एंगल ए। लुक एट द कॉर्नर ऑपोजिट ए।"
   },
   {
-    "id": "vo049",
-    "line": "Find the angle that is the same size as ∠A, and tap it.",
-    "spoken": "Find the angle that is the same size as angle A, and tap it.",
-    "where": [
-      "screen 27 tapEqA: idle reminder"
-    ],
-    "devanagari": "फाइंड द एंगल दैट इज द सेम साइज एज एंगल ए, एंड टैप इट।"
-  },
-  {
     "id": "vo050",
     "line": "That's correct! ∠A is equal to ∠C.",
     "spoken": "That's correct! Angle A is equal to angle C.",
@@ -466,15 +448,6 @@
       "screen 28 tapEqD: wrong tap"
     ],
     "devanagari": "नॉट क्वाइट। कम्पेयर इट्स साइज विद एंगल डी। लुक एट द कॉर्नर अपोजिट डी।"
-  },
-  {
-    "id": "vo053",
-    "line": "Find the angle that is the same size as ∠D, and tap it.",
-    "spoken": "Find the angle that is the same size as angle D, and tap it.",
-    "where": [
-      "screen 28 tapEqD: idle reminder"
-    ],
-    "devanagari": "फाइंड द एंगल दैट इज़ द सेम साइज़ ऐज़ एंगल डी, एंड टैप इट।"
   },
   {
     "id": "vo054",
@@ -547,15 +520,6 @@
       "screen 33 askAdj: feedback AD"
     ],
     "devanagari": "येस, बट वी फाउंड दैट पेयर ऑलरेडी! फाइंड द अदर पेयर्स।"
-  },
-  {
-    "id": "vo062",
-    "line": "Add the two angles in each card. Which pairs make 180°?",
-    "spoken": "Add the two angles in each card. Which pairs make one hundred and eighty degrees?",
-    "where": [
-      "screen 33 askAdj: idle reminder"
-    ],
-    "devanagari": "एड द टू एंगल्स इन ईच कार्ड। विच पेअर्स मेक वन हंड्रेड एंड एटी डिग्रीज़?"
   },
   {
     "id": "vo063",
@@ -684,15 +648,6 @@
     "devanagari": "एंगल सी इज अपोजिट एंगल ए, सो दे आर इक्वल। एंगल बी एंड एंगल डी आर नेक्स्ट टू एंगल ए, सो ईच ऐड्स विद सिक्सटी फाइव डिग्रीज़ टू मेक वन हंड्रेड एंड एटी डिग्रीज़।"
   },
   {
-    "id": "vo077",
-    "line": "Opposite angles are equal, and adjacent angles add up to 180°.",
-    "spoken": "Opposite angles are equal, and adjacent angles add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: idle reminder"
-    ],
-    "devanagari": "ऑपोजिट एंगल्स आर इक्वल, एंड एडजसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
     "id": "vo078",
     "line": "Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°.",
     "spoken": "Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees.",
@@ -736,15 +691,6 @@
       "screen 40 drawDiag: wrong tap"
     ],
     "devanagari": "दैट इज़ अ साइड। अ डायगोनल जॉइन्स टू ऑपोज़िट कॉर्नर्स।"
-  },
-  {
-    "id": "vo083",
-    "line": "A diagonal joins two opposite corners. Drag from A to C.",
-    "spoken": "A diagonal joins two opposite corners. Drag from A to C.",
-    "where": [
-      "screen 40 drawDiag: idle reminder"
-    ],
-    "devanagari": "ए डायगोनल जॉइन्स टू ऑपोजिट कॉर्नर्स। ड्रैग फ्रॉम ए टू सी।"
   },
   {
     "id": "vo084",
@@ -819,15 +765,6 @@
     "devanagari": "दोज़ टू आर नॉट द सेम लेंथ। लुक एट द लेंथ्स अगेन।"
   },
   {
-    "id": "vo092",
-    "line": "Compare the lengths. Which two segments are the same length?",
-    "spoken": "Compare the lengths. Which two segments are the same length?",
-    "where": [
-      "screen 46 matchSeg: idle reminder"
-    ],
-    "devanagari": "कम्पेयर द लेंग्थ्स। विच टू सेगमेंट्स आर द सेम लेंग्थ?"
-  },
-  {
     "id": "vo093",
     "line": "That's correct! The segments of the same diagonal are equal.",
     "spoken": "That's correct! The segments of the same diagonal are equal.",
@@ -880,15 +817,6 @@
       "screen 49 cp3a: feedback 12"
     ],
     "devanagari": "ट्वेल्व सेंटीमीटर वुड बी द होल डायगोनल ए सी। ओ सी इज ओनली वन हाफ ऑफ इट।"
-  },
-  {
-    "id": "vo099",
-    "line": "O is where the diagonals meet. The diagonals bisect each other.",
-    "spoken": "O is where the diagonals meet. The diagonals bisect each other.",
-    "where": [
-      "screen 49 cp3a: idle reminder"
-    ],
-    "devanagari": "ओ इज व्हेयर द डायगोनल्स मीट। द डायगोनल्स बाईसेक्ट ईच अदर।"
   },
   {
     "id": "vo100",
@@ -961,15 +889,6 @@
       "screen 51 cp3c: feedback acbd"
     ],
     "devanagari": "द टू डायगोनल्स ऑफ दिस पैरेललोग्राम हैव डिफरेंट लेंथ्स।"
-  },
-  {
-    "id": "vo108",
-    "line": "The diagonals bisect each other. Which statements say that?",
-    "spoken": "The diagonals bisect each other. Which statements say that?",
-    "where": [
-      "screen 51 cp3c: idle reminder"
-    ],
-    "devanagari": "द डायग्नल्स बाईसेक्ट ईच अदर. विच स्टेटमेंट्स से दैट?"
   },
   {
     "id": "vo109",
