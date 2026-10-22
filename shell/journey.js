@@ -477,7 +477,8 @@
 .dev{position:fixed;left:8px;bottom:8px;z-index:90;max-width:min(620px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;
   padding:6px;border-radius:10px;background:rgba(10,20,40,.88);font:600 12px/1.2 system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.35)}
 .dev.folded .dev-body{display:none}
-.dev-tag{display:inline-block;padding:5px 8px;border-radius:6px;color:#ffd23f;cursor:pointer;background:none;border:0;font:inherit;font-weight:800}
+.dev-tag{display:inline-block;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;padding:5px 8px;border-radius:6px;color:#ffd23f;cursor:pointer;background:none;border:0;font:inherit;font-weight:800}
+.dev.folded{opacity:.55;transition:opacity .2s}.dev.folded:hover{opacity:1}
 .dev-part{margin-top:6px}
 .dev-part h3{margin:4px 2px;font:800 12px/1.2 system-ui,sans-serif;color:#9fd1f5;display:flex;gap:8px;align-items:center}
 .dev-part h3 small{font-weight:600;color:#aab}
@@ -503,7 +504,7 @@
       const front = document.createElement('div');
       front.className = 'dev-part';
       front.innerHTML = '<div class="dev-btns"><button class="j home" type="button">Front page</button></div>';
-      front.querySelector('button').addEventListener('click', () => this.frontPage());
+      front.querySelector('button').addEventListener('click', () => { this.fold('Front page'); this.frontPage(); });
       body.appendChild(front);
       PARTS.forEach((p, index) => {
         const sec = document.createElement('div');
@@ -520,6 +521,11 @@
       });
       this.update();
     },
+    // a jump folds the panel away (it never covers the screen it went to); its tab names that screen
+    fold(label) {
+      this.el.classList.add('folded');
+      this.el.querySelector('.dev-tag').textContent = 'DEV · ' + label;
+    },
     renderPart(id) {
       const btns = this.el && this.el.querySelector('.dev-part[data-part="' + id + '"] .dev-btns');
       if (!btns) return;
@@ -529,7 +535,7 @@
       list.forEach((s, i) => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'j'; b.textContent = s.label; b.title = s.label;
-        b.addEventListener('click', (ev) => { ev.stopPropagation(); if (id === 'lesson') this.jumpLesson(i); else this.jumpFishing(i); });
+        b.addEventListener('click', (ev) => { ev.stopPropagation(); this.fold(s.label); if (id === 'lesson') this.jumpLesson(i); else this.jumpFishing(i); });
         btns.appendChild(b);
       });
     },
