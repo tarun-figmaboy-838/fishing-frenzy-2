@@ -3,6 +3,7 @@
 // ?dev=1 adds a small panel for jumping straight to any screen of the game while building it.
 // Number keys 1–9 and 0 press the buttons in order; ` folds the panel away.
 if (new URLSearchParams(location.search).get('dev') !== '1') return;
+if (window.Journey && window.Journey.leaving) return; // opened on its own: on the way to the journey
 
 const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken } = PopoGame;
 
@@ -10,9 +11,11 @@ function game() {
   return window.popoDebug && window.popoDebug.game;
 }
 
-// Leaves the title (as Play would) without starting the opening story.
+// Leaves the title (as Play would) without starting the opening story. (In the journey the
+// game may be holding after its banner's Play, the lesson having been over it: the same.)
 function begin(g) {
-  if (state.phase === PHASE.TITLE) {
+  if (state.phase === PHASE.TITLE || g.holding) {
+    g.holding = false;
     g.title.dismiss();
     g.audio.init();
     g.audio.resume();
@@ -65,6 +68,13 @@ const JUMPS = [
   }],
   ['Finish', () => { const g = game(); level(LEVELS.length - 1); celebrate(g, newToken()).catch(() => {}); }],
 ];
+
+// In the journey these jumps go to its one panel (?dev=1 on index.html at the root), beside the lesson's screens;
+// there is no Title here (the panel's Front page is the banner from its start).
+if (window.Journey && window.Journey.embedded) {
+  window.Journey.devScreens(JUMPS.filter(([label]) => label !== 'Title').map(([label, run]) => ({ label, run: () => { if (game()) run(); } })));
+  return;
+}
 
 const css = document.createElement('style');
 css.textContent = `

@@ -27,7 +27,9 @@ class Stage {
   resize() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    this.portrait = vh > vw * 1.15;
+    // a phone or tablet held upright asks to be turned; in the journey (shell/bridge.js) its page asks
+    // for the whole journey, so the game doesn't as well
+    this.portrait = vh > vw * 1.15 && !(window.Journey && window.Journey.embedded);
     const scale = Math.min(vw / STAGE_W, vh / STAGE_H);
     const w = Math.round(STAGE_W * scale);
     const h = Math.round(STAGE_H * scale);

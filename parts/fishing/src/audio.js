@@ -22,6 +22,7 @@ class AudioEngine {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    this.held = false; // in the journey, while the lesson covers the game (hold)
     this.musicOn = false;
     this.travel = false;
     this.beat = 0;
@@ -87,8 +88,9 @@ class AudioEngine {
     const ctx = new AC();
     this.ctx = ctx;
     this.master = ctx.createGain();
-    this.master.gain.value = this.muted ? 0 : 1;
+    this.master.gain.value = this.muted || this.held ? 0 : 1;
     this.master.connect(ctx.destination);
+    if (this.held) ctx.suspend();
     this.music = this.gainNode(0.5, this.master);
     this.sfx = this.gainNode(0.9, this.master);
     this.voice = this.gainNode(1, this.master);
@@ -143,7 +145,7 @@ class AudioEngine {
 
   setMuted(muted) {
     this.muted = muted;
-    if (this.master) this.master.gain.setTargetAtTime(muted ? 0 : 1, this.ctx.currentTime, 0.02);
+    if (this.master && !this.held) this.master.gain.setTargetAtTime(muted ? 0 : 1, this.ctx.currentTime, 0.02);
   }
 
   suspend() {
@@ -151,10 +153,33 @@ class AudioEngine {
   }
 
   resume() {
-    if (!this.ctx) return;
+    if (!this.ctx || this.held) return;
     if (this.ctx.state !== 'running') this.ctx.resume();
     // notes are queued a little ahead; don't schedule the same beat twice
     this.nextBeat = Math.max(this.nextBeat, this.ctx.currentTime + 0.05);
+  }
+
+  // In the journey (shell/bridge.js) the lesson can cover the game: then every sound stops (music, effects, a voice
+  // line) and the context sleeps, and nothing wakes it (a tap, the tab coming back) until the game shows again. Then
+  // the sound fades back in, the music too if it was playing; the notes queued before it slept go by unheard.
+  hold(on) {
+    if (on === this.held) return;
+    this.held = on;
+    if (on) this.musicWas = this.musicOn;
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.master.gain.cancelScheduledValues(now);
+    this.master.gain.setValueAtTime(0, now);
+    if (on) {
+      this.stopVoice();
+      this.stopEffects();
+      this.stopMusic();
+      this.ctx.suspend();
+      return;
+    }
+    this.resume();
+    if (!this.muted) this.master.gain.setTargetAtTime(1, now + 0.35, 0.08);
+    if (this.musicWas) this.startMusic();
   }
 
   setTravel(on) {

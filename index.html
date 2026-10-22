@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b4fb8">
+<title>Fishing Frenzy 2</title>
+<meta name="description" content="A voiced maths adventure about parallelograms: learn what makes a parallelogram with Swiftee the bird, then help Popo the polar bear fix the shape of his parallelogram nets and catch fish across a frozen lake.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fishing Frenzy 2">
+<meta property="og:description" content="Learn all about parallelograms with Swiftee, then fix Popo's parallelogram nets and catch fish across a frozen lake.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fishing Frenzy 2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="shell/journey.css">
+</head>
+<body>
+<h1 class="sr-only">Fishing Frenzy 2</h1>
+<!-- Fishing Frenzy 2 (shell/journey.js): the parts, each a whole game in its own frame filling the window. The fishing
+     game's banner (parts/fishing) is the front page; its Play brings in Swiftee's parallelogram lesson (parts/lesson),
+     and after it Popo's parallelogram nets. -->
+<div id="parts" class="parts"></div>
+
+<!-- only while the lesson is still loading after Play: a frosted veil that says so -->
+<div id="veil" class="veil" aria-hidden="true">
+<div id="veil-status" class="veil-status status" role="status" aria-live="polite" hidden><span class="status-text">Getting ready…</span><span class="bar unknown"><i></i></span><button class="retry" type="button" hidden>Try again</button></div>
+</div>
+
+<!-- a phone or tablet held upright: one hint for the whole journey (the parts show none of their own) -->
+<div id="rotate-hint" class="rotate-hint">Rotate your device for the best experience</div>
+
+<noscript><p class="noscript">Fishing Frenzy 2 needs JavaScript to play.</p></noscript>
+<script src="shell/journey.js"></script>
+</body>
+</html>

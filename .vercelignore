@@ -1,0 +1,9 @@
+# not part of the game a player loads
+tests/
+parts/lesson/tools/
+parts/lesson/docs/
+*.md
+.vscode/
+.DS_Store
+.env
+.env.*

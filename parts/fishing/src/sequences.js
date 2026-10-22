@@ -739,8 +739,9 @@ async function theEnd(game, token) {
 }
 
 // Play Again: The End fades as the circle closes to nothing, the game is set up afresh out of
-// sight, and the circle opens again on the first net (Game.updateEnding).
-async function closeCurtain(game) {
+// sight, and the circle opens again on the first net (Game.updateEnding) - or, in the journey
+// (title), on the banner from its start.
+async function closeCurtain(game, { title = false } = {}) {
   const token = newToken();
   const ending = game.ending;
   ending.closing = true;
@@ -757,9 +758,10 @@ async function closeCurtain(game) {
     swallow(e);
     return;
   }
-  game.reset();
+  if (title) game.title.replay();
+  else game.reset();
   game.ending = { x: STAGE_W / 2, y: STAGE_H / 2, r: 0, pan: { x: 0, y: 0 }, t: 0, opening: true };
-  startLevels(game);
+  if (!title) startLevels(game);
 }
 
 Object.assign(PopoGame, { banner, opening, startLevels, dropNet, rowTo, celebrate, closeCurtain, letNetDown });

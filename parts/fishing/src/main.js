@@ -1,5 +1,7 @@
 (function (PopoGame) {
 'use strict';
+if (window.Journey && window.Journey.leaving) return; // opened on its own: on the way to the journey (index.html at the root)
+const journey = window.Journey && window.Journey.embedded ? window.Journey : null;
 const { loadCoreAssets, AudioEngine, Game, Stage, state, PHASE, UI } = PopoGame;
 
 const stage = new Stage(document.getElementById('stage'), document.getElementById('world'));
@@ -56,12 +58,29 @@ if (params.has('debug') || params.get('dev') === '1') {
   window.popoDebug = { state, game };
 }
 
+// In the journey (index.html at the root; shell/bridge.js) this banner is the front page. Its Play hands over to the
+// lesson (Game.handOver) and the shell's word brings the game back: hide (the lesson covers it), story (the lesson is
+// over: on as Play would go), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
+if (journey) {
+  journey.onCommand((name) => {
+    if (name === 'hide') game.hide();
+    else if (name === 'story') game.story();
+    else if (name === 'title') game.backToTitle();
+    else if (name === 'wake') game.wake();
+  });
+  journey.onDispose(() => { game.dispose(); audio.hold(true); });
+}
+
 ui.setLoading('Loading…');
-Promise.all([loadCoreAssets(), audio.prepareVoices(PopoGame.VOICE_DATA)])
+Promise.all([loadCoreAssets(journey ? (k) => journey.progress(k) : undefined), audio.prepareVoices(PopoGame.VOICE_DATA)])
   .then(() => {
     ui.setLoading('');
     game.popo.rowTint(); // decode the paddling frames now, not on the first stroke
     game.showIdleScene();
+    if (journey) journey.ready();
   })
-  .catch((err) => ui.setLoading(`Could not load the game art (${err.message}).`));
+  .catch((err) => {
+    ui.setLoading(`Could not load the game art (${err.message}).`);
+    if (journey) journey.failed(err.message);
+  });
 })(window.PopoGame = window.PopoGame || {});

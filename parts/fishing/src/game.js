@@ -127,6 +127,11 @@ class Game {
     this.lastTick = { value: null, at: 0 };
     this.lastFrame = 0;
     this.running = false;
+    this.loopId = 0;
+    // in the journey (shell/bridge.js; see main.js): Play hands over to the lesson, and the game holds after its
+    // banner until the shell says
+    this.embedded = !!(window.Journey && window.Journey.embedded);
+    this.holding = false;
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -138,7 +143,8 @@ class Game {
     if (!this.running) {
       this.running = true;
       this.lastFrame = performance.now();
-      requestAnimationFrame((t) => this.loop(t));
+      const id = ++this.loopId; // (a loop stopped and started again in one frame must not run twice)
+      requestAnimationFrame((t) => this.loop(t, id));
     }
     if (state.phase === PHASE.TITLE) this.title.begin();
   }
@@ -160,8 +166,16 @@ class Game {
     opening(this);
   }
 
-  // From the end screen, the circle closes and opens again on the first net (closeCurtain).
+  // From the end screen, the circle closes and opens again on the first net (closeCurtain). In the
+  // journey the shell takes it back to its banner instead (backToTitle), and a new lesson.
   playAgain() {
+    if (this.ending && this.embedded) {
+      if (this.ending.closing) return;
+      this.ending.closing = true; // (once)
+      this.ui.showAgain(false);
+      window.Journey.finish({ levels: LEVELS.length, fish: state.caught }); // inside the tap
+      return;
+    }
     if (this.ending) {
       if (!this.ending.closing) closeCurtain(this);
       return;
@@ -221,6 +235,50 @@ class Game {
     this.ui.el.pause.style.visibility = '';
     this.applyLocation();
     this.prepareLevel(0);
+  }
+
+  // --- in the journey (shell/journey.js) ----------------------------------------
+  // Play, inside its tap: the banner clears away as ever, and the shell's sound unlocks. With the lesson next the
+  // game holds there, its music stopped; with ?start=fishing the shell answers at once with story.
+  handOver() {
+    this.holding = true;
+    window.Journey.play();
+    if (!this.holding) return;
+    state.phase = PHASE.INTRO;
+    this.ui.hideStart();
+    this.audio.stopMusic();
+  }
+
+  // The lesson covers the game: it stops drawing (sequences wait with the clock) and every sound.
+  hide() {
+    this.running = false;
+    this.audio.hold(true);
+  }
+
+  // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
+  wake() {
+    this.audio.hold(false);
+    this.showIdleScene();
+  }
+
+  // The lesson is over: on from the banner as Play goes on (the narrator, the first school, the net, level 1).
+  story() {
+    const held = this.holding;
+    this.holding = false;
+    this.audio.hold(false);
+    if (state.phase === PHASE.TITLE) this.title.leave(); // (a ?dev=1 lesson jump came from the banner)
+    else if (!held) { this.showIdleScene(); return; }   // (or from a level: it carries on)
+    this.start();
+  }
+
+  // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
+  // closes and opens again on the banner.
+  backToTitle() {
+    this.holding = false;
+    this.audio.hold(false);
+    this.showIdleScene();
+    if (this.ending && !this.ending.opening) { closeCurtain(this, { title: true }); return; }
+    this.title.replay();
   }
 
   dispose() {
@@ -517,11 +575,12 @@ class Game {
     this.audio.init();
     this.audio.resume();
     this.title.leave();
-    this.start();
+    if (this.embedded) this.handOver();
+    else this.start();
   }
 
   togglePause() {
-    if (state.phase === PHASE.TITLE || state.phase === PHASE.GAME_COMPLETE) return;
+    if (state.phase === PHASE.TITLE || state.phase === PHASE.GAME_COMPLETE || this.holding) return;
     state.paused = !state.paused;
     if (state.paused && state.phase === PHASE.DRAGGING) {
       this.drag = null;
@@ -664,15 +723,15 @@ class Game {
   }
 
   // --- loop -------------------------------------------------------------------
-  loop(now) {
-    if (!this.running) return;
+  loop(now, id) {
+    if (!this.running || id !== this.loopId) return;
     const dt = Math.min(0.1, Math.max(0, (now - this.lastFrame) / 1000));
     this.lastFrame = now;
     try {
       if (!state.paused && !document.hidden) this.update(dt);
       this.draw();
     } finally {
-      requestAnimationFrame((t) => this.loop(t));
+      requestAnimationFrame((t) => this.loop(t, id));
     }
   }
 

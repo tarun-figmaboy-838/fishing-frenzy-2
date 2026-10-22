@@ -298,10 +298,12 @@ class UI {
 
   hideStart() {
     this.el.start.classList.add('fade-out');
-    setTimeout(() => { this.el.start.hidden = true; }, 500);
+    clearTimeout(this.startGone);
+    this.startGone = setTimeout(() => { this.el.start.hidden = true; }, 500);
   }
 
   showStart() {
+    clearTimeout(this.startGone); // (shown again before it had faded: it stays)
     this.el.start.hidden = false;
     this.el.start.classList.remove('fade-out');
     this.el.hud.hidden = true;

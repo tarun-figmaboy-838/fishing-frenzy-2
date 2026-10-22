@@ -14,24 +14,59 @@ screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and "T
 ## Run
 
 Plain HTML, CSS and JavaScript (canvas, WebGL for the water, Web Audio; no build step and no
-dependencies). Double-click `index.html` to play, or serve the folder over HTTP:
+dependencies). The game is a part of the Fishing Frenzy 2 journey: serve the repository's root
+over HTTP and open its `index.html` (opened here directly, `index.html` goes there itself, with
+`?start=fishing`; `?solo` keeps it on its own page, for testing it alone):
 
 ```
-python3 -m http.server 8000
+python3 -m http.server 8000     # at the repository's root
 # then visit http://localhost:8000/
 ```
 
-Append `?debug` to expose `window.popoDebug = { state, game }`. Append `?dev=1` for a small
-panel of screen jumps (bottom left): title, intro, each of the eight levels, put the current
-net's corner in its place, drop it, row on, and the final screen. Number keys 1–9 and 0 press the first ten buttons;
-the backtick key folds the panel away.
+Append `?debug` to expose `window.popoDebug = { state, game }`. Append `?dev=1` for screen
+jumps: intro, each of the eight levels, put the current net's corner in its place, drop it, row
+on, and the final screen. In the journey they are in its one panel (below); on its own page
+(`?solo&dev=1`) the game has its own small panel (bottom left, with title too), where number keys
+1–9 and 0 press the first ten buttons and the backtick key folds it away.
+
+## In the journey
+
+The repository's `index.html` (`shell/journey.js`) plays this game in a frame filling the window,
+with Swiftee's parallelogram lesson (`parts/lesson`) in a second frame. The game loads
+`shell/bridge.js` first (`window.Journey`); its hooks are in `src/main.js` and the `In the
+journey` part of `src/game.js`:
+
+- **Front page.** This banner is the journey's front page: the shell shows the game's frame at
+  once (its "Loading…" covers the wait) and the game says how far it has loaded
+  (`Journey.progress`) and when the banner is up (`Journey.ready`); the lesson then loads behind
+  it, unseen.
+- **Play** (`Game.handOver`): inside the tap, `Journey.play()` unlocks the shell's sound and tells
+  it; the banner clears away as ever (Play bursts, the logo pops away, the fish leap home), but
+  the story waits and the music stops. The lesson dissolves in over the game, and the shell's
+  commands (`main.js`) take it from there:
+  - `hide` — the lesson covers the game: it stops drawing (its sequences wait with the clock),
+    and every sound stops — music, effects, a voice line — and its own AudioContext sleeps;
+    nothing (a tap, the tab coming back) wakes it until the game is shown again
+    (`AudioEngine.hold`).
+  - `story` — the lesson is over: the game wakes and goes on from the banner as Play does on its
+    own (the narrator, the first school, the net, level 1) while the lesson dissolves away.
+  - `title` — after Play Again: the end screen's circle closes and opens on the banner from its
+    start (`closeCurtain(game, { title: true })`), ready for the next Play.
+  - `wake` — a dev panel jump: the game draws again (with its music, if it had it) without its
+    story.
+- **Play Again** at the end calls `Journey.finish({ levels, fish })` inside its tap; the shell
+  answers with `title` and loads a fresh lesson behind the banner.
+- `?start=fishing` (the journey's) makes the first Play go straight on to the story.
+- With `?dev=1` the game's jumps (all but Title: the panel's Front page is the banner) go to the
+  journey's one panel through `Journey.devScreens`; the game shows no panel of its own.
+- The journey shows one rotate hint for a phone held upright, so the game shows none of its own
+  there.
+- The game keeps its own AudioContext (its own taps unlock it: the banner is the first page the
+  child taps); the lesson plays through the shell's.
 
 ## Deploy
 
-The folder is a static site. On Vercel, import the GitHub repository and deploy with no build
-command; `.vercelignore` leaves the original artwork, voice recordings and tools out of the
-deployment. Assets keep Vercel's default caching (revalidated on each visit): their names
-never change, so a year-long cache would keep old art against new code.
+The game is deployed as part of the journey: the repository's root is the static site.
 
 ## The game
 

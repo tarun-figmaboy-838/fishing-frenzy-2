@@ -42,8 +42,11 @@ function preloadBackground(index) {
 // makes of it: the same pictures, a fifth of the download.
 const generated = (name) => loadImage(`assets/generated-web/${name}.webp`);
 
-async function loadCoreAssets() {
-  const [operating, winch, rope, connector, net, rowCycle, naturalFish, bg0, props, play, logo] = await Promise.all([
+// Everything the banner and the game need, reporting how much has arrived (0 to 1) as it goes.
+async function loadCoreAssets(progress = () => {}) {
+  let got = 0;
+  const count = (all) => all.map((p) => Promise.resolve(p).then((v) => { got += 1; progress(got / all.length); return v; }));
+  const [operating, winch, rope, connector, net, rowCycle, naturalFish, bg0, props, play, logo] = await Promise.all(count([
     generated('popo-operating'),
     generated('winch-arched'),
     generated('rope'),
@@ -57,7 +60,7 @@ async function loadCoreAssets() {
     loadImage('assets/sprites/logo.webp'), // the banner's logo (tools/build-assets.py --logo)
     // the canvas text (the end screen's letters) needs its font there first
     document.fonts ? document.fonts.load('700 120px Fredoka').catch(() => {}) : null,
-  ]);
+  ]));
   assets.popoOperating = operating;
   assets.winchPolished = winch;
   assets.rope = rope;
