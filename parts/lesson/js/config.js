@@ -23,7 +23,7 @@ const CONFIG = {
   // depth, half height (11 deep, 22 tall), spacing between two (back to back); equal-length ticks - half length (24 long),
   // spacing between two; gap = how far each kind sits from the midpoint when a side has both; labelGap = a length
   // label's gap from its side (bases also clear their arrows: +12, as there), markGap = the extra room past a side's marks
-  marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 18, labelGap: 10, markGap: 14 },
+  marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 28, labelGap: 10, markGap: 14 },
   // dropdown answers: one option's height, the menu's narrowest width, the lowest it may reach (stage px), close and
   // wrong-answer display times (ms)
   dropdown: { itemH: 52, minW: 130, maxBottom: 706, closeMs: 180, wrongMs: 1000 },
@@ -39,16 +39,17 @@ const CONFIG = {
   // (the side numbers' and the assembly's own timings live with their GSAP timelines in js/motion.js)
   build: { pxPerMs: 0.36, delayMs: 450, settleMs: 1300, ofLine: 0.85, minMs: 1600, maxMs: 3600, rushMs: 450 },
   // flow: a finished screen moves on advanceMs after its last line (voice-over) ends (explanation screens by themselves; a
-  // question or task waits for the learner, then moves on after its feedback). In the journey, the lesson hands over to
-  // the fishing handOffMs after Swiftee's goodbye.
-  flow: { advanceMs: 1600, handOffMs: 1800 },
+  // question or task waits for the learner, then moves on after its feedback). A question's answers, or a task's corner,
+  // are live answersMs after the screen starts (while Swiftee asks). In the journey, the lesson's last screen hands over
+  // to the fishing on its Next.
+  flow: { advanceMs: 1600, answersMs: 900 },
   // the narration plate: a line longer than maxChars is shown in parts, none shorter than minChars (lineParts)
   plate: { maxChars: 50, minChars: 12 },
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 2600 },
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
   card: {
-    scale: 1.67,                     // the shape's one size on every screen (board px -> stage px; the first screens' size)
+    scale: 2,                        // the shape's largest size (board px -> stage px): each screen draws it as big as fits
     top: 96, topChips: 150, bottom: 690, // the stack's room: under the question plate (20-90) (or under tags above the shape) to the sand
     maxW: 1160, introCx: 860, introW: 680, measureCx: 790, measureW: 940, // widths; screen 1 (as Fishing Frenzy's) and the measuring walks sit right of Swiftee, clear of her bubble
     padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 20, // room round the shape for letters / lengths (board px)

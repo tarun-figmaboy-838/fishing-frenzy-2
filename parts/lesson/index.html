@@ -146,7 +146,7 @@
 <div class="{{fillCls}}" style="position: absolute; left: 120px; top: {{optTop}}px; width: 1040px">
 <div class="blank-row">
 <sc-for list="{{blanks}}" as="bk" hint-placeholder-count="2">
-<span class="blank-grp {{bk.gap}}"><span class="blank-pre">{{bk.pre}}</span><button class="{{bk.cls}}" data-blank="{{bk.id}}" data-qa="blank-{{bk.id}}" onClick="{{bk.tap}}" aria-label="Answer box {{bk.pre}}" aria-haspopup="listbox" aria-expanded="{{bk.exp}}"><span class="dd-val {{bk.ph}}">{{bk.t}}</span><svg class="dd-chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><span class="blank-post">{{bk.post}}</span><span class="blank-eq">{{bk.eq}}</span></span>
+<span class="blank-grp {{bk.gap}}"><span class="blank-pre">{{bk.pre}}</span><button class="{{bk.cls}}" data-blank="{{bk.id}}" data-qa="blank-{{bk.id}}" onClick="{{bk.tap}}" aria-label="Answer box {{bk.pre}}" aria-haspopup="listbox" aria-expanded="{{bk.exp}}"><span class="dd-val {{bk.ph}}">{{bk.t}}</span></button><span class="blank-post">{{bk.post}}</span><span class="blank-eq">{{bk.eq}}</span></span>
 </sc-for>
 </div>
 <div class="tile-row">
@@ -199,7 +199,7 @@
 <img class="bird swiftee-still" src="assets/images/swiftee.webp" alt="Swiftee the bird" style="position: absolute; left: 42px; top: 29px; width: 180px; height: 198px">
 <canvas class="swiftee-sprite" width="256" height="256" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 259px; height: 259px"></canvas>
 </div>
-<div class="bubble {{bubCls}} {{bubHide}}" style="position: absolute; left: 240px; bottom: 322px; pointer-events: none">
+<div class="bubble {{bubCls}} {{bubHide}}" style="position: absolute; left: 240px; bottom: 322px; pointer-events: none; --pw: {{plateW}}px">
 <div aria-live="polite" class="bubble-text" style="font-size: {{wordSize}}px" data-qa="bubble">
 <sc-for list="{{words}}" as="wd" hint-placeholder-count="6">
 <span class="w {{wd.cls}}">{{wd.t}}</span>
@@ -223,6 +223,9 @@
 </sc-if>
 
 </div>
+<sc-if value="{{endNext}}" hint-placeholder-val="{{ false }}">
+<button class="next end-next" data-qa="end-next" onClick="{{endGo}}" style="position: absolute; left: 206px; top: 588px; z-index: 6">Next <span aria-hidden="true">▶</span></button>
+</sc-if>
 <sc-if value="{{notStarted}}" hint-placeholder-val="{{ false }}">
 <button class="journey-next" data-qa="start" onClick="{{begin}}">Next <span aria-hidden="true">▶</span></button>
 </sc-if>

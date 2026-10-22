@@ -6,11 +6,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* words come in as the fishing game's do (parts/fishing/src/styles.css .words): each pops up as it is said and a key
    word boings; one not said yet keeps its place, unseen, so the line never reflows */
 .w{display:inline-block;visibility:hidden}
-.w.on,.w.cur{visibility:visible;animation:word-in .32s cubic-bezier(.2,1.8,.4,1) both}
-.w.key.on,.w.key.cur{animation:word-boing .55s cubic-bezier(.2,1.8,.4,1) both}
-.w.cur{color:#c95a00}
+.w.on,.w.cur{visibility:visible}
+.w.cur{color:#c95a00;animation:word-in .32s cubic-bezier(.2,1.8,.4,1) both} /* (only the word being said moves: a line shown
+   whole, or a part changing, never sets every word off again) */
+.w.key.cur{animation:word-boing .55s cubic-bezier(.2,1.8,.4,1) both}
 @keyframes word-in{from{transform:translateY(.35em) scale(.4);opacity:0}}
-@keyframes word-boing{0%{transform:scale(.2);opacity:0}55%{transform:scale(1.3);opacity:1}80%{transform:scale(.94)}}
+/* (a little smaller than the game's 1.3: the plate's words sit closer than its instruction's) */
+@keyframes word-boing{0%{transform:scale(.2);opacity:0}55%{transform:scale(1.15);opacity:1}80%{transform:scale(.97)}}
 .w.key{color:#e06600} /* the lesson's key words, in orange (as in Fishing Frenzy's bubble) */
 .bubA{animation:bubA .26s ease-out}
 .bubB{animation:bubB .26s ease-out}
@@ -517,14 +519,12 @@ a{color:#123b63}a:hover{color:#0b2742}
    in soft grey until a value is picked. One menu at a time opens under it (above it when there is no room) in 200 ms;
    options are large, bold navy, with a soft cyan hover/focus. Right: the value locks with a gentle green pulse.
    Wrong: an orange outline and a small shake, then the box empties for another try. No tick icons. */
-.stage .blank.dd{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;min-width:118px;height:54px;padding:0 12px 0 16px;
+.stage .blank.dd{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:118px;height:54px;padding:0 12px 0 16px;
   border:2.5px solid #1f6bff!important;border-radius:16px;background:#fff!important;color:#123b63;cursor:pointer;
   box-shadow:0 3px 0 rgba(31,107,255,.22),0 6px 14px rgba(18,59,99,.12)!important;animation:none;
   transition:border-color .18s ease,box-shadow .18s ease,transform .12s ease}
 .stage .blank.dd .dd-val{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;line-height:1;color:#123b63}
-.stage .blank.dd .dd-val.ph{font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:700;font-size:17px;color:#8a99ab}
-.stage .blank.dd .dd-chev{flex:none;color:#153b70;transition:transform .2s ease}
-.stage .blank.dd.open .dd-chev{transform:rotate(180deg)}
+.stage .blank.dd .dd-val.ph{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:17px;color:#00806d} /* "?", as the shape's unknown */
 .stage .blank.dd:hover:not(.good),.stage .blank.dd:focus-visible,.stage .blank.dd.open{outline:none;border-color:#0ea5e9!important;
   box-shadow:0 0 0 4px rgba(14,165,233,.22),0 3px 0 rgba(31,107,255,.22),0 6px 14px rgba(18,59,99,.12)!important}
 .stage .blank.dd:active:not(.good){transform:translateY(1px)}
@@ -534,7 +534,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd.good{border-color:#2f9617!important;background:#effbe9!important;cursor:default;
   box-shadow:0 0 0 0 rgba(80,200,60,.5),0 3px 0 rgba(47,150,23,.25)!important;animation:ddGood .7s ease-out}
 .stage .blank.dd.good .dd-val{color:#1d6b35}
-.stage .blank.dd.good .dd-chev{opacity:0;width:0;margin-left:-8px}
 @keyframes ddGood{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(80,200,60,.55),0 3px 0 rgba(47,150,23,.25)}45%{transform:scale(1.06)}
   100%{transform:scale(1);box-shadow:0 0 0 12px rgba(80,200,60,0),0 3px 0 rgba(47,150,23,.25)}}
 /* wrong: a soft orange outline and a small shake */
@@ -602,7 +601,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* (as Fishing Frenzy's plate: 20 px from the top, 70 tall, one line of 24 px Fredoka - a line's own breaks are ignored;
    a long statement shows in parts as the voice reaches them, engine lineParts, and the whole question fits one line) */
 .stage.in-card.scene.plate .bubble-text{width:100%;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;
-  letter-spacing:.01em;font-size:24px!important;line-height:1.3;color:#fff8ec;text-shadow:0 1.5px 3.4px rgba(0,0,0,.35)}
+  letter-spacing:.01em;font-size:26px!important;line-height:1.3;color:#fff8ec;text-shadow:0 1.5px 3.4px rgba(0,0,0,.35)}
 .stage.in-card.scene.plate .bubble-text .w.brk{display:none}
 .stage.in-card.scene.plate .w.cur{color:#fff8ec}
 .stage.in-card.scene.plate .w.key,.stage.in-card.scene.plate .w.cur.key{color:#ffd166;font-weight:700}
@@ -650,7 +649,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .bubble-tail .tail-fill{fill:#fff!important;stroke:none!important}
 .stage .bubble-tail .tail-edge{fill:none!important;stroke:#2a9a8c!important;stroke-width:3px;stroke-linejoin:round;stroke-linecap:round}
 /* drag-and-drop answer boxes (screen 46) are not menus: no dropdown chevron, the value centred in the box */
-.stage .blank:not(.dd) .dd-chev{display:none}
 .stage .blank:not(.dd) .dd-val{margin:0 auto}
 /* once every tile is placed the spent tray fades away instead of leaving greyed ghosts under the answer */
 .stage .tile-row{transition:opacity .4s ease,transform .4s ease}
@@ -659,13 +657,20 @@ a{color:#123b63}a:hover{color:#0b2742}
    speech bubble's shrink-to-widest-line width is not for it) */
 .stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
 .stage.in-card.scene.plate .bubble-text .w{display:inline-block;margin:0 .14em}
-.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{width:fit-content!important}
-/* ===== the plate, calm (no glitches): a line's words keep their places from the start (each pops in as it is said,
-   as the game's instruction plate does), so the box never blinks or resizes while Swiftee speaks; a new line's box
-   glides to its new size; the plate itself glides in once, when a caption screen follows one of Swiftee's ===== */
+/* the plate fits its line (engine plateWidth: no empty glass round a short one) and glides to the next part's size;
+   .plate-measure is the hidden copy it is measured on, in the plate's own type */
+.plate-measure{position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;display:inline-block;white-space:nowrap;box-sizing:border-box;
+  padding:0 38px;border:2.4px solid transparent;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.3;letter-spacing:.01em}
+.plate-measure .w{display:inline-block;margin:0 .14em}
+.plate-measure .w.key{font-weight:700}
+
+.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{width:var(--pw,1000px)!important;height:74px}
+/* ===== the plate, calm (no glitches): one size; a line's words keep their places from the start (each pops in as it
+   is said, as the game's instruction plate does), so it never resizes while Swiftee speaks; it comes with a line's
+   first word; it glides in once, when a caption screen follows one of Swiftee's ===== */
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.bubA,.stage.in-card.scene.plate .bubble.bubB{animation:none;opacity:1;transform:none;
-  interpolate-size:allow-keywords;transition:width .32s cubic-bezier(.3,0,.2,1),height .32s cubic-bezier(.3,0,.2,1),opacity .3s ease,transform .3s ease}
-.stage.in-card.scene.plate .bubble:not(:has(.w:not(.brk))){opacity:0}
+  transition:opacity .18s ease,transform .3s ease,width .38s cubic-bezier(.22,1,.36,1)}
+.stage.in-card.scene.plate .bubble:not(:has(.w.on,.w.cur)){opacity:0;transition:opacity .18s ease,transform .3s ease} /* (it comes with its first word, already at its size) */
 .stage.in-card.scene.plate .bubble.away,.stage.in-card.scene.plate .bubble.gone{opacity:0;transform:translateY(-6px)}
 .stage.in-card.scene.plate.plate-enter .bubble{animation:plateEnter .42s cubic-bezier(.22,1,.36,1) both}
 @keyframes plateEnter{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
@@ -686,7 +691,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd .dd-val:not(.ph){font-size:30px;line-height:1;padding-top:3px}
 .stage .blank.dd.good{justify-content:center;text-shadow:none!important;padding:0 14px}
 .stage .blank.dd.good .dd-val{flex:0 0 auto;font-weight:800;color:#17692c;text-shadow:none}
-.stage .blank.dd.good .dd-chev{display:none}
 .stage .blank.dd.bad{text-shadow:none!important}
 
 /* ===== answer boxes, their menus and the number / segment tiles at the answer pills' scale (Fishing Frenzy's answers are
@@ -695,10 +699,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank-grp{font-size:30px;gap:10px}
 .stage .blank-eq{font-size:34px}
 .stage .blank.dd{height:66px;min-width:130px;padding:0 12px 0 18px;gap:8px;border-radius:18px}
-.stage .blank.dd .dd-val.ph{font-size:21px}
+.stage .blank.dd .dd-val.ph{font-size:34px;line-height:1;padding-top:3px}
 .stage .blank.dd .dd-val:not(.ph){font-size:36px}
-.stage .blank.dd .dd-chev{width:20px;height:20px}
 .stage .blank:not(.dd){height:64px;min-width:100px;font-size:32px}
 .stage .tile:not(.ghost),.tile.ghost{height:64px;min-width:88px;font-size:32px}
 .stage .dd-item{height:52px;font-size:30px}
 .stage .fill-ui:not(.match) .blank-row{gap:22px}
+/* the journey's end: Next under Swiftee (as Fishing Frenzy's), popping up once her goodbye is said */
+.stage .next.end-next{height:72px;min-width:188px;font-size:34px;padding:0 30px;gap:8px;animation:endNextIn .45s cubic-bezier(.2,1.6,.4,1) both}
+.stage .next.end-next span{font-size:20px}
+@keyframes endNextIn{from{opacity:0;transform:translateY(16px) scale(.6)}}

@@ -10,8 +10,8 @@ installed is used if Playwright's own is missing), at 1280x720 with a mouse and 
               under the net), then its problem: the giant fish, Swiftee's "Let's find out!" and a real tap on Next
   lesson      the giant wave carries Popo off and the lesson dissolves in over the empty lake; the game goes on drawing
               its lake under the lesson (which plays over it), silent (no music, effects or voice; its context asleep),
-              its buttons away; the lesson begins (seashell, card, screen 1); jumped to its last screen, it hands over
-              by itself
+              its buttons away; the lesson begins (seashell, card, screen 1); jumped to its last screen, a real tap on the
+              Next under Swiftee hands over
   fishing     the game wakes under the lesson's frame as it dissolves out: the wave brings Popo back, Swiftee welcomes
               him, and a real catch at the first parallelogram net (the lesson's frame disposed, its voice stopped)
   the end     after level 8 (jumped to, as its dev panel's Finish), a real tap on Play Again: the circle closes and
@@ -295,6 +295,17 @@ def drop_when_under(r, before, what):
     return st
 
 
+def end_lesson(r):
+    """The lesson's last screen (jumped to): once Swiftee's goodbye is said, Next comes up under her; a real tap on it
+    takes the journey on."""
+    L = part(r.page, 'lesson')
+    last = L.evaluate('() => lessonDebug.steps().length - 1')
+    L.evaluate(f'() => lessonDebug.jumpTo({last})')
+    L.wait_for_selector('[data-qa=end-next]', state='visible', timeout=40000)
+    r.page.wait_for_timeout(500)  # (it pops up)
+    r.tap_el(L, '[data-qa=end-next]')
+
+
 def warm_up(r):
     """The warm-up: Popo's plain net (nothing to set), Drop Net as fish swim under it, three catches."""
     st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 0, 90, 'the warm-up net is ready')
@@ -374,8 +385,7 @@ def journey(p, engine, size, url):
     check(silent(r.fish()), f'{r.tag}: still no sound of the game under the lesson')
 
     # ---------- the lesson over: the wave brings Popo back, Swiftee welcomes him, and the first parallelogram net ----------
-    last = part(page, 'lesson').evaluate('() => lessonDebug.steps().length - 1')
-    part(page, 'lesson').evaluate(f'() => lessonDebug.jumpTo({last})')
+    end_lesson(r)
     st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
     check(st['phase'] == 'fishing' and 'lesson+leaving' in st['frames'], f'{r.tag}: its last screen over, the lesson hands over and its frame dissolves away', ', '.join(st['frames']))
     fs = r.fish()
@@ -473,8 +483,7 @@ def start_fishing(p, engine, url):
     until(r.lesson, lambda s: s['started'], 40, 'the lesson starts')
     check(True, f'{r.tag}: ?start=lesson: the lesson dissolves in over the held game, which goes quiet')
     r.shot('2-start-lesson')
-    last = part(page, 'lesson').evaluate('() => lessonDebug.steps().length - 1')
-    part(page, 'lesson').evaluate(f'() => lessonDebug.jumpTo({last})')
+    end_lesson(r)
     st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
     fs = until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
     check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'], f'{r.tag}: ?start=lesson: after the lesson the wave brings Popo in and Swiftee welcomes him, all eight nets to follow')
