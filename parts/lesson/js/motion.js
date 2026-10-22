@@ -10,9 +10,7 @@
   const G = window.gsap;
   const reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const $ = (sel) => Array.from(document.querySelectorAll('.stage ' + sel));
-  // glow tint: the palette's highlighter colour (CONFIG.palette.hl); resting edge width follows the screen's look
-  // (the opening screens, skin 'intro', are thinner)
-  const intro = () => !!document.querySelector('.stage.skin-intro');
+  // glow tint: the palette's highlighter colour (CONFIG.palette.hl)
   const hex = ((window.CONFIG && CONFIG.palette && CONFIG.palette.hl) || '#fbbf24').replace('#', '');
   const RGB = [0, 2, 4].map((i) => parseInt(hex.substr(i, 2), 16)).join(',');
   const tint = (a) => 'rgba(' + RGB + ',' + a + ')';
@@ -21,6 +19,25 @@
   const ENTER = { duration: 0.6, ease: 'back.out(1.3)' };
   let ctx = G ? G.context(() => {}) : null;
   const add = (fn) => (ctx ? ctx.add(fn) : null);
+  // An angle sweeps open from its first arm to its second (Fishing Frenzy's lesson): its wedge's path ("M vertex
+  // L arm-start A r r 0 0 sweep arm-end Z") is rebuilt as the sweep grows, and put back as drawn at the end (or by
+  // clear(), if a screen change cuts it short)
+  const sweeps = [];
+  const sweep = (w, at, dur) => {
+    const d0 = w.getAttribute('d'), n = ((d0 || '').match(/-?\d+(\.\d+)?/g) || []).map(Number);
+    if (n.length < 11) return;
+    const vx = n[0], vy = n[1], sx = n[2], sy = n[3], R = n[4], f = n[8], a1 = Math.atan2(sy - vy, sx - vx);
+    let da = Math.atan2(n[10] - vy, n[9] - vx) - a1;
+    if (f === 1) { while (da < 0) da += Math.PI * 2; } else { while (da > 0) da -= Math.PI * 2; }
+    const rec = { w: w, d0: d0, done: false }, r1 = (v) => Math.round(v * 10) / 10;
+    const set = (t) => { const a = a1 + da * t;
+      w.setAttribute('d', 'M' + vx + ',' + vy + ' L' + sx + ',' + sy + ' A' + R + ',' + R + ' 0 0 ' + f + ' ' + r1(vx + R * Math.cos(a)) + ',' + r1(vy + R * Math.sin(a)) + ' Z'); };
+    const end = () => { if (!rec.done) { rec.done = true; if (w.getAttribute('d') !== d0) w.setAttribute('d', d0); } };
+    sweeps.push(rec);
+    set(0.001);
+    const p = { t: 0 };
+    add(() => G.to(p, { t: 1, delay: at, duration: dur, ease: 'power1.inOut', onUpdate: () => { if (!rec.done) set(Math.max(0.001, p.t)); }, onComplete: end }));
+  };
   // the labels are centred on their point by CSS (translate -50% -50%); GSAP keeps that while it owns the transform
   const centred = (els) => G.set(els, { xPercent: -50, yPercent: -50, x: 0, y: 0 });
   // every element any Motion animation touches (Motion.clear wipes their animated properties on screen change)
@@ -36,6 +53,7 @@
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
       if (ctx) ctx.revert();
+      sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
       const els = $(ANIMATED); // (none yet before the lesson's first screen: GSAP warns about an empty target)
       if (G && els.length) G.set(els, { clearProps: 'opacity,transform,filter,textShadow,strokeWidth,translate,rotate,scale' });
       // GSAP pins SVG origins to 0 0 whenever it touches an SVG element (even while clearing), so drop that by hand
@@ -88,9 +106,9 @@
         sides.forEach((s, i) => {
           const el = $(s[0])[0]; if (!el) return;
           // immediateRender off: the side keeps fading out with the old shape until its own entrance starts
-          tl.fromTo(el, { opacity: 0, x: s[1], y: s[2], strokeWidth: intro() ? 5.5 : 7, filter: GLOW() },
+          tl.fromTo(el, { opacity: 0, x: s[1], y: s[2], strokeWidth: 7, filter: GLOW() },
             { opacity: 1, x: 0, y: 0, duration: reduced ? 0 : 0.55, ease: 'power3.out', immediateRender: false }, 0.45 + i * 0.6)
-            .to(el, { strokeWidth: intro() ? 3.5 : 5, filter: NOGLOW(), duration: 0.3, ease: 'sine.out' }, '>-0.05')
+            .to(el, { strokeWidth: 5, filter: NOGLOW(), duration: 0.3, ease: 'sine.out' }, '>-0.05') // (every side 5, as Fishing Frenzy's)
             .call(() => onLand && onLand(i), null, 0.45 + i * 0.6 + (reduced ? 0 : 0.3)); // power3.out: ~95% there at 0.3 s
         });
         tl.call(() => onSettle && onSettle(), null, 3.0)
@@ -133,18 +151,50 @@
     },
 
     // screen 10: the shape scales up into place (86% -> 100%, fading in), then its corner letters come in one by one
-    // and the parallel arrows settle on last
+    // and the parallel arrows glide onto their sides last, the way they point (a glide of their own arrival, if the screen
+    // was jumped to, gives way to this one)
     enterShape(cx, cy) {
       if (!G) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0], labels = $('.board .tag.vlab'), marks = $('.par-ch'), k = reduced ? 0 : 1;
+      G.killTweensOf(marks);
       add(() => {
         const tl = G.timeline();
         tl.set(labels.concat(marks), { opacity: 0 }, 0);
         if (g) tl.fromTo(g, { scale: 0.86, opacity: 0, svgOrigin: cx + ' ' + cy }, { scale: 1, opacity: 1, svgOrigin: cx + ' ' + cy, duration: 0.7 * k, ease: 'power2.out' }, 0);
         if (d) tl.fromTo(d, { scale: 0.86, opacity: 0, transformOrigin: cx + 'px ' + cy + 'px' }, { scale: 1, opacity: 1, transformOrigin: cx + 'px ' + cy + 'px', duration: 0.7 * k, ease: 'power2.out' }, 0);
-        tl.to(labels, { opacity: 1, duration: 0.35 * k, stagger: 0.08 * k, ease: 'sine.out' }, 0.55 * k)
-          .to(marks, { opacity: 1, duration: 0.4 * k, ease: 'sine.out' }, 0.8 * k);
+        tl.to(labels, { opacity: 1, duration: 0.35 * k, stagger: 0.08 * k, ease: 'sine.out' }, 0.55 * k);
+        marks.forEach((m) => {
+          const cs = getComputedStyle(m), gx = parseFloat(cs.getPropertyValue('--gx')) || 0, gy = parseFloat(cs.getPropertyValue('--gy')) || 0;
+          tl.fromTo(m, { opacity: 0, x: gx, y: gy }, { opacity: 1, x: 0, y: 0, duration: 0.8 * k, ease: 'power2.out' }, 0.8 * k);
+        });
         return tl;
+      });
+    },
+
+    // the parallel arrows that have just come on screen glide onto their sides the way they point (0.8 s, power2.out:
+    // --gx, --gy from the engine), as Fishing Frenzy's chevIn; arrows already showing stay as they are (data-in), and
+    // hidden ones forget. Called after each render
+    glideMarks() {
+      $('.par-ch').forEach((m) => {
+        if (m.getAttribute('display') === 'none') { m.removeAttribute('data-in'); return; }
+        if (m.hasAttribute('data-in')) return;
+        m.setAttribute('data-in', '1');
+        if (!G || reduced) return;
+        const cs = getComputedStyle(m), gx = parseFloat(cs.getPropertyValue('--gx')) || 0, gy = parseFloat(cs.getPropertyValue('--gy')) || 0;
+        add(() => G.fromTo(m, { opacity: 0, x: gx, y: gy }, { opacity: 1, x: 0, y: 0, duration: 0.8, ease: 'power2.out', clearProps: 'opacity,transform' }));
+      });
+    },
+
+    // every filled angle that has just come on screen sweeps open (called after each render): A -> D in their .d0-.d3
+    // order, 0.3 s apart, as Fishing Frenzy's anglesIn; one shown before stays as it is, and a hidden one forgets
+    sweepWedges() {
+      if (!G) return;
+      $('.angle-marks .wedge').forEach((w) => {
+        if (w.getAttribute('display') === 'none') { w.removeAttribute('data-swept'); return; }
+        if (w.hasAttribute('data-swept')) return;
+        w.setAttribute('data-swept', '1');
+        const m = /\bd([0-3])\b/.exec(w.getAttribute('class') || '');
+        if (!reduced) sweep(w, m ? +m[1] * 0.3 : 0, 0.45);
       });
     },
 
