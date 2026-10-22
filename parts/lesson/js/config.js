@@ -51,14 +51,14 @@ const CONFIG = {
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
   card: {
     scale: 2,                        // the shape's largest size (board px -> stage px): each screen draws it as big as fits
-    top: 96, topChips: 150, bottom: 690, // the stack's room: under the question plate (20-90) (or under tags above the shape) to the sand
+    top: 96, topChips: 158, bottom: 690, // the stack's room: under the question plate (20-94) (or under tags above the shape) to the sand
     maxW: 1160, introCx: 860, introW: 680, measureCx: 790, measureW: 940, // widths; screen 1 (as Fishing Frenzy's) and the measuring walks sit right of Swiftee, clear of her bubble
     padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 20, // room round the shape for letters / lengths (board px)
     // answers under the shape (stage px): Fishing Frenzy's answer pills on its card (74 px drawn 1.18x: 87), two-column
     // rows, answer boxes and their tiles
-    optGap: 16, optH: 87, optGapX: 12, fillH: 66, tileH: 64,
+    optGap: 24, optH: 87, optGapX: 12, fillH: 66, tileH: 64,
     chipGap: 8, chipLane: 70, rowsH: 132, chipTopQ: 70, // name tags: gap, one row, two rows, tags above the shape (row top: tags from y 100)
-    optW: 620, pillPad: 40, pillPadLong: 28, pillMin: 200, rowMax: 1040 }, // answer pills (see optRow)
+    optW: 620, pillPad: 40, pillPadLong: 28, pillMin: 150, rowMax: 1040 }, // answer pills (see optRow): each fits its text, short ones set bigger
   board: { x: 640, y: 104 },         // the board's top-left on the stage
   // screen 14's measuring walk: her size on the shape, her spot on the sand (feet) and size there, her walking pace,
   // ms per cm along a side, the pause on each corner, the wait before she sets off and after she is home again

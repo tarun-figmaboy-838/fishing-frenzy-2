@@ -251,9 +251,12 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* answers in two columns (four or five choices) */
 /* answers in rows (optWrap): the short answers side by side in one row, a wide one on its own row under them - every
    pill the same 87 px as on the other screens */
-.wrap{flex-wrap:wrap;row-gap:12px}
+.wrap{flex-wrap:wrap;row-gap:0!important} /* (the row's inline gap is the column gap only) */
 .wrap>.opt{flex:1 1 0px!important}
-.wrap>.opt.wide{flex-basis:100%!important}
+/* a wide answer sits on its own row (the break before it), sized to its text and centred; the row above keeps the gap */
+.wrap::before{content:'';flex-basis:100%;height:0;order:1}
+.wrap>.opt.wide{flex:0 0 auto!important;order:2;margin:0 auto}
+.wrap:has(.wide)>.opt:not(.wide){margin-bottom:12px}
 /* select-all questions: no checkbox or tick icon - a picked answer shows itself by its border, fill and glow alone */
 .multi>.opt{position:relative}
 .multi>.opt.good{box-shadow:0 0 0 4px rgba(46,158,79,.16),0 4px 0 #23803f}
@@ -394,6 +397,7 @@ a{color:#123b63}a:hover{color:#0b2742}
   color:#4a2300;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;letter-spacing:.3px;text-shadow:0 1.5px 0 rgba(255,244,200,.75);
   filter:drop-shadow(0 6px 8px rgba(120,60,0,.22));transition:transform .12s ease,filter .12s ease,opacity .3s ease}
 .stage .opt:not(.gridopt){font-size:36px;padding:0 22px}
+.stage .opt:not(.gridopt).short{font-size:42px} /* a short answer (68°, 6 cm) fills its pill */
 .stage .opt:not(.gridopt)::after,.stage .tile:not(.ghost)::after,.stage .next::after{content:'';position:absolute;z-index:-1;left:12%;top:10%;width:24%;height:24%;border-radius:50%;background:rgba(255,255,255,.72);pointer-events:none}
 .stage .opt:not(.gridopt):hover:not(:disabled),.stage .tile:not(.ghost):hover,.stage .next:hover:not(:disabled){transform:translateY(-3px);filter:brightness(1.05) drop-shadow(0 9px 10px rgba(120,60,0,.26))}
 .stage .opt:not(.gridopt):active:not(:disabled),.stage .tile:not(.ghost):active,.stage .next:active:not(:disabled){transform:translateY(4px);transition-duration:.06s;

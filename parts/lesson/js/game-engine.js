@@ -1933,7 +1933,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     let m = this._measure;
     if (m === undefined) { try { m = document.createElement('canvas').getContext('2d') || null; } catch (e) { m = null; } this._measure = m; }
     if (!m) m = { font: '', measureText: (t) => ({ width: t.length * (parseFloat(m.font.slice(4)) || 26) * 0.52 }) }; // no canvas (headless test): an estimate
-    const textW = (o) => { const t = o.t || o.id, long = t.length > 14; m.font = '700 ' + (long ? 28 : 36) + "px 'Baloo 2', system-ui, sans-serif"; return m.measureText(t).width + 2 * (long ? C.pillPadLong : C.pillPad); };
+    // a pill's width for its text: short answers (68°, 6 cm) are set bigger, long ones smaller (css .opt.short / .long)
+    const textW = (o) => { const t = o.t || o.id, long = t.length > 14, short = t.length <= 4; m.font = '700 ' + (long ? 28 : short ? 42 : 36) + "px 'Baloo 2', system-ui, sans-serif"; return m.measureText(t).width + 2 * (long ? C.pillPadLong : C.pillPad); };
     const narrow = O.filter((o) => !o.wide), cols = Math.max(1, narrow.length);
     let pw = Math.max(C.pillMin, ...narrow.map(textW));
     pw = Math.min(pw, (C.rowMax - gap * (cols - 1)) / cols);
@@ -1979,7 +1980,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const optPulse = s.hand && s.hand.kind === 'opts';
     // soloOk: once answered, the other answers fold away and the right one settles alone in the centre
     const solo = !!(st.soloOk && s.done);
-    const mk = (o) => ({ id: o.id, t: o.t || o.id, cls: (s.picks[o.id] || (optPulse && !s.done ? 'nudged' : '')) + (o.wide ? ' wide' : '') + ((o.t || '').length > 14 ? ' long' : '') + (solo ? (o.ok ? ' solo' : ' leave') : ''), dis: !!s.picks[o.id] || s.done, pick: () => this.pick(o) });
+    const mk = (o) => ({ id: o.id, t: o.t || o.id, cls: (s.picks[o.id] || (optPulse && !s.done ? 'nudged' : '')) + (o.wide ? ' wide' : '') + ((o.t || o.id).length > 14 ? ' long' : (o.t || o.id).length <= 4 ? ' short' : '') + (solo ? (o.ok ? ' solo' : ' leave') : ''), dis: !!s.picks[o.id] || s.done, pick: () => this.pick(o) });
     const c1 = {};
     if (st.grid) st.opts.forEach((o) => { c1[o.id] = mk(o); });
     // screen-change fade class; combined classes below are built here because the template runtime drops a class
