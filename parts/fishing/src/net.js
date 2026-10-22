@@ -385,6 +385,7 @@ class Net {
     const near = (a, b, tol) => Math.abs(a - b) <= tol;
     let ok;
     switch (L.type) {
+      case 'free': ok = true; break; // (the warm-up: nothing to set)
       case 'parallel': ok = this.pairParallel(L.sides); break;
       case 'length': ok = near(this.metres(L.side), L.metres[L.reference], EXACT.metres); break;
       case 'sides': ok = near(this.metres('CD'), L.metres.AB, EXACT.metres) && near(this.metres('BC'), this.metres('AD'), EXACT.metres); break;
@@ -400,6 +401,7 @@ class Net {
   glowFor(level) {
     const both = [{ sides: ['AB', 'CD'] }, { sides: ['BC', 'AD'] }];
     switch (level.type) {
+      case 'free': return [];
       case 'parallel': return level.both ? both : [{ sides: level.sides }];
       case 'length': return [{ sides: [level.reference, level.side] }];
       case 'sides': return both;
@@ -864,6 +866,7 @@ class Net {
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     const slope = (name) => `${this.slopeShown(name)}°`.replace('-', '−');
     switch (L.type) {
+      case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel':
         // the parallel marks say which sides; their slopes, side by side, say whether they are
         // (the marks never light up by themselves: the numbers tell, and Drop Net decides)

@@ -40,7 +40,7 @@
 <!-- the page is the lake (1920 x 1080 = the journey world 1672 x 941 at 1.1483): the water (js/water.js), the lake under the card
      and the Lanternfish Parade and existing lesson card (js/opening.js), then the lesson's stage over the whole page (1280 x 720 at 1.5) on the coral cove scene -->
 <canvas class="water-gl" width="960" height="540" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none; visibility: hidden; transform-origin: 50% 100%"></canvas>
-<canvas class="water-bg" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none; background: #1a78c8 url(assets/images/water-bg.webp) center / cover no-repeat"></canvas>
+<canvas class="water-bg" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none; background: #2a86e0 url(assets/images/lake.webp) 0 195px / 1920px 1080px no-repeat"></canvas>
 <canvas class="op-scene" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <canvas class="op-curtain" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <div class="stage {{sceneCls}}" style="position: absolute; left: 0px; top: 0px; width: 1280px; height: 720px; transform: translate(225.07px, 126.32px) scale(1.14833); transform-origin: 0 0" onPointerDown="{{rootDown}}" onPointerMove="{{rootMove}}" onPointerUp="{{rootUp}}" onPointerCancel="{{rootUp}}">
@@ -222,7 +222,6 @@ var Component = window.TrapeziumGame;
 <script src="js/stage-fit.js"></script>
 <script>window.PopoGame = { STAGE_W: 1672, STAGE_H: 941, SEABED_Y: 805 }; /* the fishing games' world, for js/water-gl.js */</script>
 <script src="js/water-gl.js"></script>
-<script src="js/water-manifest.js"></script>
 <script src="js/water.js"></script>
 <script src="js/opening.js"></script>
 <script src="js/confetti.js"></script>

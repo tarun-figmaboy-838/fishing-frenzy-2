@@ -20,7 +20,7 @@
   const CARD = { x: 836, y: 470, w: 1494, h: 1494 * 828 / 1618 }; // the card keeps the sea card's own proportions
   const PEARL = { x: 836, y: 929, size: 1.12 };
   const BUBBLE = { radius: 290, seed: 62, blow: 0.3, pop: 0.78 };
-  const DIVE_ZOOM = 1.85, DIM = 0.55, DIM_OPEN = 0.25, SEABED_Y = 805; // DIM_OPEN: the lake round the open card, lighter so its water shows moving
+  const DIVE_ZOOM = 1.85, DIM = 0.55, DIM_OPEN = 0.25, SEABED_Y = 805, PAN = 170; // PAN: the game's framing (water.js) // DIM_OPEN: the lake round the open card, lighter so its water shows moving
   const ART = new Image(); ART.src = 'assets/images/sea-card.webp'; // the sea card (assets/Sea Card.png, 1618 x 828, transparent corners)
   const reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const ease = {
@@ -201,7 +201,7 @@
 
   // ---------- state ----------
   const S = {
-    on: false, t: 0, dive: 0, dim: 0, glow: 0, beam: 0, flash: 0, emerge: 0, open: false, spawning: false,
+    on: false, t: 0, pan: 1, dive: 0, dim: 0, glow: 0, beam: 0, flash: 0, emerge: 0, open: false, spawning: false,
     shell: { alpha: 0, open: 0, rock: 0, squash: 0, leak: 0, pearl: 1 }, motes: [], pops: [], fish: [], bubbles: [], bubbleDue: 0
   };
   for (let i = 0; i < 6; i++) S.fish.push({ x: Math.random() * W, y: 470 + Math.random() * 280, v: (14 + Math.random() * 16) * (Math.random() < 0.5 ? -1 : 1), k: 0.7 + Math.random() * 0.6, ph: Math.random() * TAU });
@@ -242,6 +242,7 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, sc.width, sc.height);
     if (!S.on) return;
     ctx.setTransform(SCALE * z, 0, 0, SCALE * z, SCALE * (W / 2) * (1 - z), SCALE * H * (1 - z));
+    ctx.translate(0, PAN * S.pan); // (the camera's glide from the game's view down to the sand, as the lake: js/water.js)
     S.fish.forEach((f) => {
       ctx.save(); ctx.translate(f.x, f.y + Math.sin(S.t * 0.7 + f.ph) * 6); ctx.scale(Math.sign(f.v) * f.k, f.k);
       ctx.beginPath(); ctx.ellipse(0, 0, 30, 11, 0, 0, TAU); ctx.moveTo(-24, 0); ctx.lineTo(-44, -12); ctx.lineTo(-44, 12); ctx.closePath();
@@ -347,7 +348,7 @@
     last = now;
     if (!canvases() || document.hidden) return;
     update(dt);
-    if (window.Water && Water.dive) Water.dive(zoom());
+    if (window.Water && Water.dive) { Water.dive(zoom()); Water.pan(S.pan); }
     // once the card is up, a slow device draws the shadow fish and bubbles every other frame (as js/water.js does)
     slow = slow * 0.95 + dt * 0.05;
     skip = S.open && slow > 0.024 ? !skip : false;
@@ -376,7 +377,7 @@
       tok++; busy = false;
       S.on = true; S.open = true; staticDrawn = false; S.spawning = false;
       Object.assign(S.shell, { alpha: 0, open: 1, rock: 0, squash: 0, leak: 0, pearl: 1 });
-      Object.assign(S, { dim: DIM_OPEN, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
+      Object.assign(S, { pan: 0, dim: DIM_OPEN, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
       if (!(ART.complete && ART.naturalWidth)) ART.addEventListener('load', () => { staticDrawn = false; }, { once: true });
       run();
     },
@@ -388,6 +389,8 @@
       const tw = (ms, f) => tween(ms, (t) => { if (live()) f(t); }).then(live);
       const q = reduced, snd = (k) => { try { if (live() && sound) sound(k); } catch (e) {} };
       S.on = true; run();
+      // the lesson opens on the lake as the game left it; the camera glides down through the water to the sand
+      if (!await tw(q ? 300 : 1600, (t) => { S.pan = 1 - ease.inOut(t); })) return;
       // the seashell appears on the sand, rattles twice, gathers itself and swings open on its pearl
       snd('bubbles');
       if (!await tw(350, (t) => { S.shell.alpha = t; })) return;

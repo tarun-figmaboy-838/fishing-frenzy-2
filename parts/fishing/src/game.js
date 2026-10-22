@@ -138,6 +138,7 @@ class Game {
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
     this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
+    this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -209,6 +210,7 @@ class Game {
     this.swiftee = null;
     this.wave = null;
     this.awaitingNext = null;
+    this.warmCatches = 0;
     const muted = state.muted;
     resetProgress();
     state.muted = muted;
@@ -431,13 +433,16 @@ class Game {
     state.phase = PHASE.PUZZLE_READY;
     state.idleTime = 0;
     state.misses = 0;
-    this.net.locked = false;
-    this.netRight = false;
+    // the warm-up's net has nothing to set (Popo's plain net: no knob, marks or letters); only Drop Net, and its
+    // instruction is said once, as its first net comes down
+    const free = level.type === 'free';
+    this.net.locked = free;
+    this.netRight = free;
     this.lastTick = { value: this.net.stopAt, at: 0 };
     this.popo.idle();
-    this.ui.showHandle(true);
+    this.ui.showHandle(!free);
     this.ui.setDrop('on');
-    this.instruct(level.prompt);
+    this.instruct(level.prompt, { voice: !(free && this.warmCatches) });
   }
 
   // Reads a line aloud (when it has a recording) for children who can't read it yet. Returns
@@ -713,8 +718,9 @@ class Game {
   // reasons rather than copies. No hint says whether the net is right: Drop Net does. Any
   // touch cancels a hint.
   updateHint(dt) {
-    // a right frame waiting for its next drop needs no hint: the timing is the child's
-    if (state.phase !== PHASE.PUZZLE_READY || this.netRight) return;
+    // a right frame waiting for its next drop needs no hint: the timing is the child's (but in the warm-up the hand
+    // shows where Drop Net is)
+    if (state.phase !== PHASE.PUZZLE_READY || (this.netRight && LEVELS[state.level].type !== 'free')) return;
     if (this.hint) {
       if (this.hint.drag) this.advanceHand(dt);
       else if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; }
@@ -729,6 +735,7 @@ class Game {
   // down (as in Fishing Frenzy). The hand shows how the corner slides (two stops the right way, never all the way to
   // its place) and the plate gives a nudge; on later nets the corner's marks pulse instead of a second hand.
   showHint() {
+    if (LEVELS[state.level].type === 'free') { this.pointAtDrop(); return; }
     const drag = !this.handShown || state.level === 0;
     this.hint = { t: 0, drag };
     this.audio.play('hint');
@@ -738,6 +745,18 @@ class Game {
     } else {
       this.net.hintPulse = 2.4;
     }
+    this.ui.pulseInstruction();
+    this.hintShown = true;
+  }
+
+  // The warm-up's hint: the hand taps Drop Net
+  pointAtDrop() {
+    const b = this.ui.el.drop.getBoundingClientRect(), h = this.ui.el.hits.getBoundingClientRect();
+    if (!b.width) return;
+    this.hint = { t: 0, drag: false };
+    this.audio.play('hint');
+    this.ui.moveHand((b.left + b.width * 0.42 - h.left) / this.ui.scale, (b.top + b.height * 0.55 - h.top) / this.ui.scale);
+    this.ui.showHand(false);
     this.ui.pulseInstruction();
     this.hintShown = true;
   }

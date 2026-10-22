@@ -452,8 +452,12 @@ async function dropNet(game) {
     game.confettiFrom(ring.x, ring.y + net.bottom() * 0.6);
     audio.play('combo3');
     game.storyCue('hop');
+    // the warm-up: Popo cheers each catch (the nets after the lesson have their praise instead)
+    const cheer = LEVELS[state.level].type === 'free' ? game.say(STORY.cheers[game.warmCatches % STORY.cheers.length], token) : null;
+    if (cheer) cheer.catch(() => {});
     await clock.wait(fx.reduced ? 300 : 800, token);
     await collectFish(game, caught, token);
+    if (cheer) await cheer;
     await nextLevel(game, token);
   } catch (e) {
     swallow(e);
@@ -598,50 +602,101 @@ async function collectFish(game, fish, token) {
 }
 
 // --- the journey's hook, Swiftee and the giant wave (as in Fishing Frenzy) -----------------------
-// The warm-up's end. Popo lets the empty net down for another go, and a big fish leaps up under it: it knocks the
-// net's bottom edge sideways, so its sides stay straight and its opposite sides stay parallel, but its corners are no
-// longer square. "Woah! I haven't seen that one before!" Swiftee swoops in with "Let's find out!" and Next comes up.
-// On Next she flies off to the lesson and the giant wave carries Popo away (waveAway); the journey plays the lesson
-// on the empty lake (lessonTime), then the wave brings him back (waveIn) and she welcomes him.
+// The warm-up's end, the journey's problem (as Fishing Frenzy's mystery fish). The school dashes off and Popo lets
+// the empty net down again; a giant fish glides in under it ("Whoa! A giant fish!"), leaps and bites the net's bottom
+// corner, and hangs on, thrashing, dragging the bottom of the net sideways while Popo heaves at the wheel ("Come on,
+// big fish!"); then it breaks free and drops back into the lake. The net springs up, but out of square: its sides
+// are still straight and its opposite sides still parallel, but its corners are no longer square. "Huh?! I haven't
+// seen that one before!" Swiftee swoops in with "Let's find out!" and Next comes up. On Next she flies off to the
+// lesson and the giant wave carries Popo away (waveAway); the journey plays the lesson on the empty lake
+// (lessonTime), then the wave brings him back (waveIn) and she welcomes him.
 async function mystery(game, token) {
-  const { net, fx, audio, popo } = game;
-  const story = STORY.mystery;
+  const { net, fx, audio, winch } = game;
+  const story = STORY.mystery, reduced = fx.reduced, wl = game.waterline;
   state.phase = PHASE.TRANSITIONING;
   game.instruct('');
-  // the school swims off, out of the sea: the lake is left to the big fish (and empty for the lesson's lake)
+  // the school dashes off, out of the sea: something big is coming (and the lake is left empty for the lesson's)
   for (const f of state.fish) if (!f.gone && !f.caught) f.swimAway();
   game.strays.push(...state.fish.filter((f) => !f.gone));
   state.fish = [];
   for (const lane of game.sea.lanes) lane.rush = 3; // (they dash off, as a new school rushes in)
   await letNetDown(game, token);
-  await clock.wait(fx.reduced ? 200 : 700, token);
-  // the big fish: it swims in from the right and leaps up under the net's bottom corner, at the top of its leap
-  const corner = net.toStage(net.points[2]);
-  const ms = 1000, speed = 640, dx = speed * (ms / 1000) * 0.45, wl = game.waterline;
-  const height = Math.max(150, wl + 30 - corner.y + 30);
-  const x0 = corner.x + dx * 0.5; // (it leaps leftward: its top is half its run on)
-  const swimMs = Math.abs(x0 - (STAGE_W + 80)) / speed * 1000;
-  const leap = jump(game, token, NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], x0, -1, { height, ms, scale: 1.25, speed });
-  leap.catch(() => {});
-  await clock.wait(swimMs + ms * 0.5, token);
-  // the knock: the bottom edge swings left and springs back a little short of where it was, out of square
-  const before = net.points.map((p) => ({ ...p }));
-  const push = Math.round((before[1].x - before[0].x) * 0.3);
-  audio.play('thud');
-  audio.play('boing');
-  fx.splash(corner.x, wl, true);
-  fx.sparkle(corner.x, corner.y, 12);
-  net.swing = fx.reduced ? 0 : -0.06;
-  const woah = game.say(story.woah, token);
-  woah.catch(() => {});
-  await clock.tween(fx.reduced ? 200 : 700, token, (t) => {
-    const k = fx.reduced ? t : ease.outBack(t);
-    net.points = before.map((p, i) => (i >= 2 ? { x: p.x - push * k, y: p.y } : { ...p }));
-    net.swing *= 0.94;
-  });
-  net.swing = 0;
-  await woah;
-  await leap;
+  await clock.wait(reduced ? 200 : 600, token);
+  // the giant fish glides in from the right, under the net
+  const corner = () => net.toStage(net.points[2]);
+  const big = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], STAGE_W + 200, wl + 170, -1, 1.9);
+  game.leapers.push(big);
+  try {
+    audio.play('whoosh');
+    const start = { x: big.x, y: big.y }, under = { x: corner().x + 70, y: wl + 120 };
+    const whoa = game.say(story.whoa, token);
+    whoa.catch(() => {});
+    await clock.tween(reduced ? 600 : 1400, token, (t) => {
+      const k = ease.out(t);
+      big.x = start.x + (under.x - start.x) * k;
+      big.y = start.y + (under.y - start.y) * k + Math.sin(t * 9) * 4;
+      if (Math.random() < 0.3) fx.puff(big.x + big.w * 0.45, big.y, 1, 1);
+    });
+    await whoa;
+    // it leaps and bites the net's bottom corner
+    audio.play('leap');
+    const from = { x: big.x, y: big.y };
+    let out = false;
+    await clock.tween(reduced ? 250 : 450, token, (t) => {
+      const c = corner(), k = t * t;
+      big.x = from.x + (c.x + 20 - from.x) * k;
+      big.y = from.y + (c.y + 30 - from.y) * k;
+      big.pitch = -0.7 * t;
+      if (!out && big.y < wl) { out = true; fx.splash(big.x, wl, true); audio.play('splashBig'); }
+    });
+    // the tug-of-war: it thrashes, dragging the bottom of the net sideways; Popo heaves at the wheel
+    const before = net.points.map((p) => ({ ...p }));
+    const push = Math.round((before[1].x - before[0].x) * 0.32);
+    audio.play('struggle');
+    const heave = game.say(story.heave, token);
+    heave.catch(() => {});
+    winch.working = -1;
+    audio.crank(reduced ? 0.6 : 1.8);
+    let lastT = 0;
+    await clock.tween(reduced ? 600 : 1800, token, (t) => {
+      const pull = Math.min(1, t * 1.6), shake = reduced ? 0 : Math.sin(t * 48) * 6 * (1 - t * 0.5);
+      net.points = before.map((p, i) => (i >= 2 ? { x: p.x - push * pull + shake, y: p.y + 14 * pull } : { ...p }));
+      net.swing = reduced ? 0 : Math.sin(t * 30) * 0.03;
+      const c = corner();
+      big.x = c.x + 18 + Math.sin(t * 40) * 6;
+      big.y = c.y + 32 + Math.cos(t * 35) * 5;
+      big.pitch = -0.6 + Math.sin(t * 30) * 0.2;
+      winch.turn(-(t - lastT) * 120);
+      lastT = t;
+    });
+    winch.working = 0;
+    // it breaks free and drops back into the lake; the net springs up, but out of square
+    audio.play('boing');
+    const pulled = net.points.map((p) => ({ ...p }));
+    const left = before.map((p, i) => (i >= 2 ? { x: p.x - push, y: p.y } : { ...p }));
+    const drop = { x: big.x, y: big.y };
+    let back = false;
+    net.swing = reduced ? 0 : -0.05;
+    await clock.tween(reduced ? 300 : 700, token, (t) => {
+      const k = reduced ? t : ease.outBack(t);
+      net.points = pulled.map((p, i) => ({ x: p.x + (left[i].x - p.x) * k, y: p.y + (left[i].y - p.y) * k }));
+      net.swing *= 0.95;
+      big.x = drop.x - 120 * t;
+      big.y = drop.y + 380 * t * t;
+      big.pitch = 0.9 * t;
+      if (!back && big.y > wl) { back = true; fx.splash(big.x, wl, true); audio.play('splashBig'); }
+    });
+    net.swing = 0;
+    await heave;
+    // ...and swims off, deep, out of the lake
+    const gone = { x: big.x, y: big.y };
+    clock.tween(1400, token, (t) => { big.x = gone.x - 1100 * t; big.y = gone.y + (wl + 190 - gone.y) * Math.min(1, t * 3); big.pitch = 0.4 * (1 - t); })
+      .then(() => { game.leapers = game.leapers.filter((f) => f !== big); }).catch(() => {});
+  } catch (e) {
+    game.leapers = game.leapers.filter((f) => f !== big);
+    throw e;
+  }
+  await game.say(story.huh, token);
   await game.say(story.after, token);
   await swifteeArrives(game, story.swiftee, token);
   await clock.wait(250, token);
@@ -834,8 +889,16 @@ async function nextLevel(game, token) {
     await celebrate(game, token);
     return;
   }
-  // after the warm-up, in the journey: the hook, Swiftee, the giant wave, the lesson and the welcome back
-  const hook = LEVELS[state.level].warmup && game.lessonAfter;
+  // the warm-up: the same plain net comes down again, the school topped up, until its catches are in
+  const level = LEVELS[state.level];
+  if (level.warmup && ++game.warmCatches < level.drops) {
+    game.spawnSchool();
+    await letNetDown(game, token);
+    game.beginPuzzle();
+    return;
+  }
+  // after the warm-up, in the journey: its problem, Swiftee, the giant wave, the lesson and the welcome back
+  const hook = level.warmup && game.lessonAfter;
   if (hook) await mystery(game, token);
   // the fish the net missed swim on and are joined by more for the next net (rowing to new
   // waters, they come along); only for the golden school do they swim off out of the sea, as

@@ -3,16 +3,17 @@
 A voiced maths adventure about parallelograms: part 2 of Fishing Frenzy, played the way part 1 is, as one journey:
 
 1. **The front page** is Popo's live "Fishing Frenzy 2" banner (`parts/fishing`): Popo on his raft, the logo, Play.
-2. **The warm-up** (`parts/fishing`): Popo fishes with his net on the winch; the child sets its corner for two right
-   angles (a rectangle) and drops it on the real fish. Then the hook: a big fish knocks the net out of square into a
-   shape Popo has never seen ("Woah! I haven't seen that one before!"), Swiftee swoops in with "Let's find out!" and
-   Next, and the giant wave carries Popo away.
-3. **Swiftee's parallelogram lesson** (`parts/lesson`), over the empty lake: a seashell opens, its pearl blows up the
+2. **The warm-up** (`parts/fishing`): Popo fishes with his net on the winch; the child just taps Drop Net as fish swim
+   under it, three catches, Popo cheering each. Then the problem: a giant fish grabs the net and pulls it out of square
+   before it breaks free ("Whoa! A giant fish!", "Come on, big fish!", "Huh?! I haven't seen that one before!");
+   Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo away.
+3. **Swiftee's parallelogram lesson** (`parts/lesson`), on the same lake (the game's own, through its water pass):
+   the camera glides down to the sand, a seashell opens, its pearl blows up the
    lesson's card and Swiftee, in her diving mask, dives in. 59 screens: from a trapezium to a parallelogram, its sides,
    angles and diagonals, three checkpoints and a recall. Each screen moves on by itself once its voice is done; a
    screen that asks for something waits for it.
-4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job! Now,
-   let's help Popo catch some fish!"), and eight nets, each a property to set before the net drops, asked as the
+4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job! Yay!
+   Shape detective!"), and eight nets, each a property to set before the net drops, asked as the
    lesson asks it; then "The End", and Play Again goes back to the front page.
 
 Two voices only: Popo's, and Swiftee's studio voice for every other line in both parts.

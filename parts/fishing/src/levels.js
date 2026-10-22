@@ -22,19 +22,17 @@ const LOCATIONS = [
 // `metres` gives a side's length in centimetres (the lesson's unit, so the nets ask what Swiftee asks there), which
 // sets the scale of every measurement shown; with two, both show as given.
 // Each level teaches one property; `type` picks the check (see Net.check).
-// The first net is the warm-up, before the lesson (as Fishing Frenzy's shape fishing is): a shape the child already
-// knows, a rectangle (all four angles 90°), so nothing is asked that the lesson hasn't taught yet. Its catch ends in
-// the journey's hook (sequences.js, mystery): a big fish knocks the net out of square into a shape Popo has never
-// seen, and Swiftee flies in with "Let's find out!". The eight nets after the lesson teach the parallelogram.
+// The first net is the warm-up, before the lesson (as Fishing Frenzy's shape fishing is): just fun, nothing to set -
+// Popo's usual net, a rectangle, and the child taps Drop Net when fish swim under it (`type: 'free'`), `drops` times,
+// Popo cheering each catch. Then the journey's problem (sequences.js, mystery): a giant fish grabs the net and pulls it
+// out of square before it breaks free; Popo has never seen that shape, and Swiftee flies in with "Let's find out!". The eight nets after the lesson teach the parallelogram.
 // Every line on the plate (prompt, praise, hint) is one Swiftee has recorded - the lesson's own, or Fishing Frenzy's -
 // so the whole game is heard in her voice and Popo's only (voice-data.js). `both`: both pairs of sides light up.
 const LEVELS = [
-  { title: 'Warm-up', warmup: true, type: 'angle', vertex: 'C', reference: 'A', degrees: 90, corner: 'C', along: 'DC',
-    width: 420, height: 200, angleA: 90, start: -6, // a rectangle once ∠C is 90° too
-    location: 0, fish: 3, hintDelay: 4,
-    prompt: 'Look for two *right* angles!',
-    praise: 'Yay! Shape *detective!*',
-    hint: 'Look at the marked *angles!*' },
+  { title: 'Warm-up', warmup: true, type: 'free', drops: 3, corner: 'C', along: 'DC',
+    width: 420, height: 200, angleA: 90, start: 0, // Popo's net as it is: a rectangle, nothing to set
+    location: 0, fish: 4, hintDelay: 4,
+    prompt: "Now, let's help Popo catch some *fish!*", praise: '', hint: '' },
   { title: 'Make it Parallel', type: 'parallel', sides: ['BC', 'AD'], corner: 'B', along: 'AB',
     width: 440, height: 200, lean: 60, start: -5, // slides along AB (so AB stays parallel to CD), from the left of its place
     location: 0, fish: 3, hintDelay: 3.5,
@@ -129,17 +127,26 @@ const STORY = {
   empty: { who: 'popo', text: 'Huh?!' },
   golden: { who: 'popo', text: '*Woah!*', cue: { word: 0, do: 'hop' } },
   complete: [{ who: 'popo', text: '*Wow!*', cue: { word: 0, do: 'hop' } }, { who: 'popo', text: 'What a *catch!*' }],
-  // the warm-up's end, the journey's hook (as Fishing Frenzy's mystery fish): a big fish knocks the net out of square
+  // the warm-up's catches: Popo cheers each one (his recordings from Fishing Frenzy)
+  cheers: [
+    { who: 'popo', text: 'Great *catch!*' },
+    { who: 'popo', text: '*Wow!*' },
+    { who: 'popo', text: 'Ha ha *ha!*' },
+  ],
+  // the warm-up's end, the journey's problem (as Fishing Frenzy's mystery fish): a giant fish grabs the net, Popo heaves,
+  // and it breaks free, leaving the net pulled out of square into a shape Popo has never seen
   mystery: {
-    woah: { who: 'popo', text: '*Woah!*', cue: { word: 0, do: 'exclaim' } },
-    after: { who: 'popo', text: "I haven't seen *that* one before!", cue: { word: 3, do: 'wonder' } },
+    whoa: { who: 'popo', text: 'Whoa! A *giant* fish!', cue: { word: 0, do: 'exclaim' } },
+    heave: { who: 'popo', text: 'Come *on*, big fish!' },
+    huh: { who: 'popo', text: 'Huh?!', cue: { word: 0, do: 'wonder' } },
+    after: { who: 'popo', text: "I haven't seen *that* one before!" },
     // stays up beside Swiftee until Next is pressed
     swiftee: { who: 'swiftee', text: "Let's find *out!*", cue: { word: 2, do: 'twirl' }, stay: true },
   },
   // after the lesson: the giant wave has brought Popo back, and Swiftee swoops in from it
   welcome: [
     { who: 'swiftee', text: '*Great* job!', cue: { word: 0, do: 'twirl' } },
-    { who: 'swiftee', text: "Now, let's help Popo catch some *fish!*", cue: { word: 6, do: 'hop' } },
+    { who: 'swiftee', text: 'Yay! Shape *detective!*', cue: { word: 0, do: 'hop' } },
   ],
 };
 

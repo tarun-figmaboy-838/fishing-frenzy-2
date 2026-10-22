@@ -8,10 +8,10 @@ presses Drop Net when fish swim under it. A right net locks with its praise on t
 nets whoever is under it as it lands, closes into a bag (a potli) around them as it is hauled
 up, and the fish hop into the bucket; one that lands on nothing comes up empty and can be
 dropped again. A wrong net goes down all the same, but the catch thrashes, tears through the
-bag and drops back into the sea. It is part 2 of Fishing Frenzy and plays like part 1: a warm-up net
-(a rectangle, which the child already knows), then the hook - a big fish knocks the net out of square into a shape
-Popo has never seen, Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo off to the
-lesson; after it the wave brings him back, Swiftee welcomes him, and eight nets teach the parallelogram's properties
+bag and drops back into the sea. It is part 2 of Fishing Frenzy and plays like part 1: a warm-up (Popo's plain
+net, nothing to set: the child taps Drop Net as fish swim under it, three catches, Popo cheering each), then the
+problem - a giant fish grabs the net and pulls it out of square before it breaks free, Popo has never seen that shape,
+Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo off to the lesson; after it the wave brings him back, Swiftee welcomes him, and eight nets teach the parallelogram's properties
 one by one, then the end screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and "The End" pops
 in. Only two voices are heard: Popo's, and Swiftee's for everything else.
 
@@ -50,9 +50,10 @@ journey` part of `src/game.js`:
   - `story` — at once: the game goes on as Play does on its own (the narrator, the first school,
     the warm-up net). `args.lesson`: the lesson follows the warm-up; `args.afterLesson`
     (`?start=lesson`): the lesson came first, so the wave brings Popo in and the nets begin.
-  - After the warm-up's catch (`mystery` in `src/sequences.js`, from `nextLevel`): the big fish
-    knocks the net out of square ("Woah! I haven't seen that one before!"), Swiftee swoops in
-    with "Let's find out!" and Next comes up. On Next she flies off, the net winds up and the
+  - After the warm-up's three catches (`mystery` in `src/sequences.js`, from `nextLevel`): a giant
+    fish bites the net's corner and drags it out of square while Popo heaves ("Whoa! A giant fish!",
+    "Come on, big fish!"), then breaks free ("Huh?! I haven't seen that one before!"); Swiftee
+    swoops in with "Let's find out!" and Next comes up. On Next she flies off, the net winds up and the
     giant wave (`../shared/wave.js`, the water pass's `uHump`) carries Popo away (`waveAway`);
     with the lake empty the game tells the shell (`Game.lessonTime`:
     `Journey.finish({ intro: true, warmup: true, fish })`) and the lesson dissolves in over it.
@@ -63,8 +64,8 @@ journey` part of `src/game.js`:
     (`AudioEngine.hold`).
   - `resume` — the lesson is over: the game wakes (its music fading back in) while the lesson
     dissolves away (`Game.goOn`); the wave rolls in from the left with Popo on its crest and
-    sets him down on his spot (`waveIn`), Swiftee swoops in with "Great job! Now, let's help
-    Popo catch some fish!" (`welcome`), and the eight parallelogram nets follow.
+    sets him down on his spot (`waveIn`), Swiftee swoops in with "Great job! Yay! Shape
+    detective!" (`welcome`), and the eight parallelogram nets follow.
   - `title` — after Play Again: the end screen's circle closes and opens on the banner from its
     start (`closeCurtain(game, { title: true })`), ready for the next Play.
   - `wake` — a dev panel jump: the game draws again (with its music, if it had it) without its
@@ -115,7 +116,7 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Phases** (`src/state.js`): one phase at a time decides what input is allowed: title,
   intro, puzzleReady, dragging, netLowering, catching, netRaising, netBreaking,
   levelComplete, transitioning, gameComplete. Pause is a flag over the top.
-- **Levels** (`src/levels.js`): the warm-up (two right angles: the net becomes a rectangle),
+- **Levels** (`src/levels.js`): the warm-up (`type: 'free'`: Popo's plain net, three drops),
   then eight nets, each teaching one property with its own check (`type`) and asking it as
   the lesson asks it, in centimetres: 1 drag B to make BC parallel to AD, 2 make the other
   pair (AB, CD) parallel too, 3 AB = 7 cm: CD, 4 AB = 8 cm and BC = 5 cm: CD and AD, 5 ∠A =

@@ -84,15 +84,16 @@ js/
   lesson-data.js        every screen as data, in play order (the comment at its top lists every option)
   game-engine.js        the lesson: narration, flow, geometry, drags, checks, values for the markup, the journey hooks
   motion.js             the GSAP animations a screen plays (cleared on every screen change)
-  opening.js            the seashell, the pearl's bubble and the card, on the lake (water.js: the lake itself)
+  opening.js            the seashell, the pearl's bubble and the card, on the lake (water.js: the lake itself, the
+                        fishing game's own Snowy Bay through its water pass, water-gl.js)
   swiftee.js, swiftee-manifest.js, walker.js    Swiftee and her measuring walk
   costume.js, dive-mask.js, mask-anchors.js, scarf-occlusion.js    her diving mask
   voice.js, vo_lines.js the voice-over player and its generated line -> clip map
-  sfx.js, confetti.js, stage-fit.js, water-manifest.js
+  sfx.js, confetti.js, stage-fit.js
 assets/                 images, the correct / incorrect sounds, vo/ (118 Ogg Opus clips)
 swiftee-assets/         Swiftee's sprite sheets (the expressions the lesson plays)
 docs/VOICEOVER.md       how the voice-over is made and played
-tools/                  vo_build.js + vo_script.json (the voice-over), build-water.js + water-painting.png (the lake)
+tools/                  vo_build.js + vo_script.json (the voice-over)
 VO_GENERATION_PROMPT.md the prompt used to voice the lines in the studio
 ```
 

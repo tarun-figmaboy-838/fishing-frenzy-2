@@ -68,7 +68,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            again: !$('btn-again').hidden, dialogue: g.dialogue ? g.dialogue.who : null, ending: !!g.ending, title: g.title.visible,
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
-           away: Math.abs(g.popo.travelShift) > 1600 }; }'''
+           away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
@@ -245,11 +245,12 @@ def silent(s):
 
 
 def catch_level(r, n, shot):
-    """Net n (0 = level 1) with real input: the corner onto its place (drag, or arrow taps by touch), then Drop Net as
-    fish swim under the net; a drop the fish swim out from under goes again."""
+    """Net n (its LEVELS index: 1 is the first parallelogram net, after the warm-up) with real input: the corner onto its
+    place (drag, or arrow taps by touch), then Drop Net as fish swim under the net; a drop the fish swim out from under
+    goes again."""
     ff = part(r.page, 'fishing')
-    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n + 1} is ready')
-    check(not st['ok'], f'{r.tag}: net {n + 1} comes down, its corner off its place', f"stop {st['stop']}")
+    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n} is ready')
+    check(not st['ok'], f'{r.tag}: net {n} comes down, its corner off its place', f"stop {st['stop']}")
     before = st['caught']
     if r.touch:
         for _ in range(abs(st['stop'])):
@@ -268,6 +269,15 @@ def catch_level(r, n, shot):
     st = until(r.fish, lambda s: s['ok'], 5, 'the corner on its place')
     check(st['stop'] == 0, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"})')
     r.shot(f'{shot}a-level-{n + 1}')
+    st = drop_when_under(r, before, 'the catch')
+    check(st['caught'] > before, f'{r.tag}: net {n}: Drop Net as fish swim under the net catches some', f"{st['caught'] - before} fish")
+    r.page.wait_for_timeout(900)
+    r.shot(f'{shot}b-catch')
+
+
+def drop_when_under(r, before, what):
+    """Drop Net as fish swim under the net (again if they swam out before it landed), until something is caught."""
+    ff = part(r.page, 'fishing')
     for attempt in range(6):
         end = time.time() + 60
         while ff.evaluate(UNDER) < 2:
@@ -276,13 +286,22 @@ def catch_level(r, n, shot):
             r.page.wait_for_timeout(60)
         r.tap_el(ff, '#btn-drop')
         until(r.fish, lambda s: s['phase'] != 'puzzleReady', 5, 'the net goes down')
-        st = until(r.fish, lambda s: s['caught'] > before or s['phase'] == 'puzzleReady', 30, 'the catch')
+        st = until(r.fish, lambda s: s['caught'] > before or s['phase'] == 'puzzleReady', 30, what)
         if st['caught'] > before:
-            break
+            return st
         print(f'     {r.tag}: the fish swam out before the net landed; dropping again', flush=True)
-    check(st['caught'] > before, f'{r.tag}: level {n + 1}: Drop Net as fish swim under the net catches some', f"{st['caught'] - before} fish")
-    r.page.wait_for_timeout(900)
-    r.shot(f'{shot}b-catch')
+    return st
+
+
+def warm_up(r):
+    """The warm-up: Popo's plain net (nothing to set), Drop Net as fish swim under it, three catches."""
+    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 0, 90, 'the warm-up net is ready')
+    check(st['ok'] and not st['handle'], f'{r.tag}: the warm-up net comes down with nothing to set (no corner to drag), only Drop Net')
+    for n in range(3):
+        st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 0 and s['warm'] == n, 60, f'warm-up net {n + 1}')
+        st = drop_when_under(r, st['caught'], f'warm-up catch {n + 1}')
+        check(st['caught'] > 0, f'{r.tag}: warm-up drop {n + 1}: a catch, and Popo cheers', f"{st['caught']} fish so far")
+    r.shot('3-warm-up')
 
 
 def journey(p, engine, size, url):
@@ -315,12 +334,12 @@ def journey(p, engine, size, url):
     page.wait_for_timeout(1200)
     r.shot('2-story')
     check(True, f'{r.tag}: the narrator\'s lines begin, as after Play on the game\'s own')
-    catch_level(r, 0, '3')
+    warm_up(r)
 
-    # ---------- the warm-up's hook: the big fish, Swiftee's "Let's find out!" and Next ----------
-    fs = until(r.fish, lambda s: s['next'], 40, 'the hook: Swiftee and Next')
+    # ---------- the warm-up's problem: the giant fish, Swiftee's "Let's find out!" and Next ----------
+    fs = until(r.fish, lambda s: s['next'], 60, 'the problem: Swiftee and Next')
     check(fs['swiftee'] and fs['dialogue'] == 'swiftee' and r.shell()['current'] == 'fishing',
-          f'{r.tag}: the warm-up\'s catch in, a big fish knocks the net out of square, Swiftee swoops in and Next comes up')
+          f'{r.tag}: after three catches a giant fish pulls the net out of square, Swiftee swoops in and Next comes up')
     page.wait_for_timeout(300)
     r.shot('3h-hook')
     r.tap_el(part(page, 'fishing'), '#btn-next')
