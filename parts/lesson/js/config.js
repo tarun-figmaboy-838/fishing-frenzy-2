@@ -19,13 +19,14 @@ const CONFIG = {
   start: { D: 40, C: 400, baseY: 322, height: 180 * Math.sin(70 * Math.PI / 180), legAD: 3, legBC: 3 },
   // dragging B keeps the shape readable: the top side at least minTop long, B within maxLegRun of C and left of maxTopX
   limits: { minTop: 90, maxLegRun: 243, maxTopX: 496 },
-  // side markings (board px, scaled with the shape): parallel chevrons - half depth, half width, spacing between two;
-  // equal-length ticks - half length, spacing; gap = how far each kind sits from the midpoint when a side has both;
-  // labelGap = a length label's distance from its side
-  marks: { arrowDepth: 6, arrowWing: 7.5, arrowStep: 8, tickHalf: 8, tickStep: 5.5, gap: 18, labelGap: 17 },
+  // side markings, Fishing Frenzy's lesson's own (board px, scaled with the shape, as there): parallel chevrons - half
+  // depth, half height (11 deep, 22 tall), spacing between two (back to back); equal-length ticks - half length (24 long),
+  // spacing between two; gap = how far each kind sits from the midpoint when a side has both; labelGap = a length
+  // label's gap from its side (bases also clear their arrows: +12, as there), markGap = the extra room past a side's marks
+  marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 18, labelGap: 10, markGap: 14 },
   // dropdown answers: one option's height, the menu's narrowest width, the lowest it may reach (stage px), close and
   // wrong-answer display times (ms)
-  dropdown: { itemH: 46, minW: 120, maxBottom: 706, closeMs: 180, wrongMs: 1000 },
+  dropdown: { itemH: 52, minW: 130, maxBottom: 706, closeMs: 180, wrongMs: 1000 },
   snap: { parallelPx: 16 },          // B let go this close to its place snaps into the parallelogram
   // recorded sound effects (others are synthesised): 'good' = every correct action (with the confetti), 'bad' = every wrong one
   sounds: { good: 'assets/audio/correct.mp3', bad: 'assets/audio/incorrect.mp3' },
@@ -50,11 +51,13 @@ const CONFIG = {
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
   card: {
     scale: 1.67,                     // the shape's one size on every screen (board px -> stage px; the first screens' size)
-    top: 96, topChips: 148, bottom: 682, // the stack's room: under the question plate (or under tags above the shape) to the sand
-    maxW: 1160, introCx: 770, introW: 760, measureCx: 728, measureW: 940, // widths; screen 1 and the measuring walk sit right of Swiftee
-    padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 26, // room round the shape for letters / lengths (board px)
-    optGap: 16, optH: 74, optWrapH: 48, optGapX: 12, fillH: 56, tileH: 52, // answers under the shape (stage px)
-    chipGap: 8, chipLane: 70, rowsH: 135, chipTopQ: 92, // name tags: gap, one row, two rows, tags above the shape
+    top: 96, topChips: 150, bottom: 690, // the stack's room: under the question plate (20-90) (or under tags above the shape) to the sand
+    maxW: 1160, introCx: 860, introW: 680, measureCx: 728, measureW: 940, // widths; screen 1 (as Fishing Frenzy's: clear of her bubble) and the measuring walk sit right of Swiftee
+    padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 20, // room round the shape for letters / lengths (board px)
+    // answers under the shape (stage px): Fishing Frenzy's answer pills on its card (74 px drawn 1.18x: 87), two-column
+    // rows, answer boxes and their tiles
+    optGap: 16, optH: 87, optGapX: 12, fillH: 66, tileH: 64,
+    chipGap: 8, chipLane: 70, rowsH: 132, chipTopQ: 70, // name tags: gap, one row, two rows, tags above the shape (row top: tags from y 100)
     optW: 620, pillPad: 40, pillPadLong: 28, pillMin: 200, rowMax: 1040 }, // answer pills (see optRow)
   board: { x: 640, y: 104 },         // the board's top-left on the stage
   // screen 14's measuring walk: her size on the shape, her spot on the sand (feet) and size there, her walking pace,
@@ -87,3 +90,7 @@ const CONFIG = {
     minHoldMs: 900
   }
 };
+// An angle's size on screen (its wedge's radius, stage px) for an angle of deg degrees, as in Fishing Frenzy's lesson:
+// every angle shows the same amount of colour - a narrow angle reaches a little further along its sides and a wide one a
+// little less (90° = 38 px), so a 70° angle never looks smaller than a 110° one, whatever the shape's size
+CONFIG.angleR = (deg) => 38 * Math.min(1.25, Math.max(0.85, Math.sqrt(90 / Math.max(1, deg))));

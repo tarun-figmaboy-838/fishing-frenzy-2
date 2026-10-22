@@ -132,6 +132,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   componentDidUpdate() {
     this.markSounds();
     this.fitBubble();
+    if (window.Motion && Motion.sweepWedges) Motion.sweepWedges(); // a filled angle just shown sweeps open (as Fishing Frenzy's)
   }
 
   // sounds for marks that appear with the board: parallel chevrons / equal ticks (a tick as they pop on) and angle arcs
@@ -1124,7 +1125,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     aw.start({
       verts: verts, home: this.homeBody(), homeEl: document.querySelector('.stage .swiftee'), colors: [PAL.vA, PAL.vB, PAL.vC, PAL.vD],
       radiusAt: (i) => ((this.arcR && this.arcR[keys[i]]) || 24) * k, // the angle mark's own radius
-      labelPx: 22 * k, // its value's size (css .tag.alab on the card: 22 px on the board)
+      labelPx: 21, // its value's size (css .tag.alab: 21 px on screen at any zoom)
       labelAt: (i) => (this.alabAt && this.alabAt[keys[i]] ? this.boardToStage(this.alabAt[keys[i]]) : null), // where its size lands
       onReading: (i) => { if (live()) { show([keys[i]]); this.emphasize(['a' + keys[i]]); } },
       onDone: () => { if (live()) { this.pose(this.restPose()); this.tm(end, 200); } }
@@ -1504,6 +1505,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const lerp = (p, q, t) => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
     const noop = () => {};
     const g = {};
+    const zs = this.sceneFit(st).k || 1; // the board's zoom: angle marks and their values keep one size on screen
     g.poly = [A, B, C, D].map((p) => r1(p.x) + ',' + r1(p.y)).join(' ');
     const said = (k) => !!(s.glow && s.glow.indexOf(k) >= 0);
     const act = task === 'measure' ? this.activeSide() : null;
@@ -1535,12 +1537,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     // the pen drawing the outline on screen 1 (runBuild, below)
     g.trace = seg(D, D, false, { cls: 'trace' });
-    // shape colours (CONFIG.palette): every side in the line colour, except a trapezium's legs once its parallel pair has
-    // been found (AB, CD marked parallel, AD, BC not): they turn slate, so the parallel pair stands out. Once BC is
-    // parallel to AD too (the drag makes a parallelogram), AD and BC wear the second pair's colour.
-    const PAL = CONFIG.palette, PU = '#8e44d6', pgShape = this.isPg(P);
+    // shape colours, as in Fishing Frenzy's lesson (CONFIG.palette): the bases AB, CD always blue; the legs AD, BC blue
+    // until the parallel pair has been found, then teal for good - the trapezium's legs, then (once the drag makes a
+    // parallelogram) the second pair - so a screen without arrows never turns them back to blue. PU: a corner to drag
+    const PAL = CONFIG.palette, PU = '#00b8a9', pgShape = this.isPg(P);
     const legsPlain = !!f.par && !f.par2 && !pgShape;
-    const pair2 = !!f.par2 || (task === 'dragB' && pgShape);
+    const pair2 = !!f.par2 || pgShape;
     const baseCol = () => PAL.line;
     const legCol = () => (pair2 ? PAL.pair2 : legsPlain ? PAL.slate : PAL.line);
     // emph (named in the voice-over), lit / dim (the named sides lead, the others step back)
@@ -1570,26 +1572,27 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const e = g['e' + k], steep = Math.abs(e.y2 - e.y1) > Math.abs(e.x2 - e.x1), flip = steep ? e.y1 < e.y2 : e.x1 > e.x2;
       Object.assign(e, flip ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
     });
-    // a tick mark across p->q (one, or two side by side), for the diagonals' equal halves
-    const ad = this.dist(A, D), bc = this.dist(B, C);
-    const tick = (p, q, one, t) => { // t: where along p->q (default the middle)
-      const t0 = t == null ? 0.5 : t, mx = p.x + (q.x - p.x) * t0, my = p.y + (q.y - p.y) * t0, L = this.dist(p, q) || 1;
+    // a tick mark across the middle of p->q (one, or two side by side), for the diagonals' equal halves: the sides'
+    // own ticks (CONFIG.marks)
+    const ad = this.dist(A, D), bc = this.dist(B, C), MK = CONFIG.marks;
+    const tick = (p, q, one) => {
+      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       const dx = (q.x - p.x) / L, dy = (q.y - p.y) / L, nx = -dy, ny = dx;
       let out = '';
-      (one ? [0] : [-3, 3]).forEach((k) => {
+      (one ? [0] : [-MK.tickStep / 2, MK.tickStep / 2]).forEach((k) => {
         const cx = mx + dx * k, cy = my + dy * k;
-        out += 'M' + r1(cx - nx * 9) + ',' + r1(cy - ny * 9) + ' L' + r1(cx + nx * 9) + ',' + r1(cy + ny * 9) + ' ';
+        out += 'M' + r1(cx - nx * MK.tickHalf) + ',' + r1(cy - ny * MK.tickHalf) + ' L' + r1(cx + nx * MK.tickHalf) + ',' + r1(cy + ny * MK.tickHalf) + ' ';
       });
       return out;
     };
-    // ---- side markings: one coordinate-based system (CONFIG.marks) ----
-    // For every side, from its two vertices: the true midpoint m, the unit vector u along the side and n across it.
-    // Parallel arrows point along u (the same way on both sides of a pair: A->B and D->C, D->A and C->B) - two
-    // chevrons on AB, CD and one on AD, BC; equal-length ticks are drawn across the side (n) - one on AB, CD and two on
-    // AD, BC. A side carrying both has its arrows MK.gap before the midpoint and its ticks MK.gap after it, so the pair
-    // is symmetric about the midpoint; a side carrying one kind has it centred on the midpoint. Rebuilt every frame
-    // from the vertices, so the marks stay on their sides through drags, scaling and moves.
-    const pgNow = this.isPg(P), MK = CONFIG.marks;
+    // ---- side markings: Fishing Frenzy's lesson's own marks (CONFIG.marks), from the vertices ----
+    // For every side: the true midpoint m, the unit vector u along the side and n across it. Parallel arrows are open
+    // orange chevrons on a white halo (index.html), 11 deep and 22 tall, pointing along u - the same way on both sides of
+    // a pair (A->B and D->C, D->A and C->B): two back to back on AB, CD and one on AD, BC. Equal-length ticks are navy
+    // strokes 24 long across the side: one on AB, CD and two on AD, BC. A side carrying both has its arrows MK.gap before
+    // the midpoint and its ticks MK.gap after it; a side carrying one kind has it centred on the midpoint. Rebuilt every
+    // frame from the vertices, so the marks stay on their sides through drags and moves.
+    const pgNow = this.isPg(P);
     const showPar1 = !!f.par, showPar2 = !!(f.par2 || (task === 'dragB' && pgNow));
     const showTk = !!f.ticks;
     const SIDES = { AB: [A, B], CD: [D, C], DA: [D, A], BC: [C, B] };
@@ -1625,8 +1628,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const tkPath = ticks('AB') + ticks('CD') + ticks('DA') + ticks('BC');
     g.tk = { p: tkPath || 'M0,0', d: dsp(!!tkPath) };
-    g.ch = { p: (arrows('AB') + arrows('CD')) || 'M0,0', d: dsp(showPar1) };
-    g.ch2 = { p: (arrows('DA') + arrows('BC')) || 'M0,0', d: dsp(showPar2) };
+    // (gx, gy: the arrows glide onto their sides the way they point, as Fishing Frenzy's do: css .par-ch)
+    const glide = (k) => { const F = frame(k); return { gx: r1(-F.ux * 40) + 'px', gy: r1(-F.uy * 40) + 'px' }; };
+    g.ch = Object.assign({ p: (arrows('AB') + arrows('CD')) || 'M0,0', d: dsp(showPar1) }, glide('AB'));
+    g.ch2 = Object.assign({ p: (arrows('DA') + arrows('BC')) || 'M0,0', d: dsp(showPar2) }, glide('DA'));
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;
     g.dAC = seg(A, C, !!(f.diag || s.diag.AC));
@@ -1639,21 +1644,33 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     // connect: the line follows the finger from the picked corner
     g.cn = s.conn ? seg(P[s.conn.from], { x: s.conn.x, y: s.conn.y }, true) : seg(A, A, false);
-    // supp: two adjacent angles side by side on one straight line. For the pair XY the demo sits at Y: Y's own angle,
-    // and a copy of X's angle sliding over from X into the gap between side YX and side ZY made longer past Y
+    // supp: two adjacent angles side by side on one straight line, drawn as Fishing Frenzy's lesson draws it (suppAt).
+    // For the pair XY the demo sits at Y: side ZY carried on past Y (dashed, in the bases' blue: along a base it runs
+    // out 80 px, up or down a leg just past the angle, clear of the plate and the name tags), Y's own angle, and a copy
+    // of X's angle that slides down the side from X and makes a half-turn onto the line beside it; a gold rim then draws
+    // round the half-disc the two make, with its "180°". Both angles 38 px on screen at any zoom, in their wedges'
+    // colours. (css .supp-*: sA / sB restart it for each pair)
+    let s180 = null;
     {
       const pair = f.supp && s.supp != null ? f.supp[s.supp] : null;
       if (pair) {
-        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 34;
+        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 38 / zs;
         const un = (p, q) => { const L = this.dist(p, q) || 1; return { x: (q.x - p.x) / L, y: (q.y - p.y) / L }; };
         const toX = un(Py, P[X]), toZ = un(Py, P[Z]), ext = { x: -toZ.x, y: -toZ.y };
         const wedge = (a, b) => { const cr = a.x * b.y - a.y * b.x;
-          return 'M' + r1(Py.x) + ',' + r1(Py.y) + ' L' + r1(Py.x + a.x * Rr) + ',' + r1(Py.y + a.y * Rr) + ' A' + Rr + ',' + Rr + ' 0 0 ' + (cr > 0 ? 1 : 0) + ' ' + r1(Py.x + b.x * Rr) + ',' + r1(Py.y + b.y * Rr) + ' Z'; };
-        const col = (k) => (k === 'A' || k === 'C' ? PAL.vA : PAL.vB);
-        g.sp = { d: 'inline', line: 'M' + r1(Py.x + toZ.x * 70) + ',' + r1(Py.y + toZ.y * 70) + ' L' + r1(Py.x + ext.x * 70) + ',' + r1(Py.y + ext.y * 70),
-          own: wedge(toX, toZ), cOwn: col(Y), copy: wedge(toX, ext), cCopy: col(X), cls: 'supp-copy ' + (s.supp % 2 ? 'sB' : 'sA'),
+          return 'M' + r1(Py.x) + ',' + r1(Py.y) + ' L' + r1(Py.x + a.x * Rr) + ',' + r1(Py.y + a.y * Rr) + ' A' + r1(Rr) + ',' + r1(Rr) + ' 0 0 ' + (cr > 0 ? 1 : 0) + ' ' + r1(Py.x + b.x * Rr) + ',' + r1(Py.y + b.y * Rr) + ' Z'; };
+        const col = (k) => PAL['v' + (f.pairCol ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k)]; // the wedges' own colours
+        const L = Math.abs(ext.y) < 0.5 ? 80 : Rr + 22 / zs, side = ext.x * toX.y - ext.y * toX.x, sk = s.supp % 2 ? 'sB' : 'sA';
+        const a0 = { x: Py.x + ext.x * Rr, y: Py.y + ext.y * Rr }, a1 = { x: Py.x + toZ.x * Rr, y: Py.y + toZ.y * Rr };
+        g.sp = { d: 'inline', line: 'M' + r1(Py.x) + ',' + r1(Py.y) + ' L' + r1(Py.x + ext.x * L) + ',' + r1(Py.y + ext.y * L),
+          own: wedge(toX, toZ), cOwn: col(Y), copy: wedge(toX, ext), cCopy: col(X), o: r1(Py.x) + 'px ' + r1(Py.y) + 'px',
+          rim: 'M' + r1(a0.x) + ',' + r1(a0.y) + ' A' + r1(Rr) + ',' + r1(Rr) + ' 0 0 ' + (side > 0 ? 1 : 0) + ' ' + r1(a1.x) + ',' + r1(a1.y),
+          lcls: 'supp-line ' + sk, ocls: 'supp-own ' + sk, cls: 'supp-copy ' + sk, rcls: 'supp-rim ' + sk,
           dx: r1(P[X].x - Py.x) + 'px', dy: r1(P[X].y - Py.y) + 'px' };
-      } else g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, cls: 'supp-copy', dx: '0px', dy: '0px' };
+        // its "180°": beyond the half-disc, between the line and side YX, outside the shape (21 px on screen)
+        let bx = ext.x + toX.x, by = ext.y + toX.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
+        s180 = { t: '180°', x: r1(Py.x + bx * (Rr + 26 / zs)), y: r1(Py.y + by * (Rr + 26 / zs)), cls: 'alab s180 ' + sk };
+      } else g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', rim: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, o: '0px 0px', lcls: 'supp-line', ocls: 'supp-own', cls: 'supp-copy', rcls: 'supp-rim', dx: '0px', dy: '0px' };
     }
     g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O) };
     // hticks: equal halves marked like equal sides (one tick on OA and OC, two on OB and OD)
@@ -1672,48 +1689,48 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // B green, C violet, D amber; once opposite angles are shown equal, A and C share A's and B and D share B's), edged
     // in navy, and its size in a darker shade of that colour. The size rides the interior bisector, pushed out just far
     // enough that its whole box clears both sides and the wedge; a corner too tight for that gets the smaller size.
-    const AS = { arcW: 7, edgeW: 5, gap: 5, labH: 24, labHsm: 20 }; // arcW: the wedge's outer band (its rim past R)
+    // The wedge and its value keep one size on screen whatever the shape's size (zs: the board's zoom), as there: the
+    // wedge's radius is CONFIG.angleR(the angle) stage px (+3.5, its rim), clipped to the shape (index.html #shapeClip).
     ['A', 'B', 'C', 'D'].forEach((k) => {
       const n = this.nb(k), Vk = P[k], u = unit(Vk, P[n[0]]), v = unit(Vk, P[n[1]]);
       const cross = u.x * v.y - u.y * v.x;
-      const half = Math.acos(Math.max(-1, Math.min(1, u.x * v.x + u.y * v.y))) / 2; // half the interior angle
-      const R = half < 0.35 ? 30 : 24; // very sharp corners: a little wider, so the wedge shows past the corner dot
-      const RW = R + 3.5, ws = { x: Vk.x + u.x * RW, y: Vk.y + u.y * RW }, we = { x: Vk.x + v.x * RW, y: Vk.y + v.y * RW };
+      const R = CONFIG.angleR(this.angle(P, k)) / zs;
+      const RW = R + 3.5 / zs, ws = { x: Vk.x + u.x * RW, y: Vk.y + u.y * RW }, we = { x: Vk.x + v.x * RW, y: Vk.y + v.y * RW };
       (this.arcR = this.arcR || {})[k] = RW; // (screen 24's protractor traces each angle out to its wedge's edge)
       const show = arcSet.indexOf(k) >= 0;
-      // when several angles come in together they grow in one after another
+      // when several angles come in together they sweep open one after another (Motion.sweepWedges, by .d0-.d3)
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
-      g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + RW + ',' + RW + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
+      g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + r1(RW) + ',' + r1(RW) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
         d: dsp(show), cls: 'wedge k' + k + stag + pairCls(k) + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
       // its size wears the darker shade of the wedge's colour (lA..lD; equal opposite angles share A's or B's)
       const lk = /\bpa\b/.test(pairCls(k)) ? 'A' : /\bpb\b/.test(pairCls(k)) ? 'B' : k;
-      let bx = u.x + v.x, by = u.y + v.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
       const at = fig ? this.figVal(this.cur(), k, (fig.angles || {})[k] || '') : V[k] + '°';
-      // how far along the bisector the label's centre must be: its box (w x h, estimated from the text) has to clear
-      // each side by `gap` (the box's reach toward a side is w/2|nx| + h/2|ny| for that side's normal n), and clear the
-      // arc (radius + half its stroke + gap, plus the box's reach back toward the vertex)
-      const sinH = Math.max(0.12, Math.sin(half));
-      const need = (w, h) => {
-        const side = (e) => { const nx = -e.y, ny = e.x; return (AS.gap + AS.edgeW / 2 + w / 2 * Math.abs(nx) + h / 2 * Math.abs(ny)) / sinH; };
-        const arc = R * 1.15 + AS.arcW / 2 + AS.gap + w / 2 * Math.abs(bx) + h / 2 * Math.abs(by); // 1.15: room for the emphasis zoom
-        return Math.max(side(u), side(v), arc);
+      // The value sits inside its corner on the angle's bisector, just past the wedge and clear of both sides (as in
+      // Fishing Frenzy's lesson): its box (21 px bold text at its 1.2x focus size, in screen px over the zoom) is moved
+      // out from the corner until it clears both sides' strokes and the wedge's rim. It is sized by its value at least
+      // '110°' wide, so every value sits at the same distance.
+      const hw = 1.2 * (Math.max(4, at.length) * 11.5 + 6) / 2 / zs, hh = 1.2 * 14 / zs, sg = 2.5 + 5 / zs;
+      const clearOf = (cx, cy) => {
+        const sideGap = (w) => Math.abs((cx - Vk.x) * w.y - (cy - Vk.y) * w.x) - (hw * Math.abs(w.y) + hh * Math.abs(w.x));
+        const near = Math.hypot(Math.max(0, Math.abs(cx - Vk.x) - hw), Math.max(0, Math.abs(cy - Vk.y) - hh));
+        return sideGap(u) >= sg && sideGap(v) >= sg && near >= RW + 8 / zs;
       };
-      // room: stay well short of the far corners (half the shorter neighbouring side)
-      const room = 0.5 * Math.min(this.dist(Vk, P[n[0]]), this.dist(Vk, P[n[1]]));
-      const len = Math.max(4, at.length || 1), wN = 14 + 10.5 * len, wS = 12 + 8.6 * len; // at least '110°' wide: the same radius for every label
-      let small = false, dl = need(wN, AS.labH);
-      if (dl > room) { small = true; dl = need(wS, AS.labHsm); }
+      let bx = u.x + v.x, by = u.y + v.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
+      let dl = RW + 6 / zs; while (dl < 160 && !clearOf(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
       (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
-      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + (small ? ' sm' : '') + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
+      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
     });
     // vertices
     const dk = this.dragKey();
     ['A', 'B', 'C', 'D'].forEach((k) => {
       const Vk = P[k], drag = dk === k;
-      // noDots hides the corner dots, but never the handle of a corner the learner can drag
-      // a corner named in the voice-over grows into a highlighter ring
-      g['v' + k] = { x: r1(Vk.x), y: r1(Vk.y), r: vOn(k) && (!f.noDots || drag) ? (drag ? 11 : 7) + (em['v' + k] ? 4 : 0) : 0,
-        c: em['v' + k] ? PAL.hlRing : drag ? PU : PAL.dot, w: em['v' + k] ? 4.5 : drag ? 4 : 3 };
+      // noDots hides the corner dots, but never the handle of a corner the learner can drag. As in Fishing Frenzy's
+      // lesson: white dots ringed in blue; a corner named in the voice-over grows gold with a soft glow (css .vdot.on);
+      // the corner to drag is a little bigger, ringed in teal, and pulses until it has been moved (.drag-cue)
+      const gold = !!em['v' + k];
+      g['v' + k] = { x: r1(Vk.x), y: r1(Vk.y), r: vOn(k) && (!f.noDots || drag) ? (drag ? 9 : 7) + (gold ? 6 : 0) : 0,
+        c: gold ? '#ffab00' : drag ? PU : PAL.dot, w: gold || drag ? 4 : 3,
+        cls: (gold && vOn(k) ? 'on' : '') + (drag && !s.moved && !s.dragging ? ' drag-cue' : '') };
       const tapV = task === 'tapEq' && !s.done;
       const conn = task === 'connect' && !s.done && !fig;
       const pulse = (tapV && !s.ang[k] && k !== st.ref) || (conn && !(s.conn && s.conn.from === k)); // the corners to try glow
@@ -1743,12 +1760,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const cx = (A.x + B.x + C.x + D.x) / 4, cy = (A.y + B.y + C.y + D.y) / 4;
     const tags = [];
     ['A', 'B', 'C', 'D'].forEach((k) => {
-      const Vk = P[k]; let dx = Vk.x - cx, dy = Vk.y - cy; const L = Math.hypot(dx, dy) || 1;
-      tags.push({ t: k, x: r1(Vk.x + dx / L * 25), y: r1(Vk.y + dy / L * 25), cls: 'vlab' + (vOn(k) && !f.noLetters ? '' : ' off') });
+      // as in Fishing Frenzy's lesson: each corner letter sits 28 px outside its corner, mostly above (A, B) or below
+      // (C, D) it, so it never lands on a side or its marks
+      const Vk = P[k]; let dx = Vk.x - cx, dy = Vk.y - cy;
+      { const l0 = Math.hypot(dx, dy) || 1; dx /= l0; dy /= l0; if (Math.abs(dy) < 0.82) { dy = (dy < 0 ? -1 : 1) * 0.82; dx = (dx < 0 ? -1 : 1) * 0.57; } }
+      tags.push({ t: k, x: r1(Vk.x + dx * 28), y: r1(Vk.y + dy * 28), cls: 'vlab' + (vOn(k) && !f.noLetters ? '' : ' off') });
     });
     // on a tap-the-corner question an angle's size takes the tap as well as its corner
     if (task === 'tapEq' && !s.done) ['A', 'B', 'C', 'D'].forEach((k) => { if (k !== st.ref && !s.ang[k] && aTag[k] && !/ off\b/.test(aTag[k].cls)) { aTag[k].click = () => this.tapVertex(k); aTag[k].cls += ' tapme'; } });
     ['A', 'B', 'C', 'D'].forEach((k) => tags.push(aTag[k]));
+    tags.push(s180 || { t: '180°', x: 0, y: 0, cls: 'alab s180 off' }); // (a fixed slot, so the tags after it keep their elements)
     // O: the diagonals' meeting point, its letter just above it (between the two diagonals)
     tags.push({ t: 'O', x: r1((A.x + C.x) / 2), y: r1((A.y + C.y) / 2 - 26), cls: 'vlab' + (f.O ? '' : ' off') });
     // a checkpoint's half-diagonal labels (e.g. AO = 6 cm): each beside the middle of its own half (clear of its tick),
@@ -1760,18 +1781,24 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const into = P[{ A: 'D', B: 'A', C: 'B', D: 'C' }[k]], mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2, L = this.dist(P[k], Om) || 1;
         let nx = -(Om.y - P[k].y) / L, ny = (Om.x - P[k].x) / L;
         if (nx * (into.x - mx) + ny * (into.y - my) < 0) { nx = -nx; ny = -ny; }
-        tags.push({ t: H[k], x: r1(mx + nx * 34), y: r1(my + ny * 34), cls: 'mtag fig' + (found[k] ? ' solved' : '') });
+        // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it)
+        const off = MK.tickHalf + 8 + this.textW(H[k], '900 21px Nunito') / 2 * Math.abs(nx) + 13 * Math.abs(ny);
+        tags.push({ t: H[k], x: r1(mx + nx * off), y: r1(my + ny * off), cls: 'mtag fig' + (found[k] ? ' solved' : '') });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line
+    // (as in Fishing Frenzy's lesson: the box's reach towards the side plus one small gap, so every label sits the same
+    // distance from its side whatever its slope; a base's label also clears the arrows on its middle (+12), and a side
+    // carrying arrows or ticks keeps them clear (markGap))
+    const marked = (p, q) => { const k = [p, q].map((V) => ['A', 'B', 'C', 'D'].find((x) => P[x] === V)).sort().join('');
+      const key = { AB: 'AB', BC: 'BC', CD: 'CD', AD: 'DA' }[k]; return !!(key && (nArrows[key] || nTicks[key])); };
     const side = (p, q, text, cls, show) => {
       const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
       if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }
-      // the label's own box (css: plain 22px Nunito 900, no padding): half width / half height in board px
-      const hw = this.textW(text, '900 22px Nunito') / 2, hh = 14;
-      // its nearest point is labelGap clear of the side - the same gap on every side, past the ticks and arrows
-      const off = hw * Math.abs(nx) + hh * Math.abs(ny) + (CONFIG.marks.labelGap || 12);
+      // the label's own box (css: plain 21px Nunito 900, no padding): half width / half height in board px
+      const hw = this.textW(text, '900 21px Nunito') / 2, hh = 13;
+      const off = hw * Math.abs(nx) + hh * Math.abs(ny) + CONFIG.marks.labelGap + Math.max(12 * Math.abs(ny), marked(p, q) ? CONFIG.marks.markGap : 0);
       return { t: text, x: r1(mx + nx * off), y: r1(my + ny * off), cls: cls + (show ? '' : ' off') };
     };
     // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, outside the shape)
@@ -1816,11 +1843,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     for (let i = 0; i < 5; i++) { v['p' + i] = bits[2 * i] || ''; if (i < 4) v['s' + i] = bits[2 * i + 1] ? ' ' + bits[2 * i + 1] + ' ' : ''; }
     return v;
   }
-  // The card (as Fishing Frenzy's lesson fits its plate). One size on every screen: the shape is always drawn at CONFIG.card.scale (the first screens' size), so it never grows
-  // or shrinks between screens. Each screen is a vertical stack - the shape (padded for its letters and labels), then
-  // the block under it (answers, answer boxes, or the lane for name tags) - centred between the question plate and the
-  // sand. Only a stack that could not fit at that size is drawn smaller (none in this lesson). Returns the scale, the
-  // shape point placed at F (stage px), and the stack's shape bottom (where the answers / name tags start).
+  // The card (as Fishing Frenzy's lesson fits its plate). One size on every screen: the shape is always drawn at
+  // CONFIG.card.scale (the first screens' size), so it never grows or shrinks between screens. Each screen is a vertical
+  // stack - the shape (padded for its letters and labels), then the block under it (answers, answer boxes, or the lane
+  // for name tags). The shape keeps ONE place on every screen that shows it - where its stack with the usual one-row
+  // name-tag lane is centred between the question plate and the sand - so it never twitches from screen to screen; it
+  // is pulled up only as far as a taller block under it needs (and pushed down only as far as name tags above it
+  // need). Only a stack that could not fit at that size is drawn smaller. Returns the scale, the shape point placed at
+  // F (stage px), and the stack's shape bottom (where the answers / name tags start).
   sceneFit(st) {
     const C = CONFIG.card, P0 = st.fig ? st.fig.P : ((this.snaps && this.snaps[this.state.step]) || this.state.P);
     let x0 = Math.min(P0.A.x, P0.D.x), x1 = Math.max(P0.B.x, P0.C.x);
@@ -1835,7 +1865,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
     const maxW = st.id === 'intro' ? C.introW : walk ? C.measureW : C.maxW;
     const k = Math.min(C.scale, maxW / w, (C.bottom - top - below) / h);
-    const y = top + Math.max(0, (C.bottom - top - h * k - below) / 2);
+    const home = C.top + Math.max(0, (C.bottom - C.top - h * k - (C.chipGap + C.chipLane)) / 2); // the shape's one place
+    const y = Math.max(top, Math.min(Math.max(home, top), C.bottom - below - h * k));
     return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: y + h * k };
   }
   // the height of what sits under the shape (stage px, with its gap): the answer row(s), the answer boxes (and their
@@ -1844,8 +1875,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const C = CONFIG.card;
     if (st.opts) {
       if (!st.optWrap) return C.optGap + C.optH;
-      const rows = Math.ceil(st.opts.filter((o) => !o.wide).length / 2) + st.opts.filter((o) => o.wide).length;
-      return C.optGap + rows * C.optWrapH + (rows - 1) * C.optGapX;
+      const rows = (st.opts.some((o) => !o.wide) ? 1 : 0) + st.opts.filter((o) => o.wide).length; // short ones in a row, each wide one under
+      return C.optGap + rows * C.optH + (rows - 1) * C.optGapX;
     }
     if (st.fill) return C.optGap + C.fillH + (st.fill.match ? C.optGapX + C.tileH : 0);
     if (st.practice) return 0;
@@ -1859,15 +1890,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // does something: the first screen (she arrives and speaks), the measuring walk and the end
   // The answer row on the card: every pill as wide as the longest answer needs (measured in the pill's own font, as
   // css/game.css sizes it) plus even padding, never narrower than a comfortable tap target; the row is centred under the
-  // shape. Two-column rows (optWrap) use the same width per column, and a 'wide' answer spans the row.
+  // shape. With optWrap the short answers share one row and each 'wide' answer spans a row of its own under it.
   optRow(st) {
     const C = CONFIG.card, O = st.opts || [], wrap = !!st.optWrap, gap = C.optGapX;
     if (!O.length) return { w: C.optW, left: 640 - C.optW / 2 };
     let m = this._measure;
     if (m === undefined) { try { m = document.createElement('canvas').getContext('2d') || null; } catch (e) { m = null; } this._measure = m; }
     if (!m) m = { font: '', measureText: (t) => ({ width: t.length * (parseFloat(m.font.slice(4)) || 26) * 0.52 }) }; // no canvas (headless test): an estimate
-    const textW = (o) => { const t = o.t || o.id, long = t.length > 14; m.font = '700 ' + (long ? 19 : wrap ? 22 : 26) + "px 'Baloo 2', system-ui, sans-serif"; return m.measureText(t).width + 2 * (long ? C.pillPadLong : C.pillPad); };
-    const narrow = O.filter((o) => !o.wide), cols = wrap ? 2 : narrow.length;
+    const textW = (o) => { const t = o.t || o.id, long = t.length > 14; m.font = '700 ' + (long ? 28 : 36) + "px 'Baloo 2', system-ui, sans-serif"; return m.measureText(t).width + 2 * (long ? C.pillPadLong : C.pillPad); };
+    const narrow = O.filter((o) => !o.wide), cols = Math.max(1, narrow.length);
     let pw = Math.max(C.pillMin, ...narrow.map(textW));
     pw = Math.min(pw, (C.rowMax - gap * (cols - 1)) / cols);
     let w = cols * pw + gap * (cols - 1);
@@ -1980,12 +2011,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       optLeft: this.optRow(st).left,
       optW: this.optRow(st).w, optCls: fadeV + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (st.soloOk ? ' solo-ok' : ''),
       // the name tags: under the shape, or above it on a question screen (its answers have the space under it)
-      chipTop: isLesson ? (st.practice || (st.chipTop && st.chipTop < 200) ? CONFIG.card.chipTopQ : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap)) : st.chipTop || 528, chipLeft: 380,
+      chipTop: isLesson ? (st.practice || (st.chipTop && st.chipTop < 200) ? CONFIG.card.chipTopQ : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left
       sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.enterGrow || st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look (css/game.css)
       boardTf: isLesson ? this.zoomTf(st) : 'none',
+      boardZ: isLesson ? this.sceneFit(st).k : 1, // the board's zoom: angle values keep one size on screen (css .tag.alab)
       boardCls: fadeV,
       // the shape (and its labels) zooms once about its own centre on a cue (Motion.pop)
       popO: s.P ? Math.round((s.P.A.x + s.P.B.x + s.P.C.x + s.P.D.x) / 4) + 'px ' + Math.round((s.P.A.y + s.P.B.y + s.P.C.y + s.P.D.y) / 4) + 'px' : 'center',

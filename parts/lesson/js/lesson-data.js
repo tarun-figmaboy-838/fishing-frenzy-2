@@ -49,26 +49,26 @@ const LESSON = {
     // ---------- Part 1 · quadrilateral -> trapezium -> parallelogram (pages 1-11) ----------
     // the outline draws itself while Swiftee says the line and closes on her last word; the plain shape, as on page 1
     // (she waves hello as she speaks)
-    { pdf: 1, id: 'intro', build: 1, skin: 'intro', lines: [{ m: 'waving', holdM: 1, t: 'We learnt about quadrilaterals\nearlier.' }], f: { noLetters: 1, noDots: 1 } },
-    { pdf: 2, id: 'quadSides', sideNums: 1, skin: 'intro', lines: [{ m: 'happy', t: 'Any polygon with 4 sides is\ncalled a quadrilateral.' }], f: { noLetters: 1, noDots: 1 } },
+    { pdf: 1, id: 'intro', build: 1, skin: 'intro', lines: [{ m: 'waving', holdM: 1, t: 'We learnt about quadrilaterals\nearlier.' }], f: { noLetters: 1 } },
+    { pdf: 2, id: 'quadSides', sideNums: 1, skin: 'intro', lines: [{ m: 'happy', t: 'Any polygon with 4 sides is\ncalled a quadrilateral.' }], f: { noLetters: 1 } },
     // screens 3-4: the name caption is a word cue, as on screen 10 - "Trapezium" pops in exactly as Swiftee says it and
     // the outline glows once. Screen 4 never lights up AB/CD on "parallel": screen 5 asks which pair is parallel.
     { pdf: 3, id: 'special', assemble: 1, voiceDelay: 3000, skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called trapezium.', growAt: 'special',
-      cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1, noDots: 1 } },
+      cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1 } },
     { pdf: 4, id: 'onePair', skin: 'intro', lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.',
-      cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: { noLetters: 1, noDots: 1 } },
+      cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: { noLetters: 1 } },
     Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?' }],
       // right answer: AD ∥ BC folds away and AB ∥ CD settles alone in the centre, green (storyboard page 6)
-      ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 }, f: { noDots: 1 },
+      ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 },
       opts: [
         { id: 'AB', t: 'AB ∥ CD', ok: true },
         { id: 'AD', t: 'AD ∥ BC', fb: 'Look again. AD and BC lean towards each other, so they would meet if we made them longer.' }
       ] }, PRACTICE),
-    { pdf: 7, id: 'whatIf', skin: 'intro', lines: [{ m: 'thinking', t: 'What if we made the other pair\nof opposite sides parallel too?', glow: ['DA', 'BC'] }], f: { par: 1, noDots: 1 } },
+    { pdf: 7, id: 'whatIf', skin: 'intro', lines: [{ m: 'thinking', t: 'What if we made the other pair\nof opposite sides parallel too?', glow: ['DA', 'BC'] }], f: { par: 1 } },
     // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram
     { pdf: 8, id: 'dragPar', skin: 'intro', lines: [{ m: 'curious', t: 'Drag vertex B to make\nBC parallel to AD.' }],
       task: 'dragB', handOnce: 1, idle: 'Drag B to the right until BC leans the same way as AD.',
-      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.' }], f: { par: 1, noDots: 1 } },
+      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.' }], f: { par: 1 } },
     { pdf: 9, id: 'bothPar', lines: [
       { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
       { keep: 1, s: 'A D is parallel to B C.', glow: ['DA', 'BC'], chips: [{ t: 'AD ∥ BC', k: 'white' }] }], f: PG },
@@ -174,10 +174,10 @@ const LESSON = {
         { id: 'BD', t: '∠B & ∠D', fb: '∠B and ∠D are opposite angles. 70° + 70° is not 180°.' },
         { id: 'AB', t: '∠A & ∠B', ok: true },
         { id: 'AD', t: '∠A & ∠D', ok: true, req: false, fb: 'Yes, but we found that pair already! Find the other pairs.' }
-      ], f: { arcs: 'ABCD' } }, PRACTICE, { optWrap: 1 }),
+      ], f: { arcs: 'ABCD' } }, PRACTICE),
     { pdf: 36, id: 'adjRule', lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.',
       chips: [{ t: '∠A + ∠D = 180°', k: 'white sm' }, { t: '∠A + ∠B = 180°', k: 'white sm' }, { t: '∠B + ∠C = 180°', k: 'white sm' }, { t: '∠C + ∠D = 180°', k: 'white sm' }] }],
-      f: { arcs: 'ABCD', supp: ['AD', 'AB', 'BC', 'CD'] } },
+      f: { arcs: 'ABCD', supp: ['AD', 'BA', 'BC', 'DC'] } }, // (each demo at the corner whose side carries on clear of the letters)
 
     // ---------- Checkpoint 2 · Let's use what we learnt! (page 37) ----------
     Object.assign({ pdf: 37, id: 'cp2a', cpTitle: 'Checkpoint 2 · Find the Opposite Angle',
@@ -274,7 +274,7 @@ const LESSON = {
       lenSeq: [[300, ['AB', 'CD']], [1500, ['DA', 'BC']]], f: Object.assign({ ticks: 1, lenSeq: 1 }, LENS) },
     { pdf: 52, id: 'recAng', autoNext: 900, lines: [{ t: 'Opposite angles are equal.', chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠B = ∠D', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
     { pdf: 52, id: 'recSupp', autoNext: 900, lines: [{ t: 'Adjacent angles are supplementary.\nThey add up to 180°.',
-      chips: [{ t: '∠A + ∠B = 180°', k: 'gold sm' }, { t: '∠B + ∠C = 180°', k: 'gold sm' }] }], f: { arcs: 'ABCD', supp: ['AB', 'BC'] } },
+      chips: [{ t: '∠A + ∠B = 180°', k: 'gold sm' }, { t: '∠B + ∠C = 180°', k: 'gold sm' }] }], f: { arcs: 'ABCD', supp: ['BA', 'BC'] } },
     { pdf: 52, id: 'recDiag', lines: [{ t: 'Diagonals bisect each other.', chips: [{ t: 'AO = OC', k: 'gold' }, { t: 'BO = OD', k: 'gold' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
     { id: 'end', end: 1, lines: [{ m: 'celebrating', t: 'Amazing work! You know all\nabout parallelograms now.' }] }

@@ -6,6 +6,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .w{opacity:0;transition:none}
 .w.on{opacity:1;transition:opacity .18s ease,color .25s ease}
 .w.cur{opacity:1;color:#c95a00;transition:opacity .18s ease,color .25s ease}
+.w.key{color:#e06600} /* the lesson's key words, in orange (as in Fishing Frenzy's bubble) */
 .bubA{animation:bubA .26s ease-out}
 .bubB{animation:bubB .26s ease-out}
 /* Narrator speech bubble: hugs its text and grows upward from a fixed anchor, so the tail always meets Swiftee */
@@ -20,7 +21,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .bird{animation:none!important;transform:none!important;transition:none!important}
 
 .vp{animation:vp 1.3s ease-in-out infinite}
-@keyframes vp{0%,100%{fill:rgba(142,68,214,.05)}50%{fill:rgba(142,68,214,.3)}}
+@keyframes vp{0%,100%{fill:rgba(255,196,0,.05)}50%{fill:rgba(255,196,0,.32)}}
 .halo{animation:halo 1.2s ease-in-out infinite}
 @keyframes halo{0%,100%{stroke-opacity:.25;stroke-width:4}50%{stroke-opacity:.7;stroke-width:10}}
 
@@ -48,18 +49,15 @@ a{color:#123b63}a:hover{color:#0b2742}
 .chip.sm,.chip.gold.sm,.chip.name.sm{font-size:21px;padding:7px 16px 6px}
 
 @keyframes chipIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-.edge{transition:stroke .35s ease,stroke-width .3s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
+.edge{transition:stroke .5s ease,stroke-width .45s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
 
-/* an angle's wedge grows out of its corner (Fishing Frenzy's lesson); several come in one after another (.d1-.d3) */
-.wedge{animation:wedgeIn .45s cubic-bezier(.3,1.35,.5,1) backwards}
-.d1{animation-delay:.15s}
-.d2{animation-delay:.3s}
-.d3{animation-delay:.45s}
+/* an angle's wedge sweeps open from its first arm to its second as it comes on screen (Fishing Frenzy's lesson; js/motion.js
+   sweepWedges); several sweep one after another (.d0-.d3, 0.3 s apart) and each value fades in as its wedge has opened */
 .alab.d0,.alab.d1,.alab.d2,.alab.d3{animation:fade .3s ease-out backwards}
-.alab.d1{animation-delay:.25s}
-.alab.d2{animation-delay:.4s}
-.alab.d3{animation-delay:.55s}
-@keyframes wedgeIn{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.alab.d0{animation-delay:.25s}
+.alab.d1{animation-delay:.55s}
+.alab.d2{animation-delay:.85s}
+.alab.d3{animation-delay:1.15s}
 .fadein{animation:fade .35s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .fadeA{animation:fadeA .3s ease-out}
@@ -144,7 +142,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* the scene layout: Swiftee and her bubble on the sand at the left (the card's own rules below place them) */
 
 .stage.scene .swiftee{left:70px!important;top:412px!important}
-.stage.scene .bubble{left:87px!important;top:auto!important;bottom:290px!important;max-width:380px;transform-origin:126px 100%}
+.stage.scene .bubble{left:87px!important;top:auto!important;bottom:290px!important;max-width:380px;transform-origin:138px 100%}
 .stage.scene .bubble.manual{max-width:420px}
 .stage.scene .bubble .bubble-tail{left:120px;top:100%;margin-top:-1px;transform:none}
 .stage.scene .opt{transition:transform .12s ease}
@@ -159,7 +157,7 @@ a{color:#123b63}a:hover{color:#0b2742}
    Same .3s easing for every part: angle arc (+ its degree tag), side, vertex dot */
 /* a named angle: a navy rim (Fishing Frenzy's lesson) */
 .wedge.emph{stroke:#123b63;stroke-width:5px;paint-order:stroke}
-.edge.emph{stroke-width:9px}
+.edge.emph{stroke-width:7px}
 .tag.alab{transition:transform .3s cubic-bezier(.3,0,.3,1)}
 .tag.alab.emph{transform:translate(-50%,-50%) scale(1.2)}
 .vdot{transition:r .3s cubic-bezier(.3,0,.3,1)}
@@ -170,7 +168,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes optIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
 
 /* highlighted side: a touch bolder in its own colour, under its marker (.hl) */
-.edge.lit{stroke-width:6px}
+.edge.lit{stroke-width:7px}
 .edge.lit.emph{stroke-width:8px}
 /* screen 4 leg trace: a soft pink glow drawn on along the leg (D->A, C->B); at the corner it fades off the side while
    the dotted extension (xleg) draws on from the corner */
@@ -199,11 +197,27 @@ a{color:#123b63}a:hover{color:#0b2742}
 .hseg{stroke-dasharray:100 100;animation:hsegIn .7s ease-out backwards}
 .hseg.pr{animation:none}
 @keyframes hsegIn{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
-/* supplementary demo: the copied angle slides over from its own corner (two names so each pair restarts it) */
-.supp-copy.sA{animation:suppA 1.1s cubic-bezier(.3,.8,.3,1) both}
-.supp-copy.sB{animation:suppB 1.1s cubic-bezier(.3,.8,.3,1) both}
-@keyframes suppA{from{transform:translate(var(--dx),var(--dy));opacity:.3}to{transform:none;opacity:1}}
-@keyframes suppB{from{transform:translate(var(--dx),var(--dy));opacity:.3}to{transform:none;opacity:1}}
+/* the supplementary demo, timed as Fishing Frenzy's suppAt: the dashed line draws out from the corner (0.5 s), the
+   corner's own angle fades in, the copy of the other angle appears on its corner, slides down the side (0.9 s) and makes
+   a half-turn onto the line (0.7 s), then the gold rim draws round the half-disc and its "180°" fades in. Two class
+   names (sA / sB) so each pair in turn restarts it */
+.supp-line.sA{animation:suppLineA .5s cubic-bezier(.33,1,.68,1) both}.supp-line.sB{animation:suppLineB .5s cubic-bezier(.33,1,.68,1) both}
+@keyframes suppLineA{from{transform:scale(0)}to{transform:none}}@keyframes suppLineB{from{transform:scale(0)}to{transform:none}}
+.supp-own.sA{animation:suppOwnA .35s ease .25s both}.supp-own.sB{animation:suppOwnB .35s ease .25s both}
+@keyframes suppOwnA{from{opacity:0}to{opacity:1}}@keyframes suppOwnB{from{opacity:0}to{opacity:1}}
+.supp-copy.sA{animation:suppA 1.9s .3s both}.supp-copy.sB{animation:suppB 1.9s .3s both}
+@keyframes suppA{0%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:linear}
+  8%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  56%{transform:translate(0px,0px) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}100%{opacity:1;transform:translate(0px,0px) rotate(0deg)}}
+@keyframes suppB{0%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:linear}
+  8%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  56%{transform:translate(0px,0px) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}100%{opacity:1;transform:translate(0px,0px) rotate(0deg)}}
+.supp-rim{stroke-dasharray:100 100}
+.supp-rim.sA{animation:suppRimA .5s ease-out 2.2s both}.supp-rim.sB{animation:suppRimB .5s ease-out 2.2s both}
+@keyframes suppRimA{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}@keyframes suppRimB{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.tag.alab.s180{color:#123b63}
+.tag.alab.s180.sA{animation:fadeA .4s ease-out 2.45s both}.tag.alab.s180.sB{animation:fadeB .4s ease-out 2.45s both}
+@media (prefers-reduced-motion: reduce){.supp-line,.supp-own,.supp-copy,.supp-rim,.tag.alab.s180{animation:none!important}}
 
 /* checkpoint picture grid (screen 19): four equal, quiet cards - the shape is the focus. State is shown only by the
    card itself (border, glow, fill, scale), never by a badge or tick: hover lifts and outlines it softly, a right pick
@@ -211,6 +225,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .gridopt{background:#fff;border:3px solid #d6e9f8;border-radius:20px;padding:0;box-shadow:0 6px 16px rgba(18,59,99,.08);
   transition:transform .2s cubic-bezier(.3,0,.2,1),border-color .25s ease,box-shadow .25s ease,background-color .25s ease}
 .gridopt svg{display:block;overflow:visible}
+/* the grid drawn 1.1x about its top centre, as Fishing Frenzy's check 1 on its card (index.html: 560 wide from x 360) */
+.grid4{scale:1.1;transform-origin:50% 0}
 .gridopt:not(:disabled):hover{transform:translateY(-3px) scale(1.02);border-color:#8cc6ef;box-shadow:0 10px 22px rgba(18,59,99,.14),0 0 0 4px rgba(140,198,239,.22)}
 .gridopt:not(:disabled):active{transform:scale(.98)}
 .grid4 .gridopt.good{background:#f0fbf2;border-color:#2e9e4f;box-shadow:0 0 0 5px rgba(46,158,79,.18),0 8px 18px rgba(35,128,63,.16);animation:gridGood .45s cubic-bezier(.3,0,.2,1)}
@@ -227,8 +243,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 .go>.opt:nth-child(5){animation-delay:.32s}
 @keyframes optIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
 /* answers in two columns (four or five choices) */
-.wrap{flex-wrap:wrap}
-.wrap>.opt{flex:0 0 calc(50% - 6px)!important;height:52px!important}
+/* answers in rows (optWrap): the short answers side by side in one row, a wide one on its own row under them - every
+   pill the same 87 px as on the other screens */
+.wrap{flex-wrap:wrap;row-gap:12px}
+.wrap>.opt{flex:1 1 0px!important}
 .wrap>.opt.wide{flex-basis:100%!important}
 /* select-all questions: no checkbox or tick icon - a picked answer shows itself by its border, fill and glow alone */
 .multi>.opt{position:relative}
@@ -254,21 +272,14 @@ a{color:#123b63}a:hover{color:#0b2742}
 .tile.lift{opacity:.35}
 .tile.ghost{position:absolute;transform:translate(-50%,-50%) scale(1.08) rotate(-2deg);pointer-events:none;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 26px rgba(18,59,99,.28)}
 @media (prefers-reduced-motion: reduce){.hseg,.supp-copy.sA,.supp-copy.sB,.go>.opt,.go .blank-grp,.go .tile,.blank.act{animation:none}}
-/* Opening look, screens 1-7 (skin: 'intro', storyboard pages 1-8): a clean white bubble with roomy, centred text, and the plain shape
-   in light blue with a thin blue outline. The pen, the closing glow and the fill all share that blue; on Next the
-   colours ease into the lesson's pink (transitions on .edge and .shape-fill) */
+/* Opening screens 1-7 (skin: 'intro', storyboard pages 1-8): the shape and its marks as on every other screen (Fishing
+   Frenzy's); only the bubble is roomier */
 .stage.skin-intro .bubble,.stage.scene.skin-intro .bubble.manual{max-width:500px}
 .stage.skin-intro .bubble{background:#fff;border:none;border-radius:22px;padding:20px 28px 21px;box-shadow:0 10px 26px rgba(18,59,99,.16),0 2px 4px rgba(18,59,99,.06)}
 .stage.skin-intro .bubble-text{color:#16263a}
 .stage.skin-intro .bubble .bubble-tail{margin-top:-2px;filter:drop-shadow(0 5px 4px rgba(18,59,99,.08))}
 .stage.skin-intro .bubble-tail path{fill:#fff;stroke:none}
-.stage.skin-intro .edge{stroke-width:3.5px}
-.stage.skin-intro .trace{stroke-width:4.5px}
 .shape-fill{fill:var(--pg-fill,#FFD2A0);transition:fill .45s ease}
-.stage.skin-intro .tag.snum{color:#16263a}
-/* screen 3: the shape's name is a plain caption just under the shape (a figure label, not a card) */
-.stage.skin-intro .chip.name{background:none;border:none;box-shadow:none;padding:0;position:relative;top:-62px;font-weight:800;font-size:30px;color:#16263a}
-.stage.skin-intro .vlab{color:#16263a}
 /* soloOk (screens 5, 15): once answered, the other option fades and folds away and the right one glides to the
    centre under the shape, green, with a small scale-up that settles (all 300-500 ms) */
 .solo-ok{justify-content:center}
@@ -284,9 +295,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .chip.hi{transform:translateY(-4px) scale(1.06);border-color:var(--pg-hlRing,#FFAF53);box-shadow:0 8px 18px rgba(255,175,83,.3)}
 @media (prefers-reduced-motion: reduce){.chip{transition:none}}
 .chip-row.top{align-content:flex-start!important}
-/* tight corners: the angle label steps down a size so it still fits inside the shape (layout in renderVals) */
-.alab.sm{font-size:14px;padding:1px 5px}
-.stage.skin-intro .edge.lit{stroke-width:4.5px}
 
 /* ===== The named side (as in Fishing Frenzy's lesson) =====
    A sunflower-yellow marker redraws it - a glowing pen tip runs from one end to the other and the side turns bold
@@ -302,11 +310,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* dim with stroke-opacity: GSAP animates opacity on the sides (entrances), and a CSS opacity transition would lag them */
 .board .tag.tapme{pointer-events:auto;cursor:pointer}
 .edge.dim{stroke-opacity:.38;filter:none} /* (the navy outline would smudge a stepped-back side darker) */
-.vdot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke .25s ease,stroke-width .25s ease}
-@media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none}.hlp.hl.on{display:none}.vdot{transition:none}}
+.vdot{transition:r .45s cubic-bezier(.3,0,.3,1),stroke .3s ease,stroke-width .3s ease,filter .3s ease}
+/* a named corner: the dot grows gold with a soft gold glow; the corner to drag pulses gently with a gold glow (as there) */
+.vdot.on{filter:drop-shadow(0 0 5px rgba(255,196,0,.95))}
+.vdot.drag-cue{transform-box:fill-box;transform-origin:center;animation:dragCue 1.3s ease-in-out infinite}
+@keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.3);filter:drop-shadow(0 0 7px rgba(255,196,0,.95))}}
+@media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none}.hlp.hl.on{display:none}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
-/* parallel chevrons wear their pair's colour (AB, CD: sideA; AD, BC: sideB) */
-.par-ch.ch-a{stroke:var(--pg-ink,#1d2f52)}.par-ch.ch-b{stroke:var(--pg-ink,#1d2f52)}
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
 .wedge.dim{opacity:.22}.tag.alab.dim{opacity:.42}
 .wedge,.tag.alab{transition:opacity .3s ease,transform .3s cubic-bezier(.3,0,.3,1)}
@@ -329,7 +339,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .chip-ln{white-space:pre}
 .chip-ln .op{color:var(--pg-line,#DA7E20);font-weight:900}
 .stage .chip.hi{border-color:var(--pg-hl,#FFAF53);box-shadow:0 0 0 4px rgba(255,175,83,.22),0 8px 18px rgba(218,126,32,.25)}
-.stage.skin-intro .chip.name{background:none;border:none;box-shadow:none}
 /* the row-break item between card rows (chipRows) is not a card */
 .stage .chip.brk{flex-basis:100%;height:0;padding:0;margin:0;border:0;background:none;box-shadow:none;animation:none}
 /* confetti (css/confetti.css, kept an exact copy): a clipping container stops Chromium painting the kit's 3D-turned
@@ -337,21 +346,18 @@ a{color:#123b63}a:hover{color:#0b2742}
 .fx-layer,.fx-layer .fx-confetti{overflow:visible}
 /* the kit's .w wrapper shares its name with the bubble's words (.w, hidden until revealed): keep it visible */
 .fx-layer .fx-confetti .w{opacity:1;transition:none}
-/* parallel chevrons and equal-length ticks arrive as a small pop on the line (when a pair is declared parallel / equal),
-   so the mark reads as an event tied to the voice, not just a fade */
-.par-ch.fadein,.ticks.fadein{transform-box:fill-box;transform-origin:center;animation:markIn .5s cubic-bezier(.3,1.6,.5,1) both}
-@keyframes markIn{0%{opacity:0;transform:scale(.3)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}
-@media (prefers-reduced-motion: reduce){.par-ch.fadein,.ticks.fadein{animation:fade .3s ease-out}}
+/* marks arrive as Fishing Frenzy's do: the parallel arrows glide onto their sides the way they point (0.8 s, power2.out:
+   --gx, --gy from the engine) as they fade in; the equal-length ticks fade in (.fadein). (No fill-mode: once arrived, a
+   GSAP entrance - Motion.enterShape - may own their opacity.) */
+.par-ch.fadein{animation:chevIn .8s cubic-bezier(.33,1,.68,1)}
+@keyframes chevIn{from{opacity:0;transform:translate(var(--gx,0),var(--gy,0))}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.par-ch.fadein{animation:fade .3s ease-out}}
 
 /* ===== The lesson stage sits over its cream card as the lanternfish reveal settles. ===== */
 .stage{background:transparent!important;transition:opacity .4s ease}
 .stage.pre-open > *{visibility:hidden}
 
 .stage.card-wait{opacity:0;pointer-events:none}
-/* on the card Swiftee stands on the dune in the card's print, and her bubble sits above her (reference: in-card) */
-.stage.in-card.scene .swiftee{left:34px!important;top:332px!important}
-.stage.in-card.scene .bubble{left:51px!important;top:auto!important;bottom:370px!important}
-.stage.in-card.scene .bubble .bubble-tail{left:96px}
 /* the bubble is white with its teal edge, to stand off the cream card (every screen) */
 .stage.in-card .bubble,.stage.in-card.skin-intro .bubble{background:#fff;border:3px solid #2a9a8c;border-radius:20px;padding:14px 22px 15px;box-shadow:0 6px 16px rgba(18,59,99,.14)}
 .stage.in-card .bubble-tail path,.stage.in-card.skin-intro .bubble-tail path{fill:#fff;stroke:#2a9a8c}
@@ -360,7 +366,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .trace{filter:drop-shadow(0 0 4px rgba(31,107,255,.45))}
 .outline-settle{stroke:var(--pg-line,#1F6BFF);stroke-width:9px;filter:drop-shadow(0 0 6px rgba(31,107,255,.5))}
 
-.stage.skin-intro .edge{stroke-width:4px}
 /* the opening: only the Start card fades away (Swiftee and the rest stay hidden until the card is up) */
 .stage.card-wait > *{visibility:hidden}
 
@@ -385,7 +390,7 @@ a{color:#123b63}a:hover{color:#0b2742}
   box-shadow:0 0 0 2px var(--pill-line),inset 0 -6px 0 rgba(205,100,0,.38),inset 0 2px 0 rgba(255,255,255,.55);
   color:#4a2300;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;letter-spacing:.3px;text-shadow:0 1.5px 0 rgba(255,244,200,.75);
   filter:drop-shadow(0 6px 8px rgba(120,60,0,.22));transition:transform .12s ease,filter .12s ease,opacity .3s ease}
-.stage .opt:not(.gridopt){font-size:26px;padding:0 22px}
+.stage .opt:not(.gridopt){font-size:36px;padding:0 22px}
 .stage .opt:not(.gridopt)::after,.stage .tile:not(.ghost)::after,.stage .next::after{content:'';position:absolute;z-index:-1;left:12%;top:10%;width:24%;height:24%;border-radius:50%;background:rgba(255,255,255,.72);pointer-events:none}
 .stage .opt:not(.gridopt):hover:not(:disabled),.stage .tile:not(.ghost):hover,.stage .next:hover:not(:disabled){transform:translateY(-3px);filter:brightness(1.05) drop-shadow(0 9px 10px rgba(120,60,0,.26))}
 .stage .opt:not(.gridopt):active:not(:disabled),.stage .tile:not(.ghost):active,.stage .next:active:not(:disabled){transform:translateY(4px);transition-duration:.06s;
@@ -425,7 +430,6 @@ a{color:#123b63}a:hover{color:#0b2742}
   background:#fff8e1;border:4px solid #ffb800;box-shadow:0 3px 10px rgba(150,100,0,.18);animation:chipIn .5s cubic-bezier(.2,1.25,.5,1) backwards}
 .stage .chip.sm{border-width:3px;padding:5px 16px 4px}
 .stage .chip.hi{transform:translateY(-4px) scale(1.06);border-color:#ffb800;box-shadow:0 0 0 4px rgba(255,212,59,.35),0 8px 18px rgba(20,60,130,.22)}
-.stage.skin-intro .chip.name{background:none;border:none;box-shadow:none;padding:0}
 
 /* ---- answer boxes: rounded, dashed while empty; they breathe blue when it is their turn ---- */
 .stage .blank{border-radius:18px;border:3px dashed #8db9ee;background:rgba(255,255,255,.75)}
@@ -456,10 +460,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes riseB{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
 @media (prefers-reduced-motion: reduce){.stage .fadeA,.stage .fadeB{animation:fadeA .3s ease-out}}
 /* long answers (more than 14 letters) keep to one line on the pill */
-.stage .opt:not(.gridopt).long{font-size:19px!important;white-space:nowrap;padding:0 10px!important;letter-spacing:0}
+.stage .opt:not(.gridopt).long{font-size:28px!important;white-space:nowrap;padding:0 10px!important;letter-spacing:0}
 .stage .opt:not(.gridopt){padding:0 20px!important;line-height:1.05!important}
-.stage .wrap>.opt:not(.gridopt){font-size:22px}
-.stage .wrap>.opt:not(.gridopt).long{font-size:19px!important}
 /* small plates (four in a row: screens 16-17, 34): narrower, so the row never wraps past the ice panel */
 .stage .chip.sm{border-width:3px;padding:4px 11px 3px!important}
 .stage .chip.sm{margin:0 -3px}
@@ -500,9 +502,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 
 /* ===== the coral cove (assets/images/coral-cove.webp, revealed by js/opening.js): the lesson fills the whole scene.
    Swiftee stands on the sand at the bottom left, her bubble above her; the ice panel sits on the right. ===== */
-.stage.in-card.scene .swiftee{left:70px!important;top:412px!important}
-.stage.in-card.scene .bubble{left:87px!important;top:auto!important;bottom:290px!important}
-.stage.in-card.scene .bubble .bubble-tail{left:120px}
 
 /* without the panel, empty answer boxes stand on the water: solid white face, blue dashed edge */
 .stage .blank:not(.good):not(.bad){background:rgba(255,255,255,.92);border-color:#1f6bff;box-shadow:0 3px 8px rgba(18,59,99,.15)}
@@ -510,12 +509,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.act:not(.good):not(.bad){background:#fff;border-color:#1f6bff;animation:blankCall 1.8s ease-in-out infinite}
 @keyframes blankCall{0%,100%{box-shadow:0 3px 8px rgba(18,59,99,.15),0 0 0 0 rgba(31,107,255,.35)}50%{box-shadow:0 3px 8px rgba(18,59,99,.15),0 0 0 7px rgba(31,107,255,0)}}
 @media (prefers-reduced-motion: reduce){.stage .blank.act{animation:none}}
-/* Swiftee a little right of the corals (+45 px, 3.5%), standing on the sand; her bubble moves with her, tail on her */
-.stage.in-card.scene .swiftee{left:115px!important;top:412px!important}
-.stage.in-card.scene .bubble{left:132px!important}
-/* side markings: parallel arrows deep navy, equal-length ticks deep indigo, measurements dark navy - crisp, no glow */
-.stage .par-ch,.stage .par-ch.ch-a,.stage .par-ch.ch-b{stroke:#153B70;stroke-width:3.4px;stroke-linecap:round;stroke-linejoin:round;filter:none}
-.stage .ticks{stroke:#3730A3;stroke-width:3.2px;stroke-linecap:round;filter:none}
 .stage .tag.mtag{color:#17365D}
 
 /* ===== Dropdown answers (number blanks: screens 20, 21, 37, 50) =====================================================
@@ -582,15 +575,17 @@ a{color:#123b63}a:hover{color:#0b2742}
    ===================================================================================================================== */
 /* the stage is the card's middle: transparent, so the card's painting shows through */
 .stage.in-card{overflow:visible}
-/* Swiftee on the sand at the card's left on the first screen (and the measuring walk, and the end) */
-.stage.in-card.scene .swiftee{left:40px!important;top:430px!important}
-.stage.in-card.scene .bubble{left:57px!important;top:auto!important;bottom:274px!important}
-.stage.in-card.scene .bubble .bubble-tail{left:110px}
+/* Swiftee on the sand at the card's left on the first screen (and the measuring walk, and the end), and her bubble above
+   her with its tail on her: exactly where Fishing Frenzy's lesson puts them on its card (34, 438; the bubble from 51,
+   its bottom edge 266 above the stage's foot, the tail's middle at x 189) */
+.stage.in-card.scene .swiftee{left:34px!important;top:438px!important}
+.stage.in-card.scene .bubble{left:51px!important;top:auto!important;bottom:266px!important}
+.stage.in-card.scene .bubble .bubble-tail{left:121px}
 /* ---- caption screens (game-engine isPlate): no Swiftee - she drifts off back and down - and her line is the navy
    instruction plate across the top: white Fredoka on navy glass with a faint gold rim, key words in gold ---- */
 .stage.in-card.scene.plate .swiftee{opacity:0!important;pointer-events:none;transform:translate(-70px,36px) scale(.9)!important;transition:opacity .45s ease,transform .45s ease!important}
-.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:0!important;right:0!important;margin:0 auto;top:18px!important;bottom:auto!important;
-  transform-origin:50% 0;min-width:0;max-width:1180px;height:64px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 36px;
+.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:0!important;right:0!important;margin:0 auto!important;top:20px!important;bottom:auto!important;
+  transform-origin:50% 0;min-width:0;max-width:1200px!important;height:70px;min-height:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 38px;
   border-radius:22px;background:rgba(8,36,84,.66)!important;border:2.4px solid rgba(255,214,140,.38)!important;
   box-shadow:0 10px 29px rgba(0,20,60,.3),inset 0 2px 0 rgba(255,255,255,.1)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .stage.in-card.scene.plate .bubble .bubble-tail{display:none}
@@ -598,8 +593,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 .swiftee.flying{transition:none!important}
 .dive-bub{position:absolute;border-radius:50%;pointer-events:none;z-index:7;border:2px solid rgba(255,255,255,.95);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 18%,rgba(220,250,255,.35) 22%,rgba(255,255,255,.08) 70%);animation:diveBub 1.2s ease-out forwards}
 @keyframes diveBub{from{transform:translate(-50%,-50%) scale(.6);opacity:.95}to{transform:translate(-50%,calc(-50% - 70px)) scale(1.1);opacity:0}}
+/* (as Fishing Frenzy's plate: 20 px from the top, 70 tall, one line of 24 px Fredoka - a line's own breaks are ignored;
+   a long statement shows in parts as the voice reaches them, engine lineParts, and the whole question fits one line) */
 .stage.in-card.scene.plate .bubble-text{width:100%;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;
-  letter-spacing:.01em;font-size:23px!important;line-height:1.3;color:#fff8ec;text-shadow:0 1.5px 3.4px rgba(0,0,0,.35)}
+  letter-spacing:.01em;font-size:24px!important;line-height:1.3;color:#fff8ec;text-shadow:0 1.5px 3.4px rgba(0,0,0,.35)}
 .stage.in-card.scene.plate .bubble-text .w.brk{display:none}
 .stage.in-card.scene.plate .w.cur{color:#fff8ec}
 .stage.in-card.scene.plate .w.key,.stage.in-card.scene.plate .w.cur.key{color:#ffd166;font-weight:700}
@@ -609,32 +606,38 @@ a{color:#123b63}a:hover{color:#0b2742}
 
 /* ---- the shape: bright blue lines, an ice-white fill with a soft drop shadow (teal legs come from the palette) ---- */
 .stage.in-card .shape-fill{fill:#e4fbff!important;fill-opacity:.96;filter:drop-shadow(0 6px 10px rgba(0,60,110,.22))}
-/* parallel arrows: orange chevrons with a white halo, so they read on the line and on the fill */
-.stage.in-card .par-ch,.stage.in-card .par-ch.ch-a,.stage.in-card .par-ch.ch-b{stroke:#ff7a00;stroke-width:4px;paint-order:stroke;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff)}
-.stage.in-card .ticks{stroke:#123b63;stroke-width:3.5px;filter:drop-shadow(0 0 1.5px #fff)}
+/* parallel arrows and equal-length ticks: their own strokes (index.html: orange chevrons over a white halo, navy ticks
+   3.5 board px), crisp, no glow - as in Fishing Frenzy's lesson */
 /* lengths, angle sizes and checkpoint values: plain bold text with a white outline (no boxes), each side its own colour */
 .stage.in-card .tag.mtag,.stage.in-card .tag.alab{background:none!important;box-shadow:none!important;padding:0!important;border:0!important;border-radius:0;
-  font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:22px;font-weight:900;color:#1656e0;
+  font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:21px;font-weight:900;color:#1656e0;
   text-shadow:0 0 3px #fff,0 0 3px #fff,2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,1.5px 1.5px 0 #fff,-1.5px -1.5px 0 #fff,1.5px -1.5px 0 #fff,-1.5px 1.5px 0 #fff}
-.stage.in-card .tag.mtag.q{color:#00806d}
+/* an unknown ('?') stands out as Fishing Frenzy's do: larger than the values round it */
+.stage.in-card .tag.mtag.q{color:#00806d;font-size:29px}
+.stage.in-card .tag.alab.q{font-size:calc(29px / var(--bz, 1))}
 .stage.in-card .tag.alab.lA{color:#e65100}.stage.in-card .tag.alab.lB{color:#00963f}.stage.in-card .tag.alab.lC{color:#6a35b8}.stage.in-card .tag.alab.lD{color:#b86e00}
 .stage.in-card .tag.mtag.mleg{color:#00806d}
-.stage.in-card .tag.vlab{color:#123b63;font-size:23px}
+.stage.in-card .tag.vlab{color:#123b63;font-size:21px}
+/* angle values keep one size on screen at any zoom, like their wedges (--bz: the board's zoom, from the engine), with the
+   white outline in em so it scales with them (Fishing Frenzy's lesson) */
+.stage.in-card .tag.alab{font-size:calc(21px / var(--bz, 1));text-shadow:0 0 .14em #fff,0 0 .14em #fff,.095em 0 0 #fff,-.095em 0 0 #fff,0 .095em 0 #fff,0 -.095em 0 #fff,.07em .07em 0 #fff,-.07em -.07em 0 #fff,.07em -.07em 0 #fff,-.07em .07em 0 #fff}
 
 /* ---- name tags: navy glass with a gold rim; names in gold, statements in white with their signs in gold ---- */
 .stage.in-card .chip,.stage.in-card .chip.name,.stage.in-card .chip.white,.stage.in-card .chip.gold{
   color:#fff8ec!important;background:linear-gradient(180deg,rgba(16,58,122,.95),rgba(6,30,74,.97))!important;border:3px solid #ffc94d!important;
-  box-shadow:0 8px 20px rgba(0,20,60,.35),inset 0 1px 0 rgba(255,255,255,.16)!important;text-shadow:0 2px 3px rgba(0,0,0,.3);font-family:'Fredoka','Baloo 2','Noto Sans Math',system-ui,sans-serif}
-.stage.in-card .chip.name{color:#ffd166!important;font-size:32px;padding:8px 38px 6px}
+  box-shadow:0 8px 20px rgba(0,20,60,.35),inset 0 1px 0 rgba(255,255,255,.16)!important;text-shadow:0 2px 3px rgba(0,0,0,.3);font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800}
+/* Fishing Frenzy's tag sizes on its card: names 36 px in gold (long ones 30), statements 33 px; a row of four (sm) 24 px,
+   so it stays one row. No caption over the statement (Fishing Frenzy's tags carry none) */
+.stage.in-card .chip.name{color:#ffd166!important;font-size:36px;padding:10px 42px 8px}
+.stage.in-card .chip.name.long{font-size:30px;padding:9px 34px 7px}
+.stage.in-card .chip.white,.stage.in-card .chip.gold{font-size:33px;padding:9px 38px 7px}
+.stage.in-card .chip.sm,.stage.in-card .chip.white.sm,.stage.in-card .chip.gold.sm{font-size:24px;padding:6px 20px 4px!important;margin:0}
+.stage.in-card .chip.hascap .chip-cap{display:none}
 /* the row-break item between tag rows (chipRows) is not a tag: no gold rim or face (it showed as a gold line) */
 .stage.in-card .chip.brk{border:0!important;background:none!important;box-shadow:none!important;padding:0!important}
 .stage.in-card .chip .chip-cap{color:#a9c8f2!important}
 .stage.in-card .chip .op,.stage.in-card .chip-ln .op{color:#ffd166!important}
 .stage.in-card .chip.hi{border-color:#fff3b0!important;box-shadow:0 0 0 4px rgba(255,209,102,.4),0 8px 20px rgba(0,20,60,.35)!important}
-/* the plate fits between the screen counter (ends ~x 235) and Back / Next (from ~x 974): long lines wrap onto two */
-.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:252px!important;right:318px!important;margin:0;max-width:none;width:auto;
-  top:10px!important;height:auto;min-height:54px;padding:7px 26px}
-.stage.in-card.scene.plate .bubble-text{white-space:normal;flex-wrap:wrap;text-wrap:balance;font-size:21px!important;line-height:1.28}
 /* the bubble's tail: symmetric, its white fill covers the bubble's 3 px border where they meet and its two teal edges
    run straight out of that border (the svg's top is the border's inner edge: top 100% of the padding box) */
 .stage .bubble-tail{overflow:visible!important;margin-top:0!important;filter:drop-shadow(0 3px 3px rgba(18,59,99,.12))}
@@ -646,21 +649,11 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* once every tile is placed the spent tray fades away instead of leaving greyed ghosts under the answer */
 .stage .tile-row{transition:opacity .4s ease,transform .4s ease}
 .stage .tile-row:not(:has(.tile:not(.used))){opacity:0;transform:translateY(8px);pointer-events:none}
-/* the question plate is centred on the card (the same axis as the shape and the answers), at most ~60 characters a
-   line between the screen counter and Back / Next; a long question breaks into balanced lines (the engine's fitBubble
-   then shrinks the plate to its widest line, so it stays centred) */
-.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:0!important;right:0!important;margin:0 auto!important;
-  max-width:700px!important;min-height:54px;padding:8px 28px}
-.stage.in-card.scene.plate .bubble-text{text-wrap:balance;line-height:1.3}
-/* balanced lines: the plate's words flow as inline blocks (text-wrap:balance does not act on flex items), spaced as the
-   flex gap did, so a two-line question splits evenly ("Which of the following are true / for this parallelogram? ...") */
-.stage.in-card.scene.plate .bubble-text{display:block!important;white-space:normal!important;text-wrap:balance;text-align:center}
+/* the plate's words: one line of inline blocks, spaced as the bubble's flex gap; the plate sizes itself to its text (the
+   speech bubble's shrink-to-widest-line width is not for it) */
+.stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
 .stage.in-card.scene.plate .bubble-text .w{display:inline-block;margin:0 .14em}
-/* the plate sizes itself (its text's own width, at most 700 px) - the speech bubble's shrink-to-widest-line width would
-   re-wrap the balanced lines into a narrow three-line column */
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{width:fit-content!important}
-/* two-column answers: 48 px rows (CONFIG.card.optWrapH), so three rows and the shape fit the card at its one size */
-.stage .wrap>.opt:not(.gridopt){height:48px!important}
 /* ===== the plate, calm (no glitches): the whole question shows at once - words already spoken in full white, the rest
    softly dimmed - so the box never empties, blinks or resizes while Swiftee speaks; a new line crossfades its text and
    the box glides to its new size; the plate itself glides in once, when a caption screen follows one of Swiftee's ===== */
@@ -683,10 +676,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card.scene.plate.plate-enter .bubble{transition:none}
 /* equal-length ticks (sides and diagonal halves): crisp 3 px navy strokes that keep their weight at any shape size,
    on a sharp white underlay (no blur) so a single or double tick reads cleanly where it crosses the blue side */
-.stage.in-card .ticks{stroke:#123b63!important;stroke-width:3px!important;vector-effect:non-scaling-stroke;stroke-linecap:round;filter:none!important}
-.stage.in-card .ticks-halo{stroke:#fff;stroke-width:7px;vector-effect:non-scaling-stroke;stroke-linecap:round;opacity:.95;pointer-events:none}
-.ticks-halo.fadein{transform-box:fill-box;transform-origin:center;animation:markIn .5s cubic-bezier(.3,1.6,.5,1) both}
-@media (prefers-reduced-motion: reduce){.ticks-halo.fadein{animation:fade .3s ease-out}}
+.stage .ticks{stroke:#123b63;filter:none}
 /* a solved checkpoint's found values settle onto the figure in the answer's green, so the finished figure reads complete */
 .stage.in-card .tag.mtag.solved,.stage.in-card .tag.alab.solved{color:#13824a!important;animation:solvedIn .45s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes solvedIn{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
@@ -700,3 +690,17 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd.good .dd-val{flex:0 0 auto;font-weight:800;color:#17692c;text-shadow:none}
 .stage .blank.dd.good .dd-chev{display:none}
 .stage .blank.dd.bad{text-shadow:none!important}
+
+/* ===== answer boxes, their menus and the number / segment tiles at the answer pills' scale (Fishing Frenzy's answers are
+   87 px pills on its card): a box 66 px tall with a 30 px label beside it, its value 36 px; tiles 64 px; menu items 52 px
+   (CONFIG.card.fillH / tileH, CONFIG.dropdown.itemH) ===== */
+.stage .blank-grp{font-size:30px;gap:10px}
+.stage .blank-eq{font-size:34px}
+.stage .blank.dd{height:66px;min-width:130px;padding:0 12px 0 18px;gap:8px;border-radius:18px}
+.stage .blank.dd .dd-val.ph{font-size:21px}
+.stage .blank.dd .dd-val:not(.ph){font-size:36px}
+.stage .blank.dd .dd-chev{width:20px;height:20px}
+.stage .blank:not(.dd){height:64px;min-width:100px;font-size:32px}
+.stage .tile:not(.ghost),.tile.ghost{height:64px;min-width:88px;font-size:32px}
+.stage .dd-item{height:52px;font-size:30px}
+.stage .fill-ui:not(.match) .blank-row{gap:22px}
