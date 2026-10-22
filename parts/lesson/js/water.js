@@ -14,7 +14,7 @@
 // rolling waves, refraction growing with depth, a caustic net on the sand, light shafts and glints, as on their lakes),
 // and this canvas only adds the swaying grass and the rising bubbles over it.
 // Time only advances while frames are drawn, so a hidden tab resumes without a jump. Static for
-// prefers-reduced-motion and in thumbnail captures. If the frame rate drops, it draws every other frame.
+// prefers-reduced-motion, and in the journey until the lesson begins (it waits unseen behind the game). If the frame rate drops, it draws every other frame.
 // =====================================================================
 (function () {
   var M = window.WATER_MANIFEST;
@@ -193,7 +193,9 @@
     var dt = last ? Math.min(0.05, (now - last) / 1000) : 0; // capped: a hidden tab resumes where it left off
     last = now;
     if (!c || !ctx || ready < need) return;
-    var still = reduced || document.body.classList.contains('thumbs-capture');
+    // in the journey the lesson waits unseen behind the game until it begins: no water to animate (or pay for) till then
+    var unseen = window.Journey && Journey.embedded && !Journey.begun;
+    var still = reduced || unseen;
     if (still) { if (!staticDone) { scene(false); staticDone = true; } return; }
     staticDone = false;
     // slow device: draw every other frame (time still runs at full speed)
