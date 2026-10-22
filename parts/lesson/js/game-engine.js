@@ -1865,33 +1865,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.move = (e) => this.move(e);
     g.up = (e) => this.up(e);
     g.poly = [A, B, C, D].map((p) => r1(p.x) + ',' + r1(p.y)).join(' ');
-    // legGlow: AD and BC are emphasised (bolder in their own colour), so the learner knows which two sides "will meet"
-    const waitFocusG = st.layout === 'focus' && !s.centered;
     const said = (k) => !!(s.glow && s.glow.indexOf(k) >= 0);
-    const glowLeg = (k) => !!f.legGlow || said(k) || (task === 'extLegs' && !st.auto && !s.done && !waitFocusG && !(s.ext[k] > 0));
     const act = task === 'measure' ? this.activeSide() : null;
     const meas = (k) => task === 'measure' && (!!s.tap[k] || s.measuring === k);
-    // A highlighted side ("lit": legGlow, a line's glow, the side being measured / tapped) gets the highlighter look:
-    // a band drawn on under it (.hl), a ring bead gliding back and forth along it (g.bXX) and, while only some sides
-    // are lit, the other sides dim (.edge.dim). All four lit (the whole outline named) = bands only, nothing dims.
+    // A highlighted side ("lit": named by a line's glow or a word cue, or being measured) is drawn bolder and gets the
+    // marker (hlCls, below); while only some sides are lit the others step back (.edge.dim). All four lit (the whole
+    // outline named): nothing steps back.
     const lit = {};
-    const band = (k, p, q, on) => {
-      lit[k] = st.auto ? on : (on || act === k || meas(k));
-      const said1 = !lit[k] && s.emph && s.emph[k]; // named in the voice-over: a short band flash (CONFIG.emph.holdMs)
-      return seg(p, q, lit[k] || !!said1, { cls: lit[k] ? 'hl' : 'hl flash' });
-    };
-    g.hDA = band('DA', D, A, glowLeg('DA'));
-    g.hBC = band('BC', B, C, glowLeg('BC'));
-    const glowBase = (k) => said(k) || (task === 'extBases' && !st.auto && !s.done && !waitFocusG && !(s.ext[k] > 0));
-    g.hAB = band('AB', A, B, glowBase('AB'));
-    g.hCD = band('CD', D, C, glowBase('CD'));
+    ['DA', 'BC', 'AB', 'CD'].forEach((k) => { lit[k] = said(k) || (!st.auto && (act === k || meas(k))); });
     const nLit = ['AB', 'BC', 'CD', 'DA'].filter((k) => lit[k]).length;
-    const bead = (k, p, q) => {
-      const L = this.dist(p, q), on = lit[k] && nLit <= 2 && L > 30;
-      return { tf: 'translate(' + r1(p.x) + ' ' + r1(p.y) + ') rotate(' + r1(Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI) + ')', L: r1(L), d: dsp(on) };
-    };
-    // a parallel pair's beads travel the same way (A->B with D->C, D->A with C->B)
-    g.bAB = bead('AB', A, B); g.bBC = bead('BC', C, B); g.bCD = bead('CD', D, C); g.bDA = bead('DA', D, A);
     {
       const tp = s.tape, ends = tp ? this.walkEnds(tp.leg) : null;
       if (ends) {
@@ -1949,17 +1931,18 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       g.trace = seg(cur.p, lerp(cur.p, cur.q, Math.min(1, (bd.d - cur.s) / cur.L)), true, { cls: 'trace' });
     }
     g.ol = { d: dsp(!!(bd && bd.settle) || !!st.assemble) };
-    // the build's highlighter trail: a band follows the pen round the outline, then fades away as the fill comes in
-    g.trail = seg(D, D, false);
-    if (bd && (building || bd.settle)) {
-      const ends = { DA: [D, A], AB: [A, B], BC: [B, C], CD: [D, C] };
-      Object.keys(ends).forEach((k) => { g['h' + k] = seg(ends[k][0], ends[k][1], edgeOn(k), { cls: 'hl trail' + (building ? '' : ' out') }); });
-      if (building && bd.d > 0) g.trail = Object.assign({}, g.trace, { d: 'inline' });
-    }
-    g.eAB = seg(A, B, edgeOn('AB'), { c: baseCol('AB'), cls: eCls('AB') });
-    g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD') });
-    g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC') });
-    g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA') });
+    // the named side (as in Fishing Frenzy's lesson): a sunflower-yellow marker redraws it, a glowing pen tip running
+    // ahead of it, while the side is lit or the voice names it (css .hl / .hlp)
+    const hlCls = (k) => 'hl' + ((lit[k] || (s.emph && s.emph[k])) && edgeOn(k) ? ' on' : '');
+    g.eAB = seg(A, B, edgeOn('AB'), { c: baseCol('AB'), cls: eCls('AB'), hl: hlCls('AB') });
+    g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
+    g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });
+    g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA'), hl: hlCls('DA') });
+    // the marker draws one way for every side: up a leg, left to right along a base
+    ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
+      const e = g['e' + k], steep = Math.abs(e.y2 - e.y1) > Math.abs(e.x2 - e.x1), flip = steep ? e.y1 < e.y2 : e.x1 > e.x2;
+      Object.assign(e, flip ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
+    });
     // bases callout: hidden again once the learner taps a base (the tapped sides get their own "Base" tags)
     {
       const legs = s.callout === 'legs';

@@ -273,7 +273,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .opts-in .opt.bad{animation:shake .4s ease}
 @media (prefers-reduced-motion: reduce){.qshape{transition:none}.opts-in .opt{animation:none}}
 .opts-in .opt.nudged{animation:optNudge 1.5s ease-in-out 3}
-/* highlighted side: a touch bolder in its own colour, over its highlighter band (.hl) */
+/* highlighted side: a touch bolder in its own colour, under its marker (.hl) */
 .edge.lit{stroke-width:6px}
 .edge.lit.emph{stroke-width:8px}
 /* screen 4 leg trace: a soft pink glow drawn on along the leg (D->A, C->B); at the corner it fades off the side while
@@ -394,42 +394,36 @@ a{color:#123b63}a:hover{color:#0b2742}
 .alab.sm{font-size:14px;padding:1px 5px}
 .stage.skin-intro .edge.lit{stroke-width:4.5px}
 
-/* ===== Highlighter look (shape colours: CONFIG.palette, as --pg-* variables) =====
-   A side being named or worked on: a soft band draws on under it (.hl, pathLength 100), a ring bead glides back and
-   forth along it (.bead), and while only some sides are lit the others dim (.edge.dim). The build trail (screen 1) is
-   the same band following the pen; it fades out (.out) as the fill comes in. A named corner grows into a ring (engine). */
-.hl{stroke:var(--pg-hl,#FFAF53);stroke-width:13px;opacity:.85;stroke-dasharray:100 100;animation:hlIn .4s cubic-bezier(.3,0,.2,1) backwards}
-@keyframes hlIn{from{stroke-dashoffset:100;opacity:0}to{stroke-dashoffset:0;opacity:.85}}
-.hl.trail{stroke-dasharray:none;animation:none;transition:opacity .9s ease}
-.hl.trail.out{opacity:0}
+/* ===== The named side (as in Fishing Frenzy's lesson) =====
+   A sunflower-yellow marker redraws it - a glowing pen tip runs from one end to the other and the side turns bold
+   yellow behind it, edged in navy so the bright yellow stands out on the aqua - and it stays marked while it is talked
+   about; the other sides step back (.edge.dim). pathLength is 100. A named corner grows into a ring (engine). */
+.hl{opacity:0;pointer-events:none;stroke:#ffd000;stroke-linecap:round}
+.hl.on{opacity:1;stroke-width:9px;stroke-dasharray:100 100;animation:hlDraw .55s cubic-bezier(.45,0,.35,1) both;
+  filter:drop-shadow(0 0 0.8px #0b2a55) drop-shadow(0 0 0.8px #0b2a55) drop-shadow(0 0 0.6px #0b2a55)}
+@keyframes hlDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.hlp.hl{stroke:#ffffff}
+.hlp.hl.on{stroke-width:15px;stroke-dasharray:.4 300;animation:hlPen .55s cubic-bezier(.45,0,.35,1) both;filter:drop-shadow(0 0 2px #ff9d00) drop-shadow(0 0 5px #ffb300)}
+@keyframes hlPen{0%{stroke-dashoffset:0;opacity:1}90%{stroke-dashoffset:-100;opacity:1}100%{stroke-dashoffset:-100;opacity:0}}
 /* dim with stroke-opacity: GSAP animates opacity on the sides (entrances), and a CSS opacity transition would lag them */
 .edge.dim{stroke-opacity:.38}
-.bead{stroke:var(--pg-hlRing,#FFAF53);filter:drop-shadow(0 1px 2px rgba(18,59,99,.25));animation:beadRun 1.6s ease-in-out infinite alternate}
-@keyframes beadRun{from{transform:translateX(0)}to{transform:translateX(var(--L))}}
 .vdot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke .25s ease,stroke-width .25s ease}
-@media (prefers-reduced-motion: reduce){.hl{animation:none}.hl.trail{transition:none}.bead{animation:none;transform:translateX(calc(var(--L) / 2))}.vdot{transition:none}}
+@media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none}.hlp.hl.on{display:none}.vdot{transition:none}}
 
 /* parallel chevrons wear their pair's colour (AB, CD: sideA; AD, BC: sideB) */
 .par-ch.ch-a{stroke:var(--pg-ink,#1d2f52)}.par-ch.ch-b{stroke:var(--pg-ink,#1d2f52)}
-/* a side named in the voice-over: its band draws on, holds and fades within CONFIG.emph.holdMs */
-.hl.flash{animation:hlFlash .65s ease-out both}
-@keyframes hlFlash{0%{stroke-dashoffset:100;opacity:0}35%{stroke-dashoffset:0;opacity:.85}70%{opacity:.85}100%{stroke-dashoffset:0;opacity:0}}
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
 .arc.dim{opacity:.25}.tag.alab.dim{opacity:.35}
 .arc,.tag.alab{transition:opacity .3s ease,stroke-width .3s cubic-bezier(.3,0,.3,1),transform .3s cubic-bezier(.3,0,.3,1)}
-@media (prefers-reduced-motion: reduce){.hl.flash{animation:none;opacity:.85}.arc,.tag.alab{transition:none}}
+@media (prefers-reduced-motion: reduce){.arc,.tag.alab{transition:none}}
 /* pair cards (AB ∥ CD, AB = CD / AD ∥ BC, AD = BC) carry their sides' colour, as in the colour key */
 
 .chip.pairA.hi,.chip.pairB.hi{border-color:var(--pg-hlRing,#FFAF53)}
 
 /* ===== Fuchsia Beam (CONFIG.palette): lines #DA7E20, fill #FFD2A0, glow #FFAF53, notation panels #FFF8EC ===== */
 .shape-fill{fill-opacity:.92}
-.hl{opacity:.6}
-@keyframes hlIn{from{stroke-dashoffset:100;opacity:0}to{stroke-dashoffset:0;opacity:.6}}
-@keyframes hlFlash{0%{stroke-dashoffset:100;opacity:0}35%{stroke-dashoffset:0;opacity:.6}70%{opacity:.6}100%{stroke-dashoffset:0;opacity:0}}
 .ticks{stroke:var(--pg-ink,#1d2f52)}
 .ltag,.mtag{border-color:var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);background:var(--pg-panel,#FFF8EC)}
-.bead{stroke-width:4px}
 /* cards = notation panels: soft pink face, highlight border, dark navy type, relation signs in the highlight colour,
    and a small caption naming the property (Parallel sides, Equal angles ...) */
 .stage .chip,.stage .chip.gold,.stage .chip.name{background:var(--pg-panel,#FFF8EC);border:2.5px solid var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);
@@ -480,8 +474,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes edgeFlash{0%,100%{stroke-width:5px;filter:none}50%{stroke-width:9px;filter:drop-shadow(0 0 6px rgba(31,107,255,.55))}}
 @keyframes shapePulse{0%,100%{filter:drop-shadow(0 0 0 rgba(31,107,255,0))}50%{filter:drop-shadow(0 0 14px rgba(31,107,255,.35))}}
 .stage.skin-intro .edge{stroke-width:4px}
-/* screen 1 on the card: a plain blue pen, as in the reference (no gold trail behind it) */
-.stage.in-card .hl.trail{display:none}
 /* the opening: only the Start card fades away (Swiftee and the rest stay hidden until the card is up) */
 .stage.card-wait > *{visibility:hidden}
 .stage.card-wait .start-card{visibility:visible}
