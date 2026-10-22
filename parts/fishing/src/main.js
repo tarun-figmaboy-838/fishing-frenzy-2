@@ -58,13 +58,17 @@ if (params.has('debug') || params.get('dev') === '1') {
   window.popoDebug = { state, game };
 }
 
-// In the journey (index.html at the root; shell/bridge.js) this banner is the front page. Its Play hands over to the
-// lesson (Game.handOver) and the shell's word brings the game back: hide (the lesson covers it), story (the lesson is
-// over: on as Play would go), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
+// In the journey (index.html at the root; shell/bridge.js) this banner is the front page. Its Play tells the shell
+// (Game.handOver), and the shell's word takes the game on: story (on as Play goes; args.lesson: the lesson follows
+// the first net, Game.lessonBreak), quiet (the lesson is dissolving in over it: its sound fades), hide (covered),
+// resume (the lesson is over: on with the next net), title (the banner again, after Play Again), wake (a ?dev=1
+// jump: drawing again).
 if (journey) {
-  journey.onCommand((name) => {
-    if (name === 'hide') game.hide();
-    else if (name === 'story') game.story();
+  journey.onCommand((name, args) => {
+    if (name === 'quiet') audio.fadeOut();
+    else if (name === 'hide') game.hide();
+    else if (name === 'story') game.story(args);
+    else if (name === 'resume') game.goOn();
     else if (name === 'title') game.backToTitle();
     else if (name === 'wake') game.wake();
   });

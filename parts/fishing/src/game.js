@@ -132,6 +132,8 @@ class Game {
     // banner until the shell says
     this.embedded = !!(window.Journey && window.Journey.embedded);
     this.holding = false;
+    this.lessonAfter = false; // the lesson follows the first net (Game.lessonBreak)
+    this.breakEnds = null;    // the first net's break, while the lesson plays
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -238,8 +240,8 @@ class Game {
   }
 
   // --- in the journey (shell/journey.js) ----------------------------------------
-  // Play, inside its tap: the banner clears away as ever, and the shell's sound unlocks. With the lesson next the
-  // game holds there, its music stopped; with ?start=fishing the shell answers at once with story.
+  // Play, inside its tap: the banner clears away as ever, and the shell's sound unlocks. The shell answers at once
+  // with story; only with ?start=lesson does the lesson come first, and the game holds there, its music stopped.
   handOver() {
     this.holding = true;
     window.Journey.play();
@@ -261,20 +263,47 @@ class Game {
     this.showIdleScene();
   }
 
-  // The lesson is over: on from the banner as Play goes on (the narrator, the first school, the net, level 1).
-  story() {
+  // On from the banner as Play goes on (the narrator, the first school, the net, level 1): at once, or after the lesson
+  // (?start=lesson). args.lesson: the lesson follows the first net.
+  story(args) {
     const held = this.holding;
     this.holding = false;
+    this.lessonAfter = !!(args && args.lesson);
     this.audio.hold(false);
     if (state.phase === PHASE.TITLE) this.title.leave(); // (a ?dev=1 lesson jump came from the banner)
     else if (!held) { this.showIdleScene(); return; }   // (or from a level: it carries on)
     this.start();
   }
 
+  // In the journey the first net is the warm-up before the lesson: once its catch is in the bucket and the net wound
+  // up, the game holds there and tells the shell, which plays the lesson over it. Resolves (true) when the shell says
+  // `resume` (goOn), or at once (false) when no lesson follows.
+  async lessonBreak(token) {
+    if (!this.embedded || !this.lessonAfter || state.level !== 0) return false;
+    this.lessonAfter = false;
+    this.audio.play('complete'); // (the net's chime, heard before the lesson rather than after it)
+    await clock.wait(700, token);
+    return new Promise((resolve) => {
+      this.breakEnds = () => { if (isCurrent(token)) resolve(true); };
+      window.Journey.finish({ intro: true, levels: 1, fish: state.caught });
+    });
+  }
+
+  // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
+  goOn() {
+    this.audio.hold(false);
+    this.showIdleScene();
+    const ends = this.breakEnds;
+    this.breakEnds = null;
+    if (ends) ends();
+  }
+
   // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
   // closes and opens again on the banner.
   backToTitle() {
     this.holding = false;
+    this.lessonAfter = false;
+    this.breakEnds = null;
     this.audio.hold(false);
     this.showIdleScene();
     if (this.ending && !this.ending.opening) { closeCurtain(this, { title: true }); return; }

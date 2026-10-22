@@ -608,6 +608,8 @@ async function nextLevel(game, token) {
     await celebrate(game, token);
     return;
   }
+  // in the journey, after the first net: the lesson, while the game holds here (its chime came before it)
+  const lesson = await game.lessonBreak(token);
   // the fish the net missed swim on and are joined by more for the next net (rowing to new
   // waters, they come along); only for the golden school do they swim off out of the sea, as
   // the golden fish swim in behind them
@@ -618,7 +620,7 @@ async function nextLevel(game, token) {
     game.strays.push(...state.fish.filter((f) => !f.gone));
     state.fish = [];
   }
-  game.audio.play('complete');
+  if (!lesson) game.audio.play('complete');
   await clock.wait(500, token);
   if (LEVELS[next].location !== state.locationIndex) await rowTo(game, LEVELS[next].location, token);
   const before = game.prepareLevel(next);

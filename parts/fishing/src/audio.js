@@ -163,9 +163,10 @@ class AudioEngine {
   // line) and the context sleeps, and nothing wakes it (a tap, the tab coming back) until the game shows again. Then
   // the sound fades back in, the music too if it was playing; the notes queued before it slept go by unheard.
   hold(on) {
-    if (on === this.held) return;
+    if (on === this.held && (on || !this.faded)) return;
     this.held = on;
-    if (on) this.musicWas = this.musicOn;
+    if (on && !this.faded) this.musicWas = this.musicOn;
+    this.faded = false;
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     this.master.gain.cancelScheduledValues(now);
@@ -180,6 +181,17 @@ class AudioEngine {
     this.resume();
     if (!this.muted) this.master.gain.setTargetAtTime(1, now + 0.35, 0.08);
     if (this.musicWas) this.startMusic();
+  }
+
+  // In the journey, as the next part dissolves in over the game: every sound fades away with it (hold follows).
+  fadeOut() {
+    if (this.held || this.faded) return;
+    this.faded = true;
+    this.musicWas = this.musicOn;
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.master.gain.cancelScheduledValues(now);
+    this.master.gain.setTargetAtTime(0, now, 0.08);
   }
 
   setTravel(on) {

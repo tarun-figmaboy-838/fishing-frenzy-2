@@ -1,24 +1,26 @@
 """Fishing Frenzy 2's journey in real browsers: python3 tests/journey.py [chromium|webkit|all] [journey|start|veil|dev|all]
 
 Plays the journey (index.html at the root, shell/journey.js) through its real taps, with Python Playwright's Chromium
-and WebKit (pip install playwright pillow && playwright install chromium webkit), at 1280x720 with a mouse and at
-1024x768 with touch:
+and WebKit (pip install playwright pillow && playwright install chromium webkit; an older WebKit build already
+installed is used if Playwright's own is missing), at 1280x720 with a mouse and at 1024x768 with touch:
 
   front page  the fishing game's own live banner, shown first; the lesson loads, unseen, behind it once it's ready
-  Play        a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the lesson's
-              frame dissolves in over the game; once it covers the game, the game has stopped drawing and is silent
-              (no music, effects or voice; its context asleep)
-  lesson      it begins (seashell, card, screen 1); jumped to its last screen, it hands over by itself
-  story       Popo's story starts under the lesson's frame as it dissolves out (the narrator, the first school, the
-              net); the lesson's frame is disposed and its voice stopped; a real level-1 catch (a drag of the corner
-              with the mouse, or taps on its arrows by touch, then Drop Net as fish swim under the net)
+  intro       a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the game's story
+              starts at once (the narrator, the first school, the net); a real level-1 catch (a drag of the corner with
+              the mouse, or taps on its arrows by touch, then Drop Net as fish swim under the net)
+  lesson      once the catch is in the bucket the game holds and the lesson dissolves in over it; once covered, the
+              game has stopped drawing and is silent (no music, effects or voice; its context asleep); the lesson
+              begins (seashell, card, screen 1); jumped to its last screen, it hands over by itself
+  fishing     the game wakes under the lesson's frame as it dissolves out and goes on to its second net (the lesson's
+              frame disposed, its voice stopped); a real level-2 catch
   the end     after level 8 (jumped to, as its dev panel's Finish), a real tap on Play Again: the circle closes and
               opens on the banner from its start, a fresh lesson loads behind it, and Play works again
 
-`veil`: Play while the lesson is still loading shows the frosted "Getting ready…" veil; a lesson that can't load says
-so, and a real tap on Try again loads it afresh and the journey goes on. `start`: ?start=fishing goes straight from Play to the story (no lesson), and a part opened on its own goes to the
-journey. `dev`: ?dev=1's one panel lists both parts' screens; a lesson screen shows the lesson over the game at that
-screen, a fishing level takes it away and wakes the game there, Front page brings the banner back; the backtick key
+`start`: ?start=fishing plays the nets in a row from Play (no lesson), ?start=lesson brings the lesson first and then
+the story, and a part opened on its own goes to the journey. `veil`: the lesson still loading after the first net shows
+the frosted "Getting ready…" veil; a lesson that can't load says so, and a real tap on Try again loads it afresh and the
+journey goes on. `dev`: ?dev=1's one panel lists both parts' screens; a lesson screen shows the lesson over the game at
+that screen, a fishing level takes it away and wakes the game there, Front page brings the banner back; the backtick key
 folds the panel. Every run checks that each step is announced, and that no frame logs an error or has a request fail
 (Google Fonts aside).
 
@@ -64,7 +66,8 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            ctx: a.ctx ? a.ctx.state : null, held: a.held, music: a.musicOn, voice: !!a.voiceSource, effects: a.effectSources.size,
            clock: PopoGame.clock.time, hud: !$('hud').hidden, start: !$('screen-start').hidden, armed: !$('btn-play').disabled,
            again: !$('btn-again').hidden, dialogue: g.dialogue ? g.dialogue.who : null, ending: !!g.ending, title: g.title.visible,
-           ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel') }; }'''
+           ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
+           lessonAfter: g.lessonAfter }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
@@ -233,12 +236,13 @@ def silent(s):
     return not s['running'] and s['held'] and s['ctx'] != 'running' and not s['music'] and not s['voice'] and s['effects'] == 0
 
 
-def catch_level_one(r):
-    """Level 1 with real input: the corner onto its place (drag, or arrow taps by touch), then Drop Net as fish swim
-    under the net; a drop the fish swim out from under goes again."""
+def catch_level(r, n, shot):
+    """Net n (0 = level 1) with real input: the corner onto its place (drag, or arrow taps by touch), then Drop Net as
+    fish swim under the net; a drop the fish swim out from under goes again."""
     ff = part(r.page, 'fishing')
-    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady', 90, 'the first net is ready')
-    check(st['level'] == 0 and not st['ok'], f'{r.tag}: the first net comes down, its corner off its place', f"stop {st['stop']}")
+    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n + 1} is ready')
+    check(not st['ok'], f'{r.tag}: net {n + 1} comes down, its corner off its place', f"stop {st['stop']}")
+    before = st['caught']
     if r.touch:
         for _ in range(abs(st['stop'])):
             r.tap_el(ff, '#step-back' if r.fish()['stop'] > 0 else '#step-on')
@@ -255,7 +259,7 @@ def catch_level_one(r):
         r.page.mouse.up()
     st = until(r.fish, lambda s: s['ok'], 5, 'the corner on its place')
     check(st['stop'] == 0, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"})')
-    r.shot('6-level-1')
+    r.shot(f'{shot}a-level-{n + 1}')
     for attempt in range(6):
         end = time.time() + 60
         while ff.evaluate(UNDER) < 2:
@@ -264,13 +268,13 @@ def catch_level_one(r):
             r.page.wait_for_timeout(60)
         r.tap_el(ff, '#btn-drop')
         until(r.fish, lambda s: s['phase'] != 'puzzleReady', 5, 'the net goes down')
-        st = until(r.fish, lambda s: s['caught'] > 0 or s['phase'] == 'puzzleReady', 30, 'the catch')
-        if st['caught'] > 0:
+        st = until(r.fish, lambda s: s['caught'] > before or s['phase'] == 'puzzleReady', 30, 'the catch')
+        if st['caught'] > before:
             break
         print(f'     {r.tag}: the fish swam out before the net landed; dropping again', flush=True)
-    check(st['caught'] > 0, f'{r.tag}: level 1: Drop Net as fish swim under the net catches some', f"{st['caught']} fish")
+    check(st['caught'] > before, f'{r.tag}: level {n + 1}: Drop Net as fish swim under the net catches some', f"{st['caught'] - before} fish")
     r.page.wait_for_timeout(900)
-    r.shot('7-catch')
+    r.shot(f'{shot}b-catch')
 
 
 def journey(p, engine, size, url):
@@ -292,17 +296,26 @@ def journey(p, engine, size, url):
     page.wait_for_timeout(600)
     r.shot('1-banner')
 
-    # ---------- Play: the lesson dissolves in over the game, which goes quiet ----------
+    # ---------- Play: the game's story at once, and its first net (the intro) ----------
     play_tap(r)
-    page.wait_for_timeout(150)
+    page.wait_for_timeout(200)
+    st, fs = r.shell(), r.fish()
+    check(st['phase'] == 'intro' and st['current'] == 'fishing' and st['ctx'] == 'running' and not st['veil'] and st['frames'] == ['fishing+live', 'lesson']
+          and fs['phase'] == 'intro' and not fs['holding'] and fs['running'] and fs['music'] and fs['hud'],
+          f'{r.tag}: Play (a real {"touch" if r.touch else "click"}): the shell\'s sound unlocks and the game\'s story starts at once (music, HUD)')
+    until(r.fish, lambda s: s['dialogue'] == 'narrator', 10, 'the narrator')
+    page.wait_for_timeout(1200)
+    r.shot('2-story')
+    check(True, f'{r.tag}: the narrator\'s lines begin, as after Play on the game\'s own')
+    catch_level(r, 0, '3')
+
+    # ---------- the first net in: the game holds, and the lesson dissolves in over it ----------
+    st = until(r.shell, lambda s: s['current'] == 'lesson', 20, 'the lesson comes in after the first net')
     fs = r.fish()
-    check(fs['holding'] and fs['phase'] == 'intro' and not fs['music'] and not fs['hud'],
-          f'{r.tag}: Play (a real {"touch" if r.touch else "click"}): the banner clears away and the game holds, its music stopped, no story')
-    r.shot('2a-play')
-    st = until(r.shell, lambda s: s['current'] == 'lesson', 3, 'the lesson comes in')
-    check(st['ctx'] == 'running' and not st['veil'], f'{r.tag}: the shell\'s sound is unlocked by the tap; the lesson was ready (no veil)')
+    check(not st['veil'] and fs['level'] == 0 and fs['phase'] == 'transitioning' and fs['caught'] > 0,
+          f'{r.tag}: the catch in the bucket and the net wound up, the game holds and the lesson dissolves in over it')
     page.wait_for_timeout(120)
-    r.shot('2b-dissolve')
+    r.shot('4a-lesson-comes-in')
     st = until(r.shell, lambda s: 'lesson+live' in s['frames'], 2, 'the dissolve ends')
     check(st['frames'] == ['fishing+live+covered', 'lesson+live'] and st['phase'] == 'lesson',
           f'{r.tag}: the lesson\'s frame has dissolved in over the game', ', '.join(st['frames']))
@@ -316,53 +329,50 @@ def journey(p, engine, size, url):
         st = until(r.shell, lambda s: '/parts/lesson/' in s['voice'], 20, 'the voice-over plays')
         check(True, f'{r.tag}: the lesson\'s voice plays in the shell\'s unlocked <audio>', st['voice'].split('/')[-1])
     page.wait_for_timeout(1500)
-    r.shot('3-lesson')
+    r.shot('4b-lesson')
+    check(silent(r.fish()), f'{r.tag}: still no sound of the game under the lesson')
 
-    # ---------- the lesson over: Popo's story starts under it ----------
+    # ---------- the lesson over: the game goes on to its second net ----------
     last = part(page, 'lesson').evaluate('() => lessonDebug.steps().length - 1')
     part(page, 'lesson').evaluate(f'() => lessonDebug.jumpTo({last})')
     st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
     check(st['phase'] == 'fishing' and 'lesson+leaving' in st['frames'], f'{r.tag}: its last screen over, the lesson hands over and its frame dissolves away', ', '.join(st['frames']))
     fs = r.fish()
-    check(fs['running'] and not fs['held'] and not fs['holding'] and fs['phase'] == 'intro' and fs['hud'] and fs['music'],
-          f'{r.tag}: the game wakes under it and its story starts (music, HUD)')
+    check(fs['running'] and not fs['held'] and fs['hud'] and fs['music'], f'{r.tag}: the game wakes under it, with its music')
     page.wait_for_timeout(150)
-    r.shot('4-lesson-dissolves-out')
+    r.shot('5-lesson-dissolves-out')
     st = until(r.shell, lambda s: s['lesson'] is None, 3, 'the lesson\'s frame goes')
     check(st['frames'] == ['fishing+live'] and not st['voice'] and 'lesson' not in st['outs'],
           f'{r.tag}: the lesson\'s frame is disposed; its voice and sound are stopped')
-    fs = until(r.fish, lambda s: s['dialogue'] == 'narrator', 10, 'the narrator')
-    page.wait_for_timeout(1200)
-    r.shot('5-story')
-    check(True, f'{r.tag}: the narrator\'s lines begin, as after Play on the game\'s own')
-    catch_level_one(r)
+    catch_level(r, 1, '6')
+    check(True, f'{r.tag}: the game carried on at its second net (same waters), and a real catch there')
 
     # ---------- the end, and Play Again: the banner again, and a fresh lesson behind it ----------
     part(page, 'fishing').evaluate(FINISH)
     fs = until(r.fish, lambda s: s['again'], 60, 'The End and Play Again')
     page.wait_for_timeout(400)
-    r.shot('8-the-end')
+    r.shot('7-the-end')
     check(fs['phase'] == 'gameComplete' and r.shell()['lesson'] is None, f'{r.tag}: after level 8, The End and Play Again (no lesson loaded yet)')
     r.tap_el(part(page, 'fishing'), '#btn-again')
     st = until(r.shell, lambda s: s['phase'] == 'front', 3, 'back to the front page')
     page.wait_for_timeout(250)
-    r.shot('9a-circle-closes')
+    r.shot('8a-circle-closes')
     st = until(r.shell, lambda s: s['lesson'] == 'ready', 60, 'a fresh lesson loads')
     check(st['frames'] == ['fishing+live', 'lesson'], f'{r.tag}: Play Again: back to the front page, and a fresh lesson loads behind it', ', '.join(st['frames']))
     fs = until(r.fish, lambda s: s['phase'] == 'title' and s['start'] and not s['hud'] and not s['ending'], 10, 'the banner again')
     check(fs['caught'] == 0, f'{r.tag}: the circle closes and opens on the banner from its start (Popo rows in again)')
     page.wait_for_timeout(700)
-    r.shot('9b-banner-again')
+    r.shot('8b-banner-again')
     said = page.evaluate('() => window.__said.map(([k, d]) => k + ":" + (d.part || ""))')
-    check(said == ['part:lesson', 'finished:lesson', 'part:fishing', 'finished:fishing', 'complete:'],
+    check(said == ['part:intro', 'finished:intro', 'part:lesson', 'finished:lesson', 'part:fishing', 'finished:fishing', 'complete:'],
           f'{r.tag}: every step is announced in order', ', '.join(said))
     res = page.evaluate('() => FishingFrenzy.results')
-    check('results' in res.get('lesson', {}) and res.get('fishing', {}).get('levels') == 8, f'{r.tag}: the results of both parts are kept',
-          f"lesson {sorted(res['lesson'].keys())}, fishing {res.get('fishing')}")
+    check(res.get('intro', {}).get('intro') and 'results' in res.get('lesson', {}) and res.get('fishing', {}).get('levels') == 8,
+          f'{r.tag}: the results of each step are kept', f"intro {res.get('intro')}, lesson {sorted(res['lesson'].keys())}, fishing {res.get('fishing')}")
     play_tap(r)
-    st = until(r.shell, lambda s: s['current'] == 'lesson' and 'lesson+live' in s['frames'], 5, 'Play again: the lesson')
-    until(r.fish, silent, 3, 'the game goes quiet again')
-    check(True, f'{r.tag}: Play again: the fresh lesson dissolves in and the game goes quiet again')
+    st = until(r.shell, lambda s: s['phase'] == 'intro', 3, 'Play again: the story')
+    fs = until(r.fish, lambda s: s['phase'] == 'intro' and s['running'] and s['music'], 3, 'the story again')
+    check(r.fish()['lessonAfter'], f'{r.tag}: Play again: the story starts again, the lesson to follow its first net')
 
     if r.touch:
         # a tablet held upright: the journey's one rotate hint (out of the full screen Play asked for first, where the
@@ -375,7 +385,7 @@ def journey(p, engine, size, url):
         st, fs = r.shell(), r.fish()
         check(st['rotate'] and not fs['rotate'], f'{r.tag}: held upright, the journey asks to be turned (one hint, not the game\'s too)',
               'Play had gone full screen' if full else 'no full screen here')
-        r.shot('10-upright')
+        r.shot('9-upright')
     errs = r.errors()
     check(not errs, f'{r.tag}: no errors and no failed requests in any frame', '; '.join(errs[:5]))
     r.close()
@@ -400,7 +410,7 @@ def start_fishing(p, engine, url):
     page.wait_for_timeout(200)
     st, fs = r.shell(), r.fish()
     check(st['phase'] == 'fishing' and st['current'] == 'fishing' and not st['veil'] and fs['phase'] == 'intro' and not fs['holding']
-          and fs['running'] and fs['music'] and fs['hud'], f'{r.tag}: Play goes straight on to the story (music on, HUD)')
+          and fs['running'] and fs['music'] and fs['hud'] and not fs['lessonAfter'], f'{r.tag}: Play goes straight on to the story (music on, HUD), no lesson to follow')
     until(r.fish, lambda s: s['dialogue'] == 'narrator', 10, 'the narrator')
     page.wait_for_timeout(1500)
     r.shot('1-story')
@@ -408,14 +418,30 @@ def start_fishing(p, engine, url):
     check(st['frames'] == ['fishing+live'], f'{r.tag}: no lesson frame anywhere', ', '.join(st['frames']))
     until(r.fish, lambda s: s['phase'] == 'puzzleReady', 90, 'the first net')
     check(True, f'{r.tag}: the first net comes down')
+    # ?start=lesson: the lesson first, over the game holding where its banner cleared away; then the story
+    page.goto(url + '?start=lesson&debug')
+    until(r.shell, lambda s: s['fishing'] == 'ready' and s['lesson'] == 'ready', 60, 'the game, then the lesson, load')
+    play_tap(r)
+    page.wait_for_timeout(150)
+    check(r.fish()['holding'], f'{r.tag}: ?start=lesson: Play: the banner clears away and the game holds')
+    st = until(r.shell, lambda s: s['current'] == 'lesson' and 'lesson+live' in s['frames'], 5, 'the lesson comes in')
+    until(r.fish, silent, 3, 'the game goes quiet')
+    until(r.lesson, lambda s: s['started'], 40, 'the lesson starts')
+    check(True, f'{r.tag}: ?start=lesson: the lesson dissolves in over the held game, which goes quiet')
+    r.shot('2-start-lesson')
+    last = part(page, 'lesson').evaluate('() => lessonDebug.steps().length - 1')
+    part(page, 'lesson').evaluate(f'() => lessonDebug.jumpTo({last})')
+    st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
+    fs = until(r.fish, lambda s: s['dialogue'] == 'narrator', 10, 'the narrator')
+    check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'], f'{r.tag}: ?start=lesson: after the lesson the story starts, all eight nets to follow')
     errs = r.errors()
     check(not errs, f'{r.tag}: no errors and no failed requests in any frame', '; '.join(errs[:5]))
     r.close()
 
 
 def veil(p, engine, url):
-    """Play while the lesson is still loading: the frosted veil says "Getting ready…"; a lesson that can't load says
-    so with Try again, whose real tap loads it afresh and the journey goes on."""
+    """The first net in while the lesson is still loading: the frosted veil says "Getting ready…"; a lesson that can't
+    load says so with Try again, whose real tap loads it afresh and the journey goes on."""
     r = Run(p, engine, 'desktop', url)
     r.tag = f'{engine}-veil'
     page = r.page
@@ -424,11 +450,15 @@ def veil(p, engine, url):
     page.goto(url + '?debug', wait_until='domcontentloaded')  # (the page's load would wait for the held frame)
     until(r.shell, lambda s: s['fishing'] == 'ready' and s['lesson'] == 'loading' and held, 60, 'the game loads; the lesson is held back')
     play_tap(r)
-    page.wait_for_timeout(900)
+    until(r.fish, lambda s: s['phase'] == 'intro' and s['lessonAfter'], 5, 'the story')
+    # (the first net's catch is played for real in the journey; here the game goes straight to its break)
+    part(page, 'fishing').evaluate('() => { popoDebug.game.lessonBreak(PopoGame.state.token); }')
+    st = until(r.shell, lambda s: s['veil'], 5, 'the veil')
+    page.wait_for_timeout(500)
     st = r.shell()
     text = page.evaluate('() => { const e = document.getElementById("veil-status"); return e.hidden ? "" : e.querySelector(".status-text").textContent; }')
-    check(st['veil'] and st['phase'] == 'starting' and text == 'Getting ready…' and r.fish()['holding'],
-          f'{r.tag}: Play with the lesson still loading: the frosted veil says "Getting ready…" over the held game', text)
+    check(st['veil'] and st['phase'] == 'starting' and text == 'Getting ready…',
+          f'{r.tag}: the first net in with the lesson still loading: the frosted veil says "Getting ready…" over the game', text)
     r.shot('1-getting-ready')
     # the held-back page fails (that one failed request is the test's own), and its frame says so
     n = len(r.problems)
@@ -510,9 +540,9 @@ def dev_panel(p, engine, url):
     st = until(r.shell, lambda s: s['lesson'] == 'ready', 30, 'a fresh lesson')
     page.click('.dev-tag')  # (fold it away for the real Play)
     play_tap(r)
-    until(r.shell, lambda s: s['current'] == 'lesson' and 'lesson+live' in s['frames'], 5, 'Play: the lesson')
-    ls = until(r.lesson, lambda s: s['started'], 40, 'the lesson starts')
-    check(True, f'{r.tag}: and the banner\'s Play still takes the journey on to the lesson')
+    until(r.shell, lambda s: s['phase'] == 'intro' and s['current'] == 'fishing', 5, 'Play: the story')
+    until(r.fish, lambda s: s['dialogue'] == 'narrator' and s['lessonAfter'], 10, 'the narrator')
+    check(True, f'{r.tag}: and the banner\'s Play still starts the journey: the story, the lesson to follow the first net')
     errs = r.errors()
     check(not errs, f'{r.tag}: no errors and no failed requests in any frame', '; '.join(errs[:5]))
     r.close()

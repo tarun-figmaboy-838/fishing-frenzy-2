@@ -5,38 +5,44 @@
 //            the "Fishing Frenzy 2" logo and Play. It loads first and shows as soon as it can draw.
 //   lesson   Swiftee's parallelogram lesson (parts/lesson): its seashell opens into the card, then its screens. It
 //            loads, unseen, behind the banner once the game is ready.
-// The journey:
-//   1. Play on the banner (inside the tap: Journey.play, which unlocks this page's sound). The banner clears away as
-//      ever, but the game holds there; the lesson's frame dissolves in over it and begins, and once it covers the
-//      game the game is told `hide`: it stops drawing and every sound. (Still loading? A frosted veil says
+// The journey, in three steps (announced as the parts 'intro', 'lesson' and 'fishing'):
+//   1. intro: Play on the banner (inside the tap: Journey.play, which unlocks this page's sound). The game is told
+//      `story` (args.lesson: the lesson follows the first net) and goes on as Play does: its story (narrator, the first
+//      school, the net) and the first net, played in full. Once its catch is in the bucket and the net wound up, the
+//      game holds there and says so (Journey.finish({ intro: true })).
+//   2. lesson: its frame dissolves in over the game and begins; as it starts to, the game is told `quiet` (its sound
+//      fades), and once covered `hide`: it stops drawing and every sound. (Still loading? A frosted veil says
 //      "Getting ready…" until it has.)
-//   2. The lesson over (Journey.finish): the game is told `story` and starts its story as Play would (narrator, the
-//      first school, the net, level 1) while the lesson's frame dissolves out over it; then the lesson is disposed.
-//   3. After level 8, the end screen's Play Again (Journey.finish): the game is told `title`, the banner again from
-//      its start, and a fresh lesson loads behind it, ready to play again.
+//   3. fishing: the lesson over (Journey.finish), the game is told `resume` and goes on to its second net (and on to
+//      the eighth) while the lesson's frame dissolves out over it; then the lesson is disposed. After the eighth net,
+//      the end screen's Play Again (Journey.finish): the game is told `title`, the banner again from its start, and a
+//      fresh lesson loads behind it, ready to play again.
 //
 // Sound: browsers allow it only after a tap. The Play tap unlocks one AudioContext and one <audio> element in this
 // page, and the lesson plays through them (bridge.js: audioContext, voiceElement), so it needs no tap of its own.
 // The fishing game keeps its own context (its taps unlock it: its banner is the page the child taps first) and
 // silences it on `hide`. One part is heard at a time.
 //
-// URL options: ?start=fishing - the first Play skips the lesson (the story at once); ?start=lesson - the usual
-// journey (a part opened on its own comes here with ?start=<part>, bridge.js); ?dev=1 adds one panel that jumps to
-// any screen of either part, and the front page; ?debug and ?dev pass on to the parts (window.popoDebug in the game,
+// URL options: ?start=lesson - the first Play brings the lesson first (the game holds where its banner cleared away),
+// then the game from its story, all eight nets; ?start=fishing - the first Play skips the lesson (all eight nets in a
+// row). A part opened on its own comes here with ?start=<part> (bridge.js). ?dev=1 adds one panel that jumps to any
+// screen of either part, and the front page; ?debug and ?dev pass on to the parts (window.popoDebug in the game,
 // window.lessonDebug in the lesson). Every step is announced as a window event ('fishing-frenzy:part', ':finished',
 // ':complete') and posted to a page that hosts the journey in a frame.
 // =====================================================================
 (function () {
   'use strict';
 
-  // in the journey's order (the dev panel's sections, and each step's number)
+  // the journey's steps, in order (each announced with its number): the game's first net, the lesson, the rest of the game
+  const STEPS = ['intro', 'lesson', 'fishing'];
+  // the parts, in the journey's order (the dev panel's sections)
   const PARTS = [
     { id: 'lesson', src: 'parts/lesson/index.html', title: "Swiftee's parallelogram lesson" },
     { id: 'fishing', src: 'parts/fishing/index.html', title: "Popo's parallelogram nets" },
   ];
   // times in ms
   const T = {
-    playOut: 400,   // Play: the button bursts and the logo pops away on the banner before the lesson dissolves in
+    playOut: 400,   // Play with ?start=lesson: the button bursts and the logo pops away before the lesson dissolves in
     dissolve: 450,  // one part's frame dissolving over the other (css .arriving, .leaving)
     stall: 45000,   // no word from a loading part for this long: Try again
     devReload: 1500, // ?dev=1: the lesson gone, a fresh one loads this long after, so its screens stay in the panel
@@ -217,8 +223,10 @@
 
   // ---------- the journey ----------
   const J = {
-    phase: 'front', // front (the banner) | starting (Play: the lesson on its way) | lesson | fishing (the story and nets)
+    phase: 'front', // front (the banner) | intro (the story and the first net) | starting (the lesson on its way) |
+    // lesson | fishing (the second net to the eighth; with ?start, all eight)
     current: 'fishing', // the part on top
+    after: 'resume', // what the game is told when the lesson is over: resume (after its first net) or story (?start=lesson)
     seq: 0, // each move of the journey; a step still waiting is dropped once another move has been made
     runs: 0,
     results: {},
@@ -231,7 +239,7 @@
       try { window.parent.postMessage(Object.assign({ type: 'fishing-frenzy:' + kind }, detail), '*'); } catch (e) { /* gone */ }
     }
   }
-  const partNumber = (id) => ({ part: id, number: PARTS.findIndex((p) => p.id === id) + 1, of: PARTS.length });
+  const partNumber = (id) => ({ part: id, number: STEPS.indexOf(id) + 1, of: STEPS.length });
   // the game under the lesson: nothing reaches it, and screen readers leave it
   function cover(f, on) {
     if (!f) return;
@@ -250,19 +258,28 @@
     } catch (e) { /* not allowed here */ }
   }
 
-  // The banner's Play (inside its tap): the lesson dissolves in over the game, which holds where its banner cleared
-  // away. The first Play with ?start=fishing goes straight on to the story.
+  // The banner's Play (inside its tap): the game goes on at once into its story and first net, the lesson to follow.
+  // The first Play with ?start=fishing plays all eight nets in a row; with ?start=lesson the lesson comes first,
+  // dissolving in over the game, which holds where its banner cleared away.
   async function play(f) {
     if (f !== fishing() || J.phase !== 'front') return;
     audio.unlock(); // (bridge.js has done it inside the tap where it could reach this page; from disk the lesson uses its own)
     fullScreen();
     J.runs += 1;
     if (J.runs > 1) J.results = {};
-    const seq = ++J.seq;
-    if (J.runs === 1 && START === 'fishing') { toFishing('story'); return; }
+    const start = J.runs === 1 ? START : null;
+    J.seq += 1;
+    if (start !== 'lesson') { toFishing('story', { lesson: start !== 'fishing' }); return; }
+    J.after = 'story';
     J.phase = 'starting';
+    const seq = J.seq;
     await wait(reduced ? 0 : T.playOut);
-    if (J.seq !== seq) return; // (a dev jump took over)
+    if (J.seq === seq) bringLesson();
+  }
+  // The lesson's turn: it dissolves in once it is ready (until then the frosted veil says "Getting ready…").
+  async function bringLesson() {
+    const seq = ++J.seq;
+    J.phase = 'starting';
     let L = load('lesson');
     if (L.status !== 'ready') {
       veil.open();
@@ -286,6 +303,7 @@
     L.el.removeAttribute('aria-hidden');
     L.el.tabIndex = 0;
     cover(F, true);
+    command(F, 'quiet'); // the game's sound fades as the lesson comes in (`hide` follows once it is covered)
     tell(L, 'begin', opts || {});
     focusFrame(L);
     announce('part', partNumber('lesson'));
@@ -317,31 +335,42 @@
       if (DEV && f.id === 'lesson') setTimeout(() => { if (!frames.has('lesson')) load('lesson'); }, T.devReload);
     }, 80);
   }
-  // the game on top again: `story` (after the lesson), `wake` (a dev jump) or `title` (the front page)
-  function toFishing(name) {
+  // the game on top again: `story` (after Play; args.lesson: the lesson follows its first net), `resume` (after the
+  // lesson), `wake` (a dev jump) or `title` (the front page)
+  function toFishing(name, args) {
     const F = fishing();
-    J.phase = name === 'title' ? 'front' : 'fishing';
+    J.phase = name === 'title' ? 'front' : name === 'story' && args && args.lesson ? 'intro' : 'fishing';
     J.current = 'fishing';
     cover(F, false);
-    command(F, name);
+    command(F, name, args);
     focusFrame(F);
-    if (name === 'story') announce('part', partNumber('fishing'));
+    if (name === 'story' || name === 'resume') announce('part', partNumber(J.phase));
     dev.update();
   }
   function finish(f, detail) {
     detail = detail || {};
     if (f.id === 'lesson') {
-      // the lesson is over: Popo's story starts under its frame as the frame dissolves away
+      // the lesson is over: the game goes on under its frame (its second net, or with ?start=lesson its story) as the
+      // frame dissolves away
       if (!lessonUp() || f !== frames.get('lesson') || f.going) return;
       J.seq += 1;
       J.results.lesson = detail;
       announce('finished', { part: 'lesson', detail });
-      toFishing('story');
+      toFishing(J.after, { lesson: false });
+      J.after = 'resume';
       hideLesson();
       return;
     }
-    // the game's Play Again: the banner again, and a fresh lesson behind it for the next Play
     if (f !== fishing() || lessonUp() || J.phase === 'starting') return;
+    // the game's first net is in: the lesson comes in over it
+    if (detail.intro) {
+      J.results.intro = detail;
+      announce('finished', { part: 'intro', detail });
+      J.after = 'resume';
+      bringLesson();
+      return;
+    }
+    // the game's Play Again: the banner again, and a fresh lesson behind it for the next Play
     J.seq += 1;
     J.results.fishing = detail;
     announce('finished', { part: 'fishing', detail });

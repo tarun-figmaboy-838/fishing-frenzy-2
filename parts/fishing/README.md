@@ -41,22 +41,29 @@ journey` part of `src/game.js`:
   (`Journey.progress`) and when the banner is up (`Journey.ready`); the lesson then loads behind
   it, unseen.
 - **Play** (`Game.handOver`): inside the tap, `Journey.play()` unlocks the shell's sound and tells
-  it; the banner clears away as ever (Play bursts, the logo pops away, the fish leap home), but
-  the story waits and the music stops. The lesson dissolves in over the game, and the shell's
-  commands (`main.js`) take it from there:
+  it; the banner clears away as ever (Play bursts, the logo pops away, the fish leap home), and
+  the shell's commands (`main.js`) take it from there:
+  - `story` — at once: the game goes on as Play does on its own (the narrator, the first school,
+    the net, level 1). `args.lesson`: the lesson follows the first net.
+  - After the first net's catch is in the bucket and the net wound up (`Game.lessonBreak`, from
+    `nextLevel` in `src/sequences.js`), its chime plays and the game holds there and tells the
+    shell (`Journey.finish({ intro: true, levels: 1, fish })`); the lesson dissolves in over it.
+  - `quiet` — the lesson is dissolving in: every sound fades away with it (`AudioEngine.fadeOut`).
   - `hide` — the lesson covers the game: it stops drawing (its sequences wait with the clock),
     and every sound stops — music, effects, a voice line — and its own AudioContext sleeps;
     nothing (a tap, the tab coming back) wakes it until the game is shown again
     (`AudioEngine.hold`).
-  - `story` — the lesson is over: the game wakes and goes on from the banner as Play does on its
-    own (the narrator, the first school, the net, level 1) while the lesson dissolves away.
+  - `resume` — the lesson is over: the game wakes (its music fading back in) and goes on to its
+    second net while the lesson dissolves away (`Game.goOn`), and on to the eighth.
   - `title` — after Play Again: the end screen's circle closes and opens on the banner from its
     start (`closeCurtain(game, { title: true })`), ready for the next Play.
   - `wake` — a dev panel jump: the game draws again (with its music, if it had it) without its
     story.
 - **Play Again** at the end calls `Journey.finish({ levels, fish })` inside its tap; the shell
   answers with `title` and loads a fresh lesson behind the banner.
-- `?start=fishing` (the journey's) makes the first Play go straight on to the story.
+- `?start=fishing` (the journey's) makes the first Play play all eight nets in a row (no lesson);
+  `?start=lesson` brings the lesson first (the game holds where its banner cleared away), then
+  `story` and all eight nets.
 - With `?dev=1` the game's jumps (all but Title: the panel's Front page is the banner) go to the
   journey's one panel through `Journey.devScreens`; the game shows no panel of its own.
 - The journey shows one rotate hint for a phone held upright, so the game shows none of its own
