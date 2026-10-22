@@ -150,54 +150,6 @@
       });
     },
 
-    // screen 10: the shape scales up into place (86% -> 100%, fading in), then its corner letters come in one by one
-    // and the parallel arrows glide onto their sides last, the way they point (a glide of their own arrival, if the screen
-    // was jumped to, gives way to this one)
-    enterShape(cx, cy) {
-      if (!G) return;
-      const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0], labels = $('.board .tag.vlab'), marks = $('.par-ch'), k = reduced ? 0 : 1;
-      G.killTweensOf(marks);
-      add(() => {
-        const tl = G.timeline();
-        tl.set(labels.concat(marks), { opacity: 0 }, 0);
-        if (g) tl.fromTo(g, { scale: 0.86, opacity: 0, svgOrigin: cx + ' ' + cy }, { scale: 1, opacity: 1, svgOrigin: cx + ' ' + cy, duration: 0.7 * k, ease: 'power2.out' }, 0);
-        if (d) tl.fromTo(d, { scale: 0.86, opacity: 0, transformOrigin: cx + 'px ' + cy + 'px' }, { scale: 1, opacity: 1, transformOrigin: cx + 'px ' + cy + 'px', duration: 0.7 * k, ease: 'power2.out' }, 0);
-        tl.to(labels, { opacity: 1, duration: 0.35 * k, stagger: 0.08 * k, ease: 'sine.out' }, 0.55 * k);
-        marks.forEach((m) => {
-          const cs = getComputedStyle(m), gx = parseFloat(cs.getPropertyValue('--gx')) || 0, gy = parseFloat(cs.getPropertyValue('--gy')) || 0;
-          tl.fromTo(m, { opacity: 0, x: gx, y: gy }, { opacity: 1, x: 0, y: 0, duration: 0.8 * k, ease: 'power2.out' }, 0.8 * k);
-        });
-        return tl;
-      });
-    },
-
-    // the parallel arrows that have just come on screen glide onto their sides the way they point (0.8 s, power2.out:
-    // --gx, --gy from the engine), as Fishing Frenzy's chevIn; arrows already showing stay as they are (data-in), and
-    // hidden ones forget. Called after each render
-    glideMarks() {
-      $('.par-ch').forEach((m) => {
-        if (m.getAttribute('display') === 'none') { m.removeAttribute('data-in'); return; }
-        if (m.hasAttribute('data-in')) return;
-        m.setAttribute('data-in', '1');
-        if (!G || reduced) return;
-        const cs = getComputedStyle(m), gx = parseFloat(cs.getPropertyValue('--gx')) || 0, gy = parseFloat(cs.getPropertyValue('--gy')) || 0;
-        add(() => G.fromTo(m, { opacity: 0, x: gx, y: gy }, { opacity: 1, x: 0, y: 0, duration: 0.8, ease: 'power2.out', clearProps: 'opacity,transform' }));
-      });
-    },
-
-    // every filled angle that has just come on screen sweeps open (called after each render): A -> D in their .d0-.d3
-    // order, 0.3 s apart, as Fishing Frenzy's anglesIn; one shown before stays as it is, and a hidden one forgets
-    sweepWedges() {
-      if (!G) return;
-      $('.angle-marks .wedge').forEach((w) => {
-        if (w.getAttribute('display') === 'none') { w.removeAttribute('data-swept'); return; }
-        if (w.hasAttribute('data-swept')) return;
-        w.setAttribute('data-swept', '1');
-        const m = /\bd([0-3])\b/.exec(w.getAttribute('class') || '');
-        if (!reduced) sweep(w, m ? +m[1] * 0.3 : 0, 0.45);
-      });
-    },
-
     // "We call this a trapezium": the shape (and its labels) zooms up once about its own centre and eases back
     pop(cx, cy) {
       if (!G || reduced) return;

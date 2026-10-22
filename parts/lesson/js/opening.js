@@ -205,12 +205,103 @@
     on: false, t: 0, pan: 1, dive: 0, dim: 0, glow: 0, beam: 0, flash: 0, emerge: 0, close: 0, open: false, spawning: false,
     shell: { alpha: 0, open: 0, rock: 0, squash: 0, leak: 0, pearl: 1 }, motes: [], pops: [], fish: [], bubbles: [], bubbleDue: 0
   };
-  for (let i = 0; i < 6; i++) S.fish.push({ x: Math.random() * W, y: 470 + Math.random() * 280, v: (14 + Math.random() * 16) * (Math.random() < 0.5 ? -1 : 1), k: 0.7 + Math.random() * 0.6, ph: Math.random() * TAU });
+  // the lake's fish, as the fishing game's (parts/fishing/src/fish.js: refreshShadows, refreshDeep): four soft shadow
+  // fish with wagging tails, and six small real fish in the haze of the deep water. (Drawn only on the lesson's own
+  // page: in the journey the lesson plays over the game's lake, and its own fish swim there.)
+  for (let i = 0; i < 4; i++) {
+    const depth = Math.random();
+    S.fish.push({ x: Math.random() * W, y: 460 + Math.random() * 260, v: (22 + Math.random() * 30) * (1.2 - depth * 0.5) * (Math.random() < 0.5 ? -1 : 1),
+      k: 0.5 + (1 - depth) * 0.6, depth: depth, wag: Math.random() * 8, ph: Math.random() * TAU });
+  }
+  S.real = [];
+  for (let i = 0; i < 6; i++) S.real.push({ key: null, x: Math.random() * W, y: 600 + Math.random() * 180, v: (22 + Math.random() * 22) * (Math.random() < 0.5 ? -1 : 1),
+    k: 0.46 + Math.random() * 0.14, haze: 0.42 + Math.random() * 0.14, ph: Math.random() * TAU });
   const zoom = () => (reduced ? (S.dive > 0 ? DIVE_ZOOM : 1) : 1 + (DIVE_ZOOM - 1) * S.dive);
   const screenOf = (x, y) => { const z = zoom(); return [W / 2 + (x - W / 2) * z, H + (y - H) * z]; };
   const pearlScreen = () => screenOf(PEARL.x + SHELL.pearl[0] * PEARL.size, PEARL.y + SHELL.pearl[1] * PEARL.size);
 
   // the bubble and the card by emerge 0..1 (reference recallBubble)
+  // the game's shadow fish (parts/fishing/src/fish.js shadowPath / shadowSprites): eight tail positions, drawn once,
+  // each a blurred silhouette (drawn far off the canvas, only its shadow lands in the cell: soft edges everywhere)
+  const SHADOW = { w: 128, h: 64, frames: 8 };
+  let shadowSheet = null;
+  function shadowPath(ctx, wag) {
+    const c = Math.cos(wag), s = Math.sin(wag);
+    const tail = (x, y) => [-34 + (x + 34) * c - y * s, (x + 34) * s + y * c];
+    ctx.beginPath();
+    ctx.moveTo(46, 0);
+    ctx.bezierCurveTo(40, -17, 8, -23, -18, -14);
+    ctx.bezierCurveTo(-28, -10, -34, -5, -36, 0);
+    ctx.bezierCurveTo(-34, 5, -28, 10, -18, 14);
+    ctx.bezierCurveTo(8, 23, 40, 17, 46, 0);
+    ctx.closePath();
+    const pts = [[-34, 0], [-58, -19], [-51, 0], [-58, 19]].map(([x, y]) => tail(x, y));
+    ctx.moveTo(...pts[0]);
+    for (const q of pts.slice(1)) ctx.lineTo(...q);
+    ctx.closePath();
+    ctx.moveTo(-4, -19);
+    ctx.quadraticCurveTo(6, -33, 18, -18);
+    ctx.closePath();
+  }
+  function shadowSprites() {
+    if (shadowSheet) return shadowSheet;
+    const c = document.createElement('canvas');
+    c.width = SHADOW.w * SHADOW.frames;
+    c.height = SHADOW.h;
+    const ctx = c.getContext('2d');
+    for (let i = 0; i < SHADOW.frames; i += 1) {
+      ctx.save();
+      ctx.translate(i * SHADOW.w + SHADOW.w / 2 + 4 - 4000, SHADOW.h / 2);
+      ctx.shadowColor = 'rgb(6, 40, 96)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 4000;
+      ctx.fillStyle = '#000';
+      shadowPath(ctx, Math.sin((i / SHADOW.frames) * TAU) * 0.3);
+      ctx.fill();
+      ctx.restore();
+    }
+    shadowSheet = c;
+    return c;
+  }
+  // the game's real fish (its fish sheet and atlas, parts/fishing), loaded only on the lesson's own page
+  const REAL = { img: null, boxes: null, scale: 1 };
+  if (!overGame) {
+    const data = document.createElement('script');
+    data.src = '../fishing/src/sprite-data.js';
+    data.onload = () => {
+      const A = window.PopoGame && PopoGame.FISH_NATURAL_ATLAS;
+      if (!A) return;
+      const img = new Image();
+      img.onload = () => { REAL.boxes = A.boxes; REAL.scale = A.scale || 1; REAL.img = img; const keys = Object.keys(A.boxes); S.real.forEach((f, i) => { f.key = keys[(i * 5) % keys.length]; }); };
+      img.src = '../fishing/assets/sprites/fish-natural.webp';
+    };
+    document.head.appendChild(data);
+  }
+  function drawFish(ctx) {
+    const sheet = shadowSprites();
+    S.fish.forEach((f) => {
+      const frame = Math.floor(f.wag) % SHADOW.frames;
+      ctx.save();
+      ctx.globalAlpha = 0.2 + (1 - f.depth) * 0.22;
+      ctx.translate(f.x, f.y + Math.sin(S.t * 0.9 + f.ph) * 6);
+      ctx.scale(Math.sign(f.v) * f.k, f.k);
+      ctx.drawImage(sheet, frame * SHADOW.w, 0, SHADOW.w, SHADOW.h, -SHADOW.w / 2, -SHADOW.h / 2, SHADOW.w, SHADOW.h);
+      ctx.restore();
+    });
+    if (!REAL.img) return;
+    S.real.forEach((f) => {
+      const b = f.key && REAL.boxes[f.key];
+      if (!b) return;
+      const w = (b[2] - b[0]) * REAL.scale * f.k, h = (b[3] - b[1]) * REAL.scale * f.k;
+      ctx.save();
+      ctx.globalAlpha = f.haze;
+      ctx.translate(f.x, f.y + Math.sin(S.t * 1.1 + f.ph) * 3);
+      ctx.scale(Math.sign(f.v), 1);
+      ctx.drawImage(REAL.img, b[0], b[1], b[2] - b[0], b[3] - b[1], -w / 2, -h / 2, w, h);
+      ctx.restore();
+    });
+  }
+
   // the lesson over (Opening.close): the card shrinks into a bubble, which floats up and pops
   function closingAt() {
     const small = (BUBBLE.radius * 1.55) / CARD.w, k = S.close;
@@ -254,15 +345,16 @@
     if (!S.on) return;
     ctx.setTransform(SCALE * z, 0, 0, SCALE * z, SCALE * (W / 2) * (1 - z), SCALE * H * (1 - z));
     ctx.translate(0, PAN * S.pan); // (the camera's glide from the game's view down to the sand, as the lake: js/water.js)
-    if (!overGame) S.fish.forEach((f) => { // (over the game's lake, its own shadow fish swim there)
-      ctx.save(); ctx.translate(f.x, f.y + Math.sin(S.t * 0.7 + f.ph) * 6); ctx.scale(Math.sign(f.v) * f.k, f.k);
-      ctx.beginPath(); ctx.ellipse(0, 0, 30, 11, 0, 0, TAU); ctx.moveTo(-24, 0); ctx.lineTo(-44, -12); ctx.lineTo(-44, 12); ctx.closePath();
-      ctx.fillStyle = 'rgba(10, 52, 120, 0.28)'; ctx.fill(); ctx.restore();
-    });
+    if (!overGame) drawFish(ctx); // (over the game's lake, the game's own fish swim there)
+    // bubbles as the fishing game draws its own (parts/fishing/src/effects.js drawWater): a soft body, a thin rim and a
+    // bright highlight
     S.bubbles.forEach((b) => {
-      const a = Math.min(1, b.t / 0.4) * Math.max(0, Math.min(1, (b.y - 120) / 160));
-      ctx.beginPath(); ctx.arc(b.x + Math.sin(b.t * 2 + b.ph) * b.sway, b.y, b.r, 0, TAU);
-      ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(225, 248, 255, ' + (0.7 * a).toFixed(3) + ')'; ctx.stroke();
+      const a = Math.min(1, b.t / 0.4) * Math.max(0, Math.min(1, (b.y - 120) / 160)), x = b.x + Math.sin(b.t * 2 + b.ph) * b.sway;
+      ctx.beginPath(); ctx.arc(x, b.y, b.r, 0, TAU);
+      ctx.fillStyle = 'rgba(220, 245, 255, ' + (0.16 * a).toFixed(3) + ')'; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255, 255, 255, ' + (0.4 * a).toFixed(3) + ')'; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.28, 0, TAU);
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.75 * a).toFixed(3) + ')'; ctx.fill();
     });
     if (S.shell.alpha > 0) {
       drawShell(ctx, PEARL.x, PEARL.y, PEARL.size, S.shell);
@@ -340,12 +432,13 @@
     S.motes = S.motes.filter((m) => m.life < 1.3);
     S.pops.forEach((q) => { q.life += dt / 0.7; q.x += q.vx * dt; q.y += q.vy * dt; });
     S.pops = S.pops.filter((q) => q.life < 1);
-    S.fish.forEach((f) => { f.x += f.v * dt; if (f.x < -80) f.x = W + 80; if (f.x > W + 80) f.x = -80; });
+    S.fish.forEach((f) => { f.x += f.v * dt; f.wag += dt * (5 + Math.abs(f.v) / 12); if (f.x < -90) f.x = W + 90; if (f.x > W + 90) f.x = -90; });
+    S.real.forEach((f) => { f.x += f.v * dt; if (f.x < -70) f.x = W + 70; if (f.x > W + 70) f.x = -70; });
     if (S.open && !reduced) {
       S.bubbleDue -= dt;
       while (S.bubbleDue <= 0) {
         S.bubbleDue += 0.09 + Math.random() * 0.16;
-        const r = 2.5 + Math.random() * 5.5;
+        const r = 1.5 + Math.random() * 3; // (the game's own bubble sizes)
         S.bubbles.push({ x: 400 + Math.random() * 872, y: SEABED_Y + 6 + Math.random() * 30, r: r, vy: 46 + r * 7 + Math.random() * 20, ph: Math.random() * TAU, sway: 6 + Math.random() * 10, t: 0 });
       }
     }
@@ -447,10 +540,8 @@
       })) return;
       S.spawning = false;
       snd('land');
-      if (!await tw(800, (t) => { S.flash = 1 - t; S.beam = 1 - 0.65 * t; S.glow = 1 - 0.6 * t; })) return;
-      // the shell and the pearl's light fade; the card stays for the lesson
-      const beam0 = S.beam, glow0 = S.glow;
-      if (!await tw(350, (t) => { S.shell.alpha = 1 - t; S.beam = beam0 * (1 - t); S.glow = glow0 * (1 - t); })) return;
+      // the card lands; the shell and the pearl's light fade with it (nothing left below the card once it is open)
+      if (!await tw(600, (t) => { S.flash = 1 - t; S.beam = 1 - t; S.glow = 1 - t; S.shell.alpha = 1 - t; })) return;
       // the lake round the card lightens again, so its water is seen rolling behind the lesson
       tw(900, (t) => { S.dim = DIM + (DIM_OPEN - DIM) * ease.inOut(t); });
       S.open = true; busy = false;

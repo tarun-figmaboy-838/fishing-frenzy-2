@@ -80,10 +80,10 @@ const LESSON = {
         { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
         { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'], hi: 'AD ∥ BC' },
         { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: PG },
-    // screen 10 (storyboard page 11): the shape scales up, then letters, arrows and the two pair cards; as Swiftee
-    // says it, AB + CD glow with their card, then AD + BC with theirs; "parallelogram" pops the name card in on its
-    // own row and the whole outline glows once
-    { pdf: 11, id: 'defFull', enterGrow: 1, chipRows: 1, chipTop: 428,
+    // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
+    // Swiftee says it, AB + CD glow with their card, then AD + BC with theirs; "parallelogram" pops the name card in on
+    // its own row and the whole outline glows once
+    { pdf: 11, id: 'defFull', chipRows: 1, chipTop: 428,
       enterChips: [{ t: 'AB ∥ CD', k: 'white' }, { t: 'AD ∥ BC', k: 'white' }],
       lines: [{ t: 'A quadrilateral where both pairs\nof opposite sides are parallel is\ncalled a parallelogram.', cues: [
         { at: 'pairs', glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
