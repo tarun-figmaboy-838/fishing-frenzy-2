@@ -1,8 +1,8 @@
 // =====================================================================
-// SWIFTEE WALKER — the measuring trip on screen 13. Swiftee flies (flapping) from her spot onto the shape,
-// walks along a side with her tape measure (measuring), waits on the corner, and flies home at the end.
-// Drawn on its own small canvas in stage coordinates; frames come from the same manifest sheets as the mascot,
-// with feet registered on the sheets' baseline so she stands exactly on the side line.
+// SWIFTEE WALKER — screen 14: Swiftee measures each side with her tape measure.
+// The engine drives it: stroll() from her spot to the shape, walk() along each side while the tape follows tip(),
+// and stroll() home at the end. Drawn into the canvas of the small .walker element, which is placed in stage px.
+// Frames come from the 'measuring' sheet in the Swiftee manifest, with her feet on its baseline so she stands on the line.
 // =====================================================================
 window.SwifteeWalker = class SwifteeWalker {
   constructor(base) {
@@ -14,9 +14,10 @@ window.SwifteeWalker = class SwifteeWalker {
     this.moves = [];
     this.loop = this.loop.bind(this);
     this.last = performance.now();
-    if (this.m) ['measuring', 'flapping'].forEach((a) => this.sheet(a));
-    requestAnimationFrame(this.loop);
+    this.looping = false; // the frame loop runs only while she is out (run() starts it, hide() lets it stop)
+    if (this.m) this.sheet('measuring');
   }
+  // load a sheet once (always the @2x one)
   sheet(a) {
     if (this.sheets[a]) return this.sheets[a];
     const info = this.m && this.m.scales['2x'].sheets[a];
@@ -26,22 +27,22 @@ window.SwifteeWalker = class SwifteeWalker {
     img.src = this.base + info.image;
     return (this.sheets[a] = s);
   }
+  // the .walker element; a new element (after a re-render) needs a new context
   el() { const e = document.querySelector('.walker'); if (e !== this.e) { this.e = e; this.ctx = null; } return e; }
 
-  // ---------- moves (each runs to completion, then calls back) ----------
-  // fly along an arc from `from` to `to` (feet points, stage px), size tweening between s0 and s1
-  fly(from, to, s0, s1, ms, done) {
-    this.visible = true; this.anim = 'flapping'; this.playing = true;
-    const lift = Math.min(170, 60 + Math.hypot(to.x - from.x, to.y - from.y) * 0.25);
-    const c = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - lift };
-    this.flip = to.x < from.x;
+  // ---------- moves: one at a time, done() is called when it ends ----------
+  // stroll between her spot and the shape (eased), her size going from s0 to s1
+  stroll(from, to, s0, s1, done) {
+    this.visible = true; this.anim = 'measuring'; this.playing = true;
+    this.flip = to.x < from.x - 1;
+    const ms = Math.max(500, Math.hypot(to.x - from.x, to.y - from.y) / CONFIG.walker.strollPxPerMs);
     this.run(ms, (t) => {
-      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, u = 1 - e;
-      this.pos = { x: u * u * from.x + 2 * u * e * c.x + e * e * to.x, y: u * u * from.y + 2 * u * e * c.y + e * e * to.y };
+      const e = t * t * (3 - 2 * t);
+      this.pos = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
       this.size = s0 + (s1 - s0) * e;
-    }, done);
+    }, () => { this.playing = false; this.frame = 0; if (done) done(); });
   }
-  // walk in a straight line, reporting progress (0..1) every frame
+  // walk a side at a steady pace, reporting progress (0..1) every frame
   walk(from, to, ms, progress, done) {
     this.visible = true; this.anim = 'measuring'; this.playing = true;
     this.flip = to.x < from.x - 1;
@@ -50,24 +51,24 @@ window.SwifteeWalker = class SwifteeWalker {
       if (progress) progress(t);
     }, () => { this.playing = false; this.frame = 0; if (done) done(); });
   }
-  // stage point where the tape leaves the tape measure in her hand (per-frame, from CONFIG.walker.tips @2x cell px)
+  // where the tape leaves the tape measure in her hand, in stage px (per frame, from CONFIG.walker.tips in @2x cell px)
   tip() {
     if (!this.pos) return null;
     const T = CONFIG.walker.tips, t = T[this.frame % T.length], S = this.size, base = (this.m.baselineY && this.m.baselineY.normalized) || 0.877;
     const dx = (t[0] / 512 - 0.5) * S * (this.flip ? -1 : 1), dy = (t[1] / 512 - base) * S;
     return { x: this.pos.x + dx, y: this.pos.y + dy };
   }
-  stand(p) { this.visible = true; this.anim = 'measuring'; this.playing = false; this.frame = 0; this.pos = p; this.size = CONFIG.walker.size; }
   hide() { this.visible = false; this.moves = []; this.playing = false; }
+  // start a move: the frame loop calls step(t) with t from 0 to 1, then done()
   run(ms, step, done) {
     const t0 = performance.now();
     this.moves = [{ t0: t0, ms: Math.max(1, ms), step: step, done: done }];
     step(0);
+    if (!this.looping) { this.looping = true; this.last = t0; requestAnimationFrame(this.loop); }
   }
 
   // ---------- frame loop ----------
   loop(now) {
-    requestAnimationFrame(this.loop);
     const mv = this.moves[0];
     if (mv) {
       const t = Math.min(1, (now - mv.t0) / mv.ms);
@@ -77,7 +78,10 @@ window.SwifteeWalker = class SwifteeWalker {
     const a = this.m && this.m.animations[this.anim], fps = (a && a.fps) || 20, sh = this.sheet(this.anim);
     if (this.playing && sh && now - this.last >= 1000 / fps) { this.frame = (this.frame + 1) % sh.info.frames; this.last = now; }
     this.draw();
+    if (this.visible || this.moves.length) requestAnimationFrame(this.loop); else this.looping = false;
   }
+  // place the element so her feet are on pos (feet at 0.877 of the cell unless the manifest says otherwise), then draw
+  // the frame into its 512 px canvas, mirrored when she walks left
   draw() {
     const e = this.el();
     if (!e) return;
@@ -90,10 +94,15 @@ window.SwifteeWalker = class SwifteeWalker {
     e.style.left = (this.pos.x - S / 2) + 'px'; e.style.top = (this.pos.y - S * base) + 'px';
     const cv = e.querySelector('canvas');
     if (cv.width !== 512) { cv.width = 512; cv.height = 512; this.ctx = null; }
-    const ctx = this.ctx || (this.ctx = cv.getContext('2d'));
-    const cell = sh.info.cell, cols = sh.info.cols, f = this.frame % sh.info.frames;
+    if (!this.ctx) { this.ctx = cv.getContext('2d'); this.drawn = null; }
+    const ctx = this.ctx, cell = sh.info.cell, cols = sh.info.cols, f = this.frame % sh.info.frames;
+    // the picture changes only with the frame (about 10 a second) or her direction; moving her is the element's left / top
+    const key = this.anim + ':' + f + ':' + this.flip;
+    if (key === this.drawn) return;
+    this.drawn = key;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, 512, 512);
     ctx.setTransform(this.flip ? -1 : 1, 0, 0, 1, this.flip ? 512 : 0, 0);
-    ctx.drawImage(sh.img, (f % cols) * cell, Math.floor(f / cols) * cell, cell, cell, 0, 0, 512, 512);
+    if (window.Costume) Costume.frame(ctx, sh.img, (f % cols) * cell, Math.floor(f / cols) * cell, cell, this.anim, f, 0, 0, 512, 512); // her diving mask
+    else ctx.drawImage(sh.img, (f % cols) * cell, Math.floor(f / cols) * cell, cell, cell, 0, 0, 512, 512);
   }
 };

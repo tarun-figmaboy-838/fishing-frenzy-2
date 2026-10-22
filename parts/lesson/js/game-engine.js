@@ -191,6 +191,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this._fontsWarm = true;
     ['500 21px Fredoka', '600 21px Fredoka', '700 21px Fredoka', '700 26px "Baloo 2"', '800 26px "Baloo 2"', '600 20px Nunito', '700 20px Nunito', '800 20px Nunito', '900 20px Nunito']
       .forEach((f) => document.fonts.load(f).catch(() => {}));
+    document.fonts.load('600 20px "Noto Sans Math"', '\u2225\u2220').catch(() => {}); // ∥ and ∠
   }
   // A solved checkpoint shows its finished figure: each '?' on the shape becomes the right value ('? cm' -> '7 cm',
   // '?' at an angle -> '115°'), taken from the answer box with the same name or from the right answer button.
@@ -560,10 +561,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }
       tick();
     };
-    // the device's built-in voice (with none: the paced reveal); also the fallback when a recorded clip cannot play
+    // the device's built-in voice (with none: the paced reveal). One voice for Swiftee: while her recorded voice is on, a
+    // line whose clip cannot play shows its words silently rather than in the device's voice, and in the journey the
+    // device's voice is never used (as in Fishing Frenzy's lesson)
     const device = () => {
       const s = this.synth();
-      const canSpeak = !this.state.muted && s && typeof SpeechSynthesisUtterance !== 'undefined';
+      const canSpeak = !this.state.muted && s && typeof SpeechSynthesisUtterance !== 'undefined' && !JOURNEY && !(window.VO && VO.on);
       if (!canSpeak) {
         sDone = true; // no voice: words pace themselves and the beak moves while they appear
         this.tm(() => { begin(); }, 140);
@@ -861,25 +864,60 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (window.Opening) Opening.instant();
     this.setState({ opened: true, opening: false });
   }
-  // Swiftee flies in from the top left (over the card's edge) and lands on her dune, then the lesson begins
-  // (the reference journey's arrival: 0.5 s, then 1.15 s - x eases out, y lands with a soft overshoot)
-  arrive(then) {
+  // Swiftee arrives on the open card (as in Fishing Frenzy's lesson): she dives in from above it, then the lesson begins
+  arrive(then) { this.pose('happy'); this.dive(then); }
+  // Swiftee dives in: from above the card, tipped forward like a diver, she plunges down - fast at first, slowing as the
+  // water takes her - rights herself and lands softly on her spot, a trail of bubbles rising behind her and a little
+  // puff as she lands. then() once she has landed
+  dive(then) {
     const sw = typeof document !== 'undefined' && document.querySelector('.stage .swiftee'), G = window.gsap;
-    if (!sw || !G || Motion.reduced) { then(); return; }
-    this.pose('happy');
-    G.set(sw, { x: -520, y: -470, rotation: -14, scale: 0.72 });
-    const tl = G.timeline({ delay: 0.5, onComplete: () => { G.set(sw, { clearProps: 'transform' }); then(); } });
-    tl.call(() => this.sfx('whoosh'), null, 0)
-      .to(sw, { x: 0, duration: 1.15, ease: 'power2.out' }, 0)
-      .to(sw, { y: 0, duration: 1.15, ease: 'back.out(1.15)' }, 0)
-      .to(sw, { rotation: 0, scale: 1, duration: 1.15, ease: 'power2.out' }, 0)
-      .call(() => this.sfx('pop'), null, 1.0);
+    const done = () => { if (then) then(); };
+    if (this.diveTl) { this.diveTl.kill(); this.diveTl = null; }
+    if (!sw || !G || Motion.reduced) { done(); return; }
+    const stage = document.querySelector('.stage'), tok = this.stepTok;
+    const bubble = (x, y, r) => {
+      if (!stage || tok !== this.stepTok) return;
+      const b = document.createElement('div');
+      b.className = 'dive-bub';
+      Object.assign(b.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 2 * r + 'px' });
+      stage.appendChild(b);
+      setTimeout(() => b.remove(), 1300);
+    };
+    const at = () => { const b = this.elBox(sw.querySelector('.swiftee-still') || sw); return b ? { x: b.x + b.w / 2, y: b.y + b.h * 0.45 } : null; };
+    sw.classList.add('flying'); // (no CSS transition smooths the dive)
+    G.set(sw, { x: 150, y: -640, rotation: 38, scale: 0.9, transformOrigin: '50% 50%' });
+    this.sfx('whoosh');
+    let last = 0;
+    this.diveTl = G.timeline({ onComplete: () => {
+      this.diveTl = null;
+      G.set(sw, { clearProps: 'transform' }); sw.classList.remove('flying');
+      const p = at(); if (p) for (let i = 0; i < 6; i += 1) bubble(p.x + (Math.random() - 0.5) * 120, p.y + 70 + Math.random() * 30, 4 + Math.random() * 6); // the landing puff
+      this.sfx('pop'); done();
+    } })
+      .to(sw, { y: 0, duration: 1.6, ease: 'power2.out', onUpdate: () => { // the trail
+        const now = Date.now(); if (now - last < 70) return; last = now;
+        const p = at(); if (p) bubble(p.x + (Math.random() - 0.5) * 50, p.y - 20, 3 + Math.random() * 6);
+      } }, 0)
+      .to(sw, { x: 0, duration: 1.6, ease: 'sine.out' }, 0)
+      .to(sw, { rotation: -7, duration: 1.1, ease: 'power1.out' }, 0)
+      .to(sw, { rotation: 0, duration: 0.5, ease: 'sine.inOut' }, 1.1)
+      .to(sw, { scale: 1, duration: 1.3, ease: 'power2.out' }, 0);
+  }
+  // an element's box in stage px (the stage is drawn scaled to the window)
+  elBox(el) {
+    const stage = typeof document !== 'undefined' && document.querySelector('.stage');
+    if (!el || !stage) return null;
+    const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1;
+    return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };
   }
   clone(P) { return JSON.parse(JSON.stringify(P)); }
   goTo(i, fwd) {
     const st = this.steps()[i];
     if (!st) return;
     this.clearT();
+    const was = this.state.started ? this.cur() : null;
+    this.fromPlate = !!(was && this.isPlate(was)); // Swiftee was off that screen: where she is back, she dives in
+    if (this.diveTl) { this.diveTl.kill(); this.diveTl = null; const sw = document.querySelector('.stage .swiftee'); if (sw && window.gsap) { gsap.set(sw, { clearProps: 'transform' }); sw.classList.remove('flying'); } }
     Motion.clear(); // the previous screen's animations stop and leave no inline styles behind
     this.idleId = null; this.idleCount = 0; this.handId = null; this.handShown = 0; this.touched = false; this.overWig = false; this.letterAt = 0;
     this.prevLine = this.state.line;
@@ -896,7 +934,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       moved: false, dragging: null, picks: {}, cfuFirst: true, bird: '', hand: null, bubOff: false, centered: false, glow: null, chipHi: null, pulse: false, callout: null, emph: {}, qc: false, trace: null, build: null, vIn: {}, flash: null, wig: null, measuring: null, tape: null, swAway: false, measureFocus: false, line: '', reveal: 0, ruler: this.rulerHome(), rulerDrag: false,
       c4: { at: { iso: null, right: null, scal: null }, locked: {}, sel: null, drag: null, checking: false }
     });
-    if (this.sw) this.sw.setFlip(st.layout === 'spotlight'); // on the right, Swiftee faces left toward the shape
     if (st.layout === 'focus' && !(st.lines || []).length && !this.state.done) {
       this.setState({ line: fwd ? this.prevLine || '' : '', reveal: 999, bubOff: true, centered: true });
       this.focusAt = Date.now();
@@ -912,8 +949,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (st.end && JOURNEY) this.tm(() => this.handOff(), CONFIG.flow.handOffMs); // on to the fishing
       else this.maybeAdvance(true);
     });
-    // voiceDelay (ms): Swiftee waits for the screen's opening animation before she speaks (screen 4: the assembly)
-    if (st.voiceDelay) this.tm(lines, st.voiceDelay); else lines();
+    // voiceDelay (ms): Swiftee waits for the screen's opening animation before she speaks (screen 3: the assembly);
+    // back on the card after screens without her (the measuring walk, the goodbye) she dives in first, then speaks
+    const speak = () => { if (st.voiceDelay) this.tm(lines, st.voiceDelay); else lines(); };
+    if (this.fromPlate && !this.isPlate(st)) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); }
+    else speak();
   }
   finishTask() {
     if (this.state.done) return;
@@ -1193,7 +1233,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (tap.AB && tap.BC && tap.CD && tap.DA) {
         // all four measured: fly home, then the screen carries on
         const home = () => { if (!live()) return; this.setState({ measuring: null, swAway: false, tape: null, measureFocus: false }); if (wk) wk.hide(); this.pose(this.restPose()); this.tm(() => this.finishTask(), Motion.reduced ? 250 : CONFIG.scene.measureFocus.settleMs); };
-        if (wk) { const from = this.boardToStage(ends[1]); this.tm(() => { if (live() && from) wk.fly(from, this.homeFeet(), W.size, W.homeSize, W.flyMs, home); else home(); }, 450); }
+        if (wk) { const from = this.boardToStage(ends[1]); this.tm(() => { if (live() && from) wk.stroll(from, this.homeFeet(), W.size, W.homeSize, home); else home(); }, 450); }
         else this.tm(home, 450);
       } else {
         this.setState({ measuring: null }); // a short beat on the corner, then the next side
@@ -1207,10 +1247,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else this.tm(arrive, 300);
     };
     if (wk && !this.state.swAway) {
-      // first side: fly from her spot on the snow onto the side's first corner
+      // first side: she walks from her spot on the sand onto the side's first corner, shrinking to the shape's scale
       const to = this.boardToStage(ends[0]);
       this.setState({ swAway: true });
-      if (to) wk.fly(this.homeFeet(), to, W.homeSize, W.size, W.flyMs, walkIt); else walkIt();
+      if (to) wk.stroll(this.homeFeet(), to, W.homeSize, W.size, walkIt); else walkIt();
     } else walkIt();
   }
   walker() {

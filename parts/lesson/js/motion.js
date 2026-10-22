@@ -37,7 +37,8 @@
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
       if (ctx) ctx.revert();
-      if (G) G.set($(ANIMATED), { clearProps: 'opacity,transform,filter,textShadow,strokeWidth,translate,rotate,scale' });
+      const els = $(ANIMATED); // (none yet before the lesson's first screen: GSAP warns about an empty target)
+      if (G && els.length) G.set(els, { clearProps: 'opacity,transform,filter,textShadow,strokeWidth,translate,rotate,scale' });
       // GSAP pins SVG origins to 0 0 whenever it touches an SVG element (even while clearing), so drop that by hand
       $(ANIMATED_SVG).forEach((el) => el.style.removeProperty('transform-origin'));
       ctx = G ? G.context(() => {}) : null;

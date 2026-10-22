@@ -19,6 +19,10 @@
 <script src="js/config.js"></script>
 <script src="js/lesson-data.js"></script>
 <script src="js/swiftee-manifest.js"></script>
+<script src="js/mask-anchors.js"></script>
+<script src="js/scarf-occlusion.js"></script>
+<script src="js/dive-mask.js"></script>
+<script src="js/costume.js"></script>
 <script src="js/swiftee.js"></script>
 <script src="js/walker.js"></script>
 <script src="js/motion.js"></script>
@@ -225,7 +229,7 @@
 
 <sc-if value="{{isEnd}}" hint-placeholder-val="{{ false }}">
 <div class="{{fadeCls}}" style="position: absolute; left: 670px; top: 140px; width: 460px; height: 360px; border-radius: 28px; background: rgba(255,255,255,0.9); border: 3px solid #cfe6f7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 10px 30px rgba(18,59,99,0.15)">
-<div style="font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 800; font-size: 42px; line-height: 1.05; color: #123b63; text-align: center">Lesson complete!</div>
+<div style="font-family: 'Baloo 2', 'Noto Sans Math', system-ui, sans-serif; font-weight: 800; font-size: 42px; line-height: 1.05; color: #123b63; text-align: center">Lesson complete!</div>
 <div style="display: flex; gap: 10px">
 <sc-for list="{{stars}}" as="st" hint-placeholder-count="3">
 <svg class="star {{st.cls}}" width="62" height="62" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.3l-5.8 3 1.1-6.4-4.7-4.6 6.5-.9z" fill="currentColor" stroke="#c48f05" stroke-width="0.8" stroke-linejoin="round"></path></svg>

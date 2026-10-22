@@ -88,7 +88,7 @@ const CONFIG = {
   // the middle of the free space between Swiftee (right edge ~350) and the panel's inner edge (~1150), so D clears Swiftee.
   focus: { holdMs: 3000, fadeMs: 350, moveMs: 700, handMs: 5000, scale: 1.25, tx: -215, ty: -46 },
   // screen 13 measuring trip: walker size on the shape, home feet point/size (matches the scene layout), timings
-  walker: { size: 110, homeX: 244, homeY: 639, homeSize: 259, flyMs: 1100, msPerCm: 380, pauseMs: 550,
+  walker: { size: 110, homeX: 244, homeY: 639, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550,
     tips: [[488, 272], [484, 281], [494, 273], [489, 270], [486, 278], [483, 279], [491, 281], [489, 281]] }, // tape exit per walk frame (@2x cell px)
   hand: { idleMs: 8000, showMs: 4400, maxShows: 4, // hand nudge: wait with no touch, time on screen, showings per step
     onceDelayMs: 500, onceMs: 2300 },                 // handOnce screens: a single demo gesture this long after the line ends

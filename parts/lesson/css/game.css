@@ -1,7 +1,7 @@
 /* Parallelogram lesson: game styles (bubble, Swiftee, board, tags, chips, buttons, CFUs, motion) */
 body{margin:0}
 a{color:#123b63}a:hover{color:#0b2742}
-.stage{position:relative;width:1280px;height:720px;overflow:hidden;font-family:'Nunito',system-ui,sans-serif;color:#123b63;user-select:none;-webkit-user-select:none;touch-action:none;background:#8fd0fb}
+.stage{position:relative;width:1280px;height:720px;overflow:hidden;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;color:#123b63;user-select:none;-webkit-user-select:none;touch-action:none;background:#8fd0fb}
 .stage button{font-family:inherit}
 .w{opacity:0;transition:none}
 .w.on{opacity:1;transition:opacity .18s ease,color .25s ease}
@@ -10,7 +10,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .bubB{animation:bubB .26s ease-out}
 /* Narrator speech bubble: hugs its text and grows upward from a fixed anchor, so the tail always meets Swiftee */
 .bubble{width:max-content;min-width:120px;max-width:380px;box-sizing:border-box;padding:14px 22px 15px;background:#fdf6e4;border:3px solid #2a9a8c;border-radius:20px;box-shadow:0 6px 16px rgba(18,59,99,.14);transform-origin:26px 100%}
-.bubble-text{display:flex;flex-wrap:wrap;justify-content:center;column-gap:.28em;font-family:'Nunito',system-ui,sans-serif;font-weight:800;line-height:1.25;color:#123b63;text-align:center}
+.bubble-text{display:flex;flex-wrap:wrap;justify-content:center;column-gap:.28em;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:800;line-height:1.25;color:#123b63;text-align:center}
 /* Tail sits on the inner edge of the bottom border: its fill opens the border, its edges run straight out of it,
    and anything above the border is clipped, so the outline reads as one continuous line */
 .bubble-tail{position:absolute;left:26px;top:100%;margin-top:-1px;display:block;overflow:hidden;filter:drop-shadow(0 4px 4px rgba(18,59,99,.10))}
@@ -38,11 +38,11 @@ a{color:#123b63}a:hover{color:#0b2742}
 .tag.off{display:none}
 .alab,.vlab{transition:none}
 .alab{animation:fade .3s ease-out}
-.chip{font-family:'Baloo 2',system-ui,sans-serif;font-weight:700;font-size:27px;line-height:1.1;padding:9px 28px 7px;border-radius:14px;border:2px solid #cfe6f7;background:#fff;color:#123b63;box-shadow:0 4px 12px rgba(18,59,99,.14);animation:chipIn .34s cubic-bezier(.2,1.25,.5,1);white-space:pre}
+.chip{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;font-size:27px;line-height:1.1;padding:9px 28px 7px;border-radius:14px;border:2px solid #cfe6f7;background:#fff;color:#123b63;box-shadow:0 4px 12px rgba(18,59,99,.14);animation:chipIn .34s cubic-bezier(.2,1.25,.5,1);white-space:pre}
 .chip.long{font-size:23px;padding:8px 22px 6px}
 /* shape-name (k: 'name') and angle-sum (k: 'gold') labels share one reference style: warm cream face, a clean teal
    border, deep-teal heavy rounded type, generous rounding. Flat and calm - no gloss, lip or glow */
-.chip.name,.chip.gold{font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:28px;line-height:1.15;letter-spacing:.2px;
+.chip.name,.chip.gold{font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:900;font-size:28px;line-height:1.15;letter-spacing:.2px;
   color:#0b5b70;background:#fbf8ee;border:4px solid #5cc6cf;border-radius:22px;padding:8px 34px 9px;
   box-shadow:0 4px 12px rgba(11,91,112,.10)}
 .chip.name.long,.chip.gold.long{font-size:24px;padding:8px 28px 9px}
@@ -71,7 +71,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .fadeB{animation:fadeB .3s ease-out}
 @keyframes fadeA{from{opacity:0}to{opacity:1}}
 @keyframes fadeB{from{opacity:0}to{opacity:1}}
-.next{height:54px;padding:0 26px 0 30px;border-radius:999px;border:0;background:#d9640a;color:#fff;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:24px;display:flex;align-items:center;gap:8px;box-shadow:0 5px 0 #a54a05;cursor:pointer}
+.next{height:54px;padding:0 26px 0 30px;border-radius:999px;border:0;background:#d9640a;color:#fff;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;display:flex;align-items:center;gap:8px;box-shadow:0 5px 0 #a54a05;cursor:pointer}
 .next:disabled{background:#9fb3c4;box-shadow:0 5px 0 #7d92a4;cursor:not-allowed}
 .next.ready{animation:ready 1.8s ease-in-out infinite}
 @keyframes ready{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
@@ -110,7 +110,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @media (prefers-reduced-motion: reduce){.slot.empty{animation:none}.lab,.slot{transition:none}}
 .star{color:#c9d6e0}
 .star.on{color:#f2b51c}
-.startbtn{height:68px;padding:0 40px;border-radius:999px;border:0;background:#d9640a;color:#fff;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:30px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 0 #a54a05;cursor:pointer;animation:ready 1.8s ease-in-out infinite}
+.startbtn{height:68px;padding:0 40px;border-radius:999px;border:0;background:#d9640a;color:#fff;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:30px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 0 #a54a05;cursor:pointer;animation:ready 1.8s ease-in-out infinite}
 /* Swiftee: sprite canvas over a still fallback; the still hides once the first frame is drawn */
 .swiftee-sprite{opacity:0;transition:opacity .2s ease}
 .swiftee[data-live] .swiftee-sprite{opacity:1}
@@ -166,7 +166,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* Top-right Back / Next: glossy sky-blue pills, same on every screen; press = sink + slight shrink */
 .topnav{z-index:15}
 .navbtn{position:relative;min-width:92px;height:42px;padding:0 20px;border-radius:14px;border:2px solid rgba(255,255,255,.9);
-  background:linear-gradient(180deg,#9ee2ff 0%,#56bdf4 52%,#3aa7ea 100%);color:#fff;font-family:'Baloo 2',system-ui,sans-serif;
+  background:linear-gradient(180deg,#9ee2ff 0%,#56bdf4 52%,#3aa7ea 100%);color:#fff;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;
   font-weight:800;font-size:19px;line-height:1;letter-spacing:.2px;text-shadow:0 1px 0 rgba(16,84,140,.55),0 0 6px rgba(16,84,140,.25);
   box-shadow:0 3px 0 #2181c4,0 6px 12px rgba(18,59,99,.18),inset 0 1px 0 rgba(255,255,255,.7);cursor:pointer;
   transition:transform .12s ease,box-shadow .12s ease,filter .15s ease;-webkit-tap-highlight-color:transparent}
@@ -212,7 +212,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .tag.sum{font-size:18px;padding:6px 14px;border:2px solid #2e9e4f;color:#1d6b35;background:#effbf1;transition:left .18s ease-out,top .18s ease-out}
 /* recap card: rows pop in one after another */
 .recap{background:rgba(255,255,255,.92);border:3px solid #cfe6f7;border-radius:24px;padding:20px 22px;box-shadow:0 10px 26px rgba(18,59,99,.14);animation:fade .35s ease-out}
-.recap-title{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:28px;color:#123b63;text-align:center;margin-bottom:12px}
+.recap-title{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:28px;color:#123b63;text-align:center;margin-bottom:12px}
 .recap-row{display:flex;align-items:flex-start;gap:12px;font-weight:700;font-size:17px;line-height:1.35;color:#123b63;padding:10px 12px;border-radius:14px;background:#f3f9fe;margin-top:9px;opacity:0;animation:recapIn .45s cubic-bezier(.2,1.3,.5,1) forwards}
 .recap-row b{font-weight:900}
 .recap-n{flex:none;width:30px;height:30px;border-radius:50%;background:#2b7bd6;color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center}
@@ -286,7 +286,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* settling glow round a finished outline (screens 1 and 4) */
 .outline-settle{opacity:0;stroke:var(--pg-hl,#FFAF53);stroke-width:12px;filter:drop-shadow(0 0 6px rgba(255,175,83,.7))} /* faded in/out by GSAP (js/motion.js) */
 /* screen 2 side numbers: bold plain numerals (no box); their entrance is GSAP (Motion.sideNums) */
-.tag.snum{background:none;box-shadow:none;padding:0;font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:26px;color:#123b63}
+.tag.snum{background:none;box-shadow:none;padding:0;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:900;font-size:26px;color:#123b63}
 
 /* Choreographed motion (screen 1 build glow + fill, side numbers, corner letters, shape assembly, shape zoom,
    wrong-way wiggle, leg/base traces) runs on GSAP in js/motion.js; this sheet keeps the static looks and the small
@@ -309,7 +309,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes suppA{from{transform:translate(var(--dx),var(--dy));opacity:.3}to{transform:none;opacity:1}}
 @keyframes suppB{from{transform:translate(var(--dx),var(--dy));opacity:.3}to{transform:none;opacity:1}}
 /* checkpoint heading on the board */
-.cp-title{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:23px;color:#fff;text-align:center;padding:6px 14px 4px;border-radius:14px;
+.cp-title{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:23px;color:#fff;text-align:center;padding:6px 14px 4px;border-radius:14px;
   background:linear-gradient(180deg,#2f6fb6,#1d4f8f);box-shadow:0 4px 0 #163e70,0 6px 14px rgba(18,59,99,.18);letter-spacing:.2px}
 /* checkpoint picture grid (screen 19): four equal, quiet cards - the shape is the focus. State is shown only by the
    card itself (border, glow, fill, scale), never by a badge or tick: hover lifts and outlines it softly, a right pick
@@ -347,14 +347,14 @@ a{color:#123b63}a:hover{color:#0b2742}
 .blank-grp.gap{margin-right:34px}
 .blank-eq{font-size:28px;margin-left:6px}
 .blank-eq:empty{display:none}
-.blank{min-width:74px;height:54px;padding:0 10px;border-radius:14px;border:2.5px dashed #8fc3e6;background:rgba(255,255,255,.7);font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:24px;color:#123b63;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
+.blank{min-width:74px;height:54px;padding:0 10px;border-radius:14px;border:2.5px dashed #8fc3e6;background:rgba(255,255,255,.7);font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:900;font-size:24px;color:#123b63;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
 .blank.seg{min-width:84px}
 .blank.act{border-color:#f0a020;background:#fff8e6;animation:slotBreathe 2.4s ease-in-out infinite}
 .blank.full{border-style:solid;border-color:#6fb2e2;background:#fff}
 .blank.good{border-style:solid;border-color:#2e9e4f;background:#e3f7e7;color:#1d6b35;animation:snapIn .35s cubic-bezier(.3,1.6,.5,1)}
 .blank.bad{border-style:solid;border-color:#f0a04b;background:#fff1e0;color:#8a4a10;animation:shake .4s ease}
 @keyframes snapIn{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
-.tile{min-width:72px;height:54px;padding:0 14px;border-radius:14px;border:2px solid #efcb6e;background:linear-gradient(180deg,#fff7da 0%,#fdeec0 100%);color:#6e4210;font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:24px;cursor:grab;box-shadow:0 4px 0 #d9b04c,0 6px 12px rgba(18,59,99,.10);touch-action:none;transition:transform .12s ease,opacity .2s}
+.tile{min-width:72px;height:54px;padding:0 14px;border-radius:14px;border:2px solid #efcb6e;background:linear-gradient(180deg,#fff7da 0%,#fdeec0 100%);color:#6e4210;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:900;font-size:24px;cursor:grab;box-shadow:0 4px 0 #d9b04c,0 6px 12px rgba(18,59,99,.10);touch-action:none;transition:transform .12s ease,opacity .2s}
 .tile:hover{transform:translateY(-2px)}
 .tile.used{opacity:.25;pointer-events:none;box-shadow:none}
 .tile.lift{opacity:.35}
@@ -435,7 +435,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .chip,.stage .chip.gold,.stage .chip.name{background:var(--pg-panel,#FFF8EC);border:2.5px solid var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);
   box-shadow:0 4px 12px rgba(218,126,32,.14);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .stage .chip.name{border-width:3.5px;box-shadow:0 6px 16px rgba(218,126,32,.22)}
-.chip-cap{display:none;font-family:'Nunito',system-ui,sans-serif;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;line-height:1;color:#6c7895;margin:1px 0 3px}
+.chip-cap{display:none;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;line-height:1;color:#6c7895;margin:1px 0 3px}
 .chip.hascap .chip-cap{display:block}
 .chip-ln{white-space:pre}
 .chip-ln .op{color:var(--pg-line,#DA7E20);font-weight:900}
@@ -455,7 +455,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @media (prefers-reduced-motion: reduce){.par-ch.fadein,.ticks.fadein{animation:fade .3s ease-out}}
 /* Start card (before screen 1): the first tap starts the lesson and unlocks its sound */
 .start-card{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px 26px 28px;box-sizing:border-box;border-radius:26px;background:rgba(255,255,255,.93);border:3px solid #cfe6f7;box-shadow:0 12px 30px rgba(18,59,99,.18);animation:fade .4s ease-out}
-.start-title{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:38px;line-height:1.05;color:#123b63}
+.start-title{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:38px;line-height:1.05;color:#123b63}
 .start-sub{font-weight:800;font-size:17px;line-height:1.3;color:#3d6488;text-align:center;max-width:270px}
 .start-btn{margin-top:8px;animation:startPulse 1.8s ease-in-out .6s infinite}
 @keyframes startPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
@@ -488,7 +488,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* The session stage settles in with the card, avoiding a second competing slide. */
 .stage.in-card .panel-img{animation:none}
 
-.journey-next{position:absolute;left:1612px;top:950px;z-index:4;display:flex;align-items:center;justify-content:center;gap:9px;min-width:188px;height:72px;padding:0 25px;border:0;border-radius:999px;background:linear-gradient(#ffbc4b,#f47d0b);box-shadow:0 5px 0 #aa5208,0 0 0 5px #fff,0 0 0 9px rgba(255,197,73,.75);color:#3b2108;font:800 25px 'Baloo 2',system-ui,sans-serif;cursor:pointer;animation:journeyPulse 1.8s ease-in-out infinite;pointer-events:auto}
+.journey-next{position:absolute;left:1612px;top:950px;z-index:4;display:flex;align-items:center;justify-content:center;gap:9px;min-width:188px;height:72px;padding:0 25px;border:0;border-radius:999px;background:linear-gradient(#ffbc4b,#f47d0b);box-shadow:0 5px 0 #aa5208,0 0 0 5px #fff,0 0 0 9px rgba(255,197,73,.75);color:#3b2108;font:800 25px 'Baloo 2','Noto Sans Math',system-ui,sans-serif;cursor:pointer;animation:journeyPulse 1.8s ease-in-out infinite;pointer-events:auto}
 .journey-next span{font-size:16px}.journey-next:hover{filter:brightness(1.07)}.journey-next:active{transform:translateY(3px);box-shadow:0 2px 0 #aa5208,0 0 0 5px #fff,0 0 0 9px rgba(255,197,73,.75)}
 @keyframes journeyPulse{0%,100%{filter:drop-shadow(0 0 0 rgba(255,177,45,0))}50%{filter:drop-shadow(0 0 13px rgba(255,210,70,.75))}}
 @media (prefers-reduced-motion:reduce){.journey-next{animation:none!important;transition:none!important}}
@@ -501,7 +501,7 @@ a{color:#123b63}a:hover{color:#0b2742}
    ===================================================================================================================== */
 /* ---- crystal buttons: Back / Next / Screens (three-part image, so the cut corners stay crisp at any width) ---- */
 .stage .navbtn{--bh:44px;height:44px;min-width:104px;font-size:19px;border-radius:0;
-  color:#0d2a5c;font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;text-shadow:0 1px 0 rgba(255,255,255,.55);
+  color:#0d2a5c;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;text-shadow:0 1px 0 rgba(255,255,255,.55);
   display:flex;align-items:center;justify-content:center;padding:0 calc(var(--bh) * .45);
   filter:drop-shadow(0 3px 0 rgba(13,64,170,.32)) drop-shadow(0 6px 10px rgba(18,59,99,.18));
   transition:transform .18s ease,filter .18s ease,opacity .2s ease}
@@ -520,7 +520,7 @@ a{color:#123b63}a:hover{color:#0b2742}
   --pill-line:#e3901a;border:3px solid #fff;border-radius:999px;
   background:linear-gradient(180deg,#ffe066 0%,#ffcb33 40%,#ffa71f 74%,#f58c12 100%);
   box-shadow:0 0 0 2px var(--pill-line),inset 0 -6px 0 rgba(205,100,0,.38),inset 0 2px 0 rgba(255,255,255,.55);
-  color:#4a2300;font-family:'Baloo 2',system-ui,sans-serif;font-weight:700;letter-spacing:.3px;text-shadow:0 1.5px 0 rgba(255,244,200,.75);
+  color:#4a2300;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;letter-spacing:.3px;text-shadow:0 1.5px 0 rgba(255,244,200,.75);
   filter:drop-shadow(0 6px 8px rgba(120,60,0,.22));transition:transform .12s ease,filter .12s ease,opacity .3s ease}
 .stage .opt:not(.gridopt){font-size:26px;padding:0 22px}
 .stage .opt:not(.gridopt)::after,.stage .tile:not(.ghost)::after,.stage .next::after{content:'';position:absolute;z-index:-1;left:12%;top:10%;width:24%;height:24%;border-radius:50%;background:rgba(255,255,255,.72);pointer-events:none}
@@ -556,10 +556,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .gridlab{background:#1f6bff;box-shadow:0 2px 0 #0d47b8}
 
 /* ---- name plates: a white pill with a thick bright-blue border; sums: cream with a gold border ---- */
-.stage .chip,.stage .chip.name,.stage .chip.white{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;color:#123b63;
+.stage .chip,.stage .chip.name,.stage .chip.white{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;color:#123b63;
   padding:7px 30px 5px;border-radius:999px;background:#fff;border:4px solid #1f6bff;box-shadow:0 3px 10px rgba(20,60,130,.18);
   animation:chipIn .5s cubic-bezier(.2,1.25,.5,1) backwards}
-.stage .chip.gold{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;color:#5a3a00;padding:7px 28px 5px;border-radius:999px;
+.stage .chip.gold{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;color:#5a3a00;padding:7px 28px 5px;border-radius:999px;
   background:#fff8e1;border:4px solid #ffb800;box-shadow:0 3px 10px rgba(150,100,0,.18);animation:chipIn .5s cubic-bezier(.2,1.25,.5,1) backwards}
 .stage .chip.sm{border-width:3px;padding:5px 16px 4px}
 .stage .chip.hi{transform:translateY(-4px) scale(1.06);border-color:#ffb800;box-shadow:0 0 0 4px rgba(255,212,59,.35),0 8px 18px rgba(20,60,130,.22)}
@@ -575,7 +575,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .tile:not(.ghost){font-size:26px;min-width:76px;height:56px}
 .stage .tile.used{opacity:.25;filter:grayscale(1)}
 .tile.ghost{border-radius:999px;border:3px solid #fff;background:linear-gradient(180deg,#ffe066 0%,#ffcb33 40%,#ffa71f 74%,#f58c12 100%);
-  box-shadow:0 0 0 2px #e3901a,0 16px 26px rgba(18,59,99,.28);color:#4a2300;font-family:'Baloo 2',system-ui,sans-serif;font-weight:700;font-size:26px}
+  box-shadow:0 0 0 2px #e3901a,0 16px 26px rgba(18,59,99,.28);color:#4a2300;font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;font-size:26px}
 
 /* ---- entrances: answers, tiles and boxes rise in one after another; a checkpoint's own figure rises in fresh ---- */
 .go>.opt,.go .blank-grp,.go .tile,.opts-in .opt{animation:optIn .42s cubic-bezier(.2,1.2,.5,1) backwards}
@@ -666,8 +666,8 @@ a{color:#123b63}a:hover{color:#0b2742}
   border:2.5px solid #1f6bff!important;border-radius:16px;background:#fff!important;color:#123b63;cursor:pointer;
   box-shadow:0 3px 0 rgba(31,107,255,.22),0 6px 14px rgba(18,59,99,.12)!important;animation:none;
   transition:border-color .18s ease,box-shadow .18s ease,transform .12s ease}
-.stage .blank.dd .dd-val{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:24px;line-height:1;color:#123b63}
-.stage .blank.dd .dd-val.ph{font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:17px;color:#8a99ab}
+.stage .blank.dd .dd-val{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;line-height:1;color:#123b63}
+.stage .blank.dd .dd-val.ph{font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:700;font-size:17px;color:#8a99ab}
 .stage .blank.dd .dd-chev{flex:none;color:#153b70;transition:transform .2s ease}
 .stage .blank.dd.open .dd-chev{transform:rotate(180deg)}
 .stage .blank.dd:hover:not(.good),.stage .blank.dd:focus-visible,.stage .blank.dd.open{outline:none;border-color:#0ea5e9!important;
@@ -697,7 +697,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes ddIn{from{opacity:0;transform:translateY(-6px) scaleY(.92)}to{opacity:1;transform:none}}
 @keyframes ddOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px) scaleY(.95)}}
 .stage .dd-item{display:block;width:100%;height:46px;border:0;border-radius:11px;background:transparent;cursor:pointer;
-  font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-size:24px;color:#123b63;text-align:center;
+  font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;color:#123b63;text-align:center;
   transition:background .12s ease,color .12s ease}
 .stage .dd-item:hover,.stage .dd-item:focus-visible{outline:none;background:#e3f4ff;color:#0b4fb8}
 .stage .dd-item:active{background:#cdeafe}
@@ -733,7 +733,11 @@ a{color:#123b63}a:hover{color:#0b2742}
   border-radius:22px;background:rgba(8,36,84,.66)!important;border:2.4px solid rgba(255,214,140,.38)!important;
   box-shadow:0 10px 29px rgba(0,20,60,.3),inset 0 2px 0 rgba(255,255,255,.1)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .stage.in-card.scene.plate .bubble .bubble-tail{display:none}
-.stage.in-card.scene.plate .bubble-text{width:100%;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;
+/* Swiftee diving in (game-engine dive()): no transition smooths the dive; her trail of bubbles rises and fades */
+.swiftee.flying{transition:none!important}
+.dive-bub{position:absolute;border-radius:50%;pointer-events:none;z-index:7;border:2px solid rgba(255,255,255,.95);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 18%,rgba(220,250,255,.35) 22%,rgba(255,255,255,.08) 70%);animation:diveBub 1.2s ease-out forwards}
+@keyframes diveBub{from{transform:translate(-50%,-50%) scale(.6);opacity:.95}to{transform:translate(-50%,calc(-50% - 70px)) scale(1.1);opacity:0}}
+.stage.in-card.scene.plate .bubble-text{width:100%;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;
   letter-spacing:.01em;font-size:23px!important;line-height:1.3;color:#fff8ec;text-shadow:0 1.5px 3.4px rgba(0,0,0,.35)}
 .stage.in-card.scene.plate .bubble-text .w.brk{display:none}
 .stage.in-card.scene.plate .w.cur{color:#fff8ec}
@@ -750,7 +754,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card .ticks{stroke:#123b63;stroke-width:3.5px;filter:drop-shadow(0 0 1.5px #fff)}
 /* lengths, angle sizes and checkpoint values: plain bold text with a white outline (no boxes), each side its own colour */
 .stage.in-card .tag.mtag,.stage.in-card .tag.alab{background:none!important;box-shadow:none!important;padding:0!important;border:0!important;border-radius:0;
-  font-family:'Nunito',system-ui,sans-serif;font-size:22px;font-weight:900;color:#1656e0;
+  font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:22px;font-weight:900;color:#1656e0;
   text-shadow:0 0 3px #fff,0 0 3px #fff,2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,1.5px 1.5px 0 #fff,-1.5px -1.5px 0 #fff,1.5px -1.5px 0 #fff,-1.5px 1.5px 0 #fff}
 .stage.in-card .tag.mtag.q{color:#00806d}
 .stage.in-card .tag.vlab{color:#123b63;font-size:23px}
@@ -758,7 +762,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ---- name tags: navy glass with a gold rim; names in gold, statements in white with their signs in gold ---- */
 .stage.in-card .chip,.stage.in-card .chip.name,.stage.in-card .chip.white,.stage.in-card .chip.gold{
   color:#fff8ec!important;background:linear-gradient(180deg,rgba(16,58,122,.95),rgba(6,30,74,.97))!important;border:3px solid #ffc94d!important;
-  box-shadow:0 8px 20px rgba(0,20,60,.35),inset 0 1px 0 rgba(255,255,255,.16)!important;text-shadow:0 2px 3px rgba(0,0,0,.3);font-family:'Fredoka','Baloo 2',system-ui,sans-serif}
+  box-shadow:0 8px 20px rgba(0,20,60,.35),inset 0 1px 0 rgba(255,255,255,.16)!important;text-shadow:0 2px 3px rgba(0,0,0,.3);font-family:'Fredoka','Baloo 2','Noto Sans Math',system-ui,sans-serif}
 .stage.in-card .chip.name{color:#ffd166!important;font-size:32px;padding:8px 38px 6px}
 .stage.in-card .chip .chip-cap{color:#a9c8f2!important}
 .stage.in-card .chip .op,.stage.in-card .chip-ln .op{color:#ffd166!important}
