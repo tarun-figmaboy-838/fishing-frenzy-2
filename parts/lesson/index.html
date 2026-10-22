@@ -43,6 +43,7 @@
 <canvas class="water-bg" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none; background: #2a86e0"></canvas>
 <canvas class="op-scene" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <canvas class="op-curtain" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
+<canvas class="card-life" width="1920" height="1080" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; pointer-events: none"></canvas>
 <div class="stage {{sceneCls}}" style="position: absolute; left: 0px; top: 0px; width: 1280px; height: 720px; transform: translate(225.07px, 126.32px) scale(1.14833); transform-origin: 0 0" onPointerDown="{{rootDown}}" onPointerMove="{{rootMove}}" onPointerUp="{{rootUp}}" onPointerCancel="{{rootUp}}">
 
 <sc-if value="{{isLesson}}" hint-placeholder-val="{{ true }}">
@@ -239,6 +240,7 @@ var Component = window.TrapeziumGame;
 <script src="js/water-gl.js"></script>
 <script src="js/water.js"></script>
 <script src="js/opening.js"></script>
+<script src="js/card-life.js"></script>
 <script src="js/confetti.js"></script>
 </body>
 </html>

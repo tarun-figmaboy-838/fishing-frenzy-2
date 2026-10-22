@@ -477,6 +477,13 @@
   let busy = false, tok = 0; // tok: instant() ends an opening that is still playing
   const Opening = {
     get open() { return S.open; },
+    // the card's place on the lake (js/card-life.js draws its life there): centre x, y and width (world px, as the
+    // curtain draws it), its scale k (0: no card yet) and whether it is open for the lesson
+    card() {
+      if (!S.on) return null;
+      const p = pearlScreen(), b = bubbleAt(p[0], p[1]);
+      return { x: b.x, y: b.y, w: CARD.w, k: b.card, open: S.open };
+    },
     instant() {
       tok++; busy = false;
       S.on = true; S.open = true; staticDrawn = false; S.spawning = false;

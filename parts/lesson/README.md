@@ -87,6 +87,8 @@ js/
   opening.js            the seashell, the pearl's bubble and the card, on the lake. In the journey the lake is the
                         fishing game's own, live under this see-through page (water.js passes the camera to it);
                         on its own page (?solo) water.js draws the same lake (lake-data.js, water-gl.js)
+  card-life.js          the card lives, as the game's lake does: light beams, surface ripples, rising bubbles, swaying
+                        seaweed and glints on the sand, drawn over the card (canvas.card-life) and moving with it
   swiftee.js, swiftee-manifest.js, walker.js    Swiftee and her measuring walk
   costume.js, dive-mask.js, mask-anchors.js, scarf-occlusion.js    her diving mask
   voice.js, vo_lines.js the voice-over player and its generated line -> clip map
