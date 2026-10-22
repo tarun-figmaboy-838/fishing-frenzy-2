@@ -296,6 +296,9 @@ class Game {
 
   // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
   wake() {
+    this.setCamera({ zoom: 1, pan: 1 }); // (the lesson's camera may have left the view down in the water)
+    this.ui.el.hud.hidden = false;
+    this.popo.travelShift = 0;
     this.audio.hold(false);
     this.showIdleScene();
   }

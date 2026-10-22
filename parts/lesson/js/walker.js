@@ -31,23 +31,29 @@ window.SwifteeWalker = class SwifteeWalker {
   el() { const e = document.querySelector('.walker'); if (e !== this.e) { this.e = e; this.ctx = null; } return e; }
 
   // ---------- moves: one at a time, done() is called when it ends ----------
-  // stroll between her spot and the shape (eased), her size going from s0 to s1
+  // stroll between her spot and the shape (eased), her size going from s0 to s1. from / to: stage points, or functions
+  // giving them - read every frame, so her path follows the shape as the board glides into its place on the screen
   stroll(from, to, s0, s1, done) {
+    const F = typeof from === 'function' ? from : () => from, T = typeof to === 'function' ? to : () => to;
     this.visible = true; this.anim = 'measuring'; this.playing = true;
-    this.flip = to.x < from.x - 1;
-    const ms = Math.max(500, Math.hypot(to.x - from.x, to.y - from.y) / CONFIG.walker.strollPxPerMs);
+    const f0 = F() || { x: 0, y: 0 }, t0 = T() || f0;
+    this.flip = t0.x < f0.x - 1;
+    const ms = Math.max(500, Math.hypot(t0.x - f0.x, t0.y - f0.y) / CONFIG.walker.strollPxPerMs);
     this.run(ms, (t) => {
-      const e = t * t * (3 - 2 * t);
-      this.pos = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+      const e = t * t * (3 - 2 * t), a = F() || f0, b = T() || t0;
+      this.pos = { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e };
       this.size = s0 + (s1 - s0) * e;
     }, () => { this.playing = false; this.frame = 0; if (done) done(); });
   }
-  // walk a side at a steady pace, reporting progress (0..1) every frame
+  // walk a side at a steady pace, reporting progress (0..1) every frame (from / to as for stroll)
   walk(from, to, ms, progress, done) {
+    const F = typeof from === 'function' ? from : () => from, T = typeof to === 'function' ? to : () => to;
     this.visible = true; this.anim = 'measuring'; this.playing = true;
-    this.flip = to.x < from.x - 1;
+    const f0 = F() || { x: 0, y: 0 }, t0 = T() || f0;
+    this.flip = t0.x < f0.x - 1;
     this.run(ms, (t) => {
-      this.pos = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+      const a = F() || f0, b = T() || t0;
+      this.pos = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
       if (progress) progress(t);
     }, () => { this.playing = false; this.frame = 0; if (done) done(); });
   }

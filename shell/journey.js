@@ -214,7 +214,7 @@
       else if (type === 'failed') fail(f, detail);
       else if (type === 'play') play(f);
       else if (type === 'finish') finish(f, detail);
-      else if (type === 'camera') { if (f.id === 'lesson' && fishing()) command(fishing(), 'camera', detail); }
+      else if (type === 'camera') { if (f.id === 'lesson' && !f.going && fishing()) command(fishing(), 'camera', detail); } // (a lesson on its way out no longer steers the view)
       else if (type === 'devScreens') dev.register(id, (detail || []).map((label, i) => ({ label, run: () => command(f, 'devJump', i) })), win); // (from disk: by message)
     } catch (err) { console.error(err); }
   }

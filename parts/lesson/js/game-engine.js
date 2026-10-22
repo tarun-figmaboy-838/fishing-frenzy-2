@@ -1096,7 +1096,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (tap.AB && tap.BC && tap.CD && tap.DA) {
         // all four measured: fly home, then the screen carries on
         const home = () => { if (!live()) return; this.setState({ measuring: null, swAway: false, tape: null, bubOff: true }); if (wk) wk.hide(); this.pose(this.restPose()); this.tm(() => this.finishTask(), Motion.reduced ? 250 : CONFIG.walker.homeMs); };
-        if (wk) { const from = this.boardToStage(ends[1]); this.tm(() => { if (live() && from) wk.stroll(from, this.homeFeet(), W.size, W.homeSize, home); else home(); }, 450); }
+        if (wk) { const from = () => this.boardToStage(ends[1]); this.tm(() => { if (live() && from()) wk.stroll(from, this.homeFeet(), W.size, W.homeSize, home); else home(); }, 450); }
         else this.tm(home, 450);
       } else {
         this.setState({ measuring: null }); // a short beat on the corner, then the next side
@@ -1105,15 +1105,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const walkIt = () => {
       if (!live()) return;
-      const from = wk && this.boardToStage(ends[0]), to = wk && this.boardToStage(ends[1]);
-      if (wk && from && to) wk.walk(from, to, walkMs, (t) => { if (live()) this.setState({ tape: { leg: leg, t: t, tip: this.stageToBoard(wk.tip()) } }); }, arrive);
+      const from = () => this.boardToStage(ends[0]), to = () => this.boardToStage(ends[1]); // (live: the board may still be gliding into place)
+      if (wk && from() && to()) wk.walk(from, to, walkMs, (t) => { if (live()) this.setState({ tape: { leg: leg, t: t, tip: this.stageToBoard(wk.tip()) } }); }, arrive);
       else this.tm(arrive, 300);
     };
     if (wk && !this.state.swAway) {
       // first side: she walks from her spot on the sand onto the side's first corner, shrinking to the shape's scale
-      const to = this.boardToStage(ends[0]);
+      const to = () => this.boardToStage(ends[0]); // (live, as the walk's corners)
       this.setState({ swAway: true });
-      if (to) wk.stroll(this.homeFeet(), to, W.homeSize, W.size, walkIt); else walkIt();
+      if (to()) wk.stroll(this.homeFeet(), to, W.homeSize, W.size, walkIt); else walkIt();
     } else walkIt();
   }
   walker() {
