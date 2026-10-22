@@ -52,7 +52,7 @@ const CONFIG = {
   card: {
     scale: 1.67,                     // the shape's one size on every screen (board px -> stage px; the first screens' size)
     top: 96, topChips: 150, bottom: 690, // the stack's room: under the question plate (20-90) (or under tags above the shape) to the sand
-    maxW: 1160, introCx: 860, introW: 680, measureCx: 728, measureW: 940, // widths; screen 1 (as Fishing Frenzy's: clear of her bubble) and the measuring walk sit right of Swiftee
+    maxW: 1160, introCx: 860, introW: 680, measureCx: 790, measureW: 940, // widths; screen 1 (as Fishing Frenzy's) and the measuring walks sit right of Swiftee, clear of her bubble
     padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 20, // room round the shape for letters / lengths (board px)
     // answers under the shape (stage px): Fishing Frenzy's answer pills on its card (74 px drawn 1.18x: 87), two-column
     // rows, answer boxes and their tiles
@@ -62,7 +62,7 @@ const CONFIG = {
   board: { x: 640, y: 104 },         // the board's top-left on the stage
   // screen 14's measuring walk: her size on the shape, her spot on the sand (feet) and size there, her walking pace,
   // ms per cm along a side, the pause on each corner, the wait before she sets off and after she is home again
-  walker: { size: 110, homeX: 244, homeY: 639, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550, startMs: 850, homeMs: 850,
+  walker: { size: 110, homeX: 164, homeY: 665, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550, startMs: 850, homeMs: 850,
     tips: [[488, 272], [484, 281], [494, 273], [489, 270], [486, 278], [483, 279], [491, 281], [489, 281]] }, // tape exit per walk frame (@2x cell px)
   // screen 24's protractor walk (js/angle-walker.js, as in Fishing Frenzy's lesson): scale = stage px per drawing px
   // (so the protractor covers the angle); homeK = her size at her spot against her size on the shape; carryPx =

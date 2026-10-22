@@ -91,12 +91,12 @@
 <path sc-camel-d="{{g.tape.p}}" sc-camel-display="{{g.tape.d}}" class="tape" fill="none" stroke="#f7c531" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
 <path sc-camel-d="{{g.tapeTk.p}}" sc-camel-display="{{g.tapeTk.d}}" fill="none" stroke="#6b4c0c" stroke-width="1.6" stroke-linecap="round"></path>
 <!-- side marks, as in Fishing Frenzy's lesson: navy equal-length ticks; orange parallel chevrons, each pair over its
-     own white halo (they glide onto their sides the way they point: --gx, --gy) -->
+     own white halo (they glide onto their sides the way they point, --gx, --gy: js/motion.js glideMarks) -->
 <path sc-camel-d="{{g.tk.p}}" class="fadein ticks" sc-camel-display="{{g.tk.d}}" fill="none" stroke="#123b63" stroke-width="3.5" stroke-linecap="round" pointer-events="none"></path>
-<path sc-camel-d="{{g.ch.p}}" class="fadein par-ch par-halo" style="--gx: {{g.ch.gx}}; --gy: {{g.ch.gy}}" sc-camel-display="{{g.ch.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
-<path sc-camel-d="{{g.ch.p}}" class="fadein par-ch ch-a" style="--gx: {{g.ch.gx}}; --gy: {{g.ch.gy}}" sc-camel-display="{{g.ch.d}}" fill="none" stroke="#ff7a00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
-<path sc-camel-d="{{g.ch2.p}}" class="fadein par-ch par-halo" style="--gx: {{g.ch2.gx}}; --gy: {{g.ch2.gy}}" sc-camel-display="{{g.ch2.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
-<path sc-camel-d="{{g.ch2.p}}" class="fadein par-ch ch-b" style="--gx: {{g.ch2.gx}}; --gy: {{g.ch2.gy}}" sc-camel-display="{{g.ch2.d}}" fill="none" stroke="#ff7a00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.ch.p}}" class="par-ch par-halo" style="--gx: {{g.ch.gx}}; --gy: {{g.ch.gy}}" sc-camel-display="{{g.ch.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.ch.p}}" class="par-ch ch-a" style="--gx: {{g.ch.gx}}; --gy: {{g.ch.gy}}" sc-camel-display="{{g.ch.d}}" fill="none" stroke="#ff7a00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.ch2.p}}" class="par-ch par-halo" style="--gx: {{g.ch2.gx}}; --gy: {{g.ch2.gy}}" sc-camel-display="{{g.ch2.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.ch2.p}}" class="par-ch ch-b" style="--gx: {{g.ch2.gx}}; --gy: {{g.ch2.gy}}" sc-camel-display="{{g.ch2.d}}" fill="none" stroke="#ff7a00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
 <path sc-camel-d="{{g.arw.p}}" sc-camel-display="{{g.arw.d}}" class="nudge" fill="none" stroke="#ff7a00" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"></path>
 <path sc-camel-d="{{g.arw.h}}" sc-camel-display="{{g.arw.d}}" class="nudge" fill="#ff7a00" stroke="none"></path>
 <circle sc-camel-cx="{{g.halo.x}}" sc-camel-cy="{{g.halo.y}}" r="19" sc-camel-display="{{g.halo.d}}" class="halo" fill="none" stroke="#00b8a9"></circle>
@@ -176,7 +176,8 @@
 </sc-if>
 
 <sc-if value="{{isEnd}}" hint-placeholder-val="{{ false }}">
-<div class="{{fadeCls}}" style="position: absolute; left: 670px; top: 140px; width: 460px; height: 360px; border-radius: 28px; background: rgba(255,255,255,0.9); border: 3px solid #cfe6f7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 10px 30px rgba(18,59,99,0.15)">
+<!-- the score card (the lesson's own page only): centred in the card's room right of Swiftee and her bubble -->
+<div class="{{fadeCls}}" style="position: absolute; left: 600px; top: 150px; width: 460px; height: 360px; border-radius: 28px; background: rgba(255,255,255,0.9); border: 3px solid #cfe6f7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 10px 30px rgba(18,59,99,0.15)">
 <div style="font-family: 'Baloo 2', 'Noto Sans Math', system-ui, sans-serif; font-weight: 800; font-size: 42px; line-height: 1.05; color: #123b63; text-align: center">Lesson complete!</div>
 <div style="display: flex; gap: 10px">
 <sc-for list="{{stars}}" as="st" hint-placeholder-count="3">

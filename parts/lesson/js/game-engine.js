@@ -132,7 +132,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   componentDidUpdate() {
     this.markSounds();
     this.fitBubble();
-    if (window.Motion && Motion.sweepWedges) Motion.sweepWedges(); // a filled angle just shown sweeps open (as Fishing Frenzy's)
+    if (window.Motion && Motion.sweepWedges) { Motion.sweepWedges(); Motion.glideMarks(); } // marks just shown sweep open / glide in (as Fishing Frenzy's)
   }
 
   // sounds for marks that appear with the board: parallel chevrons / equal ticks (a tick as they pop on) and angle arcs
@@ -1063,7 +1063,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     this.tm(nextSide, Motion.reduced ? 50 : CONFIG.walker.startMs);
   }
-  homeFeet() { const W = CONFIG.walker; return { x: W.homeX, y: W.homeY }; }
+  // where Swiftee's feet are (stage px), read from her element as Fishing Frenzy's lesson does, so the measuring walk
+  // starts and ends exactly where she stands (a fixed spot left her jumping as the walker handed back to her)
+  homeFeet() {
+    const W = CONFIG.walker, el = typeof document !== 'undefined' && document.querySelector('.stage .swiftee'), b = el && this.elBox(el);
+    const base = (window.SWIFTEE_MANIFEST && SWIFTEE_MANIFEST.baselineY && SWIFTEE_MANIFEST.baselineY.normalized) || 0.877;
+    return b && b.h ? { x: b.x + b.w / 2, y: b.y + b.h * base } : { x: W.homeX, y: W.homeY };
+  }
   measureLeg(leg, then) {
     const s = this.state;
     if (s.done || s.tap[leg] || this.walking) return;
@@ -1520,9 +1526,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const tp = s.tape, ends = tp ? this.walkEnds(tp.leg) : null;
       if (ends) {
         const L = this.dist(ends[0], ends[1]) || 1, ux = (ends[1].x - ends[0].x) / L, uy = (ends[1].y - ends[0].y) / L;
-        const cx = (A.x + B.x + C.x + D.x) / 4, cy = (A.y + B.y + C.y + D.y) / 4;
-        let nx = -uy, ny = ux; if (nx * (ends[0].x - cx) + ny * (ends[0].y - cy) < 0) { nx = -nx; ny = -ny; }
-        const off = 7, p0 = { x: ends[0].x + nx * off, y: ends[0].y + ny * off }; // the tape lies alongside the side, outside it
+        // as in Fishing Frenzy's lesson: the tape lies along the side on the side Swiftee is standing on (she walks upright,
+        // so that is the screen-up side), from the start corner under her feet up into her hand, never crossing the line
+        let nx = -uy, ny = ux; if (ny > 0 || (ny === 0 && nx < 0)) { nx = -nx; ny = -ny; }
+        const off = 6, p0 = { x: ends[0].x + nx * off, y: ends[0].y + ny * off };
         const foot = { x: p0.x + ux * L * tp.t, y: p0.y + uy * L * tp.t }, tip = tp.tip || foot;
         g.tape = { p: 'M' + r1(p0.x) + ',' + r1(p0.y) + ' L' + r1(foot.x) + ',' + r1(foot.y) + ' L' + r1(tip.x) + ',' + r1(tip.y), d: 'inline' };
         let tk = '';
@@ -1781,9 +1788,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const into = P[{ A: 'D', B: 'A', C: 'B', D: 'C' }[k]], mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2, L = this.dist(P[k], Om) || 1;
         let nx = -(Om.y - P[k].y) / L, ny = (Om.x - P[k].x) / L;
         if (nx * (into.x - mx) + ny * (into.y - my) < 0) { nx = -nx; ny = -ny; }
-        // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it)
-        const off = MK.tickHalf + 8 + this.textW(H[k], '900 21px Nunito') / 2 * Math.abs(nx) + 13 * Math.abs(ny);
-        tags.push({ t: H[k], x: r1(mx + nx * off), y: r1(my + ny * off), cls: 'mtag fig' + (found[k] ? ' solved' : '') });
+        // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it).
+        // A label whose box would reach a side of the shape (a thin triangle: BO's on a wide, low figure lay on AB) goes
+        // to the half's other side instead, into the next triangle
+        const hw = this.textW(H[k], '900 21px Nunito') / 2, hh = 13, off = MK.tickHalf + 8 + hw * Math.abs(nx) + hh * Math.abs(ny);
+        const Q = [A, B, C, D], area = Q.reduce((t, p, i) => t + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) > 0 ? 1 : -1;
+        const inside = (x, y) => Q.every((p, i) => { const q = Q[(i + 1) % 4], L2 = this.dist(p, q) || 1;
+          return area * ((q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x)) / L2 >= 2.5 + 6; }); // past the side's stroke, and a gap
+        const fits = (sg) => { const cx = mx + sg * nx * off, cy = my + sg * ny * off; return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every((c) => inside(cx + c[0] * hw, cy + c[1] * hh)); };
+        const sg = fits(1) || !fits(-1) ? 1 : -1;
+        tags.push({ t: H[k], x: r1(mx + sg * nx * off), y: r1(my + sg * ny * off), cls: 'mtag fig' + (found[k] ? ' solved' : '') });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line

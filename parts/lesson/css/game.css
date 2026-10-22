@@ -31,9 +31,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .vlab{background:transparent;box-shadow:none;padding:0;font-size:21px;font-weight:900;color:#123b63}
 .alab{background:rgba(255,255,255,.75);box-shadow:none;padding:1px 6px;font-size:17px;font-weight:900;color:#123b63}
 
-.mtag{border:2px solid #8e44d6;color:#6a2bb0;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.mtag{border:2px solid #8e44d6;color:#6a2bb0;animation:fade .4s ease-out} /* lengths fade in, as Fishing Frenzy's (marks are drawn, never popped) */
 
-@keyframes pop{from{transform:translate(-50%,-50%) scale(.75);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
 .tag.off{display:none}
 .alab,.vlab{transition:none}
 .alab{animation:fade .3s ease-out}
@@ -48,7 +47,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* compact cards: four in one row (parallelogram summary rows, half-diagonal lengths) */
 .chip.sm,.chip.gold.sm,.chip.name.sm{font-size:21px;padding:7px 16px 6px}
 
-@keyframes chipIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes chipIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}} /* (a tag rises in, as Fishing Frenzy's) */
 .edge{transition:stroke .5s ease,stroke-width .45s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
 
 /* an angle's wedge sweeps open from its first arm to its second as it comes on screen (Fishing Frenzy's lesson; js/motion.js
@@ -90,7 +89,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .hand-nudge{position:absolute;width:0;height:0;pointer-events:none;z-index:20;animation:handLife 4.4s linear forwards}
 .hand-move{position:absolute;left:-25px;top:-22px;width:64px;height:90px;transform-origin:25px 22px;filter:drop-shadow(0 4px 6px rgba(18,59,99,.28))}
 .hand-move img{display:block;width:100%;height:100%}
-.hand-ring{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #f08a24;background:rgba(240,138,36,.16);box-sizing:border-box;opacity:0}
+.hand-ring{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #ff7a00;background:rgba(255,122,0,.16);box-sizing:border-box;opacity:0}
 .hand-nudge.tap .hand-move{animation:handTap 1.4s cubic-bezier(.45,0,.3,1) infinite}
 .hand-nudge.tap .hand-ring{animation:handRing 1.4s ease-out infinite}
 .hand-nudge.drag .hand-move{animation:handDrag 2.1s cubic-bezier(.45,0,.3,1) infinite}
@@ -346,12 +345,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 .fx-layer,.fx-layer .fx-confetti{overflow:visible}
 /* the kit's .w wrapper shares its name with the bubble's words (.w, hidden until revealed): keep it visible */
 .fx-layer .fx-confetti .w{opacity:1;transition:none}
-/* marks arrive as Fishing Frenzy's do: the parallel arrows glide onto their sides the way they point (0.8 s, power2.out:
-   --gx, --gy from the engine) as they fade in; the equal-length ticks fade in (.fadein). (No fill-mode: once arrived, a
-   GSAP entrance - Motion.enterShape - may own their opacity.) */
-.par-ch.fadein{animation:chevIn .8s cubic-bezier(.33,1,.68,1)}
-@keyframes chevIn{from{opacity:0;transform:translate(var(--gx,0),var(--gy,0))}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.par-ch.fadein{animation:fade .3s ease-out}}
+/* marks arrive as Fishing Frenzy's do: the parallel arrows glide onto their sides the way they point (js/motion.js
+   glideMarks: GSAP, not a CSS animation - Chrome restarted a CSS one on some screen changes, so the arrows glided in again
+   on a screen that already showed them); the equal-length ticks fade in (.fadein) */
 
 /* ===== The lesson stage sits over its cream card as the lanternfish reveal settles. ===== */
 .stage{background:transparent!important;transition:opacity .4s ease}
@@ -425,9 +421,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ---- name plates: a white pill with a thick bright-blue border; sums: cream with a gold border ---- */
 .stage .chip,.stage .chip.name,.stage .chip.white{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;color:#123b63;
   padding:7px 30px 5px;border-radius:999px;background:#fff;border:4px solid #1f6bff;box-shadow:0 3px 10px rgba(20,60,130,.18);
-  animation:chipIn .5s cubic-bezier(.2,1.25,.5,1) backwards}
+  animation:chipIn .5s ease-out backwards}
 .stage .chip.gold{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;color:#5a3a00;padding:7px 28px 5px;border-radius:999px;
-  background:#fff8e1;border:4px solid #ffb800;box-shadow:0 3px 10px rgba(150,100,0,.18);animation:chipIn .5s cubic-bezier(.2,1.25,.5,1) backwards}
+  background:#fff8e1;border:4px solid #ffb800;box-shadow:0 3px 10px rgba(150,100,0,.18);animation:chipIn .5s ease-out backwards}
 .stage .chip.sm{border-width:3px;padding:5px 16px 4px}
 .stage .chip.hi{transform:translateY(-4px) scale(1.06);border-color:#ffb800;box-shadow:0 0 0 4px rgba(255,212,59,.35),0 8px 18px rgba(20,60,130,.22)}
 
@@ -562,6 +558,11 @@ a{color:#123b63}a:hover{color:#0b2742}
    dropdowns and the shape cards are not shown at all - not dimmed, not pulsing; then they rise in one by one. */
 .stage .wait{opacity:0!important;visibility:hidden;pointer-events:none;animation:none!important}
 .stage .wait *{animation:none!important}
+/* (check 1's pictures are the question itself: they show from the start, as Fishing Frenzy's check 1 does - an empty
+   card while the question was read looked like a missing screen - and take taps once it has been asked) */
+.stage .grid4.wait{opacity:1!important;visibility:visible;filter:none;animation:riseA .55s cubic-bezier(.25,1.25,.5,1) both!important}
+.stage .grid4.wait.fadeB{animation-name:riseB!important}
+.stage .grid4.go>.opt:not(.good):not(.bad){animation:none} /* (already showing: no second entrance once the question is asked) */
 .stage .go{visibility:visible}
 /* three blanks (screen 37) stay on one straight line */
 .stage .blank.dd{min-width:104px;padding:0 10px 0 14px;gap:6px}
