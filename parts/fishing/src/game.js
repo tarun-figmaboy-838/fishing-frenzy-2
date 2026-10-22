@@ -308,6 +308,8 @@ class Game {
     this.holding = false;
     this.lessonAfter = !!(args && args.lesson);
     this.afterLesson = !!(args && args.afterLesson);
+    this.setCamera({ zoom: 1, pan: 1 }); // (after a lesson its camera may have left the view a hair off)
+    this.ui.el.hud.hidden = false;
     this.audio.hold(false);
     if (state.phase === PHASE.TITLE) this.title.leave(); // (a ?dev=1 lesson jump came from the banner)
     else if (!held) { this.showIdleScene(); return; }   // (or from a level: it carries on)

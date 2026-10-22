@@ -24,9 +24,21 @@ function loadImage(src) {
 // Each background comes with a water mask (white where the surface waves may move it).
 const WATER_MASKS = PopoGame.WATER_MASKS || [1, 2, 3, 4].map((n) => `assets/backgrounds/water-${n}.png`);
 
+// the waters after the first come in their own data files (src/background-<index>.js), loaded as they are needed
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
 function preloadBackground(index) {
   if (!pending.has(index)) {
-    pending.set(index, Promise.all([loadImage(BACKGROUNDS[index]), loadImage(WATER_MASKS[index])]).then(([img, mask]) => {
+    const data = BACKGROUNDS[index] ? Promise.resolve() : loadScript(`src/background-${index}.js`);
+    pending.set(index, data.then(() => Promise.all([loadImage(BACKGROUNDS[index]), loadImage(WATER_MASKS[index])])).then(([img, mask]) => {
       img.waterMask = mask;
       assets.backgrounds[index] = img;
       return img;
