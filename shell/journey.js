@@ -7,16 +7,19 @@
 //            loads, unseen, behind the banner once the game is ready.
 // The journey, in three steps (announced as the parts 'intro', 'lesson' and 'fishing'):
 //   1. intro: Play on the banner (inside the tap: Journey.play, which unlocks this page's sound). The game is told
-//      `story` (args.lesson: the lesson follows the first net) and goes on as Play does: its story (narrator, the first
-//      school, the net) and the first net, played in full. Once its catch is in the bucket and the net wound up, the
-//      game holds there and says so (Journey.finish({ intro: true })).
-//   2. lesson: its frame dissolves in over the game and begins; as it starts to, the game is told `quiet` (its sound
-//      fades), and once covered `hide`: it stops drawing and every sound. (Still loading? A frosted veil says
-//      "Getting ready…" until it has.)
-//   3. fishing: the lesson over (Journey.finish), the game is told `resume` and goes on to its second net (and on to
-//      the eighth) while the lesson's frame dissolves out over it; then the lesson is disposed. After the eighth net,
-//      the end screen's Play Again (Journey.finish): the game is told `title`, the banner again from its start, and a
-//      fresh lesson loads behind it, ready to play again.
+//      `story` (args.lesson: the lesson follows the warm-up) and goes on as Play does: its story (the narrator, the
+//      first school) and its warm-up net (a rectangle), played in full. Then the hook, as in Fishing Frenzy: a big fish
+//      knocks the net out of square, Popo has never seen that shape, Swiftee swoops in with "Let's find out!" and Next;
+//      on Next she flies off and the giant wave carries Popo away. With the lake empty, the game says so
+//      (Journey.finish({ intro: true })).
+//   2. lesson: its frame dissolves in over the empty lake (lake into lake) and begins; as it starts to, the game is
+//      told `quiet` (its sound fades), and once covered `hide`: it stops drawing and every sound. (Still loading? A
+//      frosted veil says "Getting ready…" until it has.)
+//   3. fishing: the lesson over (Journey.finish, once Swiftee has flown out of it), the game is told `resume` while
+//      the lesson's frame dissolves out over it: the giant wave brings Popo back, Swiftee swoops in with her welcome,
+//      and the eight parallelogram nets follow; then the lesson is disposed. After the eighth net, the end screen's
+//      Play Again (Journey.finish): the game is told `title`, the banner again from its start, and a fresh lesson
+//      loads behind it, ready to play again.
 //
 // Sound: browsers allow it only after a tap. The Play tap unlocks one AudioContext and one <audio> element in this
 // page, and the lesson plays through them (bridge.js: audioContext, voiceElement), so it needs no tap of its own.
@@ -24,7 +27,7 @@
 // silences it on `hide`. One part is heard at a time.
 //
 // URL options: ?start=lesson - the first Play brings the lesson first (the game holds where its banner cleared away),
-// then the game from its story, all eight nets; ?start=fishing - the first Play skips the lesson (all eight nets in a
+// then the wave brings Popo in and all eight nets follow; ?start=fishing - the first Play skips the lesson (all eight nets in a
 // row). A part opened on its own comes here with ?start=<part> (bridge.js). ?dev=1 adds one panel that jumps to any
 // screen of either part, and the front page; ?debug and ?dev pass on to the parts (window.popoDebug in the game,
 // window.lessonDebug in the lesson). Every step is announced as a window event ('fishing-frenzy:part', ':finished',
@@ -356,13 +359,13 @@
       J.seq += 1;
       J.results.lesson = detail;
       announce('finished', { part: 'lesson', detail });
-      toFishing(J.after, { lesson: false });
+      toFishing(J.after, { lesson: false, afterLesson: true });
       J.after = 'resume';
       hideLesson();
       return;
     }
     if (f !== fishing() || lessonUp() || J.phase === 'starting') return;
-    // the game's first net is in: the lesson comes in over it
+    // the warm-up is over and the wave has carried Popo off: the lesson comes in over the empty lake
     if (detail.intro) {
       J.results.intro = detail;
       announce('finished', { part: 'intro', detail });

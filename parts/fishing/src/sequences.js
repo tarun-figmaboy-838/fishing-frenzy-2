@@ -597,6 +597,232 @@ async function collectFish(game, fish, token) {
   await Promise.all(flights);
 }
 
+// --- the journey's hook, Swiftee and the giant wave (as in Fishing Frenzy) -----------------------
+// The warm-up's end. Popo lets the empty net down for another go, and a big fish leaps up under it: it knocks the
+// net's bottom edge sideways, so its sides stay straight and its opposite sides stay parallel, but its corners are no
+// longer square. "Woah! I haven't seen that one before!" Swiftee swoops in with "Let's find out!" and Next comes up.
+// On Next she flies off to the lesson and the giant wave carries Popo away (waveAway); the journey plays the lesson
+// on the empty lake (lessonTime), then the wave brings him back (waveIn) and she welcomes him.
+async function mystery(game, token) {
+  const { net, fx, audio, popo } = game;
+  const story = STORY.mystery;
+  state.phase = PHASE.TRANSITIONING;
+  game.instruct('');
+  // the school swims off, out of the sea: the lake is left to the big fish (and empty for the lesson's lake)
+  for (const f of state.fish) if (!f.gone && !f.caught) f.swimAway();
+  game.strays.push(...state.fish.filter((f) => !f.gone));
+  state.fish = [];
+  for (const lane of game.sea.lanes) lane.rush = 3; // (they dash off, as a new school rushes in)
+  await letNetDown(game, token);
+  await clock.wait(fx.reduced ? 200 : 700, token);
+  // the big fish: it swims in from the right and leaps up under the net's bottom corner, at the top of its leap
+  const corner = net.toStage(net.points[2]);
+  const ms = 1000, speed = 640, dx = speed * (ms / 1000) * 0.45, wl = game.waterline;
+  const height = Math.max(150, wl + 30 - corner.y + 30);
+  const x0 = corner.x + dx * 0.5; // (it leaps leftward: its top is half its run on)
+  const swimMs = Math.abs(x0 - (STAGE_W + 80)) / speed * 1000;
+  const leap = jump(game, token, NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], x0, -1, { height, ms, scale: 1.25, speed });
+  leap.catch(() => {});
+  await clock.wait(swimMs + ms * 0.5, token);
+  // the knock: the bottom edge swings left and springs back a little short of where it was, out of square
+  const before = net.points.map((p) => ({ ...p }));
+  const push = Math.round((before[1].x - before[0].x) * 0.3);
+  audio.play('thud');
+  audio.play('boing');
+  fx.splash(corner.x, wl, true);
+  fx.sparkle(corner.x, corner.y, 12);
+  net.swing = fx.reduced ? 0 : -0.06;
+  const woah = game.say(story.woah, token);
+  woah.catch(() => {});
+  await clock.tween(fx.reduced ? 200 : 700, token, (t) => {
+    const k = fx.reduced ? t : ease.outBack(t);
+    net.points = before.map((p, i) => (i >= 2 ? { x: p.x - push * k, y: p.y } : { ...p }));
+    net.swing *= 0.94;
+  });
+  net.swing = 0;
+  await woah;
+  await leap;
+  await game.say(story.after, token);
+  await swifteeArrives(game, story.swiftee, token);
+  await clock.wait(250, token);
+  await game.awaitNext(token);
+  // Next: Swiftee flies off to the lesson, the net winds up and the giant wave carries Popo away
+  windNetUp(game, token).catch(() => {});
+  await waveAway(game, token);
+  await game.lessonTime(token);
+  await waveIn(game, token);
+  await welcome(game, token);
+}
+
+// Swiftee swoops in from the right and settles into a hover beside Popo, facing him; then she speaks (she is always
+// there before her bubble is). `lines`: one line, or several said one after another.
+async function swifteeArrives(game, lines, token) {
+  const { popo, fx, audio } = game;
+  const from = { x: STAGE_W + 140, y: 120 };
+  // she hovers in the open sky to the right, clear of the crane and of the net if it hangs open
+  const head = popo.headTop(), net = game.net;
+  const netRight = net.visible && net.furl < 0.5 ? Math.max(...net.points.map((q) => net.toStage(q).x)) : 0;
+  const to = { x: Math.min(STAGE_W - 170, Math.max(head.x + 720, netRight + 190)), y: Math.max(170, head.y - 20) };
+  const bird = new PopoGame.Swiftee(from.x, from.y);
+  bird.onDownstroke = () => audio.play('flap');
+  game.swiftee = bird;
+  audio.play('whoosh');
+  await clock.tween(fx.reduced ? 1200 : 2400, token, (t) => {
+    const k = ease.out(t);
+    bird.x = from.x + (to.x - from.x) * k;
+    // a swoop: dips on the way in and pulls up into the hover
+    bird.y = from.y + (to.y - from.y) * k + Math.sin(k * Math.PI) * 80;
+    bird.lean = 0.32 * (1 - t) ** 1.5;
+    bird.flapRate = 11 + 9 * (1 - t);
+    if (Math.random() < 0.25 * (1 - t)) fx.sparkle(bird.x + 70, bird.y + (Math.random() - 0.5) * 60, 1);
+  });
+  bird.lean = 0;
+  bird.onDownstroke = null;
+  for (const line of [].concat(lines)) await game.say(line, token);
+}
+
+// "Let's find out!": Swiftee twirls and flies off over Popo's head, up and out of the top left, to the lesson (where
+// she dives in). `up`: after her welcome she flies off up and out of the top right instead.
+async function swifteeDeparts(game, token, { up = false } = {}) {
+  const bird = game.swiftee;
+  if (!bird) return;
+  const from = { x: bird.x, y: bird.y };
+  const to = up ? { x: STAGE_W + 240, y: -160 } : { x: -240, y: -140 };
+  bird.twirl();
+  bird.onDownstroke = () => game.audio.play('flap');
+  game.audio.play('whoosh');
+  try {
+    await clock.tween(game.fx.reduced ? 500 : 1250, token, (t) => {
+      const k = t * t;
+      bird.x = from.x + (to.x - from.x) * k;
+      bird.y = from.y + (to.y - from.y) * k - 70 * Math.sin(k * Math.PI);
+      bird.lean = (up ? 0.3 : -0.3) * t;
+      bird.flapRate = 16 + 10 * t;
+      if (Math.random() < 0.3) game.fx.sparkle(bird.x + 50, bird.y + (Math.random() - 0.5) * 40, 1);
+    });
+  } finally {
+    if (game.swiftee === bird) game.swiftee = null;
+  }
+}
+
+// The giant wave swells up out of the lake behind Popo, lifts his raft up its face onto its crest and carries him
+// off to the right (Swiftee flying off meanwhile). Resolves once the wave has gone, with him: the lake is empty.
+async function waveAway(game, token) {
+  const { popo, fx, audio } = game;
+  const out = (x) => 1 - (1 - x) ** 3;
+  swifteeDeparts(game, token).catch(() => {});
+  const wave = new PopoGame.Wave(game);
+  const ends = popo.raftEnds(), mid = (ends.left + ends.right) / 2;
+  let hitAt = -1;
+  game.wave = wave;
+  try {
+    await clock.wait(fx.reduced ? 100 : 350, token);
+    wave.sound(audio);
+    await clock.tween(wave.ms, token, (t) => {
+      wave.set(t);
+      if (wave.rise > 0.1 && Math.random() < 0.7) fx.ripple(wave.faceX() + 20 + Math.random() * 160, game.waterline + 4, 0.6 + Math.random() * 0.6); // the lake stirs at its foot
+      if (hitAt < 0 && wave.faceX() >= ends.left - 60) { // the face reaches the raft
+        hitAt = t;
+        audio.play('woah');
+        fx.splash(ends.right, game.waterline, true);
+        fx.splash(ends.left, game.waterline, true);
+      }
+      if (hitAt >= 0) {
+        const lift = out(Math.min(1, ((t - hitAt) * wave.ms) / 560)); // up the face onto the crest in half a second...
+        const seat = wave.seat();
+        popo.dip = (seat.y - game.waterline) * lift;
+        popo.tilt = -0.38 * lift + Math.sin(t * 40) * 0.05 * lift;
+        popo.travelShift = (seat.x - mid) * lift; // ...and away with it
+        if (Math.random() < 0.5) fx.splash(mid + popo.travelShift - 60, game.waterline + popo.dip + 50, false);
+      }
+    });
+  } finally {
+    game.wave = null;
+    popo.travelShift = AWAY; // gone with the wave
+    popo.dip = 0;
+    popo.tilt = 0;
+  }
+}
+const AWAY = 2600; // Popo's travelShift while the wave has him: off the right of the stage
+
+// After the lesson the wave rolls in from the left with Popo riding its crest, leaves him on its back as it passes
+// his spot and lowers him to the water there, and rolls on; then a happy hop, and a few fish leap to say hello.
+async function waveIn(game, token) {
+  const { popo, fx, audio } = game;
+  const wave = new PopoGame.Wave(game);
+  const ends = popo.raftEnds(), mid = (ends.left + ends.right) / 2;
+  let dropped = -1, landed = false;
+  popo.idle();
+  game.wave = wave;
+  try {
+    wave.sound(audio);
+    await clock.tween(wave.ms, token, (t) => {
+      wave.set(t);
+      if (wave.rise > 0.1 && Math.random() < 0.7) fx.ripple(wave.faceX() + 20 + Math.random() * 160, game.waterline + 4, 0.6 + Math.random() * 0.6);
+      const seat = wave.seat();
+      if (dropped < 0) { // riding the crest
+        popo.travelShift = seat.x - mid;
+        popo.dip = seat.y - game.waterline + Math.sin(t * 30) * 5;
+        popo.tilt = -0.26 + Math.sin(t * 24) * 0.06;
+        if (seat.x >= mid) { dropped = t; audio.play('woah'); }
+      } else { // left on the back of the wave, which lowers him to the water as it rolls on
+        const r = Math.min(1, ((t - dropped) * wave.ms) / 700);
+        popo.travelShift = (1 - r) * Math.sin(r * Math.PI) * 40;
+        popo.dip = Math.min(0, wave.backTop(mid) - game.waterline + 30 * r);
+        popo.tilt = -0.26 * (1 - r) + Math.sin(r * Math.PI * 2) * 0.1 * (1 - r);
+        if (!landed && popo.dip > -12) {
+          landed = true;
+          audio.play('skid');
+          fx.splash(ends.right, game.waterline, true);
+          fx.splash(ends.left, game.waterline, true);
+        }
+      }
+      if (popo.dip < -40 && Math.random() < 0.35) fx.splash(mid + popo.travelShift - 80, game.waterline + popo.dip + 60, false);
+    });
+  } finally {
+    game.wave = null;
+    popo.travelShift = 0;
+    popo.dip = 0;
+    popo.tilt = 0;
+  }
+  audio.play('tada');
+  fx.sparkle(popo.headTop().x + 40, popo.headTop().y + 50, 18);
+  await clock.wait(380, token);
+  game.storyCue('hop');
+  fishSaysHello(game, token);
+  await clock.wait(700, token);
+}
+
+// Back from the lesson: Swiftee swoops in from the right with her welcome ("Great job! Now, let's help Popo catch
+// some fish!") and flies off again, up and out.
+async function welcome(game, token) {
+  await swifteeArrives(game, STORY.welcome, token);
+  await clock.wait(300, token);
+  await swifteeDeparts(game, token, { up: true });
+  await clock.wait(250, token);
+}
+
+// ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back, Swiftee welcomes him and
+// the parallelogram nets begin (no warm-up after the lesson).
+async function backFromLesson(game) {
+  const token = newToken();
+  try {
+    state.phase = PHASE.INTRO;
+    game.instruct('');
+    game.popo.travelShift = AWAY;
+    await clock.wait(game.fx.reduced ? 150 : 500, token);
+    await waveIn(game, token);
+    await welcome(game, token);
+    const first = LEVELS.findIndex((l) => !l.warmup);
+    const before = game.prepareLevel(first);
+    game.spawnSchool();
+    await letNetDown(game, token, before);
+    game.beginPuzzle();
+  } catch (e) {
+    swallow(e);
+  }
+}
+
 // On to the next net: Popo winds the empty net up, rows to new waters when the level moves on,
 // and lets the net down in its new shape while the next school swims in. After the last net,
 // the celebration.
@@ -608,8 +834,9 @@ async function nextLevel(game, token) {
     await celebrate(game, token);
     return;
   }
-  // in the journey, after the first net: the lesson, while the game holds here (its chime came before it)
-  const lesson = await game.lessonBreak(token);
+  // after the warm-up, in the journey: the hook, Swiftee, the giant wave, the lesson and the welcome back
+  const hook = LEVELS[state.level].warmup && game.lessonAfter;
+  if (hook) await mystery(game, token);
   // the fish the net missed swim on and are joined by more for the next net (rowing to new
   // waters, they come along); only for the golden school do they swim off out of the sea, as
   // the golden fish swim in behind them
@@ -620,7 +847,7 @@ async function nextLevel(game, token) {
     game.strays.push(...state.fish.filter((f) => !f.gone));
     state.fish = [];
   }
-  if (!lesson) game.audio.play('complete');
+  if (!hook) game.audio.play('complete');
   await clock.wait(500, token);
   if (LEVELS[next].location !== state.locationIndex) await rowTo(game, LEVELS[next].location, token);
   const before = game.prepareLevel(next);
@@ -766,5 +993,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, startLevels, dropNet, rowTo, celebrate, closeCurtain, letNetDown });
+Object.assign(PopoGame, { banner, opening, startLevels, backFromLesson, dropNet, rowTo, celebrate, closeCurtain, letNetDown, mystery, swifteeArrives, swifteeDeparts, waveAway, waveIn, welcome, AWAY });
 })(window.PopoGame = window.PopoGame || {});

@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, schoolFor, Popo, Winch, Net, TUCK, opening, startLevels, dropNet, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
+const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, schoolFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds of idling between hints once one has been shown
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
@@ -132,8 +132,12 @@ class Game {
     // banner until the shell says
     this.embedded = !!(window.Journey && window.Journey.embedded);
     this.holding = false;
-    this.lessonAfter = false; // the lesson follows the first net (Game.lessonBreak)
-    this.breakEnds = null;    // the first net's break, while the lesson plays
+    this.lessonAfter = false; // the lesson follows the warm-up (sequences.js mystery, Game.lessonTime)
+    this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
+    this.breakEnds = null;    // the lesson's break, while it plays
+    this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
+    this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
+    this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -159,7 +163,8 @@ class Game {
     this.audio.startMusic();
     this.ui.hideStart();
     this.ui.showHud();
-    opening(this, { arrived: true });
+    if (this.afterLesson) { this.afterLesson = false; backFromLesson(this); }
+    else opening(this, { arrived: true });
     this.showIdleScene();
   }
 
@@ -175,7 +180,7 @@ class Game {
       if (this.ending.closing) return;
       this.ending.closing = true; // (once)
       this.ui.showAgain(false);
-      window.Journey.finish({ levels: LEVELS.length, fish: state.caught }); // inside the tap
+      window.Journey.finish({ levels: NETS, fish: state.caught }); // inside the tap
       return;
     }
     if (this.ending) {
@@ -197,9 +202,13 @@ class Game {
     this.transition = null;
     this.ui.showPause(false);
     this.ui.showAgain(false);
+    this.ui.hideNext();
     this.ui.hideHand();
     this.ui.showHandle(false);
     this.ui.setDrop('hidden');
+    this.swiftee = null;
+    this.wave = null;
+    this.awaitingNext = null;
     const muted = state.muted;
     resetProgress();
     state.muted = muted;
@@ -263,30 +272,50 @@ class Game {
     this.showIdleScene();
   }
 
-  // On from the banner as Play goes on (the narrator, the first school, the net, level 1): at once, or after the lesson
-  // (?start=lesson). args.lesson: the lesson follows the first net.
+  // On from the banner as Play goes on (the narrator, the first school, the warm-up net): at once, or after the lesson
+  // (?start=lesson, args.afterLesson: the wave brings Popo back and the parallelogram nets begin). args.lesson: the
+  // lesson follows the warm-up.
   story(args) {
     const held = this.holding;
     this.holding = false;
     this.lessonAfter = !!(args && args.lesson);
+    this.afterLesson = !!(args && args.afterLesson);
     this.audio.hold(false);
     if (state.phase === PHASE.TITLE) this.title.leave(); // (a ?dev=1 lesson jump came from the banner)
     else if (!held) { this.showIdleScene(); return; }   // (or from a level: it carries on)
     this.start();
   }
 
-  // In the journey the first net is the warm-up before the lesson: once its catch is in the bucket and the net wound
-  // up, the game holds there and tells the shell, which plays the lesson over it. Resolves (true) when the shell says
-  // `resume` (goOn), or at once (false) when no lesson follows.
-  async lessonBreak(token) {
-    if (!this.embedded || !this.lessonAfter || state.level !== 0) return false;
+  // In the journey the lesson comes once the giant wave has carried Popo off (sequences.js, mystery): the game tells
+  // the shell, which plays the lesson over its empty lake. Resolves (true) when the shell says `resume` (goOn), or at
+  // once (false) off the journey.
+  lessonTime(token) {
+    if (!this.embedded || !this.lessonAfter) return Promise.resolve(false);
     this.lessonAfter = false;
-    this.audio.play('complete'); // (the net's chime, heard before the lesson rather than after it)
-    await clock.wait(700, token);
     return new Promise((resolve) => {
       this.breakEnds = () => { if (isCurrent(token)) resolve(true); };
-      window.Journey.finish({ intro: true, levels: 1, fish: state.caught });
+      window.Journey.finish({ intro: true, warmup: true, fish: state.caught });
     });
+  }
+
+  // Next is up beside Swiftee: resolves on its tap (next)
+  awaitNext(token) {
+    return new Promise((resolve) => {
+      this.awaitingNext = { resolve, token };
+      this.nextNudge = 3;
+      this.ui.showNext();
+      this.audio.play('bloop');
+    });
+  }
+
+  next() {
+    const w = this.awaitingNext;
+    if (!w || state.paused) return;
+    this.awaitingNext = null;
+    this.ui.hideNext();
+    this.audio.play('ui');
+    this.endLine(false);
+    if (isCurrent(w.token)) w.resolve();
   }
 
   // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
@@ -303,7 +332,12 @@ class Game {
   backToTitle() {
     this.holding = false;
     this.lessonAfter = false;
+    this.afterLesson = false;
     this.breakEnds = null;
+    this.awaitingNext = null;
+    this.ui.hideNext();
+    this.swiftee = null;
+    this.wave = null;
     this.audio.hold(false);
     this.showIdleScene();
     if (this.ending && !this.ending.opening) { closeCurtain(this, { title: true }); return; }
@@ -472,7 +506,7 @@ class Game {
   }
 
   announceComplete() {
-    const detail = { levels: LEVELS.length, fish: state.caught };
+    const detail = { levels: NETS, fish: state.caught };
     window.dispatchEvent(new CustomEvent('popo:complete', { detail }));
     if (window.parent !== window) window.parent.postMessage({ type: 'popo:complete', ...detail }, '*');
   }
@@ -691,10 +725,11 @@ class Game {
     if (state.idleTime > delay) this.showHint();
   }
 
-  // The first hint reads the prompt again, word by word; later ones give the plate a nudge.
-  // The hand shows the drag once, on the first net only.
+  // A quiet spell brings the pointing hand, never the voice again: the instruction is said once, as its net comes
+  // down (as in Fishing Frenzy). The hand shows how the corner slides (two stops the right way, never all the way to
+  // its place) and the plate gives a nudge; on later nets the corner's marks pulse instead of a second hand.
   showHint() {
-    const drag = state.level === 0 && !this.handShown;
+    const drag = !this.handShown || state.level === 0;
     this.hint = { t: 0, drag };
     this.audio.play('hint');
     if (drag) {
@@ -703,8 +738,7 @@ class Game {
     } else {
       this.net.hintPulse = 2.4;
     }
-    if (this.hintShown) this.ui.pulseInstruction();
-    else this.reread(LEVELS[state.level].prompt);
+    this.ui.pulseInstruction();
     this.hintShown = true;
   }
 
@@ -773,7 +807,7 @@ class Game {
       const words = line.text.split(' ').map((raw) => ({ text: raw.replace(/\*/g, ''), em: raw.includes('*') }));
       const narrator = line.who === 'narrator';
       this.dialogue = {
-        words, who: line.who, cue: line.cue, cueDone: false, token, resolve, reject, settled: false,
+        words, who: line.who, cue: line.cue, cueDone: false, token, resolve, reject, stay: !!line.stay, settled: false,
         next: 0, wait: 0, held: 0,
         pace: narrator ? 0.21 : 0.17,
         hold: (narrator ? 1000 : 700) + line.text.length * (narrator ? 26 : 22),
@@ -797,6 +831,12 @@ class Game {
   }
 
   placeSpeech() {
+    const bird = this.dialogue && this.dialogue.who === 'swiftee' && this.swiftee;
+    if (bird) {
+      const h = bird.head();
+      this.ui.placeSpeech(h.x, h.y);
+      return;
+    }
     const head = this.popo.headTop();
     this.ui.placeSpeech(head.x + 36, head.y + 16);
   }
@@ -818,7 +858,7 @@ class Game {
     this.ui.revealWord(i, word.em);
     const cued = d.cue && !d.cueDone && d.cue.word <= i;
     if (!quiet && !cued) {
-      try { this.audio.play(word.em ? 'boing' : d.who === 'popo' ? 'talk' : 'word'); }
+      try { this.audio.play(word.em ? 'boing' : ({ popo: 'talk', swiftee: 'chirp' })[d.who] || 'word'); }
       catch (e) { /* Optional audio must not stall dialogue. */ }
     }
     if (cued) {
@@ -858,9 +898,14 @@ class Game {
       }
     } else {
       d.held += dt * 1000;
-      if (d.held >= d.hold) {
+      if (d.held >= d.hold && !d.stay) {
         this.endLine(false);
         return;
+      }
+      // a `stay` line (Swiftee's "Let's find out!") resolves once read, and stays up until Next
+      if (d.held >= d.hold && !d.settled) {
+        d.settled = true;
+        d.resolve();
       }
     }
     if (d.who !== 'narrator') this.placeSpeech();
@@ -873,6 +918,18 @@ class Game {
       this.audio.play('boing');
     } else if (name === 'fishIn') {
       this.fishIn();
+    } else if (name === 'exclaim') {
+      this.popo.react('happy', 1.2);
+      this.audio.play('woah');
+    } else if (name === 'wonder') {
+      this.popo.react('think', 2.4);
+      this.audio.play('hmm');
+    } else if (name === 'twirl' && this.swiftee) {
+      if (!this.fx.reduced) this.swiftee.twirl();
+      this.fx.sparkle(this.swiftee.x, this.swiftee.y - 40, 8);
+      this.audio.play('boing');
+    } else if (name === 'hop' && this.swiftee && this.dialogue && this.dialogue.who === 'swiftee') {
+      this.swiftee.hop();
     }
   }
 
@@ -974,6 +1031,7 @@ class Game {
     const colour = this.surfaceColor();
     if (!colour) return;
     const popo = this.popo;
+    if (popo.dip < -30 || Math.abs(popo.travelShift) > STAGE_W) return; // up on the giant wave, or away with it
     const ends = popo.raftEnds();
     const shift = popo.travelShift + popo.lean;
     const x0 = Math.floor(ends.left + shift - 34);
@@ -988,7 +1046,7 @@ class Game {
     const t = this.fx.t;
     const amp = this.water.ok ? (this.fx.reduced ? 0.35 : 1) : 0;
     const lap = this.fx.reduced ? 0.4 : 1.6;
-    const edge = (x) => this.waterline - surfaceWave(x, t) * amp + lap * Math.sin(x * 0.08 + t * 2.6) - top;
+    const edge = (x) => this.waterline - (this.wave ? this.wave.lift(x) : 0) - surfaceWave(x, t) * amp + lap * Math.sin(x * 0.08 + t * 2.6) - top;
     g.beginPath();
     g.moveTo(0, h);
     for (let x = 0; x <= w; x += 5) g.lineTo(x, edge(x0 + x));
@@ -1033,6 +1091,16 @@ class Game {
     this.popo.waterResponse = this.fx.raftResponse(this.popo.anchor.x);
     this.rideWaves(dt);
     if (this.poof && (this.poof.t += dt) > 0.6) this.poof = null;
+    if (this.swiftee) this.swiftee.update(dt);
+    // waiting for Next, Swiftee gives a little hop and a chirp now and then
+    if (this.awaitingNext && this.swiftee && !state.paused) {
+      this.nextNudge -= dt;
+      if (this.nextNudge <= 0) {
+        this.nextNudge = 3.4;
+        this.swiftee.hop();
+        this.audio.play('chirp');
+      }
+    }
     this.updateDialogue(dt);
     this.updateDelivery(dt);
     if (this.ending) this.updateEnding(dt);
@@ -1102,6 +1170,7 @@ class Game {
       this.syncWaterCanvas();
       const drawn = this.water.render({
         from: current, to: next, mix: k, time: this.fx.t, waterline: this.waterline, shift: SCENE_SHIFT,
+        hump: this.wave ? this.wave.hump() : null, // the giant wave lifts the lake (../shared/wave.js)
         plants: this.fx.plantsFor(index), amplitude: this.fx.reduced ? 0.35 : 1,
       });
       if (drawn) {
@@ -1205,7 +1274,9 @@ class Game {
       }
       f.draw(ctx); ctx.restore();
     }
+    if (this.wave) this.wave.drawFront(ctx); // the giant wave's foam and spray, over Popo
     this.drawRaftWater(ctx);
+    if (this.swiftee) this.swiftee.draw(ctx);
     this.drawPoof(ctx);
     this.fx.drawFront(ctx);
     this.drawConfetti(ctx);

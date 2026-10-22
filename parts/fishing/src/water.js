@@ -46,15 +46,26 @@ uniform float uMix;
 uniform float uAmp;
 uniform float uSurface;
 uniform float uShift;
+uniform vec4 uHump;
+uniform float uLean;
 uniform vec4 uPlants[8];
 uniform sampler2D uMaskFrom;
 uniform sampler2D uMaskTo;
 
-vec2 displace(vec2 p, float open) {
+// The giant wave (../shared/wave.js, as in Fishing Frenzy): the lake lifted into a travelling hump, uHump = (crest x,
+// height, back width, front width), a long gentle back and a short steep front; uLean leans its top over the face.
+float hump(float x) {
+  if (uHump.y <= 0.0) return 0.0;
+  float dx = x - uHump.x;
+  float w = dx < 0.0 ? uHump.z : uHump.w;
+  return uHump.y * exp(-(dx * dx) / (w * w));
+}
+
+vec2 displace(vec2 p, float open, float water) {
   float t = uTime;
   vec2 d = vec2(0.0);
   // rolling waves across the painted surface band
-  float s = open * uSurface * smoothstep(uWater - 75.0, uWater - 25.0, p.y) * (1.0 - smoothstep(uWater + 8.0, uWater + 40.0, p.y));
+  float s = open * uSurface * smoothstep(water - 75.0, water - 25.0, p.y) * (1.0 - smoothstep(water + 8.0, water + 40.0, p.y));
   d.y += s * (${WAVE_GLSL});
   d.x += s * (4.5 * sin(t * 0.33) + 1.8 * sin(p.x * 0.02 - t * 0.7));
   // refraction below the surface, stronger with depth
@@ -98,7 +109,19 @@ void main() {
   float oxTo = oxFrom + pan;
   float open = openWater(uMaskFrom, p - vec2(oxFrom, 0.0));
   if (uMix > 0.0) open = mix(open, openWater(uMaskTo, p - vec2(oxTo, 0.0)), smoothstep(oxTo, oxTo + ${OVERLAP.toFixed(1)}, p.x));
-  vec2 q = p + displace(p, open);
+  float hp = hump(p.x);
+  float water = uWater - hp; // the surface here, lifted by the giant wave
+  vec2 q = p + displace(p, open, water);
+  float inWave = 0.0;
+  if (hp > 0.5 && p.y >= water && p.y < uWater + 260.0) {
+    // inside the lifted water: the top of the water column stretches up to fill the hump
+    inWave = 1.0;
+    float f = (p.y - water) / (hp + 260.0);
+    q.y = uWater + f * 260.0 + (q.y - p.y);
+    // the crest leans forward over the face
+    float top = clamp(1.0 - (p.y - water) / max(1.0, hp), 0.0, 1.0);
+    q.x -= uLean * top * top * smoothstep(0.3, 1.0, hp / max(1.0, uHump.y));
+  }
   vec3 color;
   if (uMix <= 0.0) {
     color = painting(uFrom, q);
@@ -126,6 +149,23 @@ void main() {
   float ss = uSurface * smoothstep(uWater - 60.0, uWater - 20.0, p.y) * (1.0 - smoothstep(uWater + 4.0, uWater + 30.0, p.y));
   float glint = max(0.0, sin(p.x * 0.013 + t * 1.25)) * max(0.0, sin(p.x * 0.051 + t * 2.0));
   float sparkle = open * ss * 0.22 * glint * glint;
+  // the giant wave: glassy and sunlit at the crest, deeper below, with foam tumbling along the crest and streaming
+  // down the face, and a bright edge along its lifted surface
+  if (inWave > 0.5) {
+    float crest = smoothstep(0.25, 1.0, hp / max(1.0, uHump.y));
+    float downFace = (p.y - water) / max(1.0, hp);
+    color = mix(color, vec3(0.10, 0.40, 0.72), 0.28 * crest * smoothstep(0.15, 1.0, downFace));
+    color += vec3(0.22, 0.58, 0.58) * crest * (1.0 - smoothstep(0.0, 70.0, p.y - water)) * 0.55;
+    float front = smoothstep(-40.0, 80.0, p.x - uHump.x); // the breaking side
+    float fn = 0.5 + 0.25 * sin(p.x * 0.031 + t * 3.1 + sin(p.y * 0.07 - t * 2.0) * 2.5)
+                   + 0.25 * sin(p.x * 0.083 - t * 4.3 + sin(p.x * 0.011 + p.y * 0.05 + t) * 3.0);
+    float cap = 1.0 - smoothstep(0.0, 14.0 + 22.0 * crest, p.y - water); // solid foam along the crest
+    float band = 1.0 - smoothstep(0.0, 26.0 + 70.0 * crest, p.y - water);
+    float streaks = front * (1.0 - smoothstep(0.0, 0.8, downFace)) * smoothstep(0.6, 0.92, 0.5 + 0.5 * sin(p.x * 0.17 + sin(p.y * 0.045 + t * 0.8) * 3.0 + t * 1.3) * sin(p.x * 0.071 + p.y * 0.013 + 1.3));
+    float foam = crest * clamp(cap * 0.95 + band * smoothstep(0.45, 0.8, fn + 0.3 * crest) + 0.5 * streaks * crest, 0.0, 1.0);
+    color = mix(color, vec3(0.97, 0.99, 1.0), foam * 0.9);
+  }
+  color = mix(color, vec3(1.0), smoothstep(0.25, 1.0, hp / max(1.0, uHump.y)) * (1.0 - smoothstep(0.0, 3.0, abs(p.y - water))) * 0.75);
   color = color * (1.0 + shimmer * uAmp) + vec3(0.75, 0.93, 1.0) * (caustic + rays + sparkle) * uAmp;
   gl_FragColor = vec4(color, 1.0);
 }`;
@@ -154,7 +194,7 @@ class WaterScene {
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
-    for (const name of ['uFrom', 'uTo', 'uStage', 'uTime', 'uWater', 'uSeabed', 'uMix', 'uAmp', 'uSurface', 'uShift', 'uPlants', 'uMaskFrom', 'uMaskTo']) {
+    for (const name of ['uFrom', 'uTo', 'uStage', 'uTime', 'uWater', 'uSeabed', 'uMix', 'uAmp', 'uSurface', 'uShift', 'uHump', 'uLean', 'uPlants', 'uMaskFrom', 'uMaskTo']) {
       this.u[name] = gl.getUniformLocation(this.program, name);
     }
     gl.uniform1i(this.u.uFrom, 0);
@@ -235,8 +275,8 @@ class WaterScene {
 
   // from/to are background images; mix is the row progress (0 when not travelling).
   // surface 0 keeps the band around the waterline still (for art with things on the surface);
-  // shift draws the painting that far down the stage, with sky above it.
-  render({ from, to, mix, time, waterline, plants, amplitude, surface = 1, seabed = SEABED_Y, shift = 0 }) {
+  // shift draws the painting that far down the stage, with sky above it; hump is the giant wave, if one is rolling.
+  render({ from, to, mix, time, waterline, plants, amplitude, surface = 1, seabed = SEABED_Y, shift = 0, hump = null }) {
     const gl = this.gl;
     const fromTex = this.texture(from);
     const toTex = fromTex && this.texture(to || from);
@@ -260,6 +300,9 @@ class WaterScene {
     gl.uniform1f(this.u.uSurface, surface);
     gl.uniform1f(this.u.uSeabed, seabed);
     gl.uniform1f(this.u.uShift, shift);
+    const hm = hump && hump.h > 0 ? hump : { x: 0, h: 0, back: 1, front: 1, lean: 0 };
+    gl.uniform4f(this.u.uHump, hm.x, hm.h, hm.back, hm.front);
+    gl.uniform1f(this.u.uLean, hm.lean);
     const data = new Float32Array(32);
     plants.slice(0, 8).forEach((p, i) => data.set([p.left, p.right, p.top, p.root], i * 4));
     gl.uniform4fv(this.u.uPlants, data);

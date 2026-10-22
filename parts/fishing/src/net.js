@@ -400,7 +400,7 @@ class Net {
   glowFor(level) {
     const both = [{ sides: ['AB', 'CD'] }, { sides: ['BC', 'AD'] }];
     switch (level.type) {
-      case 'parallel': return level.sides[0] === 'AB' ? [{ sides: level.sides }] : both;
+      case 'parallel': return level.both ? both : [{ sides: level.sides }];
       case 'length': return [{ sides: [level.reference, level.side] }];
       case 'sides': return both;
       case 'angle': case 'supplementary': return [{ angles: [level.reference, level.vertex] }];
@@ -860,7 +860,7 @@ class Net {
   measure(ctx, c) {
     const L = this.level;
     if (!L) return;
-    const m = (name) => `${this.metresShown(name).toFixed(1)} m`;
+    const m = (name) => `${this.metresShown(name).toFixed(1)} cm`;
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     const slope = (name) => `${this.slopeShown(name)}°`.replace('-', '−');
     switch (L.type) {
@@ -872,15 +872,14 @@ class Net {
         for (const name of L.sides) this.drawLength(ctx, c, name, slope(name), name.includes(L.corner));
         break;
       case 'length':
-        this.drawLength(ctx, c, L.reference, `${L.metres[L.reference]} m`);
+        this.drawLength(ctx, c, L.reference, `${L.metres[L.reference]} cm`);
         this.drawLength(ctx, c, L.side, m(L.side), true);
         break;
-      case 'sides':
-        this.drawLength(ctx, c, 'AB', `${L.metres.AB} m`);
-        this.drawLength(ctx, c, 'AD', `${L.metres.AD} m`);
-        this.drawLength(ctx, c, 'CD', m('CD'), true);
-        this.drawLength(ctx, c, 'BC', m('BC'), true);
+      case 'sides': { // the two sides given, and the two the child sets (their opposites)
+        const given = Object.keys(L.metres);
+        for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, given.includes(name) ? `${L.metres[name]} cm` : m(name), !given.includes(name));
         break;
+      }
       case 'angle':
         this.drawAngle(ctx, c, L.reference, `${L.degrees}°`);
         this.drawAngle(ctx, c, L.vertex, deg(L.vertex), true);
@@ -1034,7 +1033,7 @@ class Net {
     const put = (from, to, name, value, sign, along = 0.5) => {
       const mid = lerp(from, to, along);
       const u = normalize(sub(to, from));
-      this.text(ctx, `${name} ${value.toFixed(1)} m`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 22, '#ffd84a', true);
+      this.text(ctx, `${name} ${value.toFixed(1)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 22, '#ffd84a', true);
     };
     const toward = (end) => (end === this.movable && !this.locked ? 0.38 : 0.5);
     put(a, o, 'AO', h.AO, 1, 1 - toward(0));

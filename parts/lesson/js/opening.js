@@ -247,13 +247,6 @@
       ctx.beginPath(); ctx.ellipse(0, 0, 30, 11, 0, 0, TAU); ctx.moveTo(-24, 0); ctx.lineTo(-44, -12); ctx.lineTo(-44, 12); ctx.closePath();
       ctx.fillStyle = 'rgba(10, 52, 120, 0.28)'; ctx.fill(); ctx.restore();
     });
-    if (S.dim > 0) {
-      ctx.save(); ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-      const dim = ctx.createRadialGradient(CARD.x, CARD.y, 300, CARD.x, CARD.y, 1100);
-      dim.addColorStop(0, 'rgba(4, 14, 40, ' + 0.46 * S.dim + ')'); dim.addColorStop(1, 'rgba(4, 14, 40, ' + 0.62 * S.dim + ')');
-      ctx.fillStyle = dim; ctx.fillRect(0, 0, W, H);
-      ctx.restore();
-    }
     S.bubbles.forEach((b) => {
       const a = Math.min(1, b.t / 0.4) * Math.max(0, Math.min(1, (b.y - 120) / 160));
       ctx.beginPath(); ctx.arc(b.x + Math.sin(b.t * 2 + b.ph) * b.sway, b.y, b.r, 0, TAU);
@@ -308,6 +301,13 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cu.width, cu.height);
     if (!S.on) return;
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+    // the lake dims round the card (on the curtain, which is drawn once while nothing on it moves, rather than over
+    // the moving scene every frame: a full-screen gradient each frame was a tablet's heaviest paint)
+    if (S.dim > 0) {
+      const dim = ctx.createRadialGradient(CARD.x, CARD.y, 300, CARD.x, CARD.y, 1100);
+      dim.addColorStop(0, 'rgba(4, 14, 40, ' + 0.46 * S.dim + ')'); dim.addColorStop(1, 'rgba(4, 14, 40, ' + 0.62 * S.dim + ')');
+      ctx.fillStyle = dim; ctx.fillRect(0, 0, W, H);
+    }
     const p = pearlScreen(), sx = p[0], sy = p[1];
     if (S.beam > 0) drawBeam(ctx, sx, sy, CARD.y + CARD.h / 2 - 20);
     const b = bubbleAt(sx, sy);
@@ -317,7 +317,7 @@
   }
 
   // ---------- the clock ----------
-  let last = 0, running = false, staticDrawn = false;
+  let last = 0, running = false, staticDrawn = false, dimDrawn = -1, slow = 0, skip = false;
   function update(dt) {
     S.t += dt;
     if (S.spawning && !reduced && Math.random() < dt * 30) {
@@ -348,9 +348,12 @@
     if (!canvases() || document.hidden) return;
     update(dt);
     if (window.Water && Water.dive) Water.dive(zoom());
-    drawScene();
+    // once the card is up, a slow device draws the shadow fish and bubbles every other frame (as js/water.js does)
+    slow = slow * 0.95 + dt * 0.05;
+    skip = S.open && slow > 0.024 ? !skip : false;
+    if (!skip) drawScene();
     // once the card is up and still, the curtain only needs drawing once
-    if (!(S.open && staticDrawn && !S.pops.length && S.flash <= 0 && S.beam <= 0)) { drawCurtain(); staticDrawn = S.open; }
+    if (!(S.open && staticDrawn && !S.pops.length && S.flash <= 0 && S.beam <= 0 && S.dim === dimDrawn)) { drawCurtain(); staticDrawn = S.open; dimDrawn = S.dim; }
   }
   function run() { if (running) return; running = true; last = 0; requestAnimationFrame(frame); }
 

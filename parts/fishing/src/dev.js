@@ -5,7 +5,7 @@
 if (new URLSearchParams(location.search).get('dev') !== '1') return;
 if (window.Journey && window.Journey.leaving) return; // opened on its own: on the way to the journey
 
-const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken } = PopoGame;
+const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken, mystery, waveIn, welcome, AWAY } = PopoGame;
 
 function game() {
   return window.popoDebug && window.popoDebug.game;
@@ -46,7 +46,29 @@ const JUMPS = [
     g.title.replay();
   }],
   ['Intro', () => { const g = game(); begin(g); g.restart(); }],
-  ...LEVELS.map((lv, i) => [`L${i + 1}`, () => level(i)]),
+  // the warm-up net, then each parallelogram net (L1 to L8)
+  ...LEVELS.map((lv, i) => [lv.warmup ? 'Warm-up' : `L${i}`, () => level(i)]),
+  // the warm-up's end: the big fish, Swiftee's "Let's find out!", Next and the giant wave (and, off the journey, the
+  // wave straight back and her welcome)
+  ['Hook', () => {
+    const g = game();
+    level(0);
+    g.net.toStop(0);
+    g.ui.showHandle(false);
+    g.ui.setDrop('hidden');
+    const token = newToken();
+    mystery(g, token).catch(() => {});
+  }],
+  ['Wave in', () => {
+    const g = game();
+    level(LEVELS.findIndex((l) => !l.warmup));
+    g.ui.showHandle(false);
+    g.ui.setDrop('hidden');
+    g.popo.travelShift = AWAY;
+    const token = newToken();
+    state.phase = PHASE.TRANSITIONING;
+    waveIn(g, token).then(() => welcome(g, token)).then(() => g.beginPuzzle()).catch(() => {});
+  }],
   ['Solve', () => {
     const g = game();
     if (state.phase !== PHASE.PUZZLE_READY) level(state.level);

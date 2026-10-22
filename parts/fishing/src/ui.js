@@ -66,7 +66,7 @@ class UI {
       instruction: $('instruction'), instructionText: $('instruction-text'), instructionSay: $('instruction-say'), drop: $('btn-drop'),
       sound: $('btn-sound'), pause: $('btn-pause'),
       pauseOverlay: $('overlay-pause'), resume: $('btn-resume'), restart: $('btn-restart'),
-      again: $('btn-again'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
+      again: $('btn-again'), next: $('btn-next'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
       rotate: $('rotate-hint'), speech: $('speech'), caption: $('caption'),
     };
     this.handlers = {};
@@ -83,6 +83,7 @@ class UI {
     this.el.restart.addEventListener('click', h('restart'));
     this.el.drop.addEventListener('click', h('drop'));
     this.el.again.addEventListener('click', h('again'));
+    this.el.next.addEventListener('click', h('next'));
     this.wireHandle();
     // the arrows beside the knob: a tap moves the corner one stop that way
     for (const [el, steps] of [[this.el.stepBack, -1], [this.el.stepOn, 1]]) {
@@ -203,7 +204,17 @@ class UI {
   }
 
   // --- story lines -----------------------------------------------------------
-  // A story line: Popo's speech bubble, anchored at a stage point, or the narrator's caption.
+  // Next (the warm-up's end, as in Fishing Frenzy): it pops in beside Swiftee's "Let's find out!" and moves the story on
+  showNext() {
+    this.el.next.hidden = false;
+    this.el.next.focus({ preventScroll: true });
+  }
+
+  hideNext() {
+    this.el.next.hidden = true;
+  }
+
+  // A story line: Popo's or Swiftee's speech bubble, anchored at a stage point, or the narrator's caption.
   // The caption lays its words out hidden, so its plate never changes size. The bubble lays the
   // whole line out once, balanced over its lines, and pins each break there; then it starts
   // small and grows word by word into exactly that shape, with no empty space ahead.
@@ -219,6 +230,7 @@ class UI {
       line.appendChild(span);
       return span;
     });
+    el.classList.toggle('swiftee', who === 'swiftee');
     el.hidden = false;
     if (el === this.el.speech) this.pinBreaks(el, line);
     el.classList.remove('pop', 'bump');

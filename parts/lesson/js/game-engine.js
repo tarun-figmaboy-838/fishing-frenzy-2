@@ -697,23 +697,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur();
     return this.state.started && !this.state.done && this.asks(st);
   }
+  // A quiet spell brings the pointing hand (armHand), never the voice again: an instruction is said once, as its screen
+  // opens (as in Fishing Frenzy's lesson). (The screens' idle lines are not said.)
   armIdle() {
     this.armHand();
     if (this.idleId) { clearTimeout(this.idleId); this.T.delete(this.idleId); this.idleId = null; }
-    if (!this.needsInput() || this.state.swAway || this.cur().auto) return;
-    const tok = this.stepTok;
-    this.idleId = this.tm(() => {
-      this.idleId = null;
-      if (tok !== this.stepTok || !this.needsInput()) return;
-      if (this.state.swAway) return; // Swiftee is out measuring on the shape: no spoken reminder
-      // (nor in the beat after a line ends: a tip's own end restores the question then)
-      if (this.drag || this.walking || this.state.talking || (this.state.fill || {}).open || performance.now() - (this.lineEnd || 0) < 1000) { this.armIdle(); return; }
-      if ((this.idleCount || 0) >= CONFIG.timing.idleMaxHints) return;
-      this.idleCount = (this.idleCount || 0) + 1;
-      const t = this.cur().idle;
-      if (!t) return; // a question with no idle line (screens 5, 16): the hand / glowing answers nudge instead
-      this.interject({ m: CONFIG.swiftee.nudge, t: t });
-    }, CONFIG.timing.idleMs);
   }
   poke() { this.idleCount = 0; this.hideHand(); this.armIdle(); }
 

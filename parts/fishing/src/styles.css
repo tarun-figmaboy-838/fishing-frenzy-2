@@ -299,6 +299,9 @@ html, body {
   transform: skewX(-24deg);
 }
 .speech::before { left: 0.75em; bottom: -0.88em; border-width: 0.88em 0.95em 0 0; border-top-color: #3b1d00; }
+/* Swiftee's bubble wears her teal (as in Fishing Frenzy) */
+.speech.swiftee { border-color: #0f6e6a; box-shadow: 0 0.16em 0 #0f6e6a, 0 0.5em 1.2em rgba(0, 20, 60, 0.25); }
+.speech.swiftee::before { border-top-color: #0f6e6a; }
 .speech::after { left: 0.95em; bottom: -0.58em; border-width: 0.68em 0.62em 0 0; border-top-color: #fff8e8; }
 .speech.pop { animation: speech-pop 0.45s cubic-bezier(0.2, 1.7, 0.4, 1); }
 @keyframes speech-pop {

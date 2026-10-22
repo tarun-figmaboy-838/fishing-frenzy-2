@@ -53,6 +53,8 @@
   var glCv = null, GL = null, PAINT = null, glOn = false;
   // found once the page's markup is drawn (the template runtime renders it after this script runs), and again if the
   // canvas is replaced
+  // (the lake's water pass draws at half size, stretched to the stage: soft painted water, mostly behind the card,
+  // looks the same, and a tablet's GPU shades a quarter of the pixels; canvas.water-gl in index.html)
   function glScene() {
     var c = document.querySelector('canvas.water-gl');
     if (c !== glCv) {

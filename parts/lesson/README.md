@@ -70,7 +70,7 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   step back; named angles and corners grow. Parallel arrows, equal ticks and name tags arrive on their words.
 - **Checks**: answers appear once the question has been asked; a wrong answer shakes with a tip and can be tried again;
   a right one turns green with the correct sound and confetti. A checkpoint counts if it was right first time.
-- **Idle**: the hand shows what to tap or drag after 8 s with no touch; after 9 s Swiftee says the screen's idle hint
+- **Idle**: the hand shows what to tap or drag after 8 s with no touch; an instruction is said once, never again (as in Fishing Frenzy)
   (at most 3 times).
 
 ## Folder

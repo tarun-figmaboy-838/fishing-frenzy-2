@@ -13,7 +13,7 @@ const CHORDS = [
   [196.0, 246.94, 293.66, 392.0],    // G
 ];
 
-// Must match voice_key() in tools/build-voice.py.
+// A line's key in voice-data.js: who it is, and its text without its *stress* marks, in lower case.
 function voiceKey(who, text) {
   return `${who}:${text.replace(/\*/g, '').replace(/…/g, '...').replace(/’/g, "'").split(/\s+/).filter(Boolean).join(' ')}`.toLowerCase();
 }
@@ -33,30 +33,40 @@ class AudioEngine {
     this.voiceSource = null;
   }
 
-  // Recorded voice lines (tools/build-voice.py), decoded up front with an offline context so
-  // they are ready before the first tap. Decoded buffers play in the live context later.
+  // Recorded voice lines (voice-data.js), decoded with an offline context so they are ready before they are needed.
+  // A line is embedded (a data URL: decoded before the banner is ready) or the lesson's own clip ('<path>#<seconds>':
+  // fetched behind the banner, played from where its first word starts, past the clip's quiet lead-in).
   prepareVoices(data) {
     const entries = Object.entries(data || {});
     const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (!entries.length || !OAC) return Promise.resolve();
     const decoder = new OAC(1, 1, 24000);
-    return Promise.all(entries.map(([key, url]) => {
-      const bin = atob(url.slice(url.indexOf(',') + 1));
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
-      return new Promise((resolve) => decoder.decodeAudioData(bytes.buffer, resolve, () => resolve(null)))
-        .then((buf) => { if (buf) this.voiceBuffers.set(key, buf); });
-    }));
+    const decode = (bytes) => new Promise((resolve) => decoder.decodeAudioData(bytes, resolve, () => resolve(null)));
+    const embedded = [];
+    for (const [key, src] of entries) {
+      if (src.startsWith('data:')) {
+        const bin = atob(src.slice(src.indexOf(',') + 1));
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+        embedded.push(decode(bytes.buffer).then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: 0 }); }));
+      } else {
+        const [url, at] = src.split('#');
+        fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && decode(bytes))
+          .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration) }); })
+          .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
+      }
+    }
+    return Promise.all(embedded);
   }
 
   // Plays a recorded line and returns its length in seconds (0 when there is no recording,
-  // so the caller falls back to the synthesized voice). The music ducks under the voice.
+  // so the line shows at a reading pace). The music ducks under the voice.
   speak(who, text) {
-    const buf = this.voiceBuffers.get(voiceKey(who, text));
-    if (!this.ctx || !buf || this.ctx.state !== 'running') return 0;
+    const v = this.voiceBuffers.get(voiceKey(who, text));
+    if (!this.ctx || !v || this.ctx.state !== 'running') return 0;
     this.stopVoice();
     const src = this.ctx.createBufferSource();
-    src.buffer = buf;
+    src.buffer = v.buf;
     src.connect(this.voice);
     const now = this.ctx.currentTime;
     this.music.gain.cancelScheduledValues(now);
@@ -66,9 +76,9 @@ class AudioEngine {
       this.voiceSource = null;
       this.music.gain.setTargetAtTime(0.5, this.ctx.currentTime, 0.25);
     };
-    src.start();
+    src.start(now, v.lead);
     this.voiceSource = src;
-    return buf.duration;
+    return v.buf.duration - v.lead;
   }
 
   stopVoice() {
@@ -332,6 +342,10 @@ class AudioEngine {
       case 'hint': this.tone({ freq: 880, dur: 0.18, gain: 0.07 }); break;
       case 'talk': { const f = 250 + Math.random() * 130; this.tone({ freq: f, to: f * (1.1 + Math.random() * 0.25), type: 'triangle', dur: 0.07, gain: 0.08 }); break; }
       case 'narrate': this.bell(523.25, now, 0.07); this.bell(783.99, now + 0.12, 0.05); break;
+      case 'splashBig': this.noise({ dur: 0.55, type: 'lowpass', freq: 1400, to: 300, gain: 0.45 }); this.tone({ freq: 700, to: 200, dur: 0.25, gain: 0.14 }); this.tone({ freq: 500, to: 180, t: now + 0.12, dur: 0.3, gain: 0.1 }); break;
+      case 'hmm': this.tone({ freq: 330, to: 290, type: 'triangle', dur: 0.2, gain: 0.08 }); this.tone({ freq: 290, to: 380, t: now + 0.2, type: 'triangle', dur: 0.24, gain: 0.08 }); break;
+      case 'chirp': { const f = 1500 + Math.random() * 500; this.tone({ freq: f, to: f * 1.45, type: 'sine', dur: 0.06, gain: 0.06 }); this.tone({ freq: f * 1.3, to: f * 1.05, t: now + 0.06, type: 'sine', dur: 0.05, gain: 0.04 }); break; }
+      case 'flap': this.noise({ dur: 0.12, type: 'bandpass', freq: 1300, to: 520, q: 0.9, gain: 0.07 }); break;
       case 'woah': this.tone({ freq: 380, to: 1150, type: 'sine', dur: 0.34, gain: 0.11 }); this.tone({ freq: 1150, to: 720, t: now + 0.32, type: 'sine', dur: 0.3, gain: 0.08 }); break;
       case 'leap': this.noise({ dur: 0.5, type: 'bandpass', freq: 400, to: 2600, q: 1.1, gain: 0.22 }); this.tone({ freq: 300, to: 760, dur: 0.4, gain: 0.08, type: 'triangle' }); break;
       // a catch: Fishing Frenzy's party toot as the bubble confetti bursts

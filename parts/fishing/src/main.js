@@ -19,6 +19,7 @@ ui.on('nudge', (dx, dy) => game.onNudge(dx, dy));
 ui.on('step', (steps) => game.onStep(steps));
 ui.on('drop', () => game.onDrop());
 ui.on('again', () => { audio.play('ui'); game.playAgain(); });
+ui.on('next', () => game.next());
 document.getElementById('stage').addEventListener('pointerdown', (e) => {
   if (e.target.closest('button, .hud, .overlay')) return;
   if (game.skipDialogue()) return;
@@ -59,10 +60,10 @@ if (params.has('debug') || params.get('dev') === '1') {
 }
 
 // In the journey (index.html at the root; shell/bridge.js) this banner is the front page. Its Play tells the shell
-// (Game.handOver), and the shell's word takes the game on: story (on as Play goes; args.lesson: the lesson follows
-// the first net, Game.lessonBreak), quiet (the lesson is dissolving in over it: its sound fades), hide (covered),
-// resume (the lesson is over: on with the next net), title (the banner again, after Play Again), wake (a ?dev=1
-// jump: drawing again).
+// (Game.handOver), and the shell's word takes the game on: story (on as Play goes; args.lesson: the lesson follows the
+// warm-up net, sequences.js mystery; args.afterLesson: ?start=lesson's lesson is over), quiet (the lesson is dissolving
+// in over it: its sound fades), hide (covered), resume (the lesson is over: the giant wave brings Popo back, and on
+// with the nets), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
 if (journey) {
   journey.onCommand((name, args) => {
     if (name === 'quiet') audio.fadeOut();

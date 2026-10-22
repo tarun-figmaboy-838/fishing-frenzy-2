@@ -8,8 +8,12 @@ presses Drop Net when fish swim under it. A right net locks with its praise on t
 nets whoever is under it as it lands, closes into a bag (a potli) around them as it is hauled
 up, and the fish hop into the bucket; one that lands on nothing comes up empty and can be
 dropped again. A wrong net goes down all the same, but the catch thrashes, tears through the
-bag and drops back into the sea. Eight nets teach the properties one by one, then the end
-screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and "The End" pops in.
+bag and drops back into the sea. It is part 2 of Fishing Frenzy and plays like part 1: a warm-up net
+(a rectangle, which the child already knows), then the hook - a big fish knocks the net out of square into a shape
+Popo has never seen, Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo off to the
+lesson; after it the wave brings him back, Swiftee welcomes him, and eight nets teach the parallelogram's properties
+one by one, then the end screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and "The End" pops
+in. Only two voices are heard: Popo's, and Swiftee's for everything else.
 
 ## Run
 
@@ -44,26 +48,32 @@ journey` part of `src/game.js`:
   it; the banner clears away as ever (Play bursts, the logo pops away, the fish leap home), and
   the shell's commands (`main.js`) take it from there:
   - `story` — at once: the game goes on as Play does on its own (the narrator, the first school,
-    the net, level 1). `args.lesson`: the lesson follows the first net.
-  - After the first net's catch is in the bucket and the net wound up (`Game.lessonBreak`, from
-    `nextLevel` in `src/sequences.js`), its chime plays and the game holds there and tells the
-    shell (`Journey.finish({ intro: true, levels: 1, fish })`); the lesson dissolves in over it.
+    the warm-up net). `args.lesson`: the lesson follows the warm-up; `args.afterLesson`
+    (`?start=lesson`): the lesson came first, so the wave brings Popo in and the nets begin.
+  - After the warm-up's catch (`mystery` in `src/sequences.js`, from `nextLevel`): the big fish
+    knocks the net out of square ("Woah! I haven't seen that one before!"), Swiftee swoops in
+    with "Let's find out!" and Next comes up. On Next she flies off, the net winds up and the
+    giant wave (`../shared/wave.js`, the water pass's `uHump`) carries Popo away (`waveAway`);
+    with the lake empty the game tells the shell (`Game.lessonTime`:
+    `Journey.finish({ intro: true, warmup: true, fish })`) and the lesson dissolves in over it.
   - `quiet` — the lesson is dissolving in: every sound fades away with it (`AudioEngine.fadeOut`).
   - `hide` — the lesson covers the game: it stops drawing (its sequences wait with the clock),
     and every sound stops — music, effects, a voice line — and its own AudioContext sleeps;
     nothing (a tap, the tab coming back) wakes it until the game is shown again
     (`AudioEngine.hold`).
-  - `resume` — the lesson is over: the game wakes (its music fading back in) and goes on to its
-    second net while the lesson dissolves away (`Game.goOn`), and on to the eighth.
+  - `resume` — the lesson is over: the game wakes (its music fading back in) while the lesson
+    dissolves away (`Game.goOn`); the wave rolls in from the left with Popo on its crest and
+    sets him down on his spot (`waveIn`), Swiftee swoops in with "Great job! Now, let's help
+    Popo catch some fish!" (`welcome`), and the eight parallelogram nets follow.
   - `title` — after Play Again: the end screen's circle closes and opens on the banner from its
     start (`closeCurtain(game, { title: true })`), ready for the next Play.
   - `wake` — a dev panel jump: the game draws again (with its music, if it had it) without its
     story.
 - **Play Again** at the end calls `Journey.finish({ levels, fish })` inside its tap; the shell
   answers with `title` and loads a fresh lesson behind the banner.
-- `?start=fishing` (the journey's) makes the first Play play all eight nets in a row (no lesson);
-  `?start=lesson` brings the lesson first (the game holds where its banner cleared away), then
-  `story` and all eight nets.
+- `?start=fishing` (the journey's) makes the first Play play the warm-up and all eight nets in a
+  row (no lesson, no hook); `?start=lesson` brings the lesson first (the game holds where its
+  banner cleared away), then the wave brings Popo in, Swiftee welcomes him and all eight nets.
 - With `?dev=1` the game's jumps (all but Title: the panel's Front page is the banner) go to the
   journey's one panel through `Journey.devScreens`; the game shows no panel of its own.
 - The journey shows one rotate hint for a phone held upright, so the game shows none of its own
@@ -89,7 +99,8 @@ The game is deployed as part of the journey: the repository's root is the static
   saved up). Play pops the logo away, the fish leap back into the lake, and the story begins
   with Popo already in place.
 - **Flow.** Banner → Play → three narrator lines, the first school swims in on the last one →
-  Popo lets the net down and it opens into its first frame → level 1. After each catch bright
+  Popo lets the net down and it opens into its first frame → the warm-up (in the journey: then
+  the hook, the wave, the lesson, the wave back and Swiftee's welcome) → the eight nets. After each catch bright
   bubble confetti bursts out of the bag with a party toot (Fishing Frenzy's cheer, no words),
   the fish hop into the bucket and fly up to the counter (top left), and Popo winds the empty
   net up into its bundle, rows on when the next level is in new waters (levels 1–2, 3–4, 5–6
@@ -104,14 +115,15 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Phases** (`src/state.js`): one phase at a time decides what input is allowed: title,
   intro, puzzleReady, dragging, netLowering, catching, netRaising, netBreaking,
   levelComplete, transitioning, gameComplete. Pause is a flag over the top.
-- **Levels** (`src/levels.js`): eight nets, each teaching one property with its own check
-  (`type`): 1 make AB parallel to CD, 2 make BC parallel to AD, 3 make CD 6 m like AB, 4 place
-  C so CD = AB and BC = AD, 5 make angle C equal angle A (70°), 6 make angle B supplementary
-  to angle A (65°), 7 make the diagonals bisect each other, 8 make the net a parallelogram
-  with no property named. Each level gives the solved net's width, height and lean (or the
+- **Levels** (`src/levels.js`): the warm-up (two right angles: the net becomes a rectangle),
+  then eight nets, each teaching one property with its own check (`type`) and asking it as
+  the lesson asks it, in centimetres: 1 drag B to make BC parallel to AD, 2 make the other
+  pair (AB, CD) parallel too, 3 AB = 7 cm: CD, 4 AB = 8 cm and BC = 5 cm: CD and AD, 5 ∠A =
+  68°: ∠C, 6 ∠A = 72°: ∠B, 7 each diagonal halved by the other, 8 the definition of a
+  parallelogram, with no property named. Each level gives the solved net's width, height and lean (or the
   angle at A), the corner that moves, the side or diagonal its track runs along (`along`; a
   diagonal runs toward the opposite corner) and how many stops from its place it starts, the
-  side whose length in metres sets the measurement scale, its fish (3, 4, 4, 5, 5, 6, 7, 9;
+  side whose length in centimetres sets the measurement scale, its fish (3, 3, 4, 4, 5, 5, 6, 7, 9;
   the sea holds three times as many, at most 22), the prompt, the praise and the hint a wrong
   net gives. The final level's school is rare: golden, quicker, trailing glints.
 - **Geometry** (`src/geometry.js`, `src/net.js`): plain vector helpers (parallel by the
@@ -153,14 +165,17 @@ The game is deployed as part of the journey: the repository's root is the static
   of the sea as the golden fish swim in behind them. No fish ever vanishes or pops into view; a
   whole new school (the first, the golden one) rushes in, its lanes fast for a moment, so the
   sea fills at once.
-- **Hints.** Left alone, the first hint reads the prompt again, each word bouncing in place as
-  it is said; on the first net the hand also shows how the corner slides, two stops the right
-  way (never all the way to its place), once; later hints nudge the plate and swell the measurements
+- **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
+  alone, the hand shows how the corner slides, two stops the right way (never all the way to
+  its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the measurements
   (the supplementary level shows 65° + ? = 180° once the child starts), so the game teaches
   rather than solves itself. No hint says whether the net is right; Drop Net does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
-  caught this game, bouncing as each fish lands in the bucket, and a dot for each net (done
-  ones filled, the one being fished ringed).
+  caught this game, bouncing as each fish lands in the bucket.
+- **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
+  other line (the narrator's, every prompt, praise and hint) is Swiftee's studio voice - Fishing
+  Frenzy's own clips, and the lesson's (`../lesson/assets/vo/`, loaded by path and played from
+  their first word). Each net's lines are worded exactly as she recorded them.
 - **HUD.** Narration follows the Fishing Frenzy games: the instruction (prompt, praise, hint)
   and the narrator's lines sit on one translucent navy plate with a faint gold rim, white
   text and the key word in gold, fitted to the words. The instruction is always one line (a
