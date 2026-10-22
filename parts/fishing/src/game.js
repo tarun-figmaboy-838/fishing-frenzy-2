@@ -139,6 +139,7 @@ class Game {
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
     this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
+    this.camera = { zoom: 1, pan: 1 }; // the lesson's camera over this lake (setCamera)
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -161,6 +162,7 @@ class Game {
   start() {
     this.audio.init();
     this.audio.resume();
+    this.audio.fetchLaterVoices();
     this.audio.startMusic();
     this.ui.hideStart();
     this.ui.showHud();
@@ -268,6 +270,30 @@ class Game {
     this.audio.hold(true);
   }
 
+  // In the journey the lesson plays over this lake, as Fishing Frenzy's plays over its game's: the game goes on drawing
+  // its water and fish under the lesson's card, silent, its buttons away and Popo off with the giant wave (he is
+  // already, after the warm-up; with ?start=lesson or a dev jump he goes now), and the lesson's camera moves its view.
+  backdrop() {
+    this.audio.hold(true);
+    this.ui.el.hud.hidden = true;
+    this.ui.showHandle(false);
+    this.ui.setDrop('hidden');
+    this.ui.hideHand();
+    this.endLine();
+    this.popo.travelShift = PopoGame.AWAY;
+    this.showIdleScene();
+  }
+
+  // The lesson's camera: its glide down from this view to the sand (pan 1 -> 0: the painting drawn up to SCENE_SHIFT
+  // higher, so its sea floor shows) and its dive after the card (zoom, about the bottom middle of the stage).
+  setCamera({ zoom = 1, pan = 1 } = {}) {
+    this.camera = { zoom, pan };
+    const k = this.stage.scale, scene = this.ui.el.scene.style;
+    if (zoom === 1) { scene.transform = ''; return; }
+    scene.transformOrigin = `${((STAGE_W / 2) * k).toFixed(1)}px ${(STAGE_H * k).toFixed(1)}px`;
+    scene.transform = `scale(${zoom.toFixed(4)})`;
+  }
+
   // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
   wake() {
     this.audio.hold(false);
@@ -322,6 +348,8 @@ class Game {
 
   // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
   goOn() {
+    this.setCamera({ zoom: 1, pan: 1 });
+    this.ui.el.hud.hidden = false;
     this.audio.hold(false);
     this.showIdleScene();
     const ends = this.breakEnds;
@@ -1183,14 +1211,16 @@ class Game {
     const index = LOCATIONS[state.locationIndex].background;
     const current = assets.backgrounds[index];
     if (!current) { preloadBackground(index); return 0; }
+    const lift = SCENE_SHIFT * (1 - this.camera.pan);
     const k = this.transition ? this.transition.k : 0;
     const next = this.transition ? assets.backgrounds[LOCATIONS[this.transition.to].background] : null;
     if (this.water.ok) {
       this.syncWaterCanvas();
       const drawn = this.water.render({
-        from: current, to: next, mix: k, time: this.fx.t, waterline: this.waterline, shift: SCENE_SHIFT,
+        from: current, to: next, mix: k, time: this.fx.t, waterline: this.waterline - lift, shift: SCENE_SHIFT - lift,
         hump: this.wave ? this.wave.hump() : null, // the giant wave lifts the lake (../shared/wave.js)
-        plants: this.fx.plantsFor(index), amplitude: this.fx.reduced ? 0.35 : 1,
+        plants: lift ? this.fx.plantsFor(index).map((p) => ({ ...p, top: p.top - lift, root: p.root - lift })) : this.fx.plantsFor(index),
+        amplitude: this.fx.reduced ? 0.35 : 1,
       });
       if (drawn) {
         this.water.show(true);
@@ -1257,6 +1287,9 @@ class Game {
   draw() {
     const ctx = this.stage.begin();
     ctx.clearRect(0, 0, STAGE_W, STAGE_H);
+    const lift = SCENE_SHIFT * (1 - this.camera.pan); // (the lesson's camera, gliding down to the sand)
+    ctx.save();
+    if (lift) ctx.translate(0, -lift);
     const offset = this.drawBackground(ctx);
     this.fx.drawWater(ctx, offset, state.fish);
     for (const f of this.ambient) f.draw(ctx);
@@ -1300,6 +1333,7 @@ class Game {
     this.fx.drawFront(ctx);
     this.drawConfetti(ctx);
     this.drawFliers(ctx);
+    ctx.restore();
     if (this.title.visible) this.title.draw(ctx);
     this.drawCurtain();
   }

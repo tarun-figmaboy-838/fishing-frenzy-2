@@ -30,6 +30,7 @@ class AudioEngine {
     this.timer = null;
     this.effectSources = new Set();
     this.voiceBuffers = new Map();
+    this.laterVoices = []; // the lesson's clips, fetched on Play (fetchLaterVoices)
     this.voiceSource = null;
   }
 
@@ -50,13 +51,24 @@ class AudioEngine {
         for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
         embedded.push(decode(bytes.buffer).then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: 0 }); }));
       } else {
-        const [url, at] = src.split('#');
-        fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && decode(bytes))
-          .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration) }); })
-          .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
+        this.laterVoices.push([key, src]);
       }
     }
+    this.decodeVoice = decode;
     return Promise.all(embedded);
+  }
+
+  // The lesson's clips the nets borrow, fetched once Play is tapped (they are first needed after the lesson), so the
+  // banner loads without them.
+  fetchLaterVoices() {
+    const later = this.laterVoices;
+    this.laterVoices = [];
+    for (const [key, src] of later) {
+      const [url, at] = src.split('#');
+      fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && this.decodeVoice(bytes))
+        .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration) }); })
+        .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
+    }
   }
 
   // Plays a recorded line and returns its length in seconds (0 when there is no recording,

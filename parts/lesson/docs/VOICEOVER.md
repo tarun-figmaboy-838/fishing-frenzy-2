@@ -62,12 +62,13 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 
 1. **Lookup** by the exact plain text the bubble shows (line breaks as spaces); a voice-only line (`keep`) by its `s`.
 2. **One reused audio element.** In the journey it is the shell's, unlocked by the Play tap on the front page, so the
-   lesson is heard from its first line; on the lesson's own page (`?solo`) its Next tap unlocks it. Every clip is
-   prefetched quietly, one at a time, from the start. Each clip starts 60 ms before its first word (a `#t=` media
-   fragment): the studio's clips open with ~0.3 s of quiet, which Fishing Frenzy trims from its own.
+   lesson is heard from its first line; on the lesson's own page (`?solo`) its Next tap unlocks it. A screen's clips,
+   and the next screen's, are fetched quietly, one at a time, as it opens (`VO.want`), so the voice-over never loads
+   all at once. Each clip starts 60 ms before its first word (a seek once its header has loaded; Safari rounded a `#t=`
+   fragment to the next second): the studio's clips open with ~0.3 s of quiet, which Fishing Frenzy trims from its own.
 3. **Words when they are said:** `vo_build.js` measures every clip's loudness (10 ms steps): where speech starts and
    ends (each clip opens with ~0.3 s of silence) and its pauses, which it matches in order to the line's commas and full
-   stops (88 of 97 found); inside each phrase the words share the time by their spoken length. The map stores each
+   stops, weighing each pause's length as well as its place; inside each phrase the words share the time by their spoken length. The map stores each
    word's start, and the game reveals a word when the clip's own playhead (`currentTime`) reaches it, so start-up lag
    or buffering never puts words ahead of the voice (measured: within ~0.05 s). Every word cue - side glows, cards,
    pulses, the angle focus - fires on its word. A line without timings falls back to its share of the spoken

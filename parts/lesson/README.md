@@ -84,8 +84,9 @@ js/
   lesson-data.js        every screen as data, in play order (the comment at its top lists every option)
   game-engine.js        the lesson: narration, flow, geometry, drags, checks, values for the markup, the journey hooks
   motion.js             the GSAP animations a screen plays (cleared on every screen change)
-  opening.js            the seashell, the pearl's bubble and the card, on the lake (water.js: the lake itself, the
-                        fishing game's own Snowy Bay through its water pass, water-gl.js)
+  opening.js            the seashell, the pearl's bubble and the card, on the lake. In the journey the lake is the
+                        fishing game's own, live under this see-through page (water.js passes the camera to it);
+                        on its own page (?solo) water.js draws the same lake (lake-data.js, water-gl.js)
   swiftee.js, swiftee-manifest.js, walker.js    Swiftee and her measuring walk
   costume.js, dive-mask.js, mask-anchors.js, scarf-occlusion.js    her diving mask
   voice.js, vo_lines.js the voice-over player and its generated line -> clip map

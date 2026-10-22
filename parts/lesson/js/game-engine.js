@@ -76,8 +76,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.sw.warm(want.filter((x, i) => want.indexOf(x) === i));
     }
     // on its own page the lesson waits on the lake for its Next tap: browsers only allow sound after a tap, so starting
-    // on load played screen 1 silently and it moved on before the learner had touched anything. The clips load meanwhile.
-    if (window.VO) VO.prefetch();
+    // on load played screen 1 silently and it moved on before the learner had touched anything. Its first clips load
+    // meanwhile.
+    this.wantVoice(0);
     if (JOURNEY) {
       if (JOURNEY.params.has('debug')) window.lessonDebug = this; // for tests (as the fishing game's popoDebug)
       if (JOURNEY.params.get('dev') === '1') JOURNEY.devScreens(this.steps().map((x, i) => ({ label: (i + 1) + ' ' + this.screenName(x), run: () => this.jumpTo(i) })));
@@ -136,6 +137,18 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       .to(sw, { y: -360, scaleY: 1, duration: 1.05, ease: 'sine.out' }, 0.14)
       .to(sw, { rotation: 16, duration: 1.05, ease: 'power1.in' }, 0.14);
   }
+  // the lines a screen may say (its lines, feedback and tips) by their voice-over keys, so its clips are fetched as it
+  // opens, with the next screen's (VO.want)
+  voiceKeys(st) {
+    if (!st) return [];
+    const plain = (t) => t.replace(/\s*\n\s*/g, ' ').trim(), out = [];
+    (st.lines || []).concat(st.after || []).forEach((L) => { const k = L.keep ? L.s : L.t; if (k) out.push(plain(k)); });
+    [st.wrong, st.ok].concat((st.opts || []).map((o) => o.fb), st.fill && st.fill.fb ? Object.values(st.fill.fb) : [])
+      .forEach((t) => { if (t) out.push(plain(t)); });
+    if (st.task === 'dragB') out.push('BC is not parallel to AD yet. Keep dragging B to the right.', 'B went too far. Drag it back a little.');
+    return out;
+  }
+  wantVoice(i) { if (window.VO) { const S = this.steps(); VO.want(this.voiceKeys(S[i]).concat(this.voiceKeys(S[i + 1]))); } }
   componentWillUnmount() { this.clearT(); this.cancelSpeech(); if (this.sw) this.sw.destroy(); }
   componentDidUpdate() {
     this.markSounds();
@@ -787,7 +800,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this.state.started && this.state.step === 0 && Date.now() - (this.navAt || 0) < 800) return;
     this.openNow(); // direct entry routes land on the stable lesson card
     this.unlockAudio();
-    if (window.VO) { VO.unlock(); VO.prefetch(); } // every clip loads quietly; the first tap (rootDown) unlocks the voice-over
+    if (window.VO) VO.unlock(); // the first tap (rootDown) unlocks the voice-over
     const s = this.synth();
     if (s) { this.pickVoice(); try { s.onvoiceschanged = () => this.pickVoice(); } catch (e) {} }
     this.snaps = {};
@@ -862,6 +875,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   goTo(i, fwd) {
     const st = this.steps()[i];
     if (!st) return;
+    this.wantVoice(i);
     this.clearT();
     const was = this.state.started ? this.cur() : null;
     this.fromPlate = !!(was && this.isPlate(was)); // Swiftee was off that screen: where she is back, she dives in
@@ -1933,16 +1947,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         words.push({ t: w, cls: (i < s.reveal - 1 ? 'on' : (i === s.reveal - 1 ? (s.talking ? 'cur' : 'on') : '')) + key }); });
     });
     // the narration plate: a long line in short parts, the one the voice is in (lineParts); once the screen's last line
-    // (a rule, a question, a tip) has been said it shows whole, to read before the screen moves on or while answering.
-    // partKey changes with the line and with each part, so the plate's text fades in afresh (css .txA / .txB)
-    let partKey = s.bub === 'bubA' ? 0 : 1;
+    // (a rule, a question, a tip) has been said it shows whole, to read before the screen moves on or while answering
     if (this.isPlate(st)) {
       const flat = words.filter((w) => w.cls !== 'brk'), starts = this.lineParts(flat.map((w) => w.t));
       const whole = !s.talking && s.reveal >= flat.length && (!this.q || this.q.i >= this.q.lines.length);
       let k = 0;
       while (k + 1 < starts.length && starts[k + 1] <= Math.max(0, s.reveal - 1)) k++;
       words = whole ? flat : flat.slice(starts[k], k + 1 < starts.length ? starts[k + 1] : flat.length);
-      partKey += whole ? starts.length : k;
     }
     const G = isLesson ? this.geo() : { g: {}, tags: [], V: {} };
     // chips
@@ -2000,7 +2011,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       g: G.g, tags: G.tags,
       words: words,
       // a line with its own breaks keeps exactly those lines: the bubble widens instead of wrapping again
-      bubCls: s.bub + ((s.line || '').indexOf('\n') >= 0 ? ' manual' : '') + (partKey % 2 ? ' txB' : ' txA'),
+      bubCls: s.bub + ((s.line || '').indexOf('\n') >= 0 ? ' manual' : ''),
       // lesson steps share one board, so it only fades in when it first appears; each check fades in fresh
       fadeCls: fadeV,
       chipRowCls: st.chipRows ? ' top' : '', // rows grow downward from chipTop, so the first row never moves

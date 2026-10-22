@@ -13,6 +13,7 @@
 //   Journey.onDispose(fn)   the shell is about to remove the part: stop every sound and loop
 //   Journey.onCommand(fn)   the shell's word while the part is loaded: fn(name, args)
 //   Journey.devScreens(l)   with ?dev=1: the part's screens, [{ label, run }], for the journey's one jump panel
+//   Journey.camera(view)    the lesson's camera ({ zoom, pan }), passed on to the game whose lake it plays over
 //
 // Sound: the Play tap unlocks one AudioContext and one <audio> in the shell's own document, and the parts play through
 // those (audioContext, audioOut, voiceElement), so the lesson needs no tap of its own before it can be heard. Opened
@@ -85,6 +86,7 @@
     failed: function (msg) { send('failed', String(msg || '')); },
     play: function () { var a = audio(); if (a) a.unlock(); send('play'); },
     finish: function (detail) { send('finish', detail || {}); },
+    camera: function (view) { send('camera', view); },
     devScreens: function (list) {
       devList = list || [];
       if (host && host.devScreens) { host.devScreens(part, devList, window); return; }

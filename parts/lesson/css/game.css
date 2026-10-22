@@ -3,9 +3,14 @@ body{margin:0}
 a{color:#123b63}a:hover{color:#0b2742}
 .stage{position:relative;width:1280px;height:720px;overflow:hidden;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;color:#123b63;user-select:none;-webkit-user-select:none;touch-action:none;background:#8fd0fb}
 .stage button{font-family:inherit}
-.w{opacity:0;transition:none}
-.w.on{opacity:1;transition:opacity .18s ease,color .25s ease}
-.w.cur{opacity:1;color:#c95a00;transition:opacity .18s ease,color .25s ease}
+/* words come in as the fishing game's do (parts/fishing/src/styles.css .words): each pops up as it is said and a key
+   word boings; one not said yet keeps its place, unseen, so the line never reflows */
+.w{display:inline-block;visibility:hidden}
+.w.on,.w.cur{visibility:visible;animation:word-in .32s cubic-bezier(.2,1.8,.4,1) both}
+.w.key.on,.w.key.cur{animation:word-boing .55s cubic-bezier(.2,1.8,.4,1) both}
+.w.cur{color:#c95a00}
+@keyframes word-in{from{transform:translateY(.35em) scale(.4);opacity:0}}
+@keyframes word-boing{0%{transform:scale(.2);opacity:0}55%{transform:scale(1.3);opacity:1}80%{transform:scale(.94)}}
 .w.key{color:#e06600} /* the lesson's key words, in orange (as in Fishing Frenzy's bubble) */
 .bubA{animation:bubA .26s ease-out}
 .bubB{animation:bubB .26s ease-out}
@@ -655,24 +660,16 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
 .stage.in-card.scene.plate .bubble-text .w{display:inline-block;margin:0 .14em}
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{width:fit-content!important}
-/* ===== the plate, calm (no glitches): the whole question shows at once - words already spoken in full white, the rest
-   softly dimmed - so the box never empties, blinks or resizes while Swiftee speaks; a new line crossfades its text and
-   the box glides to its new size; the plate itself glides in once, when a caption screen follows one of Swiftee's ===== */
+/* ===== the plate, calm (no glitches): a line's words keep their places from the start (each pops in as it is said,
+   as the game's instruction plate does), so the box never blinks or resizes while Swiftee speaks; a new line's box
+   glides to its new size; the plate itself glides in once, when a caption screen follows one of Swiftee's ===== */
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.bubA,.stage.in-card.scene.plate .bubble.bubB{animation:none;opacity:1;transform:none;
   interpolate-size:allow-keywords;transition:width .32s cubic-bezier(.3,0,.2,1),height .32s cubic-bezier(.3,0,.2,1),opacity .3s ease,transform .3s ease}
 .stage.in-card.scene.plate .bubble:not(:has(.w:not(.brk))){opacity:0}
 .stage.in-card.scene.plate .bubble.away,.stage.in-card.scene.plate .bubble.gone{opacity:0;transform:translateY(-6px)}
-.stage.in-card.scene.plate .bubble-text .w{opacity:.5;transition:opacity .22s ease}
-.stage.in-card.scene.plate .bubble-text .w.on,.stage.in-card.scene.plate .bubble-text .w.cur{opacity:1}
-/* each new line, and each part of a long line (engine lineParts), fades in afresh: the class flips between .txA and .txB */
-.stage.in-card.scene.plate .txA .bubble-text{animation:plateTextA .3s ease-out both}
-.stage.in-card.scene.plate .txB .bubble-text{animation:plateTextB .3s ease-out both}
-/* (from a third, not from nothing: the navy plate never stands empty between parts) */
-@keyframes plateTextA{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
-@keyframes plateTextB{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
 .stage.in-card.scene.plate.plate-enter .bubble{animation:plateEnter .42s cubic-bezier(.22,1,.36,1) both}
 @keyframes plateEnter{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble-text,.stage.in-card.scene.plate .bubble-text .w{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion: reduce){.w,.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble-text{animation:none!important;transition:none!important}}
 /* entering from Swiftee's bubble: the plate takes its own size at once (no stretch from the bubble's) and fades down */
 .stage.in-card.scene.plate.plate-enter .bubble{transition:none}
 /* equal-length ticks (sides and diagonal halves): crisp 3 px navy strokes that keep their weight at any shape size,

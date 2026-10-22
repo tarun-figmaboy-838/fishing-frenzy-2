@@ -16,6 +16,7 @@
 // =====================================================================
 (function () {
   const W = 1672, H = 941, SCALE = 1920 / W, TAU = Math.PI * 2;
+  const overGame = !!(window.Journey && Journey.embedded); // the journey: over the fishing game's own lake (js/water.js)
   // the card: the coral cove painting at the reference card's width, its own proportions (1672 x 941)
   const CARD = { x: 836, y: 470, w: 1494, h: 1494 * 828 / 1618 }; // the card keeps the sea card's own proportions
   const PEARL = { x: 836, y: 929, size: 1.12 };
@@ -253,7 +254,7 @@
     if (!S.on) return;
     ctx.setTransform(SCALE * z, 0, 0, SCALE * z, SCALE * (W / 2) * (1 - z), SCALE * H * (1 - z));
     ctx.translate(0, PAN * S.pan); // (the camera's glide from the game's view down to the sand, as the lake: js/water.js)
-    S.fish.forEach((f) => {
+    if (!overGame) S.fish.forEach((f) => { // (over the game's lake, its own shadow fish swim there)
       ctx.save(); ctx.translate(f.x, f.y + Math.sin(S.t * 0.7 + f.ph) * 6); ctx.scale(Math.sign(f.v) * f.k, f.k);
       ctx.beginPath(); ctx.ellipse(0, 0, 30, 11, 0, 0, TAU); ctx.moveTo(-24, 0); ctx.lineTo(-44, -12); ctx.lineTo(-44, 12); ctx.closePath();
       ctx.fillStyle = 'rgba(10, 52, 120, 0.28)'; ctx.fill(); ctx.restore();

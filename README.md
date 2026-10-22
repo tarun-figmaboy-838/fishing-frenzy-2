@@ -7,8 +7,9 @@ A voiced maths adventure about parallelograms: part 2 of Fishing Frenzy, played 
    under it, three catches, Popo cheering each. Then the problem: a giant fish grabs the net and pulls it out of square
    before it breaks free ("Whoa! A giant fish!", "Come on, big fish!", "Huh?! I haven't seen that one before!");
    Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo away.
-3. **Swiftee's parallelogram lesson** (`parts/lesson`), on the same lake (the game's own, through its water pass):
-   the camera glides down to the sand, a seashell opens, its pearl blows up the
+3. **Swiftee's parallelogram lesson** (`parts/lesson`), played over the game's own lake, as in part 1: the game goes on
+   drawing its water and fish under the lesson's see-through frame, and the lesson's camera glides the game's view down
+   to the sand, where a seashell opens, its pearl blows up the
    lesson's card and Swiftee, in her diving mask, dives in. 59 screens: from a trapezium to a parallelogram, its sides,
    angles and diagonals, three checkpoints and a recall. Each screen moves on by itself once its voice is done; a
    screen that asks for something waits for it.

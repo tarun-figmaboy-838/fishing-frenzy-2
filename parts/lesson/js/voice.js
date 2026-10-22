@@ -17,6 +17,22 @@
   // absolute, so it resolves against the lesson's page even on the shell's <audio> (in the journey)
   const src = (id) => new URL('assets/vo/' + id + '.ogg', location.href).href;
   let tok = 0, played = false, unlocked = !!shared, unlocking = null; // unlocking: the muted unlock play() still settling
+  // the quiet fetcher (VO.want): one reused element - a new Audio() per clip left players alive until garbage collection,
+  // and past the browser's player limit it suspends them (the voice-over element then stalled without ever starting)
+  const fetched = {}, queue = [];
+  let loader = null, loading = false;
+  function pump() {
+    const id = queue.shift();
+    loading = !!id;
+    if (!id) return;
+    if (!loader) { try { loader = new Audio(); loader.preload = 'auto'; loader.muted = true; } catch (e) { loading = false; return; } }
+    let gone = false;
+    const go = () => { if (gone) return; gone = true; clearTimeout(cap); loader.oncanplaythrough = loader.onerror = null; setTimeout(pump, 30); };
+    const cap = setTimeout(go, 8000);
+    loader.oncanplaythrough = go; loader.onerror = go;
+    loader.src = src(id);
+    try { loader.load(); } catch (e) { go(); }
+  }
 
   const VO = {
     on: !!el && canOgg && q('vo') !== '0' && Object.keys(lines).length > 0,
@@ -96,26 +112,12 @@
       el.onplaying = el.onended = el.onerror = null;
       try { el.pause(); } catch (e) {}
     },
-    // after Start: fetch every clip quietly, one at a time, so each is ready when its line comes.
-    // One reused element, released at the end: a new Audio() per clip left ~120 media players alive until garbage
-    // collection, and past the browser's player limit it suspends players - the voice-over element then stalled
-    // without ever starting, and lines fell back to the device voice at random.
-    prefetch() {
-      if (!VO.on || VO.prefetching) return;
-      VO.prefetching = true;
-      const ids = Object.keys(lines).map((k) => lines[k][0]).filter((id, i, a) => a.indexOf(id) === i);
-      let a; try { a = new Audio(); } catch (e) { return; }
-      a.preload = 'auto'; a.muted = true;
-      const release = () => { a.oncanplaythrough = a.onerror = null; a.removeAttribute('src'); try { a.load(); } catch (e) {} };
-      const next = (i) => {
-        if (i >= ids.length) { release(); return; }
-        let gone = false;
-        const go = () => { if (gone) return; gone = true; clearTimeout(cap); setTimeout(() => next(i + 1), 30); };
-        const cap = setTimeout(go, 8000);
-        a.oncanplaythrough = go; a.onerror = go;
-        a.src = src(ids[i]); try { a.load(); } catch (e) { go(); }
-      };
-      next(0);
+    // a screen's clips (and the next screen's) are fetched quietly as it opens, one at a time, so each is ready when its
+    // line comes without the whole voice-over loading up front (as in Fishing Frenzy's lesson). keys: the lines' keys.
+    want(keys) {
+      if (!VO.on) return;
+      (keys || []).forEach((k) => { const v = lines[k]; if (v && !fetched[v[0]]) { fetched[v[0]] = 1; queue.push(v[0]); } });
+      if (!loading) pump();
     }
   };
   window.VO = VO;

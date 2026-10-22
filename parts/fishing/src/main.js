@@ -62,12 +62,15 @@ if (params.has('debug') || params.get('dev') === '1') {
 // In the journey (index.html at the root; shell/bridge.js) this banner is the front page. Its Play tells the shell
 // (Game.handOver), and the shell's word takes the game on: story (on as Play goes; args.lesson: the lesson follows the
 // warm-up net, sequences.js mystery; args.afterLesson: ?start=lesson's lesson is over), quiet (the lesson is dissolving
-// in over it: its sound fades), hide (covered), resume (the lesson is over: the giant wave brings Popo back, and on
+// in over it: its sound fades), backdrop (the lesson plays over the lake: silent, buttons away, still drawing),
+// camera (the lesson's camera over the lake), hide (covered), resume (the lesson is over: the giant wave brings Popo back, and on
 // with the nets), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
 if (journey) {
   journey.onCommand((name, args) => {
     if (name === 'quiet') audio.fadeOut();
     else if (name === 'hide') game.hide();
+    else if (name === 'backdrop') game.backdrop();
+    else if (name === 'camera') game.setCamera(args || {});
     else if (name === 'story') game.story(args);
     else if (name === 'resume') game.goOn();
     else if (name === 'title') game.backToTitle();

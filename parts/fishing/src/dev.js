@@ -19,6 +19,7 @@ function begin(g) {
     g.title.dismiss();
     g.audio.init();
     g.audio.resume();
+    g.audio.fetchLaterVoices();
     g.audio.startMusic();
     g.ui.hideStart();
     g.ui.showHud();

@@ -11,6 +11,19 @@
 // and in the journey until the lesson begins (it waits unseen behind the game). A slow device draws every other frame.
 // =====================================================================
 (function () {
+  // In the journey the lesson plays over the fishing game's own lake, as Fishing Frenzy's lesson plays over its game's:
+  // this page is see-through round its card and draws no lake of its own, and the camera's moves go to the game
+  // (Journey.camera; the game glides and zooms its own view). The lake below is only for the lesson on its own page.
+  if (window.Journey && Journey.embedded) {
+    document.documentElement.classList.add('over-game');
+    var view = { zoom: 1, pan: 1 }, sent = '';
+    var tell = function () {
+      var key = view.zoom.toFixed(4) + ',' + view.pan.toFixed(4);
+      if (key !== sent) { sent = key; Journey.camera({ zoom: view.zoom, pan: view.pan }); }
+    };
+    window.Water = { dive: function (z) { view.zoom = z; tell(); }, pan: function (p) { view.pan = p; tell(); } };
+    return;
+  }
   var W = 1672, H = 941, CW = 1920, CH = 1080, K = CW / W; // the game's world, and the canvas it is drawn on
   var SHIFT = 170, WATERLINE = 388, SEABED = 805; // the game's framing of the lake (parts/fishing/src/stage.js, levels.js)
   // the weed the water pass bends: the game's for these waters (parts/fishing/src/effects.js PLANTS[0], painting px)
@@ -19,9 +32,12 @@
 
   var lake = new Image(), mask = new Image(), ready = 0;
   lake.onload = mask.onload = function () { ready++; };
-  lake.src = window.LAKE_DATA.lake; // (js/lake-data.js)
-  mask.src = window.LAKE_DATA.mask;
   lake.waterMask = mask; // (the water pass waves only the open water: the shore, ice and mountains stay put)
+  // the painting, as data (js/lake-data.js), loaded only here, on the lesson's own page
+  var data = document.createElement('script');
+  data.src = 'js/lake-data.js';
+  data.onload = function () { lake.src = window.LAKE_DATA.lake; mask.src = window.LAKE_DATA.mask; };
+  document.head.appendChild(data);
 
   var cv = null, ctx = null, t = 0, last = 0, slow = 0, skip = false, staticDone = false, zoom = 1, pan = 1;
   var glCv = null, GL = null, glOn = false, glFailed = false, lowRes = false;

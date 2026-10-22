@@ -3,3 +3,9 @@
    one look as the lesson dissolves in over the game and out again */
 html, body { margin: 0; height: 100%; overflow: hidden; background: #063a8f radial-gradient(circle at 50% 30%, #0f55c4, #052a70 80%) fixed; touch-action: none; }
 #dc-root { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; box-shadow: 0 23px 69px rgba(0, 0, 0, 0.35); }
+/* in the journey the lesson plays over the fishing game's own lake (js/water.js): see-through round its card, no lake */
+.over-game, .over-game body { background: transparent; }
+.over-game #dc-root { box-shadow: none; }
+.page-bg { background: #8fd0fb; } /* (the lesson's own page, under its lake) */
+.over-game .page-bg { background: transparent; }
+.over-game canvas.water-gl, .over-game canvas.water-bg { display: none; }

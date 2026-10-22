@@ -6,18 +6,20 @@ installed is used if Playwright's own is missing), at 1280x720 with a mouse and 
 
   front page  the fishing game's own live banner, shown first; the lesson loads, unseen, behind it once it's ready
   intro       a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the game's story
-              starts at once (the narrator, the first school, the net); a real level-1 catch (a drag of the corner with
-              the mouse, or taps on its arrows by touch, then Drop Net as fish swim under the net)
-  lesson      once the catch is in the bucket the game holds and the lesson dissolves in over it; once covered, the
-              game has stopped drawing and is silent (no music, effects or voice; its context asleep); the lesson
-              begins (seashell, card, screen 1); jumped to its last screen, it hands over by itself
-  fishing     the game wakes under the lesson's frame as it dissolves out and goes on to its second net (the lesson's
-              frame disposed, its voice stopped); a real level-2 catch
+              starts at once (the narrator, the first school); the warm-up's three real catches (Drop Net as fish swim
+              under the net), then its problem: the giant fish, Swiftee's "Let's find out!" and a real tap on Next
+  lesson      the giant wave carries Popo off and the lesson dissolves in over the empty lake; the game goes on drawing
+              its lake under the lesson (which plays over it), silent (no music, effects or voice; its context asleep),
+              its buttons away; the lesson begins (seashell, card, screen 1); jumped to its last screen, it hands over
+              by itself
+  fishing     the game wakes under the lesson's frame as it dissolves out: the wave brings Popo back, Swiftee welcomes
+              him, and a real catch at the first parallelogram net (the lesson's frame disposed, its voice stopped)
   the end     after level 8 (jumped to, as its dev panel's Finish), a real tap on Play Again: the circle closes and
               opens on the banner from its start, a fresh lesson loads behind it, and Play works again
 
-`start`: ?start=fishing plays the nets in a row from Play (no lesson), ?start=lesson brings the lesson first and then
-the story, and a part opened on its own goes to the journey. `veil`: the lesson still loading after the first net shows
+`start`: ?start=fishing plays the warm-up and the nets in a row from Play (no lesson), ?start=lesson brings the lesson
+first and then the wave, the welcome and the nets, and a part opened on its own goes to the journey. `veil`: the lesson
+still loading when its turn comes shows
 the frosted "Getting ready…" veil; a lesson that can't load says so, and a real tap on Try again loads it afresh and the
 journey goes on. `dev`: ?dev=1's one panel lists both parts' screens; a lesson screen shows the lesson over the game at
 that screen, a fishing level takes it away and wakes the game there, Front page brings the banner back; the backtick key
@@ -241,7 +243,7 @@ def play_tap(r):
 
 
 def silent(s):
-    return not s['running'] and s['held'] and s['ctx'] != 'running' and not s['music'] and not s['voice'] and s['effects'] == 0
+    return s['held'] and s['ctx'] != 'running' and not s['music'] and not s['voice'] and s['effects'] == 0
 
 
 def catch_level(r, n, shot):
@@ -361,7 +363,7 @@ def journey(p, engine, size, url):
     fs = until(r.fish, silent, 3, 'the game goes quiet')
     page.wait_for_timeout(400)
     fs2 = r.fish()
-    check(silent(fs2) and fs2['clock'] == fs['clock'], f'{r.tag}: under the lesson the game has stopped drawing and is silent (no music, effects or voice; context {fs2["ctx"]})')
+    check(silent(fs2) and fs2['running'] and not fs2['hud'], f'{r.tag}: under the lesson the game goes on drawing its lake (the lesson plays over it), silent (no music, effects or voice; context {fs2["ctx"]}), its buttons away')
     ls = until(r.lesson, lambda s: s['started'], 40, 'the lesson starts its screens')
     check(ls['shared'] and ls['of'] > 50, f'{r.tag}: the lesson begins (its opening, then screen 1), through the shell\'s sound', f"{ls['of']} screens")
     if engine == 'chromium':

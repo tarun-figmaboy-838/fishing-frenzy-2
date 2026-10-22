@@ -12,9 +12,10 @@
 //      knocks the net out of square, Popo has never seen that shape, Swiftee swoops in with "Let's find out!" and Next;
 //      on Next she flies off and the giant wave carries Popo away. With the lake empty, the game says so
 //      (Journey.finish({ intro: true })).
-//   2. lesson: its frame dissolves in over the empty lake (lake into lake) and begins; as it starts to, the game is
-//      told `quiet` (its sound fades), and once covered `hide`: it stops drawing and every sound. (Still loading? A
-//      frosted veil says "Getting ready…" until it has.)
+//   2. lesson: its frame dissolves in over the empty lake and begins; it is see-through round its card, so it plays
+//      over the game's own lake, as in Fishing Frenzy. The game is told `quiet` (its sound fades), then `backdrop`:
+//      it goes on drawing its water and fish, silent, its buttons away, and the lesson's camera (`camera`) glides its
+//      view down to the sand and dives after the card. (Still loading? A frosted veil says "Getting ready…".)
 //   3. fishing: the lesson over (Journey.finish, once Swiftee has flown out of it), the game is told `resume` while
 //      the lesson's frame dissolves out over it: the giant wave brings Popo back, Swiftee swoops in with her welcome,
 //      and the eight parallelogram nets follow; then the lesson is disposed. After the eighth net, the end screen's
@@ -213,6 +214,7 @@
       else if (type === 'failed') fail(f, detail);
       else if (type === 'play') play(f);
       else if (type === 'finish') finish(f, detail);
+      else if (type === 'camera') { if (f.id === 'lesson' && fishing()) command(fishing(), 'camera', detail); }
       else if (type === 'devScreens') dev.register(id, (detail || []).map((label, i) => ({ label, run: () => command(f, 'devJump', i) })), win); // (from disk: by message)
     } catch (err) { console.error(err); }
   }
@@ -292,7 +294,9 @@
     }
     showLesson(L);
   }
-  // The lesson's frame dissolves in over the game and the lesson begins; once it covers the game, the game sleeps.
+  // The lesson's frame dissolves in over the game and the lesson begins. As in Fishing Frenzy, the lesson plays over the
+  // game's own lake: its frame is see-through round its card, and the game goes on drawing under it, silent, its
+  // buttons away (`backdrop`), its view moved by the lesson's camera (`camera`, from the lesson through bridge.js).
   // opts.jump: begun for a ?dev=1 jump, which then starts it at its screen.
   function showLesson(L, opts) {
     const F = fishing();
@@ -306,14 +310,14 @@
     L.el.removeAttribute('aria-hidden');
     L.el.tabIndex = 0;
     cover(F, true);
-    command(F, 'quiet'); // the game's sound fades as the lesson comes in (`hide` follows once it is covered)
+    command(F, 'quiet'); // the game's sound fades as the lesson comes in (`backdrop` follows once it is in)
     tell(L, 'begin', opts || {});
     focusFrame(L);
     announce('part', partNumber('lesson'));
     dev.update();
     setTimeout(() => {
       L.el.classList.remove('arriving');
-      if (J.seq === seq && lessonUp() && frames.get('lesson') === L) command(F, 'hide');
+      if (J.seq === seq && lessonUp() && frames.get('lesson') === L) command(F, 'backdrop');
     }, reduced ? 200 : T.dissolve);
   }
   // The lesson's frame dissolves out (over whatever the game is doing now), and then goes.
