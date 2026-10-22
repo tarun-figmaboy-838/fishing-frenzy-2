@@ -3,8 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Parallelogram lesson game</title>
+<title>Parallelogram lesson · Fishing Frenzy 2</title>
+<link rel="icon" href="data:,">
+<!-- part of the journey: index.html at the root plays it after the fishing game's banner (shell/bridge.js) -->
+<script src="../../shell/bridge.js" data-part="lesson"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&amp;family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800;900&amp;display=swap">
+<!-- only the ∥ and ∠ symbols, which the game fonts don't have; listed after them in the CSS font stacks -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&amp;text=%E2%88%A5%E2%88%A0&amp;display=swap">
 <link rel="stylesheet" href="css/stage.css">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/confetti.css">
@@ -251,29 +256,8 @@
 
 </div>
 
-<sc-if value="{{showNav}}" hint-placeholder-val="{{ true }}">
-<div style="position: absolute; left: 860px; top: 652px; width: 312px; height: 60px; display: flex; justify-content: flex-end; align-items: center; gap: 14px">
-<button class="ibtn {{backCls}}" aria-label="Back" data-qa="back" disabled="{{backDisabled}}" onClick="{{back}}" style="width: 54px; height: 54px">
-<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
-</button>
-<button class="next {{nextCls}}" data-qa="next" disabled="{{nextDisabled}}" onClick="{{next}}">{{nextLabel}}<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
-</div>
-</sc-if>
-
-<button class="navbtn screens-btn" data-qa="screens" aria-label="{{screensLabel}}" onClick="{{toggleScreens}}" style="position: absolute; left: 24px; top: 16px">{{screensLabel}}</button>
-<sc-if value="{{navOpen}}" hint-placeholder-val="{{ false }}">
-<div class="screens-scrim" onClick="{{closeScreens}}"></div>
-<div class="screens-panel" role="dialog" aria-label="All screens">
-<sc-for list="{{thumbs}}" as="th" hint-placeholder-count="6">
-<button class="{{th.cls}}" data-qa="thumb-{{th.n}}" title="{{th.title}}" aria-label="{{th.title}}" onClick="{{th.go}}"><img src="{{th.src}}" alt="" loading="lazy"><span class="thumb-n">{{th.n}}</span></button>
-</sc-for>
-</div>
-</sc-if>
-
-<div class="topnav" style="position: absolute; right: 24px; top: 16px; display: flex; gap: 10px">
-<button class="navbtn" data-qa="nav-back" aria-label="Back" disabled="{{navBackDis}}" onClick="{{navBack}}">Back</button>
-<button class="navbtn" data-qa="nav-next" aria-label="Next" disabled="{{navNextDis}}" onClick="{{navNext}}">Next</button>
-</div>
+<!-- (no screen list, Back or Next: each screen moves on by itself once its voice and animations are done, and a
+     screen that asks for something waits for it; ?dev=1 on the journey's page jumps to any screen) -->
 
 <div class="walker" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 120px; height: 120px; pointer-events: none; visibility: hidden; z-index: 12"><canvas width="512" height="512" style="width: 100%; height: 100%; display: block"></canvas></div>
 

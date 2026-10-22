@@ -52,11 +52,10 @@ const CONFIG = {
   qFocus: { holdMs: 700, fadeMs: 350, cx: 876, shapeTop0: 220, shapeTop: 171, optTop: 417, optW: 560 },
   ruler: { home: { gap: 80, a: 0 } /* level, centred under DC, gap px below it */, flyMs: 600, holdMs: 700, returnMs: 450 },
   timing: { idleMs: 9000, idleMaxHints: 3, navLockMs: 450 },
-  // flow: a finished screen moves on advanceMs after its last line (voice-over) ends. showNext / showBack bring those buttons back.
-  // showCpTitle: the checkpoint heading banner above the board (e.g. "Checkpoint 1 · Find the Parallelograms")
-  // autoAdvance: false = navigation is fully manual (top-right Next / Back only; a finished screen stays put)
-  // (explanation screens move on by themselves; a question or task waits for the learner, then moves on after its feedback)
-  flow: { autoAdvance: true, advanceMs: 1600, showNext: false, showBack: false, showCpTitle: false },
+  // flow: a finished screen moves on advanceMs after its last line (voice-over) ends (explanation screens by themselves; a
+  // question or task waits for the learner, then moves on after its feedback). In the journey, the lesson hands over to
+  // the fishing handOffMs after Swiftee's goodbye.
+  flow: { advanceMs: 1600, handOffMs: 1800 },
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 2600 },
   // spotlight screen: board moved/scaled from its usual spot (transform-origin = board top-left at 640,104).

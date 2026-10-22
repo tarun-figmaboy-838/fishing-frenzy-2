@@ -366,11 +366,12 @@
       S.pops.push({ x: x + Math.cos(a) * r * 0.9, y: y + Math.sin(a) * r * 0.9, r: 5 + Math.random() * 9, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 40, life: 0 });
     }
   }
-  let busy = false;
+  let busy = false, tok = 0; // tok: instant() ends an opening that is still playing
   const Opening = {
     get open() { return S.open; },
     instant() {
-      S.on = true; S.open = true; staticDrawn = false;
+      tok++; busy = false;
+      S.on = true; S.open = true; staticDrawn = false; S.spawning = false;
       Object.assign(S.shell, { alpha: 0, open: 1, rock: 0, squash: 0, leak: 0, pearl: 1 });
       Object.assign(S, { dim: DIM, emerge: 1, beam: 0, glow: 0, dive: 1, flash: 0 });
       if (!(ART.complete && ART.naturalWidth)) ART.addEventListener('load', () => { staticDrawn = false; }, { once: true });
@@ -379,37 +380,40 @@
     async play(sound, done) {
       if (S.on || busy) { if (done) done(); return; }
       busy = true;
-      const q = reduced, snd = (k) => { try { if (sound) sound(k); } catch (e) {} };
+      const my = ++tok, live = () => my === tok;
+      // a tween that stops writing once instant() has taken over; after it, an ended opening goes no further
+      const tw = (ms, f) => tween(ms, (t) => { if (live()) f(t); }).then(live);
+      const q = reduced, snd = (k) => { try { if (live() && sound) sound(k); } catch (e) {} };
       S.on = true; run();
       // the seashell appears on the sand, rattles twice, gathers itself and swings open on its pearl
       snd('bubbles');
-      await tween(350, (t) => { S.shell.alpha = t; });
+      if (!await tw(350, (t) => { S.shell.alpha = t; })) return;
       await wait(250);
       for (let i = 0; i < 2; i += 1) {
         snd('rattle');
-        await tween(q ? 220 : 340, (t) => { S.shell.rock = q ? 0 : 0.08 * Math.sin(t * Math.PI * 2) * (i ? -1 : 1); S.shell.leak = 0.35 + 0.3 * (i + t); });
+        if (!await tw(q ? 220 : 340, (t) => { S.shell.rock = q ? 0 : 0.08 * Math.sin(t * Math.PI * 2) * (i ? -1 : 1); S.shell.leak = 0.35 + 0.3 * (i + t); })) return;
       }
       S.shell.rock = 0;
-      await tween(q ? 60 : 150, (t) => { S.shell.squash = Math.sin((t * Math.PI) / 2); });
+      if (!await tw(q ? 60 : 150, (t) => { S.shell.squash = Math.sin((t * Math.PI) / 2); })) return;
       snd('shellOpen');
-      await tween(q ? 350 : 900, (t) => { S.shell.squash = 1 - t; S.shell.open = q ? t : ease.outBack(t); S.shell.leak = 1 - t; S.glow = 0.6 * t; });
+      if (!await tw(q ? 350 : 900, (t) => { S.shell.squash = 1 - t; S.shell.open = q ? t : ease.outBack(t); S.shell.leak = 1 - t; S.glow = 0.6 * t; })) return;
       // the pearl brightens and the lake dims round it
       snd('shimmer');
-      await tween(q ? 350 : 1000, (t) => { S.shell.pearl = 1 + 0.16 * Math.sin(t * Math.PI); S.glow = 0.6 + 0.4 * t; S.dim = ease.inOut(t) * DIM; });
+      if (!await tw(q ? 350 : 1000, (t) => { S.shell.pearl = 1 + 0.16 * Math.sin(t * Math.PI); S.glow = 0.6 + 0.4 * t; S.dim = ease.inOut(t) * DIM; })) return;
       // the pearl blows the card up in a bubble, which pops mid-screen, while the camera dives after it
       snd('rise');
       S.spawning = true;
       let popped = false;
-      await tween(q ? 600 : 2700, (t) => {
+      if (!await tw(q ? 600 : 2700, (t) => {
         S.emerge = t; S.beam = Math.min(1, t * 2); S.dive = ease.inOut(Math.min(1, t * 1.25));
         if (!popped && t >= BUBBLE.pop) { popped = true; burst(CARD.x, CARD.y, BUBBLE.radius); snd('pop'); }
-      });
+      })) return;
       S.spawning = false;
       snd('land');
-      await tween(800, (t) => { S.flash = 1 - t; S.beam = 1 - 0.65 * t; S.glow = 1 - 0.6 * t; });
+      if (!await tw(800, (t) => { S.flash = 1 - t; S.beam = 1 - 0.65 * t; S.glow = 1 - 0.6 * t; })) return;
       // the shell and the pearl's light fade; the card stays for the lesson
       const beam0 = S.beam, glow0 = S.glow;
-      await tween(350, (t) => { S.shell.alpha = 1 - t; S.beam = beam0 * (1 - t); S.glow = glow0 * (1 - t); });
+      if (!await tw(350, (t) => { S.shell.alpha = 1 - t; S.beam = beam0 * (1 - t); S.glow = glow0 * (1 - t); })) return;
       S.open = true; busy = false;
       if (done) done();
     }

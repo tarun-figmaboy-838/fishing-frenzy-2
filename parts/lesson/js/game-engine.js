@@ -2,7 +2,12 @@
 // GAME ENGINE — state, narration, geometry, interactions and rendering values.
 // Loaded after js/vendor/dc-runtime.js (which provides DCLogic) and the data files.
 // The markup in index.html binds to the values returned by renderVals().
+// Inside the journey (shell/bridge.js, index.html at the root) the lesson plays after the fishing game's banner, in its
+// own frame over the game: the journey's Play tap has unlocked the sound, so it begins straight away with its opening
+// (the seashell and the card), and after its last line Swiftee swims off and the fishing begins. It has no Next, Back
+// or screen list; ?dev=1 on the journey's page jumps to any screen. (Without a page - a headless test - no journey.)
 // =====================================================================
+const JOURNEY = typeof window !== 'undefined' && window.Journey && window.Journey.embedded ? window.Journey : null;
 // the lesson's key words (reference KEY_WORDS, with the parallelogram's own terms)
 const KEY_WORDS = /^(polygon|quadrilaterals?|trapeziums?|parallelograms?|parallel|bases?|legs?|sides?|opposite|adjacent|angles?|supplementary|vertex|vertices|equal|diagonals?|bisect|segments?|180°)$/;
 window.TrapeziumGame = class TrapeziumGame extends DCLogic {
@@ -75,20 +80,62 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       LESSON.steps.forEach((st) => (st.lines || []).concat(st.after || []).forEach((L) => { if (L.m) want.push(L.m); }));
       this.sw.warm(want.filter((x, i) => want.indexOf(x) === i));
     }
-    // the lesson waits on its Start card: browsers only allow sound after a tap, so starting on load played screen 1
-    // silently (or in the device voice) and it moved on before the learner had touched anything. The clips load meanwhile.
+    // on its own page the lesson waits on the lake for its Next tap: browsers only allow sound after a tap, so starting
+    // on load played screen 1 silently and it moved on before the learner had touched anything. The clips load meanwhile.
     if (window.VO) VO.prefetch();
+    if (JOURNEY) {
+      if (JOURNEY.params.has('debug')) window.lessonDebug = this; // for tests (as the fishing game's popoDebug)
+      if (JOURNEY.params.get('dev') === '1') JOURNEY.devScreens(this.steps().map((x, i) => ({ label: (i + 1) + ' ' + this.screenName(x), run: () => this.jumpTo(i) })));
+      // the journey's Play has been tapped by the time the shell begins the lesson; begun for a ?dev=1 jump
+      // (opts.jump), it leaves the opening out and the jump starts it
+      JOURNEY.onBegin((opts) => { if (!(opts && opts.jump)) this.begin(); });
+      JOURNEY.onDispose(() => this.leave());
+      // ready once the page's pictures are in (the lake, the card, Swiftee)
+      const ready = () => JOURNEY.ready();
+      if (document.readyState === 'complete') ready(); else window.addEventListener('load', ready, { once: true });
+    } else if (new URLSearchParams(location.search).has('debug')) window.lessonDebug = this;
+  }
+  // the journey moves on: every voice, sound, timer and loop of the lesson stops for good
+  leave() {
+    this.stepTok++; this.narrTok++;
+    this.clearT();
+    this.cancelSpeech();
+    if (this.wk) this.wk.hide();
+    if (this.sw) this.sw.destroy();
+    if (window.Motion) Motion.clear();
+  }
+  // a screen's name for the dev panel: checkpoints by their title, the rest by their opening line
+  screenName(x) {
+    if (x.end) return 'Lesson complete';
+    if (x.cpTitle) return x.cpTitle.replace(/^Checkpoint (\d) · /, 'Check $1: ');
+    const L = (x.lines || [])[0];
+    return L && L.t ? L.t.replace(/\n/g, ' ') : x.id;
+  }
+  // after the lesson's last line: Swiftee swims off to the right, and the journey goes on to the fishing
+  handOff() {
+    if (!JOURNEY || this.handedOff) return;
+    this.handedOff = true;
+    this.depart();
+    const results = Object.assign({}, this.state.results);
+    setTimeout(() => JOURNEY.finish({ results: results }), Motion.reduced ? 0 : 1150);
+  }
+  // she crouches, then takes off out of the right of the card, rising as she goes
+  depart() {
+    const sw = typeof document !== 'undefined' && document.querySelector('.stage .swiftee'), G = window.gsap;
+    this.setState({ bubOff: true });
+    if (!sw || !G || Motion.reduced) return;
+    this.pose('excited');
+    this.sfx('whoosh');
+    G.timeline()
+      .to(sw, { y: 14, scaleY: 0.92, duration: 0.14, ease: 'sine.out', transformOrigin: '50% 90%' }, 0)
+      .to(sw, { x: 1320, duration: 1.05, ease: 'power2.in' }, 0.14)
+      .to(sw, { y: -360, scaleY: 1, duration: 1.05, ease: 'sine.out' }, 0.14)
+      .to(sw, { rotation: 16, duration: 1.05, ease: 'power1.in' }, 0.14);
   }
   componentWillUnmount() { this.clearT(); this.cancelSpeech(); if (this.sw) this.sw.destroy(); }
   componentDidUpdate() {
     this.markSounds();
     this.fitBubble();
-    // screen list just opened: bring the current screen's thumbnail into view
-    if (this.state.navOpen && !this.navShown && typeof document !== 'undefined') {
-      const el = document.querySelector('.thumb.cur');
-      if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
-    }
-    this.navShown = !!this.state.navOpen;
   }
 
   // sounds for marks that appear with the board: parallel chevrons / equal ticks (a tick as they pop on) and angle arcs
@@ -123,13 +170,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (st.task === 'dragC') P.C.x = P.C.x - 40;
     return P;
   }
+  // ?dev=1: straight to screen i (a jump skips the opening)
   jumpTo(i) {
-    if (!this.state.started) { this.openNow(); this.start(); if (i === 0) { this.setState({ navOpen: false }); return; } }
-    if (i === this.state.step) { this.setState({ navOpen: false }); return; }
+    if (!this.state.started) { this.openNow(); this.start(); if (i === 0) return; }
+    if (i === this.state.step) return;
     let P = this.initP();
     this.snaps = {};
     for (let j = 0; j < i; j++) { this.snaps[j] = this.clone(P); P = this.taskResult(this.steps()[j], P); }
-    this.setState({ P: P, navOpen: false });
+    this.setState({ P: P });
     this.sfx('tap');
     this.navAt = 0;
     this.goTo(i, true);
@@ -729,7 +777,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (st.cfu || st.opts) return { kind: 'opts' };
       return null;
     }
-    if (CONFIG.flow.showNext && this.state.step < this.steps().length - 1 && st.autoAdvance == null) return { qa: 'next', kind: 'tap' };
     return null;
   }
   hideHand() { if (this.state.hand) this.setState({ hand: null }); }
@@ -777,7 +824,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   unlockAudio() {
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC && !this.actx) this.actx = new AC();
+      // in the journey: the shell's context, unlocked by its Play tap (shell/bridge.js)
+      if (!this.actx) this.actx = (JOURNEY && JOURNEY.audioContext()) || (AC ? new AC() : null);
       if (this.actx && this.actx.state === 'suspended') this.actx.resume();
     } catch (e) {}
     this.loadSounds();
@@ -861,36 +909,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (st.task === 'extLegs' && st.auto) this.autoExtend(['DA', 'BC']);
       else if (st.task === 'extBases' && st.auto) this.autoExtend(['AB', 'CD']);
       else if (st.task === 'diags' && st.auto) this.autoDiag();
+      else if (st.end && JOURNEY) this.tm(() => this.handOff(), CONFIG.flow.handOffMs); // on to the fishing
       else this.maybeAdvance(true);
     });
     // voiceDelay (ms): Swiftee waits for the screen's opening animation before she speaks (screen 4: the assembly)
     if (st.voiceDelay) this.tm(lines, st.voiceDelay); else lines();
-  }
-  navLocked() { return Date.now() - (this.navAt || 0) < CONFIG.timing.navLockMs; }
-  next() {
-    if (!this.state.done || this.navLocked()) return;
-    if (this.state.step < this.steps().length - 1) { this.sfx('tap'); this.goTo(this.state.step + 1, true); }
-  }
-  back() {
-    if (this.state.step <= 0 || this.navLocked()) return;
-    // skip back over screens that move on by themselves, or Back would bounce straight forward again
-    let i = this.state.step - 1;
-    while (CONFIG.flow.autoAdvance && i > 0 && this.steps()[i].locked) i--;
-    this.sfx('tap'); this.goTo(i, false);
-  }
-  // top-right Next: always moves on (with CONFIG.flow.autoAdvance off it is the only way forward). Skipping an unfinished drag task
-  // applies its result first, so the screens after it ("Now the legs are equal!") still match the shape.
-  navNext() {
-    if (!this.state.started) { this.openNow(); this.start(); return; } // Next on the Start card starts screen 1
-    const i = this.state.step;
-    if (i >= this.steps().length - 1 || this.navLocked()) return;
-    if (!this.state.done && this.asks(this.cur())) return; // finish the activity first
-    if (!this.state.done) {
-      const st = this.cur();
-      if (/^drag(A|B|Any|Free|90|D90)$/.test(st.task || '')) this.setState({ P: this.taskResult(st, this.state.P) });
-    }
-    this.sfx('tap');
-    this.goTo(i + 1, true);
   }
   finishTask() {
     if (this.state.done) return;
@@ -916,22 +939,18 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (window.Confetti && !this.cur().calmOk) window.Confetti.burst(); // calmOk: sound and praise only
     this.react(CONFIG.swiftee.praise);
   }
-  // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoAdvance) after the last line ends.
+  // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoNext) after the last line ends.
   // Called whenever narration goes quiet; does nothing until the screen's task/check is done. Lesson complete stays.
   maybeAdvance(afterLine) {
     if (this.advId) { clearTimeout(this.advId); this.T.delete(this.advId); this.advId = null; }
     const st = this.cur(), i = this.state.step, tok = this.stepTok;
-    // manual navigation: only Next / Back change the screen - except a step with autoNext (ms), which flows straight
-    // on to the next screen that long after its last line (screen 1 -> 2: one continuous intro)
-    if (!CONFIG.flow.autoAdvance && st.autoNext == null) return;
     if (!this.state.done || st.end || i >= this.steps().length - 1) return;
     // a running sequence (lengths pair by pair, supplementary pairs) finishes before the screen moves on
-    const wait = Math.max(st.autoNext != null ? st.autoNext : st.autoAdvance != null ? st.autoAdvance : CONFIG.flow.advanceMs, (this.seqEnd || 0) - Date.now());
+    const wait = Math.max(st.autoNext != null ? st.autoNext : CONFIG.flow.advanceMs, (this.seqEnd || 0) - Date.now());
     this.advId = this.tm(() => {
       this.advId = null;
       // someone is talking again (a tip, a hint): that line's end schedules the move afresh
       if (tok !== this.stepTok || this.state.talking || this.drag || this.ld || this.rd) return;
-      if (this.state.navOpen) { this.maybeAdvance(false); return; } // screen list open: wait until it closes
       const bd = this.state.build; // a building shape (screen 1) finishes its outline glow and fill fade first
       if (st.build && !(bd && bd.done && !bd.settle)) { this.maybeAdvance(false); return; }
       this.goTo(i + 1, true);
@@ -2359,13 +2378,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // end
     const nRight = Object.keys(s.results).filter((k) => s.results[k]).length;
     const nStars = CONFIG.stars.find((r) => nRight >= r[0])[1];
-    const lessonCount = steps.length - 1;
     const nChecks = steps.filter((x) => x.cp).length;
-    let progressLabel;
-    if (st.end) progressLabel = 'Done';
-    else if (st.cfu) progressLabel = 'Check ' + st.cfu + ' / 5';
-    else progressLabel = 'Step ' + (s.step + 1) + ' / ' + lessonCount;
-    const isLastCfu = st.cfu === 5;
     const spot = st.layout === 'spotlight';
     // scene layout (screens 1-30, up to the right trapezium): panel on the right, Swiftee and her bubble on the
     // snow at the left, shape centred in the panel. The bubble never covers the shape, so the board never moves.
@@ -2380,23 +2393,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       begin: () => this.begin(),
       restart: () => this.restart(),
       replay: () => this.replay(),
-      next: () => this.next(),
-      back: () => this.back(),
-      navNext: () => this.navNext(),
-      screensLabel: 'Screen ' + (s.step + 1) + ' of ' + steps.length, // current position; tap to open the screen list
-      navOpen: !!s.navOpen,
-      toggleScreens: () => this.setState({ navOpen: !this.state.navOpen }),
-      closeScreens: () => this.setState({ navOpen: false }),
-      thumbs: steps.map((x, i) => ({
-        n: i + 1, src: 'assets/thumbs/' + String(i + 1).padStart(2, '0') + '.webp',
-        cls: i === s.step ? 'thumb cur' : 'thumb',
-        title: 'Screen ' + (i + 1) + (x.lines && x.lines[0] && x.lines[0].t ? ': ' + x.lines[0].t.replace(/\n/g, ' ') : ''),
-        go: () => this.jumpTo(i)
-      })),
-      navBack: () => this.back(),
-      navBackDis: s.step === 0,
-      navNextDis: s.step >= steps.length - 1 || (!s.done && this.asks(st)),
-      notStarted: !s.started && !s.opening && !s.opened, // show the session entry action until the reveal begins
+      notStarted: !JOURNEY && !s.started && !s.opening && !s.opened, // on its own page: the Next that starts it
       isLesson: isLesson && s.started,
       isCfu1: !!st.grid,
       fillOn: !!FD, blanks: blanks, tiles: tiles,
@@ -2405,7 +2402,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       ghostOn: !!(F.drag), ghost: F.drag ? { t: F.drag.t, x: Math.round(F.drag.x), y: Math.round(F.drag.y) } : { t: '', x: 0, y: 0 },
       cpOn: !!st.cpTitle && !!CONFIG.flow.showCpTitle, cpTitle: st.cpTitle || '',
       gridCls: fadeV + (this.busy() ? ' wait' : ' go'), isCfu2: st.cfu === 2, isCfu3: st.cfu === 3, isCfu4: st.cfu === 4, isCfu5: st.cfu === 5,
-      isEnd: !!st.end,
+      isEnd: !!st.end && !JOURNEY, // (in the journey the fishing follows: no score card or Play again)
       isRecap: st.layout === 'recap',
       g: G.g, tags: G.tags,
       words: words,
@@ -2433,14 +2430,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       labs: labs, slots: slots,
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
-      progressW: Math.round((s.step / (steps.length - 1)) * 100) + '%',
-      progressLabel: progressLabel,
-      showNav: s.started && !st.end,
-      backDisabled: s.step === 0 || !!st.locked || !CONFIG.flow.showBack,
-      backCls: st.locked || !CONFIG.flow.showBack ? 'auto' : '',
-      nextDisabled: !s.done,
-      nextCls: CONFIG.flow.showNext && st.autoAdvance == null ? (s.done && !s.talking ? 'ready' : '') : 'auto', // screens move on by themselves
-      nextLabel: isLastCfu ? 'Finish' : 'Next',
       // spotlight: the board (shape + its labels) glides to centre stage and grows; Swiftee moves right; no bubble
       sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + (scene ? 'scene' : '') + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.enterGrow || st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look (css/game.css)
       boardTf: scene ? this.zoomTf(st) : spot ? tf(CONFIG.spotlight) : (st.layout === 'focus' && s.centered ? tf(CONFIG.focus) : (st.layout === 'top' ? tf(CONFIG.topLayout) : (st.boardShift || st.boardShiftY ? 'translate(' + (st.boardShift || 0) + 'px, ' + (st.boardShiftY || 0) + 'px)' : 'none'))),

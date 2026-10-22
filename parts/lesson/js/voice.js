@@ -7,13 +7,15 @@
 // =====================================================================
 (function () {
   const q = (k) => { try { return new URLSearchParams(location.search).get(k); } catch (e) { return null; } };
-  let el = null;
-  try { el = new Audio(); el.preload = 'auto'; } catch (e) { el = null; }
+  // in the journey: the shell's <audio>, which its Play tap has unlocked (shell/bridge.js)
+  const shared = window.Journey && window.Journey.embedded ? window.Journey.voiceElement() : null;
+  let el = shared;
+  if (!el) { try { el = new Audio(); el.preload = 'auto'; } catch (e) { el = null; } }
   let canOgg = false;
   try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); } catch (e) {}
   const lines = typeof VO_LINES !== 'undefined' ? VO_LINES : {};
   const src = (id) => 'assets/vo/' + id + '.ogg';
-  let tok = 0, played = false, unlocked = false, unlocking = null; // unlocking: the muted unlock play() still settling
+  let tok = 0, played = false, unlocked = !!shared, unlocking = null; // unlocking: the muted unlock play() still settling
 
   const VO = {
     on: !!el && canOgg && q('vo') !== '0' && Object.keys(lines).length > 0,

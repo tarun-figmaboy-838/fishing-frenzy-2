@@ -17,7 +17,8 @@
 // Sound: the Play tap unlocks one AudioContext and one <audio> in the shell's own document, and the parts play through
 // those (audioContext, audioOut, voiceElement), so the lesson needs no tap of its own before it can be heard. Opened
 // from disk (file://) the shell's document can't be reached; a part then uses its own and the flow runs on messages.
-// Opened on its own, a part goes to the journey, which then starts with it (?start=<part>).
+// Opened on its own, a part goes to the journey, which then starts with it (?start=<part>); with ?solo it stays on its
+// own page, outside the journey.
 // =====================================================================
 (function () {
   'use strict';
@@ -29,6 +30,8 @@
   try { if (inFrame && window.parent.FishingFrenzy) host = window.parent.FishingFrenzy; } catch (e) { host = null; }
   var embedded = inFrame && (!!host || params.has('embed'));
 
+  // ?solo: the part on its own page, outside the journey (for testing it alone)
+  if (!embedded && params.has('solo')) { window.Journey = { embedded: false }; return; }
   if (!embedded) {
     var shell = new URL('../../index.html', location.href);
     shell.searchParams.set('start', part);
