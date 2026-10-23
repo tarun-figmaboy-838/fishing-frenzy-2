@@ -13,8 +13,8 @@ A voiced maths adventure about parallelograms: part 2 of Fishing Frenzy, played 
    lesson's card and Swiftee, in her diving mask, dives in. 59 screens: from a trapezium to a parallelogram, its sides,
    angles and diagonals, three checkpoints and a recall. Each screen moves on by itself once its voice is done; a
    screen that asks for something waits for it.
-4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job! Yay!
-   Shape detective!"), and eight nets, each a property to set before the net drops, asked as the
+4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job!"), and
+   eight nets, each a property to set before the net drops, asked as the
    lesson asks it; then "The End", and Play Again goes back to the front page.
 
 Two voices only: Popo's, and Swiftee's studio voice for every other line in both parts.

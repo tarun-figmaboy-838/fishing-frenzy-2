@@ -146,7 +146,6 @@ const STORY = {
   // after the lesson: the giant wave has brought Popo back, and Swiftee swoops in from it
   welcome: [
     { who: 'swiftee', text: '*Great* job!', cue: { word: 0, do: 'twirl' } },
-    { who: 'swiftee', text: 'Yay! Shape *detective!*', cue: { word: 0, do: 'hop' } },
   ],
 };
 

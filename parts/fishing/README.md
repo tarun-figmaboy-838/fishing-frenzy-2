@@ -64,8 +64,7 @@ journey` part of `src/game.js`:
     (`AudioEngine.hold`).
   - `resume` — the lesson is over: the game wakes (its music fading back in) while the lesson
     dissolves away (`Game.goOn`); the wave rolls in from the left with Popo on its crest and
-    sets him down on his spot (`waveIn`), Swiftee swoops in with "Great job! Yay! Shape
-    detective!" (`welcome`), and the eight parallelogram nets follow.
+    sets him down on his spot (`waveIn`), Swiftee swoops in with "Great job!" (`welcome`), and the eight parallelogram nets follow.
   - `title` — after Play Again: the end screen's circle closes and opens on the banner from its
     start (`closeCurtain(game, { title: true })`), ready for the next Play.
   - `wake` — a dev panel jump: the game draws again (with its music, if it had it) without its
