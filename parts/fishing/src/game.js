@@ -1554,7 +1554,9 @@ class Game {
       c.y += c.vy * dt;
       if (was < 0.9 && c.life >= 0.9) popped += 1;
     }
-    if (popped) this.audio.play('word');
+    // a pop as pieces wink out, no more than one every 70 ms, so a burst crackles rather than buzzes
+    const now = performance.now();
+    if (popped && now - (this.lastPop || 0) > 70) { this.lastPop = now; this.audio.play('word'); }
     this.confetti = this.confetti.filter((c) => c.life < 1);
   }
 
