@@ -187,16 +187,15 @@ class Sea {
   }
 
   // Lays the lanes over `area` (keeping their fish, who glide to the new depths) at `pace` pixels a second, one bunch
-  // to a lane: a lane with no fish left swims whichever way chance says, at its own pace, and fills up to its
-  // bunch's count with newcomers of the bunch's kind and size (a lane with fish keeps its way and its kind), each
-  // queued out of sight at the lane's start to swim in when there's room (see steer). Nothing ever appears in view.
-  // `keep` is the school so far, `bunches` the level's (levels.js bunchesFor: { key, count, size }).
+  // to a lane: a lane with no fish left swims whichever way chance says, at its own pace, and gets its bunch - a cloud
+  // of fish of mixed sizes packed into an ellipse the lane's height (no two touching, see pack), the whole cloud
+  // swimming in from out of sight at the lane's start as one, so it reads as a school. A lane with fish keeps its
+  // way, its kind and its fish, newcomers packed round them. `keep` is the school so far, `bunches` the level's
+  // (levels.js bunchesFor: { key, count, size }).
   stock(keep, area, bunches, { rare = false, pace = 50 } = {}) {
     const band = area.bottom - area.top;
     const school = keep.filter((f) => !f.gone && !f.caught && !f.leaving);
     this.lanes.forEach((lane, i) => {
-      lane.base = area.top + band * (i + 0.5) / this.lanes.length;
-      lane.y = lane.base;
       const bunch = bunches[i % bunches.length];
       if (!school.some((f) => f.lane === lane)) {
         lane.dir = Math.random() < 0.5 ? -1 : 1;
@@ -208,8 +207,7 @@ class Sea {
     });
     // three bunches all swimming the same way read as one school: the middle lane turns if its neighbours agree with it
     if (this.lanes.every((l) => l.dir === this.lanes[0].dir) && !school.some((f) => f.lane === this.lanes[1])) this.lanes[1].dir *= -1;
-    // each lane's room follows its bunch: a shoal of small fish spreads over two rows and gets the most (as a school
-    // does), a few big ones swim in one row and need the least
+    // each lane's room follows its bunch: the shoal of small fish gets the most (as a school does), the few big ones the least
     const weights = this.lanes.map((l) => { const z = l.bunch ? l.bunch.size : 0.66; return z <= 0.58 ? 1.35 : z >= 0.78 ? 0.9 : 1; });
     const total = weights.reduce((a, b) => a + b, 0);
     let at = area.top;
@@ -221,46 +219,74 @@ class Sea {
     });
     for (const lane of this.lanes) {
       const bunch = lane.bunch || bunches[0];
-      const start = lane.dir > 0 ? area.left : area.right;
-      while (school.filter((f) => f.lane === lane).length < bunch.count) {
-        const f = new Fish(bunch.key, start, lane.y, lane.dir, bunch.size * (0.86 + Math.random() * 0.28)); // (mixed sizes, as a school)
+      const have = school.filter((f) => f.lane === lane);
+      if (have.length >= bunch.count) continue;
+      const fresh = [];
+      while (have.length + fresh.length < bunch.count) {
+        const kinds = bunch.kinds || [bunch.key];
+        const f = new Fish(kinds[Math.floor(Math.random() * kinds.length)], 0, lane.y, lane.dir, bunch.size * (0.82 + Math.random() * 0.36)); // (mixed kinds and sizes, as a school)
         f.lane = lane;
         f.rare = rare;
         f.speed = lane.speed;
-        f.waiting = true;
+        f.shoal = lane.shoal;
         f.queued = (this.queued = (this.queued || 0) + 1);
-        f.shoal = lane.shoal; // one bunch to a lane
-        school.push(f);
+        fresh.push(f);
       }
+      // the cloud, packed; it swims in from out of sight at the lane's start (newcomers to a lane with fish come in
+      // behind them the same way, packed round the ones already swimming)
+      const start = lane.dir > 0 ? area.left : area.right;
+      const offs = this.pack(fresh, lane.room, have.map((f) => ({ x: f.x, y: f.depth, w: f.w, h: f.h })), start, lane.dir);
+      fresh.forEach((f, n) => {
+        f.depth = offs[n].y;
+        f.x = start - lane.dir * (offs.reach + f.w / 2) + offs[n].x;
+        f.baseY = lane.y + f.depth;
+        f.y = f.baseY;
+        f.waiting = false;
+        school.push(f);
+      });
     }
     // a whole new school (the first, or the golden one) rushes in: its lanes swim fast for a
-    // moment, newcomers following on quickly, then ease to their pace; every fish in a lane
-    // speeds and slows together, so none gains on another
+    // moment, then ease to their pace; every fish in a lane speeds and slows together, so none gains on another
     const newcomers = school.length - keep.filter((f) => !f.gone && !f.caught && !f.leaving).length;
     if (newcomers > school.length / 2) for (const lane of this.lanes) lane.rush = RUSH;
-    // each fish floats at its own depth inside its lane, never into the next. A bunch whose lane has room for two of
-    // its fish swims as a cloud: its fish take the upper and lower row in turn (staggered along the lane, see
-    // steer), each a little above or below its row, so the bunch reads as a school, never as a line
-    for (const f of school) {
-      const room = f.lane.room, tallest = Math.max(...school.filter((g) => g.lane === f.lane).map((g) => g.h));
-      f.driftAmp = Math.max(0.5, Math.min(3, (room - f.h) / 4 - 1));
-      const two = room >= 2 * tallest + 8;
-      if (f.row === undefined) { const n = school.filter((g) => g.lane === f.lane && g.row !== undefined).length; f.row = two ? (n % 2 ? 1 : -1) : 0; }
-      const half = two ? room / 4 : 0; // the rows' centres, above and below the lane's middle
-      const slack = Math.max(0, (two ? room / 4 : room / 2) - f.h / 2 - f.driftAmp - 2);
-      if (f.depthShare === undefined) f.depthShare = Math.random() * 1.4 - 0.7;
-      f.depth = f.row * half + f.depthShare * slack;
-    }
+    for (const f of school) f.driftAmp = 1; // (a gentle float; the cloud is packed with room for it)
     return school;
   }
 
-  // Each frame: every fish's speed eases toward its lane's pace (which breathes a little, the
-  // same for the whole lane), a touch faster when the fish ahead is further than it should be
-  // (close behind in its own shoal, a shoal's open water behind the last one) and a touch slower
-  // when nearer, and never closer than a body's length to the fish ahead.
+  // Packs `fish` into a cloud: an ellipse as tall as the lane allows (room) and as long as the fish need, each fish
+  // at a random spot where it touches no other (`taken`: boxes already in the lane, in the same coordinates) - big
+  // ones first. Returns each fish's offset { x, y } from the cloud's middle (x along the lane), and `reach`: how far
+  // the cloud extends from its middle, so it can start out of sight.
+  pack(fish, room, taken, start, dir) {
+    const GAP = 9; // (room for each fish's float and bob)
+    const sorted = [...fish].sort((a, b) => b.h - a.h);
+    const ry = Math.max(room / 2 - 2, Math.max(...sorted.map((f) => f.h)) / 2 + 2);
+    let rx = Math.max(...sorted.map((f) => f.w)) * 0.8 + sorted.reduce((a, f) => a + (f.w + GAP) * (f.h + GAP), 0) * 1.4 / (Math.PI * ry);
+    const placed = taken.map((b) => ({ ...b })), out = new Map();
+    const clear = (x, y, w, h) => placed.every((b) => Math.abs(b.x - x) >= (b.w + w) / 2 + GAP || Math.abs(b.y - y) >= (b.h + h) / 2 + GAP);
+    for (const f of sorted) {
+      let spot = null;
+      for (let grow = 0; !spot && grow < 8; grow += 1) {
+        for (let n = 0; n < 240 && !spot; n += 1) {
+          const yMax = Math.max(0, ry - f.h / 2 - 1), y = (Math.random() * 2 - 1) * yMax;
+          const xMax = rx * Math.sqrt(Math.max(0, 1 - (y / ry) * (y / ry))), x = (Math.random() * 2 - 1) * xMax;
+          if (clear(x, y, f.w, f.h)) spot = { x, y };
+        }
+        if (!spot) rx *= 1.2;
+      }
+      if (!spot) spot = { x: rx + f.w, y: 0 }; // (never: the ellipse grows until it fits)
+      placed.push({ x: spot.x, y: spot.y, w: f.w, h: f.h });
+      out.set(f, spot);
+    }
+    const offs = fish.map((f) => out.get(f));
+    offs.reach = Math.max(...fish.map((f) => Math.abs(out.get(f).x) + f.w / 2));
+    return offs;
+  }
+
+  // Each frame: every fish's speed eases toward its lane's pace (which breathes a little, the same for the whole
+  // lane), so a lane's cloud swims as one and never changes shape: no fish ever closes on another.
   steer(fish, area, dt) {
     this.t += dt;
-    const span = area.right - area.left;
     // the lanes sway gently up and down together, so they stay apart
     const sway = Math.sin(this.t * 0.23) * LANE_SWAY;
     for (const lane of this.lanes) {
@@ -268,77 +294,7 @@ class Sea {
       const rush = lane.rush > 0 ? Math.min(1, lane.rush / (RUSH * 0.6)) : 0;
       lane.rush = Math.max(0, lane.rush - dt);
       const pace = lane.speed * (1 + 0.08 * Math.sin(this.t * 0.45 + lane.phase)) * (1 + 2.6 * rush * rush * (3 - 2 * rush));
-      const along = (f) => (((f.x - area.left) * lane.dir) % span + span) % span;
-      // fish leaving the sea still hold their places until they're out of sight
-      const members = fish.filter((f) => f.lane === lane && !f.gone && !f.caught && !f.frozen && !f.waiting)
-        .sort((a, b) => along(a) - along(b));
-      const queue = fish.filter((f) => f.lane === lane && f.waiting && !f.gone).sort((a, b) => a.queued - b.queued);
-      // the next newcomer swims in, out of sight at the lane's start: close behind the fish
-      // before it when they share a shoal, a shoal's open water behind when it starts a new one,
-      // and only once the next fish to loop round is a body and a gap clear of it (that fish
-      // holds back a little meanwhile, so the gap opens however full the lane is). So the
-      // shoals form as they arrive.
-      let holdBack = null;
-      if (queue.length) {
-        const all = [...members].sort((a, b) => a.queued - b.queued).concat(queue);
-        let close = 0;
-        for (let i = 0; i + 1 < all.length; i += 1) if (all[i].shoal === all[i + 1].shoal) close += (all[i].w + all[i + 1].w) / 2 + 16;
-        const shoals = new Set(all.map((f) => f.shoal)).size;
-        const newest = members.length ? members[0] : null;
-        const need = !newest ? 0 : newest.shoal === queue[0].shoal
-          ? (newest.w + queue[0].w) / 2 + 20
-          : Math.max(queue[0].w * 2, 0.8 * (span - close) / shoals);
-        const first = members.length ? along(members[0]) : span;
-        const last = members.length ? span - along(members[members.length - 1]) : span;
-        const clear = queue[0].w + 30;
-        if (first >= need && last >= clear) {
-          queue[0].waiting = false;
-          queue[0].speed = pace;
-          members.unshift(queue[0]);
-        } else if (members.length && last < clear) {
-          holdBack = members[members.length - 1];
-        }
-      }
-      const n = members.length;
-      if (n) {
-        // round the loop from its longest-swimming fish, the shoals come in the order they swam
-        // in, each fish in the shoal it joined (see stock), so they never reshuffle; the last fish
-        // round the loop leads into the first shoal, so that step is always open water
-        const first = members.reduce((a, f, i) => (f.queued < members[a].queued ? i : a), 0);
-        const ordered = members.slice(first).concat(members.slice(0, first));
-        // a bunch swims close: nose to tail in a row, and a fish in the other row half a body closer (the rows never
-        // overlap, so the two interleave into a cloud)
-        const tight = (f, g) => (f.row && g.row && f.row !== g.row ? (f.w + g.w) / 4 : (f.w + g.w) / 2) + 7;
-        const inShoal = (i) => i + 1 < n && ordered[i].shoal === ordered[i + 1].shoal;
-        let close = 0;
-        let shoals = 0;
-        ordered.forEach((f, i) => { if (inShoal(i)) close += tight(f, ordered[i + 1]); else shoals += 1; });
-        const open = (span - close) / shoals;
-        const even = span / n;
-        const wanted = (i) => (inShoal(i) ? tight(ordered[i], ordered[(i + 1) % n]) : open);
-        ordered.forEach((f, i) => {
-          let want = pace;
-          if (n > 1) {
-            // balanced between the fish ahead and the one behind, each gap against what it should
-            // be (close within a shoal, open water between shoals): steady, never a ripple
-            const next = ordered[(i + 1) % n];
-            const ahead = (along(next) - along(f) + span) % span;
-            const behind = (along(f) - along(ordered[(i - 1 + n) % n]) + span) % span;
-            const off = (ahead - wanted(i)) - (behind - wanted((i - 1 + n) % n));
-            want = pace * (1 + Math.max(-0.3, Math.min(0.3, off / (2 * even))));
-            // never touching the fish ahead
-            if (ahead < tight(f, next) - 1) want = Math.min(want, pace * 0.5);
-          }
-          if (f === holdBack) want = Math.min(want, pace * 0.6);
-          f.speed += (want - f.speed) * Math.min(1, dt * 1.2);
-          // and, within a body's length of the fish ahead, never faster than it: no fish ever
-          // closes on another, so none can touch
-          if (n > 1) {
-            const next = ordered[(i + 1) % n];
-            if ((along(next) - along(f) + span) % span < tight(f, next) + 3) f.speed = Math.min(f.speed, next.speed * 0.97);
-          }
-        });
-      }
+      for (const f of fish) if (f.lane === lane && !f.gone && !f.caught && !f.frozen) f.speed += (pace - f.speed) * Math.min(1, dt * 1.5);
     }
   }
 }
