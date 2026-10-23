@@ -63,6 +63,12 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   in gold. The whole line sits on one line, each word popping in as the voice reaches it (as the game's own plate); the
   plate fits its line, measured on a hidden copy in its own type (`plateFit`, `CONFIG.plateMaxW`), and a line too long
   for the card is set smaller. A question comes back, shown not said, after a tip.
+- **Dual coding.** As Swiftee says a part's name the part itself grows for a moment (`partCues` / `emphasize`): a
+  side (AB, "A B", legs, bases, sides), an angle (∠A, angles: the wedges, or the corners before the angles are drawn),
+  a length, a diagonal (AC, diagonals), point O, a half (AO, segments); a line's own `cues` add a glow, a name card, a
+  pulse, an angle focus (`focus`: the named angles stay vivid, the others step back) or the sum card lifting (`hiEq`).
+  While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
+  explained. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
 - **The voice** (`docs/VOICEOVER.md`): every line is a recorded clip in Swiftee's studio voice; words appear as the
   clip's own playhead reaches them, and each clip starts just before its first word. One voice: while the recordings are
   on, a line whose clip cannot play shows silently, and the journey never uses the device's speech voice.

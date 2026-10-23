@@ -176,6 +176,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* highlighted side: a touch bolder in its own colour, under its marker (.hl) */
 .edge.lit{stroke-width:7px}
 .edge.lit.emph{stroke-width:8px}
+/* ...and so do the diagonals, their halves, O and the length labels when a line names them */
+.diag{transition:stroke-width .3s cubic-bezier(.3,0,.3,1)}.diag.emph{stroke-width:7px}
+.hseg.emph{stroke-width:8px;filter:drop-shadow(0 0 4px rgba(255,196,0,.9))}
+.odot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke-width .3s}.odot.emph{r:10px;stroke-width:4px}
+.tag.mtag{transition:transform .3s cubic-bezier(.3,0,.3,1)}.tag.mtag.emph{transform:translate(-50%,-50%) scale(1.25)}
+/* while one name card is lifted (the pair being said), the others step back */
+.stage.in-card .chip.lo{opacity:.55;transform:scale(.96);transition:opacity .3s ease,transform .3s ease}
 /* screen 4 leg trace: a soft pink glow drawn on along the leg (D->A, C->B); at the corner it fades off the side while
    the dotted extension (xleg) draws on from the corner */
 .trace{stroke:var(--pg-line,#DA7E20);opacity:.95;filter:drop-shadow(0 0 4px rgba(255,175,83,.7));transition:opacity .35s ease}
@@ -727,6 +734,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 .sum-root:empty{display:none}
 .sum-root > svg{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:visible}
 .sum-root .summary-card.tappable{cursor:pointer;pointer-events:visiblePainted}
+/* while an idea is being explained the album bubbles and their plates step back, so the big bubble is the focus */
+.sum-root .summary-card,.sum-root .badge.mini{transition:opacity .35s ease}
+.sum-root[data-focus] .summary-card:not(.active),.sum-root[data-focus] .badge.mini{opacity:.5}
 /* a summary bubble's skin sways like a real bubble's (Summary.bubble); the idea inside stays still */
 .sum-root .sum-bub-skin{transform-box:fill-box;transform-origin:center;animation:bubSway 2.6s ease-in-out infinite alternate}
 @keyframes bubSway{from{scale:1 1}to{scale:1.014 .986}}

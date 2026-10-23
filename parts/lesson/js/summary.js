@@ -522,6 +522,8 @@
     show(c) {
       const S = this.S, g = S.cards[c.id] || (S.cards[c.id] = this.card(c));
       S.active = c.id; this.setState('CARD_ENTER', c.id); this.sfx('whoosh');
+      this.layer.querySelectorAll('.summary-card.active').forEach((el) => el.classList.remove('active'));
+      g.classList.add('active'); this.root.dataset.focus = '1'; // (the albums step back while this idea is shown and explained)
       if (!reduced() && g._pop.animate) {
         g._pop.style.transformBox = 'fill-box'; g._pop.style.transformOrigin = 'center';
         try { g._pop.animate([{ opacity: 0, scale: '.45' }, { opacity: 1, scale: '1.06', offset: 0.62 }, { scale: '.98', offset: 0.84 }, { scale: '1' }], { duration: BUB.enterMs, easing: 'ease-out' }); } catch (e) {}
@@ -551,11 +553,13 @@
         const P0 = SUM.mini.plate;
         // the album plate centred on its small bubble's bottom edge
         c._mini = this.nameTag(this.layer, sl.x, sl.y + r.h * k / 2 + 1, c._c.label, { h: P0.h, size: P0.size, w: P0.w, rim: P0.rim });
+        c._mini.classList.add('mini');
         if (!now) this.pop(c._mini, 0);
         if (S.collected.indexOf(id) < 0) S.collected.push(id);
         this.setState('NEXT_CONCEPT', id);
       };
       c._tag.setAttribute('opacity', 0);
+      c.classList.remove('active'); delete this.root.dataset.focus;
       if (now || reduced()) { land(); return Promise.resolve(true); }
       this.sfx('whoosh');
       const run = this.run;
@@ -614,6 +618,7 @@
       this.eng.sfx('tap');
       this.setState('CARD_SELECTED', id);
       S.collected.forEach((k) => { const o = k === id ? '' : '.42'; [S.cards[k], S.cards[k]._mini].forEach((el) => { el.style.transition = 'opacity 240ms ease'; el.style.opacity = o; }); });
+      c.classList.add('active');
       if (!reduced() && c._pop.animate) { try { c._pop.animate([{ scale: '1' }, { scale: '1.04', offset: 0.45 }, { scale: '1' }], { duration: 360, easing: 'ease-in-out' }); } catch (e) {} }
       this.setState('REPLAY_EXPLANATION', id);
       // reset the bubble to its starting state so reveal() can draw it again
@@ -626,6 +631,7 @@
         if (!live()) return false;
         this.hush(); S.active = null; this.eng.pose('happy');
         S.collected.forEach((k) => { [S.cards[k], S.cards[k]._mini].forEach((el) => { el.style.opacity = ''; }); });
+        c.classList.remove('active');
         this.busy = false; this.setState('READY'); this.eng.setState({ sumNext: true }); return ok;
       });
     }

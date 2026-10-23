@@ -336,19 +336,31 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // Which parts of the shape a line names, and at which word: [{ i, parts }]. Parts: 'aA'..'aD' angles,
   // 'AB' 'BC' 'CD' 'DA' sides, 'vA'..'vD' vertices. Only capitals count, so the article "A" is never a vertex.
   partCues(words) {
-    const clean = (w) => (w || '').replace(/[^A-Za-z∠]/g, '');
+    const clean = (w) => (w || '').split('\u00a0')[0].replace(/[^A-Za-z∠]/g, ''); // ("AB = 7 cm" is one shown word: its part is AB)
     const side = (p, q) => ({ AB: 'AB', BA: 'AB', BC: 'BC', CB: 'BC', CD: 'CD', DC: 'CD', DA: 'DA', AD: 'DA' })[p + q];
+    const diag = (p, q) => ({ AC: 'dAC', CA: 'dAC', BD: 'dBD', DB: 'dBD' })[p + q];
+    const half = (p, q) => ((p === 'O' || q === 'O') && /^[A-D]$/.test(p === 'O' ? q : p) ? 'h' + (p === 'O' ? q : p) : null);
     const one = (w) => /^[A-D]$/.test(w);
+    const f = (this.cur() || {}).f || {}, SIDES = ['AB', 'BC', 'CD', 'DA'], HALVES = ['hA', 'hB', 'hC', 'hD'];
     const cues = [];
     words.forEach((raw, i) => {
       const w = clean(raw), prev = clean(words[i - 1]).toLowerCase(), next = clean(words[i + 1]);
       let parts = null, m;
       if ((m = /^∠([A-D])$/.exec(w))) parts = ['a' + m[1]];
       else if (/^[A-D]{2}$/.test(w) && side(w[0], w[1])) parts = [side(w[0], w[1])];
-      else if (one(w) && /^(vertex|point|corner)$/.test(prev)) parts = ['v' + w];
+      else if (/^[A-D]{2}$/.test(w) && diag(w[0], w[1])) parts = [diag(w[0], w[1])];
+      else if (/^[A-DO]{2}$/.test(w) && half(w[0], w[1])) parts = [half(w[0], w[1])];
+      else if ((one(w) || w === 'O') && /^(vertex|point|corner)$/.test(prev)) parts = ['v' + w];
       else if (one(w) && one(next) && !one(clean(words[i - 1])) && side(w, next)) parts = [side(w, next)]; // spoken "A B"
       else if (/^legs$/i.test(w)) parts = ['DA', 'BC']; // plural only: "a leg" names one, not both
       else if (/^bases$/i.test(w)) parts = ['AB', 'CD'];
+      // the plain words: all four sides; the angles (their wedges where shown, else their corners); the lengths; the
+      // diagonals; the halves of the diagonals (dual coding: the part named grows as it is said)
+      else if (/^sides?$/i.test(w)) parts = SIDES;
+      else if (/^angles$/i.test(w)) parts = f.arcs ? ['aA', 'aB', 'aC', 'aD'] : ['vA', 'vB', 'vC', 'vD'];
+      else if (/^lengths?$/i.test(w)) parts = ['lAB', 'lCD', 'lDA', 'lBC'];
+      else if (/^diagonals?$/i.test(w)) parts = ['dAC', 'dBD'];
+      else if (/^segments?$/i.test(w)) parts = HALVES;
       if (parts) cues.push({ i: i, parts: parts, done: false });
     });
     return cues;
@@ -428,7 +440,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     // cues: board moments tied to a spoken word (exact match, punctuation ignored) - see runCue; any the voice never
     // reached all fire as the line ends
-    const cues = (L.cues || []).map((c) => ({ c: c, i: words.map((w) => w.toLowerCase().replace(/[^a-z0-9-]/g, '')).indexOf(String(c.at)), done: false })); // (a number is a word too: "180°")
+    // a cue's word is matched as the words are shown ("180°." is 180): one the voice never reaches fires as the line ends
+    const key = (w) => String(w).toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), done: false }));
     const fireCue = (q) => { if (q.done || tok !== this.narrTok) return; q.done = true; this.runCue(q.c); };
     // a part of the shape named in the line (∠A, AB, "A B", vertex A, legs, bases) grows briefly as the voice says it
     const emphCues = this.partCues(words);
@@ -690,6 +704,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   runCue(c) {
     const tok = this.stepTok, P = this.state.P;
     if (typeof c.fn === 'function') c.fn(); // (the summary's own highlights)
+    if (c.emph) this.emphasize(c.emph); // parts that grow on the word (as the ones a line names do by itself)
+    if (c.focus) { // the named angles stay vivid, the others step back for a moment
+      const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
+      this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
+    }
+    if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     if (c.chip) this.addChips([c.chip]);
     if (c.glow) this.sfx('glint', { v: 0.9 }); // a side (or the outline) lights up on its word
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
@@ -895,7 +915,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1676,13 +1696,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.ch2 = Object.assign({ p: (arrows('DA') + arrows('BC')) || 'M0,0', d: dsp(showPar2) }, glide('DA'));
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;
-    g.dAC = seg(A, C, !!(f.diag || s.diag.AC));
-    g.dBD = seg(B, D, !!(f.diag || s.diag.BD));
+    g.dAC = seg(A, C, !!(f.diag || s.diag.AC), { cls: s.emph && s.emph.dAC ? 'emph' : '' });
+    g.dBD = seg(B, D, !!(f.diag || s.diag.BD), { cls: s.emph && s.emph.dBD ? 'emph' : '' });
     // split: the four halves in four colours; halfPairs: the equal halves share a colour (OA, OC pink; OB, OD blue)
     {
       const HC = f.halfPairs ? { A: PAL.vA, C: PAL.vA, B: PAL.vB, D: PAL.vB } : { A: PAL.vA, B: PAL.vB, C: PAL.vC, D: PAL.vD };
       const on = !!(f.split || f.halfPairs);
-      ['A', 'B', 'C', 'D'].forEach((k) => { g['h' + k] = seg(O0(), P[k], on, { c: HC[k], cls: 'hseg' + (f.halfPairs ? ' pr' : '') }); });
+      ['A', 'B', 'C', 'D'].forEach((k) => { g['h' + k] = seg(O0(), P[k], on, { c: HC[k], cls: 'hseg' + (f.halfPairs ? ' pr' : '') + (s.emph && s.emph['h' + k] ? ' emph' : '') }); });
     }
     // connect: the line follows the finger from the picked corner
     g.cn = s.conn ? seg(P[s.conn.from], { x: s.conn.x, y: s.conn.y }, true) : seg(A, A, false);
@@ -1714,7 +1734,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         s180 = { t: '180°', x: r1(Py.x + bx * (Rr + 26 / zs)), y: r1(Py.y + by * (Rr + 26 / zs)), cls: 'alab s180 ' + sk };
       } else g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', rim: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, o: '0px 0px', lcls: 'supp-line', ocls: 'supp-own', cls: 'supp-copy', rcls: 'supp-rim', dx: '0px', dy: '0px' };
     }
-    g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O) };
+    g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O), cls: s.emph && s.emph.vO ? 'emph' : '' };
     // hticks: equal halves marked like equal sides (one tick on OA and OC, two on OB and OD)
     g.htk = { p: tick(O, A, true) + tick(O, C, true) + tick(O, B) + tick(O, D), d: dsp(f.hticks) };
     // angles
@@ -1841,6 +1861,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // carrying arrows or ticks keeps them clear (markGap))
     const marked = (p, q) => { const k = [p, q].map((V) => ['A', 'B', 'C', 'D'].find((x) => P[x] === V)).sort().join('');
       const key = { AB: 'AB', BC: 'BC', CD: 'CD', AD: 'DA' }[k]; return !!(key && (nArrows[key] || nTicks[key])); };
+    const emL = (k) => (s.emph && s.emph['l' + k] ? ' emph' : ''); // (the lengths grow when the line names them)
     const side = (p, q, text, cls, show) => {
       const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
@@ -1853,15 +1874,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, outside the shape)
     const isM = st.task === 'measure';
     // lengths wear their sides' colours, as in Fishing Frenzy: AB, CD blue; AD, BC teal (mleg)
-    tags.push(side(D, A, this.cm(ad), 'mtag mleg', isM && !!s.tap.DA)); // values only, no side names
-    tags.push(side(B, C, this.cm(bc), 'mtag mleg', isM && !!s.tap.BC));
-    tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag', isM && !!s.tap.AB));
-    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag', isM && !!s.tap.CD)); // all four outside their sides
+    tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), isM && !!s.tap.DA)); // values only, no side names
+    tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), isM && !!s.tap.BC));
+    tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), isM && !!s.tap.AB));
+    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four outside their sides
     const lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
-    tags.push(side(D, A, this.cm(ad), 'mtag mleg', !!f.legLen && lon('DA')));
-    tags.push(side(B, C, this.cm(bc), 'mtag mleg', !!f.legLen && lon('BC')));
-    tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag', !!f.sideLen && lon('AB')));
-    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag', !!f.sideLen && lon('CD')));
+    tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), !!f.legLen && lon('DA')));
+    tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), !!f.legLen && lon('BC')));
+    tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), !!f.sideLen && lon('AB')));
+    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), !!f.sideLen && lon('CD')));
     if (fig && fig.sides) {
       const E = { AB: [A, B], BC: [B, C], CD: [D, C], DA: [D, A] };
       Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); tags.push(side(E[k][0], E[k][1], t, 'mtag fig' + (k === 'BC' || k === 'DA' ? ' mleg' : '') + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true)); });
@@ -1984,8 +2005,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // chips
     let chips = s.chips.slice();
     const f = this.fl();
-    if (isLesson && f.eq === 'AD') chips = [{ t: '∠A + ∠D = ' + G.V.A + '° + ' + G.V.D + '° = 180°', k: 'white' }];
-    if (isLesson && f.eq === 'BC') chips = [{ t: G.V.B + '° + ' + G.V.C + '° = 180°', k: 'white' }];
+    if (isLesson && f.eq === 'AD') chips = [{ t: '∠A + ∠D = ' + G.V.A + '° + ' + G.V.D + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
+    if (isLesson && f.eq === 'BC') chips = [{ t: G.V.B + '° + ' + G.V.C + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
     // halves: the four measured half-diagonals, live, until a line brings its own cards
     if (isLesson && f.halves && !chips.length) {
       const P = s.P, O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 };
@@ -2048,7 +2069,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       chips: chips.reduce((a, c) => a.concat(st.chipRows && /\bname\b/.test(c.k) && a.length ? [{ t: '', k: 'brk' }] : [], [c]), [])
         .map((c) => (/^(AB|CD) [∥=] (AB|CD)$/.test(c.t) ? Object.assign({}, c, { k: c.k + ' pairA' }) :
           /^(AD|BC) [∥=] (AD|BC)$/.test(c.t) ? Object.assign({}, c, { k: c.k + ' pairB' }) : c))
-        .map((c) => ((v) => Object.assign(v, { k: v.k + (v.cap ? ' hascap' : '') }))(Object.assign({ t: c.t, k: c.k + (c.t.length > 20 ? ' long' : '') + (c.t && c.t === s.chipHi ? ' hi' : '') }, this.chipView(c)))),
+        .map((c) => ((v) => Object.assign(v, { k: v.k + (v.cap ? ' hascap' : '') }))(Object.assign({ t: c.t, k: c.k + (c.t.length > 20 ? ' long' : '') + (c.t && c.t === s.chipHi ? ' hi' : s.chipHi && c.k !== 'brk' ? ' lo' : '') }, this.chipView(c)))),
       rootDown: (e) => this.rootDown(e),
       wordSize: plate ? plate.size : wi > 15 || (s.line || '').length > 80 ? 22 : 24, // the plate's fit; a long bubble line gets the smaller size
       c1: c1, hasOpts: hasOpts, opts: opts,

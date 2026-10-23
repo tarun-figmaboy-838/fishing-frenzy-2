@@ -93,8 +93,9 @@ const LESSON = {
       f: PG },
 
     // ---------- Part 2 · opposite side lengths (pages 12-20) ----------
-    { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?' }], f: PG },
-    { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?' }], f: PG },
+    // (the sides light on "lengths" / "equal": the question is about them, and nothing else is on the board yet)
+    { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?', cues: [{ at: 'lengths', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
+    { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?', cues: [{ at: 'equal', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
     { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's measure them." }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
     { pdf: 15, id: 'interesting', lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
@@ -145,7 +146,7 @@ const LESSON = {
     // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
     { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's measure the angles\nand find out." }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
-    { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.' }], f: { arcs: 'ABCD' } },
+    { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     { pdf: '27-28', id: 'tapEqA', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
@@ -157,10 +158,11 @@ const LESSON = {
       chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
-    { pdf: 32, id: 'seeElse', lines: [{ m: 'thinking', t: 'But I see something\nelse too.' }], f: { arcs: 'ABCD' } },
+    { pdf: 32, id: 'seeElse', lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
-    { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.' }], f: { arcs: 'ABCD', eq: 'AD', supp: ['AD'] } },
+    // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts
+    { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.', cues: [{ at: 'add', focus: ['A', 'D'], ms: 2200 }, { at: '180°', hiEq: 1, ms: 1600 }] }], f: { arcs: 'ABCD', eq: 'AD', supp: ['AD'] } },
     Object.assign({ pdf: 35, id: 'askAdj', multi: 1, lines: [{ m: 'curious', t: 'Which other angles\nadd up to 180°?' }],
       ok: 'Yes! ∠B + ∠C = 180° and\n∠A + ∠B = 180°.', okChips: [{ t: '∠B + ∠C = 180°', k: 'gold sm' }, { t: '∠A + ∠B = 180°', k: 'gold sm' }],
       opts: [
