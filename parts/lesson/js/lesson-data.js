@@ -51,9 +51,10 @@ const LESSON = {
     // (she waves hello as she speaks)
     { pdf: 1, id: 'intro', build: 1, skin: 'intro', lines: [{ m: 'waving', holdM: 1, t: 'We learnt about quadrilaterals\nearlier.' }], f: { noLetters: 1 } },
     { pdf: 2, id: 'quadSides', sideNums: 1, skin: 'intro', lines: [{ m: 'happy', t: 'Any polygon with 4 sides is\ncalled a quadrilateral.' }], f: { noLetters: 1 } },
-    // screens 3-4: the name caption is a word cue, as on screen 10 - "Trapezium" pops in exactly as Swiftee says it and
-    // the outline glows once. Screen 4 never lights up AB/CD on "parallel": screen 5 asks which pair is parallel.
-    { pdf: 3, id: 'special', assemble: 1, voiceDelay: 3000, skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called trapezium.', growAt: 'special',
+    // screens 3-4: the shape screen 1 drew stays (never rebuilt); it comes forward once on "special" (growAt), and the
+    // name caption is a word cue, as on screen 10 - "Trapezium" pops in exactly as Swiftee says it and the outline glows
+    // once. Screen 4 never lights up AB/CD on "parallel": screen 5 asks which pair is parallel.
+    { pdf: 3, id: 'special', skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called trapezium.', growAt: 'special',
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1 } },
     { pdf: 4, id: 'onePair', skin: 'intro', lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.',
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: { noLetters: 1 } },
@@ -68,9 +69,9 @@ const LESSON = {
     // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram
     { pdf: 8, id: 'dragPar', skin: 'intro', lines: [{ m: 'curious', t: 'Drag vertex B to make\nBC parallel to AD.' }],
       task: 'dragB', handOnce: 1,
-      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.' }], f: { par: 1 } },
+      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.', cues: [{ at: 'parallel', rails: ['BC', 'DA'] }] }], f: { par: 1 } },
     { pdf: 9, id: 'bothPar', lines: [
-      { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
+      { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', cues: [{ at: 'parallel', rails: ['AB', 'CD', 'BC', 'DA'] }], glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
       { keep: 1, s: 'A D is parallel to B C.', glow: ['DA', 'BC'], chips: [{ t: 'AD ∥ BC', k: 'white' }] }], f: PG },
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, as on screen 10 - "We": AB ∥ CD
     // pops in as AB and CD glow; "this": AD ∥ BC as AD and BC glow (the shape she points at); "Parallelogram": the
@@ -108,7 +109,7 @@ const LESSON = {
         { id: 'all', t: 'All sides are equal', fb: 'Look at the lengths again. AB is 6 cm, but AD is only 3 cm.' },
         { id: 'opp', t: 'Opposite sides are equal', ok: true }
       ], f: LENS }, PRACTICE),
-    { pdf: 18, id: 'oppEq', lines: [{ m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }],
+    { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'equal', match: [['AB', 'CD'], ['DA', 'BC']] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }],
       f: Object.assign({ ticks: 1 }, LENS) },
     { pdf: 19, id: 'soAny', lines: [{ t: 'So, in any parallelogram…', glow: ['AB', 'CD', 'DA', 'BC'],
       chips: [{ t: 'AB ∥ CD', k: 'white sm' }, { t: 'AD ∥ BC', k: 'white sm' }, { t: 'AB = CD', k: 'white sm' }, { t: 'AD = BC', k: 'white sm' }] }],
@@ -150,11 +151,11 @@ const LESSON = {
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     { pdf: '27-28', id: 'tapEqA', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
-      after: [{ m: 'happy', t: "That's correct! ∠A is\nequal to ∠C.", chips: [{ t: '∠A = ∠C', k: 'gold' }] }], f: { arcs: 'ABCD' } },
+      after: [{ cues: [{ at: 'equal', matchAng: ['A', 'C'] }], m: 'happy', t: "That's correct! ∠A is\nequal to ∠C.", chips: [{ t: '∠A = ∠C', k: 'gold' }] }], f: { arcs: 'ABCD' } },
     { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
       wrong: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.',
-      after: [{ m: 'happy', t: "That's correct! ∠D is\nequal to ∠B.", chips: [{ t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairA: 1 } },
-    { pdf: 31, id: 'oppAng', lines: [{ m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.',
+      after: [{ cues: [{ at: 'equal', matchAng: ['D', 'B'] }], m: 'happy', t: "That's correct! ∠D is\nequal to ∠B.", chips: [{ t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairA: 1 } },
+    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'equal', matchAng: [['A', 'C'], ['B', 'D']] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.',
       chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
@@ -219,7 +220,7 @@ const LESSON = {
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
       f: Object.assign({ split: 1, halves: 1 }, DIAG) }, { chipTop: 105 }),
-    { pdf: 48, id: 'bisectEq', lines: [{ t: 'Each diagonal is divided\ninto two equal parts\nby the other.', chips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }],
+    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', fold: [['A', 'C'], ['B', 'D']] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.', chips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
     { pdf: 49, id: 'bisect', lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect', chips: [{ t: 'Diagonals bisect each other.', k: 'name' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },

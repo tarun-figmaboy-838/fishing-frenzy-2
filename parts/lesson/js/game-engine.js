@@ -654,6 +654,22 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // the queue carries on with its next line, so a step's later lines and chips are never lost.
   // keep a number and its unit, and short equations, on one line ("5 cm", "AB = 6 cm" never split)
   toWords(t) { return t.replace(/(\d) (cm)\b/g, '$1\u00a0$2').replace(/ ([=+\u2212]) /g, '\u00a0$1\u00a0').split(/[ \t\n]+/).filter(Boolean); }
+  // the shape's corners and O on the stage (stage px), for the maths in motion
+  fxPts() {
+    const P = this.state.P, out = {};
+    for (const k of ['A', 'B', 'C', 'D']) { const q = this.boardToStage(P[k]); if (!q) return null; out[k] = q; }
+    out.O = { x: (out.A.x + out.C.x) / 2, y: (out.A.y + out.C.y) / 2 };
+    return out;
+  }
+  // the wedge of the angle at corner k, on the stage: its vertex, its arms (unit vectors to its neighbours), the sweep
+  // flag of the arc inside the shape, its radius and colour (as the board draws it)
+  fxWedge(S, k) {
+    const nb = { A: ['D', 'B'], B: ['A', 'C'], C: ['B', 'D'], D: ['C', 'A'] }[k], v = S[k];
+    const un = (q) => { const L = Math.hypot(q.x - v.x, q.y - v.y) || 1; return { x: (q.x - v.x) / L, y: (q.y - v.y) / L }; };
+    const u1 = un(S[nb[0]]), u2 = un(S[nb[1]]), cross = u1.x * u2.y - u1.y * u2.x, dot = u1.x * u2.x + u1.y * u2.y;
+    const deg = Math.abs(Math.atan2(cross, dot)) * 180 / Math.PI;
+    return { v: v, u1: u1, u2: u2, f: cross > 0 ? 1 : 0, R: CONFIG.angleR(deg), col: CONFIG.palette['v' + k] };
+  }
   // the plate's width and type size for its line: measured on a hidden copy in the plate's own type (css/game.css
   // .plate-measure), so it fits its line (no empty glass round a short one) and glides to the next screen's size. The
   // whole line sits on one line of 26 px; one too long for the card is set at 23 px, then 20 (as Fishing Frenzy's)
@@ -710,6 +726,20 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
     if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
+    // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
+    // diagonals' halves fold onto each other, parallel sides run out as rails - one pair after another
+    if (window.Motion && (c.match || c.matchAng || c.fold || c.rails)) {
+      const S = this.fxPts(), PAL = CONFIG.palette;
+      if (S) {
+        const seg = (k) => { const a = S[k[0]], b = S[k[1]]; return { x1: a.x, y1: a.y, x2: b.x, y2: b.y, col: k === 'AB' || k === 'CD' || k === 'BA' || k === 'DC' ? PAL.line : PAL.pair2 }; };
+        const pairs = (v) => (Array.isArray(v[0]) ? v : [v]);
+        let at = 0;
+        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.slideMatch(seg(pr[0]), seg(pr[1])); }, at); at += 1300; });
+        if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1])); }, at); at += 1350; });
+        if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 1300; });
+        if (c.rails) this.tm(() => { if (tok === this.stepTok) Motion.rails(c.rails.map(seg)); }, at);
+      }
+    }
     if (c.chip) this.addChips([c.chip]);
     if (c.glow) this.sfx('glint', { v: 0.9 }); // a side (or the outline) lights up on its word
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
@@ -971,6 +1001,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   cheer() {
     this.sfx('good');
     if (window.Confetti && !this.cur().calmOk) window.Confetti.burst(); // calmOk: sound and praise only
+    if (window.Motion && Motion.starPop && this.cur().cpTitle) Motion.starPop(640, 440); // a checkpoint right: a star for it
     this.react(CONFIG.swiftee.praise);
   }
   // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoNext) after the last line ends.
@@ -1624,7 +1655,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.ol = { d: dsp(!!(bd && bd.settle) || !!st.assemble) };
     // the named side (as in Fishing Frenzy's lesson): a sunflower-yellow marker redraws it, a glowing pen tip running
     // ahead of it, while the side is lit or the voice names it (css .hl / .hlp)
-    const hlCls = (k) => 'hl' + ((lit[k] || (s.emph && s.emph[k])) && edgeOn(k) ? ' on' : '');
+    const hlCls = (k) => 'hl' + (lit[k] && edgeOn(k) ? ' on' : ''); // (a side a word names only grows bolder: .edge.emph)
     g.eAB = seg(A, B, edgeOn('AB'), { c: baseCol('AB'), cls: eCls('AB'), hl: hlCls('AB') });
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
     g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });

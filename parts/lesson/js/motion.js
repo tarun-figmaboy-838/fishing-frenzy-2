@@ -52,6 +52,7 @@
     // leaks into every later screen. So afterwards every property GSAP animates is wiped from every element it
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
+      const fx = document.querySelector('.stage svg.math-fx'); if (fx) fx.innerHTML = ''; // (the maths in motion: gone with the screen)
       if (ctx) ctx.revert();
       sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
       const els = $(ANIMATED); // (none yet before the lesson's first screen: GSAP warns about an empty target)
@@ -140,17 +141,113 @@
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];
       add(() => {
         const tl = G.timeline(), dur = reduced ? 0 : 0.9;
-        if (g) {
+        const held = g && +G.getProperty(g, 'scale') < 0.99; // (held small by holdSmall: comes up to size; else one soft beat)
+        if (g && !held) tl.to(g, { scale: 1.04, svgOrigin: cx + ' ' + cy, duration: dur * 0.45, ease: 'sine.out', yoyo: true, repeat: 1 }, 0);
+        if (d && !held) tl.to(d, { scale: 1.04, transformOrigin: cx + 'px ' + cy + 'px', duration: dur * 0.45, ease: 'sine.out', yoyo: true, repeat: 1 }, 0);
+        if (g && held) {
           tl.to(g, { scale: 1, opacity: 1, svgOrigin: cx + ' ' + cy, duration: dur, ease: 'power2.out' }, 0)
             .fromTo(g, { filter: 'drop-shadow(0px 0px 0px ' + tint(0) + ')' },
               { filter: 'drop-shadow(0px 0px 12px ' + tint(0.45) + ')', duration: dur * 0.45, ease: 'sine.out', yoyo: true, repeat: 1 }, 0);
         }
-        if (d) tl.to(d, { scale: 1, opacity: 1, transformOrigin: cx + 'px ' + cy + 'px', duration: dur, ease: 'power2.out' }, 0);
+        if (d && held) tl.to(d, { scale: 1, opacity: 1, transformOrigin: cx + 'px ' + cy + 'px', duration: dur, ease: 'power2.out' }, 0);
+        if (g) tl.fromTo(g, { filter: 'drop-shadow(0px 0px 0px ' + tint(0) + ')' }, { filter: 'drop-shadow(0px 0px 12px ' + tint(0.45) + ')', duration: dur * 0.45, ease: 'sine.out', yoyo: true, repeat: 1 }, 0);
         return tl;
       });
     },
 
     // "We call this a trapezium": the shape (and its labels) zooms up once about its own centre and eases back
+    // ---------- the maths in motion (stage px, from the engine's boardToStage): drawn on an overlay svg over the board,
+    // wiped by clear(). Each returns how long it runs (ms) ----------
+    fx() {
+      let svg = document.querySelector('.stage svg.math-fx');
+      if (!svg) {
+        const stage = document.querySelector('.stage'); if (!stage) return null;
+        svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'math-fx'); svg.setAttribute('viewBox', '0 0 1280 720'); svg.setAttribute('aria-hidden', 'true');
+        stage.appendChild(svg);
+      }
+      return svg;
+    },
+    mk(tag, attrs, parent) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      Object.keys(attrs || {}).forEach((k) => { if (k === 'text') el.textContent = attrs[k]; else el.setAttribute(k, attrs[k]); });
+      (parent || this.fx()).appendChild(el);
+      return el;
+    },
+    // equal sides: a glowing copy of side a lifts off, glides onto its opposite b and fits it exactly, beats once and fades
+    slideMatch(a, b, col) {
+      if (!G || reduced || !this.fx()) return 0;
+      const ln = this.mk('line', { x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: col || a.col || '#1e7bff', 'stroke-width': 8, 'stroke-linecap': 'round', opacity: 0, 'class': 'math-copy' });
+      add(() => G.timeline({ onComplete: () => ln.remove() })
+        .to(ln, { opacity: 1, duration: 0.2 })
+        .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 0.9, ease: 'power2.inOut' }, 0.2)
+        .to(ln, { 'stroke-width': 13, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.15)
+        .to(ln, { opacity: 0, duration: 0.35 }, 1.75));
+      return 2100;
+    },
+    // equal angles: a copy of the wedge at one corner flies to the opposite corner, turning a half-turn on the way (a
+    // parallelogram's opposite angles are each other's half-turn about O), fits it, beats and fades
+    spinMatch(src, dst) {
+      if (!G || reduced || !this.fx()) return 0;
+      const g = this.mk('g', { 'class': 'math-glow' });
+      const R = src.R, v = src.v, a1 = Math.atan2(src.u1.y, src.u1.x), a2 = Math.atan2(src.u2.y, src.u2.x), f = src.f, r1 = (n) => n.toFixed(1);
+      this.mk('path', { d: 'M' + r1(v.x) + ',' + r1(v.y) + ' L' + r1(v.x + R * Math.cos(a1)) + ',' + r1(v.y + R * Math.sin(a1)) + ' A' + R + ',' + R + ' 0 0 ' + f + ' ' + r1(v.x + R * Math.cos(a2)) + ',' + r1(v.y + R * Math.sin(a2)) + ' Z',
+        fill: src.col, 'fill-opacity': 0.95, stroke: '#fff', 'stroke-width': 2 }, g);
+      // (svgOrigin: the corner itself, in the svg's coordinates - a px transformOrigin would be the group's box corner)
+      const origin = r1(v.x) + ' ' + r1(v.y);
+      add(() => G.timeline({ onComplete: () => g.remove() })
+        .set(g, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, svgOrigin: origin })
+        .to(g, { opacity: 1, scale: 1.25, duration: 0.25, svgOrigin: origin })
+        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.0, ease: 'power2.inOut', svgOrigin: origin }, 0.25)
+        .to(g, { scale: 1, duration: 0.25, ease: 'back.out(2)', svgOrigin: origin }, 1.15)
+        .to(g, { opacity: 0, duration: 0.35 }, 1.8));
+      return 2150;
+    },
+    // the diagonals bisect each other: half OA folds about O by a half-turn and lands exactly on OC
+    foldHalf(O, A, col) {
+      if (!G || reduced || !this.fx()) return 0;
+      const g = this.mk('g', { 'class': 'math-glow' }), r1 = (n) => n.toFixed(1), origin = r1(O.x) + ' ' + r1(O.y);
+      this.mk('line', { x1: r1(O.x), y1: r1(O.y), x2: r1(A.x), y2: r1(A.y), stroke: col || '#ffd000', 'stroke-width': 8, 'stroke-linecap': 'round' }, g);
+      this.mk('circle', { cx: r1(O.x), cy: r1(O.y), r: 7, fill: '#fff', stroke: '#123b63', 'stroke-width': 3 }, g);
+      add(() => G.timeline({ onComplete: () => g.remove() })
+        .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
+        .to(g, { opacity: 1, duration: 0.2 })
+        .to(g, { rotation: 180, duration: 1.0, ease: 'power2.inOut', svgOrigin: origin }, 0.2)
+        .to(g, { opacity: 0, duration: 0.35 }, 1.7));
+      return 2050;
+    },
+    // parallel sides: dashed rails shoot out past both ends of each side and run side by side - they never meet
+    rails(segs) {
+      if (!G || reduced || !this.fx()) return 0;
+      const EXT = 150;
+      segs.forEach((sg, i) => {
+        const dx = sg.x2 - sg.x1, dy = sg.y2 - sg.y1, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+        const p = { x: sg.x1 - ux * EXT, y: sg.y1 - uy * EXT }, q = { x: sg.x2 + ux * EXT, y: sg.y2 + uy * EXT }, len = L + 2 * EXT;
+        const ln = this.mk('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1), stroke: sg.col || '#1e7bff', 'stroke-width': 4, 'stroke-dasharray': '12 10', 'stroke-linecap': 'round', opacity: 0 });
+        // drawn from the middle out: a second dash pattern masks the length
+        ln.style.strokeDasharray = '12 10'; ln.style.opacity = '0';
+        const cover = this.mk('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1), stroke: '#fff', 'stroke-width': 0, opacity: 0 });
+        add(() => G.timeline({ onComplete: () => { ln.remove(); cover.remove(); } })
+          .set(ln, { opacity: 0.9, 'stroke-dashoffset': 0 })
+          .fromTo(ln, { attr: { x1: (sg.x1 + sg.x2) / 2, y1: (sg.y1 + sg.y2) / 2, x2: (sg.x1 + sg.x2) / 2, y2: (sg.y1 + sg.y2) / 2 } }, { attr: { x1: p.x, y1: p.y, x2: q.x, y2: q.y }, duration: 0.7, ease: 'power2.out' }, i * 0.12)
+          .to(ln, { 'stroke-dashoffset': -44, duration: 1.4, ease: 'none' }, 0.7 + i * 0.12)
+          .to(ln, { opacity: 0, duration: 0.4 }, 1.9 + i * 0.12));
+      });
+      return 2400 + segs.length * 120;
+    },
+    // a right answer: a star and "+1" pop up over the shape and float away (the fishing game's "+3" over a catch)
+    starPop(x, y) {
+      if (!G || reduced || !this.fx()) return 0;
+      const g = this.mk('g', { 'class': 'math-star' }), origin = x + ' ' + (y - 14);
+      this.mk('text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': 44, 'font-weight': 800, 'font-family': "'Baloo 2', Nunito, system-ui, sans-serif", fill: '#ffd23f', stroke: '#8a4a00', 'stroke-width': 3, 'paint-order': 'stroke', text: '★ +1' }, g);
+      add(() => G.timeline({ onComplete: () => g.remove() })
+        .set(g, { scale: 0.4, opacity: 0, svgOrigin: origin })
+        .to(g, { opacity: 1, scale: 1.15, duration: 0.3, ease: 'back.out(2.5)', svgOrigin: origin })
+        .to(g, { scale: 1, duration: 0.2, svgOrigin: origin }, 0.3)
+        .to(g, { y: -70, duration: 1.1, ease: 'sine.out' }, 0.3)
+        .to(g, { opacity: 0, duration: 0.4 }, 1.0));
+      return 1400;
+    },
     pop(cx, cy) {
       if (!G || reduced) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];

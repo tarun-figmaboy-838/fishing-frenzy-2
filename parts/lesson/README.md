@@ -69,6 +69,11 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   pulse, an angle focus (`focus`: the named angles stay vivid, the others step back) or the sum card lifting (`hiEq`).
   While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
   explained. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
+- **The maths in motion** (`js/motion.js` fx, on an overlay over the board; a line's `cues`): equal sides slide onto
+  each other (`match`), equal angles fly to the opposite corner turning a half-turn and fit (`matchAng`), the diagonals'
+  halves fold about O onto each other (`fold`), parallel sides run out as dashed rails that never meet (`rails`); a
+  checkpoint answered right pops a star over the shape. Screen 1's shape is drawn once by the pen and stays: no
+  screen rebuilds it. The yellow marker pen redraws a side only when a cue lights it; a side a word names just grows.
 - **The voice** (`docs/VOICEOVER.md`): every line is a recorded clip in Swiftee's studio voice; words appear as the
   clip's own playhead reaches them, and each clip starts just before its first word. One voice: while the recordings are
   on, a line whose clip cannot play shows silently, and the journey never uses the device's speech voice.
