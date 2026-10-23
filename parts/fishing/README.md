@@ -166,8 +166,8 @@ The game is deployed as part of the journey: the repository's root is the static
   fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
 - **The catch.** A right net sits open in the water with Catch (`catchNow`). Three bunches of fish (`bunchesFor` in
-  `src/levels.js`: a shoal of 8 to 16 small fish, a bunch of 4 to 7 middling ones, 2 to 4 big ones, each a mix of two
-  to four kinds and of sizes) roam the sea at the depth the net reaches, a little quicker net by net (`Sea`); each
+  `src/levels.js`: never one of fewer than eight: a shoal of 8 to 16 small fish, a school of 8 to 11 middling ones,
+  one of 8 or 9 big ones, each a mix of three or four kinds and of sizes) roam the sea at the depth the net reaches, a little quicker net by net (`Sea`); each
   bunch is packed into a loose, tall cloud (`Sea.pack`: an ellipse the whole band's height, no two fish touching) that
   swims as one, so it reads as a school (as a drawn shoal does) and never as a line. The three swim one way, whichever
   chance says for a new school, in a loose line at one pace (`Sea.lead` brings each in behind the others), and loop

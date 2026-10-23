@@ -95,13 +95,13 @@ function shuffle(list) {
   return result;
 }
 
-// A level's sea holds three bunches of fish, each its own size and count - a shoal of small fish (8 to 16), a
-// middling bunch (4 to 7) and a few big ones (2 to 4) - each a mix of kinds (two to four of them, every fish its own)
-// and sizes, each swimming its own lane its own way (see Sea), so the bunches never run into each other and the
-// child picks which to catch. No two levels in a row open with the same kinds.
+// A level's sea holds three schools of fish, never one of fewer than eight, each its own size - a shoal of small fish
+// (8 to 16), a school of middling ones (8 to 11) and one of big ones (8 or 9) - each a mix of kinds (three or four of
+// them, every fish its own) and sizes, the three swimming one way in a spaced line (see Sea), so they never run into
+// each other and the child picks which to catch. No two levels in a row open with the same kinds.
 const BUNCHES = 3;
-const BUNCH_SIZES = [0.5, 0.66, 0.84];  // the bunches' fish sizes: small, middling, big (three lanes fit under the net)
-const BUNCH_COUNTS = [[8, 16], [4, 7], [2, 4]]; // ...and how many of each
+const BUNCH_SIZES = [0.48, 0.6, 0.72];  // the bunches' fish sizes: small, middling, big (three clouds fit round the sea)
+const BUNCH_COUNTS = [[8, 16], [8, 11], [8, 9]]; // ...and how many of each: never a school of fewer than eight
 let lastKinds = [];
 function bunchesFor(level) {
   let pool = shuffle(NATURAL_FISH);
