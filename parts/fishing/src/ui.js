@@ -218,12 +218,13 @@ class UI {
     }, 260);
   }
 
-  // Where the hint hand's fingertip goes on a HUD button, as a stage point: on its face, or (fromAbove) at its top edge,
-  // the hand coming down onto it. low: whether the button sits along the bottom of the stage.
-  buttonPoint(el, fromAbove = false) {
+  // Where the hint hand's fingertip goes on a HUD button, as a stage point: on its face, or (low: a button along the
+  // bottom of the stage, where a hand hanging from its face would run off the screen) on its top edge towards its
+  // right end, so the little hand sits over the pill and its word stays readable.
+  buttonPoint(el, low = false) {
     const r = el.getBoundingClientRect();
     const h = this.el.hits.parentElement.getBoundingClientRect();
-    const p = fromAbove ? { x: (r.left + r.width * 0.5 - h.left) / this.scale, y: (r.top + r.height * 0.1 - h.top) / this.scale }
+    const p = low ? { x: (r.left + r.width * 0.9 - h.left) / this.scale, y: (r.top + r.height * 0.04 - h.top) / this.scale }
       : { x: (r.left + r.width * 0.42 - h.left) / this.scale, y: (r.top + r.height * 0.55 - h.top) / this.scale };
     return this.unzoom ? this.unzoom(p) : p;
   }
@@ -502,11 +503,9 @@ class UI {
 
 
   // --- hint hand ---------------------------------------------------------------
-  // up: the hand comes down from above (a button along the bottom: hanging below it, it would run off the screen)
-  showHand(dragging = false, up = false) {
+  showHand(dragging = false) {
     this.el.hand.hidden = false;
     this.el.hand.classList.toggle('drag', dragging);
-    this.el.hand.classList.toggle('up', up);
     this.el.hand.classList.remove('fade');
   }
 
@@ -516,15 +515,14 @@ class UI {
 
   hideHand() {
     this.el.hand.hidden = true;
-    this.el.hand.classList.remove('fade', 'drag', 'up');
+    this.el.hand.classList.remove('fade', 'drag');
   }
 
   // (the hand's own transform carries the view's zoom on the net, Game.applyFocus: its fingertip is the image's
   // top-left corner, so it scales from there)
   moveHand(x, y) {
     const q = this.zoomed ? this.zoomed({ x, y }) : { x, y, z: 1 };
-    const up = this.el.hand.classList.contains('up'); // (turned about its fingertip, it points down from above)
-    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '') + (up ? ' rotate(180deg)' : '');
+    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '');
   }
 
   showRotateHint(show) {

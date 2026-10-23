@@ -137,7 +137,7 @@ The game is deployed as part of the journey: the repository's root is the static
   from stop to stop (20 stage pixels apart, gliding onto each), at most 12 stops each way and
   only while the frame stays simple, roomy and clear of the raft and the water. One stop is
   its exact place, so each level's check is exact: the frame is right at that stop and only
-  there, and only there do the numbers on the net match (tenths of a metre, whole degrees);
+  there, and only there do the numbers on the net match (tenths of a centimetre, whole degrees);
   `tests/geometry.py` checks every stop of every track. Nothing pulls the corner toward its
   place, and nothing completes until the child presses Check. Positions are net
   coordinates measured from the lifting ring, and the whole stage scales to the screen, so
@@ -145,13 +145,16 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Stage.** The world is a fixed 1672x941 logical space scaled to the viewport. The paintings
   have their waterline 41% down, so they are drawn `SCENE_SHIFT` lower (the water pass carries
   the sky on above them), putting the water at about 60% and leaving the sky to the net.
-- **Teaching the shape.** The net carries only what its level is about, nothing that clutters it or gives the answer
-  away: on the parallel levels the pair's parallel marks (whether they are parallel is for the eye, zoomed in, and
-  Check); on the length levels the side given and the one being set, in centimetres; on the angle levels the angle
-  given and the one being set, with their arcs; on the diagonals level the diagonals, O and their four halves; on the
-  last net the four sides. Vertex labels A–D are always there, and two little arrows beside the knob show which ways
-  the corner slides (a tap on one moves it a stop; the track itself isn't drawn). The labels are laid out together so
-  none covers another. The answer lies further from the start level by level (5 to 9 stops).
+- **Teaching the shape.** The net carries only what its level is about, drawn as the lesson draws it, nothing that
+  clutters it or gives the answer away: on the parallel levels the pair's orange parallel chevrons (whether they are
+  parallel is for the eye, zoomed in, and Check); on the length levels the side given and the one being set, in
+  centimetres, each just outside its side; on the angle levels the angle given and the one being set, as wedges filled
+  in the corners' own colours with their degrees; on the diagonals level the diagonals, O and their four halves; on the
+  last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and two yellow arrows
+  either side of the knob point the ways it can still slide (a tap on one moves it a stop; the track itself isn't
+  drawn). The labels are laid out together so none covers another. The answer lies further from the start level by level (5 to 9
+  stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
+  it is plainly the thing to look at.
 - **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, 1.7x about the
   net's middle, as the lesson's camera dives: the scene and the net's corner together, the hint hand through its own
   transform; the HUD stays), so the corner is set on a big net; the corner moved, Check comes up as a pill bottom
@@ -162,10 +165,10 @@ The game is deployed as part of the journey: the repository's root is the static
   fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
 - **The catch.** A right net sits open in the water with Catch (`catchNow`). Three bunches of fish (`bunchesFor` in
-  `src/levels.js`: three kinds - a shoal of 8 to 16 small fish, a bunch of 4 to 7 middling ones, 2 to 4 big ones, each
-  fish its own size within its bunch) roam the sea in three lanes at the depth the net reaches, each lane swimming
-  its own way at its own pace, a little quicker net by net (`Sea`); a bunch with the room swims as a cloud, two
-  staggered rows, so it reads as a school and never as a line, and no fish ever touches another. The bunches never
+  `src/levels.js`: a shoal of 8 to 16 small fish, a bunch of 4 to 7 middling ones, 2 to 4 big ones, each a mix of two
+  to four kinds and of sizes) roam the sea in three lanes at the depth the net reaches, each lane swimming its own way
+  at its own pace, a little quicker net by net (`Sea`); each bunch is packed into a loose cloud (`Sea.pack`: an ellipse
+  the lane's height, no two fish touching) that swims as one, so it reads as a school and never as a line. The bunches never
   run into each other and each swims through the net in turn: the child presses Catch when the bunch they want is
   in it. The net gathers its mouth
   underwater, then rises as a bag with the catch in its belly, clear of the water. A net that closed on nothing comes
@@ -176,9 +179,8 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
   alone, the hand shows how the corner slides, two stops the right way (never all the way to
   its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the
-  measurements, so the game teaches rather than solves itself; the corner set, the hand points at Check, and a net
-  left open in the water a while, at Catch (coming down from above onto a bottom button, never up from off the
-  screen). No hint says whether the net is right; Check does.
+  measurements, so the game teaches rather than solves itself; the corner set, the little hand sits on Check, and
+  on a net left open in the water a while, on Catch. No hint says whether the net is right; Check does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
@@ -293,7 +295,7 @@ Headless Chromium through Python Playwright (`pip install playwright pillow`):
   End, and Play Again closes and reopens it on the first net.
 - `python3 tests/geometry.py` – every level's property holds exactly at the solved position and
   fails at the start, the start is a simple frame well away from its place, the track runs
-  through the place, Drop Net passes at that stop and at no other and the numbers on the net
+  through the place, Check passes at that stop and at no other and the numbers on the net
   agree with it at every stop, the net hangs clear of the water and the school's water is
   inside the lowered net.
 - `python3 tests/assets.py` – the WebP copies in `assets/generated-web/` match the generated

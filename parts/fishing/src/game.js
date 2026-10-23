@@ -332,6 +332,17 @@ class Game {
     f.ms = FOCUS.inMs;
   }
 
+  // While the view is in on the net the lights go down on the scene behind it (the sky, the sea and its fish), evenly,
+  // and the net, the raft and Popo stay lit, so the net is plainly what to look at; it comes and goes with the zoom.
+  drawFocusDim(ctx) {
+    const f = this.focus, k = f.t * f.t * (3 - 2 * f.t);
+    if (k <= 0.01) return;
+    ctx.save();
+    ctx.fillStyle = `rgba(2, 12, 40, ${(0.48 * k).toFixed(3)})`;
+    ctx.fillRect(-STAGE_W, -STAGE_H, STAGE_W * 3, STAGE_H * 3);
+    ctx.restore();
+  }
+
   focusOut(ms) {
     this.focus.ms = ms || FOCUS.inMs;
     this.focus.want = 0;
@@ -361,6 +372,7 @@ class Game {
     const z = 1 + ((f.zoom || FOCUS.zoom) - 1) * k;
     if (z === f.z && z === 1) return;
     f.z = z;
+    this.net.viewZoom = z;
     if (this.camera.zoom !== 1) return; // (the lesson's camera has the view)
     const s = this.stage.scale, origin = `${(f.ox * s).toFixed(1)}px ${(f.oy * s).toFixed(1)}px`, tf = z === 1 ? '' : `scale(${z.toFixed(4)})`;
     for (const el of [this.ui.el.scene, this.ui.el.hits]) {
@@ -851,7 +863,8 @@ class Game {
       if (state.idleTime > HINT_REPEAT) this.pointAt(this.ui.el.action);
       return;
     }
-    if (state.phase !== PHASE.PUZZLE_READY || (this.netRight && LEVELS[state.level].type !== 'free')) return;
+    // (a right corner with Check up still gets the hand, on Check; a right corner without it needs no hint)
+    if (state.phase !== PHASE.PUZZLE_READY || (this.netRight && this.ui.actionMode !== 'check' && LEVELS[state.level].type !== 'free')) return;
     if (this.hint) {
       if (this.hint.drag) this.advanceHand(dt);
       else if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; }
@@ -884,9 +897,8 @@ class Game {
   // The hand taps a button: Drop Net (the warm-up), Check or Catch
   pointAt(el, again = false) {
     if (el.hidden || !el.getBoundingClientRect().width) return;
-    const low = this.ui.buttonLow(el); // a bottom button: the hand comes down from above, not up from off the screen
-    const p = this.ui.buttonPoint(el, low);
-    if (!again) this.ui.showHand(false, low);
+    const p = this.ui.buttonPoint(el, this.ui.buttonLow(el)); // (a bottom button: the hand sits over it, not off the screen)
+    if (!again) this.ui.showHand(false);
     this.ui.moveHand(p.x, p.y);
     if (again) return; // (placed again as the view moves)
     this.hint = { t: 0, drag: false };
@@ -1407,6 +1419,7 @@ class Game {
     for (const f of state.fish) if (!f.flying) f.draw(ctx);
     for (const f of this.leapers) f.draw(ctx);
     this.fx.drawSplashLayer(ctx, false);
+    this.drawFocusDim(ctx); // (zoomed in on the net: the scene so far goes dark, what follows stays lit)
     // the net hangs over the fish; its lifting rope comes down from the boom's end pulley
     const { popo, winch } = this;
     this.net.draw(ctx, { waterline: this.waterline, pulley: { hub: popo.transformPoint(winch.hub.x, winch.hub.y), exit: popo.transformPoint(winch.exit.x, winch.exit.y) } });

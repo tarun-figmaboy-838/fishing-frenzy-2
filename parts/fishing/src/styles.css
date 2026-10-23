@@ -81,21 +81,20 @@ html, body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 7.5em;
+  width: 4.6em;
   height: auto;
   pointer-events: none;
-  filter: drop-shadow(0 0.4em 0.6em rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 0.3em 0.5em rgba(0, 0, 0, 0.3));
   animation: hand-tap 1.1s ease-in-out infinite;
   transition: opacity 0.25s ease;
 }
 .hand[hidden] { display: none; }
 .hand.drag { animation: none; }
 .hand.fade { opacity: 0; }
-.hand.up { transform-origin: 0 0; } /* (turned 180 about its fingertip: it comes down from above onto a bottom button) */
 /* the fingertip is the image's top-left corner, so tapping moves along the finger */
 @keyframes hand-tap {
   0%, 100% { margin: 0; }
-  50% { margin: 1.1em 0 0 1.1em; }
+  50% { margin: 0.7em 0 0 0.7em; }
 }
 
 /* ---------- HUD ---------- */
@@ -269,12 +268,13 @@ html, body {
 /* ---------- story: Popo's speech bubble and the narrator's caption, as in Fishing Frenzy ---------- */
 .speech, .caption { position: absolute; pointer-events: none; z-index: 3; }
 .hud { z-index: 5; }
-.overlay { z-index: 6; }
+.hand { z-index: 6; } /* (over the buttons it points at) */
+.overlay { z-index: 7; }
 .speech[hidden], .caption[hidden] { display: none; }
 /* the caption lays its words out hidden, so its plate never changes size as they appear */
 .line .w { display: inline-block; visibility: hidden; white-space: pre; }
 .line .w.in { visibility: visible; animation: word-in 0.32s cubic-bezier(0.2, 1.8, 0.4, 1); }
-.line .w.em { font-weight: 700; font-size: 1.15em; }
+.line .w.em { font-weight: 700; font-size: 1.15em; transform-origin: 0 75%; } /* (a key word boings out to its right, into the words not yet shown, never over the one before it) */
 .line .w.em.in { animation: word-boing 0.55s cubic-bezier(0.2, 1.8, 0.4, 1); }
 /* in the bubble, words take no room until they're said, so it grows with them; the breaks are
    pinned where the whole line wraps (balanced), so words never jump between lines as it grows */
