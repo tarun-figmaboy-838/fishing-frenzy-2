@@ -69,6 +69,9 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   pulse, an angle focus (`focus`: the named angles stay vivid, the others step back) or the sum card lifting (`hiEq`).
   While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
   explained. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
+- **One place for the shape.** Every screen keeps the same lane under the shape (two rows of name tags), so the shape
+  has one centre and one size from screen to screen whatever comes and goes under it (`sceneFit`); only a block
+  taller than the lane pulls it up, and the measuring screens and the first put it right of Swiftee.
 - **The maths in motion** (`js/motion.js` fx, on an overlay over the board; a line's `cues`): equal sides slide onto
   each other (`match`), equal angles fly to the opposite corner turning a half-turn and fit (`matchAng`), the diagonals'
   halves fold about O onto each other (`fold`), parallel sides run out as dashed rails that never meet (`rails`); a

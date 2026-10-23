@@ -57,7 +57,7 @@ const CONFIG = {
     // answers under the shape (stage px): Fishing Frenzy's answer pills on its card (74 px drawn 1.18x: 87), two-column
     // rows, answer boxes and their tiles
     optGap: 24, optH: 87, optGapX: 12, fillH: 66, tileH: 64,
-    chipGap: 8, chipLane: 70, rowsH: 132, chipTopQ: 70, // name tags: gap, one row, two rows, tags above the shape (row top: tags from y 100)
+    chipGap: 8, chipLane: 70, rowsH: 132, chipTopQ: 70, // name tags: gap, one row, two rows (chipGap + rowsH = the lane every screen keeps under the shape, sceneFit), tags above the shape (row top: tags from y 100)
     optW: 620, pillPad: 40, pillPadLong: 28, pillMin: 150, rowMax: 1040 }, // answer pills (see optRow): each fits its text, short ones set bigger
   board: { x: 640, y: 104 },         // the board's top-left on the stage
   // screen 14's measuring walk: her size on the shape, her spot on the sand (feet) and size there, her walking pace,

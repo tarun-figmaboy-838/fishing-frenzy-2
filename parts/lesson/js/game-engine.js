@@ -1945,17 +1945,20 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     return v;
   }
   // The card (as Fishing Frenzy's lesson fits its plate). Each screen is a vertical stack - the shape (padded for its
-  // letters and labels), then the block under it (answers, answer boxes, or the lane for name tags, kept only where the
-  // screen shows tags) - drawn as big as it fits (at most CONFIG.card.scale) and centred between the instruction plate
-  // and the sand, so the shape is always big and in the middle and never meets the panel or the answers; between
-  // screens it glides to its new place (css .board transition). Returns the scale, the shape point placed at F (stage
-  // px), and the stack's shape bottom (where the answers / name tags start).
+  // letters and labels), then the block under it (answers, answer boxes, name tags). The shape has ONE place on every
+  // screen: its stack always reserves the same lane under it (CONFIG.card.lane: two rows of name tags, the most any
+  // explanation screen shows), its centre sits at the middle of the room left between the instruction plate and the
+  // sand, and it is drawn as big as fits there (at most CONFIG.card.scale) - so it never twitches from screen to
+  // screen whatever comes and goes under it. Only a block taller than the lane (a row of answer boxes with its tiles,
+  // a wide answer on its own row) pulls it up, or shrinks it, as far as that block needs; the measuring screens and
+  // the first put it right of Swiftee. Returns the scale, the shape point placed at F (stage px), and the stack's
+  // shape bottom (where the answers / name tags start).
   sceneFit(st) {
     const C = CONFIG.card, P0 = st.fig ? st.fig.P : ((this.snaps && this.snaps[this.state.step]) || this.state.P);
     let x0 = Math.min(P0.A.x, P0.D.x), x1 = Math.max(P0.B.x, P0.C.x);
     const y0 = Math.min(P0.A.y, P0.B.y), y1 = Math.max(P0.C.y, P0.D.y);
     if (st.task === 'dragB') x1 = Math.max(x1, P0.C.x + (P0.A.x - P0.D.x)); // B slides out until BC is parallel to AD
-    const f = st.f || {}, lengths = !!(f.sideLen || f.legLen || st.task === 'measure' || (st.fig && st.fig.sides));
+    const f = st.f || {}, lengths = !!(f.sideLen || f.legLen || st.task === 'measure' || (st.fig && st.fig.sides) || st.sideNums); // (labels round the sides: room for them)
     const padX = C.padX + (lengths ? C.lenPadX : 0), padT = C.padTop + (lengths ? C.lenPadY : 0), padB = C.padBottom + (lengths ? C.lenPadY : 0) + (f.sums ? 34 : 0);
     const w = x1 - x0 + 2 * padX, h = y1 - y0 + padT + padB;
     const above = (st.chipTop && st.chipTop < 200 && !st.practice) || (st.practice && st.okChips); // name tags above the shape
@@ -1963,9 +1966,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const walk = st.task === 'measure' || st.task === 'measureAngles'; // Swiftee measures: the shape sits right of her
     const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
     const maxW = st.id === 'intro' ? C.introW : walk ? C.measureW : C.maxW;
-    const k = Math.min(C.scale, maxW / w, (C.bottom - top - below) / h);
-    const y = top + Math.max(0, (C.bottom - top - below - h * k) / 2); // the stack centred between the plate and the sand
-    return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: y + h * k };
+    const lane = C.chipGap + C.rowsH, room = C.bottom - top - lane; // the shape's room on every screen
+    const kHome = Math.min(C.scale, maxW / w, room / h), k = Math.min(kHome, (C.bottom - top - below) / h);
+    const home = top + Math.max(0, (room - h * k) / 2); // its one place: centred in that room
+    const y = Math.max(top, Math.min(home, C.bottom - below - h * k)); // (pulled up only as far as a taller block needs)
+    // the block under the shape (name cards, answers) sits on the sand, at one height on every screen, never on the shape
+    return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: below ? Math.max(y + h * k, C.bottom - below) : y + h * k };
   }
   // the height of what sits under the shape (stage px, with its gap): the answer row(s), the answer boxes (and their
   // tiles), or the name-tag lane - reserved on every explanation screen so the shape keeps one place from screen to screen
