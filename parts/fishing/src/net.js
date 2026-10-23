@@ -43,6 +43,7 @@ const KNOT = RING_KNOT;
 // the outline of a torn hole, as shares of its full size, all the way round
 const RAGGED = [1, 0.62, 0.9, 0.7, 1, 0.58, 0.86, 0.66, 0.97, 0.6, 0.92, 0.72, 1, 0.64, 0.84, 0.7];
 const INK = 'rgba(12, 40, 70, 0.9)';
+const TWIST = [0.5, -0.65, 0.55, -0.45]; // a tangled net: how far each corner twists (radians), in toward the middle
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
 
 // A level's solved parallelogram with its top edge at y 0: width, height and either the lean
@@ -115,6 +116,7 @@ class Net {
     this.glow = null;
     this.pouch = 0;
     this.drawn = null;
+    this.tangle = 0; // a wrong net crumpled into a tangle (framed, drawKnots)
     const xs = this.solved.map((p) => p.x);
     const ys = this.solved.map((p) => p.y);
     // the corner stays near the frame, out of the water, clear of the ring, the raft and the edge
@@ -168,10 +170,18 @@ class Net {
   }
 
   // --- the mesh and the bag ------------------------------------------------------------
-  // The frame as drawn: the moving corner where it is gliding, the rest where they are.
+  // The frame as drawn: the moving corner where it is gliding, the rest where they are. Tangled (a wrong net), the
+  // corners pull in toward the middle, each twisted its own way, so the mesh crumples between them.
   framed() {
     const p = this.points.map((q) => ({ ...q }));
     if (this.drawn) p[this.movable] = { ...this.drawn };
+    if (this.tangle > 0) {
+      const c = midpoint(midpoint(p[0], p[1]), midpoint(p[2], p[3])), k = this.tangle;
+      return p.map((q, i) => {
+        const d = sub(q, c), a = TWIST[i] * k, s = 1 - 0.36 * k;
+        return add(c, times({ x: d.x * Math.cos(a) - d.y * Math.sin(a), y: d.x * Math.sin(a) + d.y * Math.cos(a) }, s));
+      });
+    }
     return p;
   }
 
@@ -501,6 +511,7 @@ class Net {
     ctx.restore();
     ctx.filter = 'none';
     if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]);
+    if (this.tangle > 0) this.drawKnots(ctx, frame);
     if (this.flash > 0) {
       ctx.save();
       ctx.globalAlpha *= this.flash * 0.7;
@@ -523,6 +534,40 @@ class Net {
     ctx.restore();
   }
 
+
+  // A tangled net: rope loops knotted through the crumpled mesh, and strands pulled across it.
+  drawKnots(ctx, frame) {
+    const k = this.tangle;
+    const at = (u, v) => this.toStage(this.meshPoint(u, v, frame));
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const strands = [[0.12, 0.3, 0.7, 0.62], [0.85, 0.25, 0.3, 0.8], [0.4, 0.1, 0.55, 0.9]];
+    for (let pass = 0; pass < 2; pass += 1) {
+      ctx.lineWidth = pass ? 2.6 : 5;
+      ctx.strokeStyle = pass ? '#e0b060' : '#5a3a14';
+      ctx.beginPath();
+      for (const [u0, v0, u1, v1] of strands) {
+        const a = at(u0, v0), b = at(u1, v1), m = at((u0 + u1) / 2 + 0.08, (v0 + v1) / 2 - 0.12);
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo(m.x, m.y, b.x, b.y);
+      }
+      for (const [u, v, r, tilt] of [[0.3, 0.42, 16, 0.4], [0.66, 0.56, 19, -0.5], [0.46, 0.74, 14, 0.2]]) {
+        const p = at(u, v);
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(tilt);
+        ctx.scale(k, k);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r, r * 0.6, 0, 0, TAU);
+        ctx.moveTo(-r * 0.7, r * 0.3);
+        ctx.ellipse(-r * 0.2, r * 0.35, r * 0.75, r * 0.4, 0.5, 0, TAU);
+        ctx.restore();
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // Transparent depth over the catch, beneath the front mesh. Curved folds and a
   // bound neck give the bag volume without an opaque sticker hiding the fish.
@@ -864,15 +909,14 @@ class Net {
     if (!L) return;
     const m = (name) => `${this.metresShown(name).toFixed(1)} cm`;
     const deg = (letter) => `${this.degreesShown(letter)}°`;
-    const slope = (name) => `${this.slopeShown(name)}°`.replace('-', '−');
+    // Only what the task is about is on the net - the value given and the one the child sets - so nothing clutters
+    // it or gives the answer away: the net is checked by pressing Check, not by reading it
     switch (L.type) {
       case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel':
-        // the parallel marks say which sides; their slopes, side by side, say whether they are
-        // (the marks never light up by themselves: the numbers tell, and Drop Net decides)
+        // the parallel marks say which pair of sides; whether they are parallel is for the eye (zoomed in) and Check
         this.drawSideHighlight(ctx, c, L.sides);
         this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2);
-        for (const name of L.sides) this.drawLength(ctx, c, name, slope(name), name.includes(L.corner));
         break;
       case 'length':
         this.drawLength(ctx, c, L.reference, `${L.metres[L.reference]} cm`);
@@ -887,28 +931,17 @@ class Net {
         this.drawAngle(ctx, c, L.reference, `${L.degrees}°`);
         this.drawAngle(ctx, c, L.vertex, deg(L.vertex), true);
         break;
-      case 'supplementary': {
+      case 'supplementary':
         this.drawAngle(ctx, c, L.reference, `${L.degrees}°`);
         this.drawAngle(ctx, c, L.vertex, deg(L.vertex), true);
-        // the relation appears once the child starts, and completes when the check passes
-        const solvedB = this.locked ? 180 - L.degrees : '?';
-        if (this.touched || this.hintPulse > 0 || this.locked) {
-          const at = midpoint(c[0], c[1]);
-          this.text(ctx, `${L.degrees}° + ${solvedB}° = 180°`, at.x, at.y - 56, 24, this.locked ? GLOW : '#fff');
-        }
         break;
-      }
       case 'diagonals':
         this.drawDiagonals(ctx, c, true);
         break;
       default: {
-        // the whole parallelogram: its sides, its opposite angles and its diagonals, as the
-        // level's hint says ("sides, angles, diagonals")
-        this.drawDiagonals(ctx, c, false);
+        // the whole parallelogram: both pairs of sides (the check is that opposite sides match)
         const mine = ['AB', 'BC', 'CD', 'AD'].filter((name) => name.includes(L.corner));
         for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, m(name), mine.includes(name));
-        this.drawAngle(ctx, c, 'A', deg('A'), true);
-        this.drawAngle(ctx, c, 'C', deg('C'), true);
       }
     }
   }
@@ -1036,7 +1069,7 @@ class Net {
     const put = (from, to, name, value, sign, along = 0.5) => {
       const mid = lerp(from, to, along);
       const u = normalize(sub(to, from));
-      this.text(ctx, `${name} ${value.toFixed(1)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 22, '#ffd84a', true);
+      this.text(ctx, `${name} ${value.toFixed(1)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 20, '#ffd84a', true);
     };
     const toward = (end) => (end === this.movable && !this.locked ? 0.38 : 0.5);
     put(a, o, 'AO', h.AO, 1, 1 - toward(0));

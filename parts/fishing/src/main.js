@@ -18,6 +18,7 @@ ui.on('dragEnd', () => game.onDragEnd());
 ui.on('nudge', (dx, dy) => game.onNudge(dx, dy));
 ui.on('step', (steps) => game.onStep(steps));
 ui.on('drop', () => game.onDrop());
+ui.on('action', () => game.onAction()); // the nets' Check / Catch / Try again
 ui.on('again', () => { audio.play('ui'); game.playAgain(); });
 ui.on('next', () => game.next());
 document.getElementById('stage').addEventListener('pointerdown', (e) => {

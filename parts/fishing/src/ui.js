@@ -66,7 +66,7 @@ class UI {
       instruction: $('instruction'), instructionText: $('instruction-text'), instructionSay: $('instruction-say'), drop: $('btn-drop'),
       sound: $('btn-sound'), pause: $('btn-pause'),
       pauseOverlay: $('overlay-pause'), resume: $('btn-resume'), restart: $('btn-restart'),
-      again: $('btn-again'), next: $('btn-next'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
+      again: $('btn-again'), next: $('btn-next'), action: $('btn-action'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
       rotate: $('rotate-hint'), speech: $('speech'), caption: $('caption'),
     };
     this.handlers = {};
@@ -82,6 +82,8 @@ class UI {
     this.el.resume.addEventListener('click', h('resume'));
     this.el.restart.addEventListener('click', h('restart'));
     this.el.drop.addEventListener('click', h('drop'));
+    this.el.action.addEventListener('click', h('action'));
+    this.unzoom = null; // the game's: a pointer on the zoomed-in view back to stage coordinates (Game.applyFocus)
     this.el.again.addEventListener('click', h('again'));
     this.el.next.addEventListener('click', h('next'));
     this.wireHandle();
@@ -108,7 +110,7 @@ class UI {
       if (this.dragId !== null || e.button > 0) return;
       e.preventDefault();
       this.dragId = e.pointerId;
-      this.dragRect = this.el.hits.getBoundingClientRect();
+      this.dragRect = this.el.hits.parentElement.getBoundingClientRect(); // (the stage: the hits layer itself zooms with the view)
       handle.setPointerCapture(e.pointerId);
       handle.focus({ preventScroll: true });
       this.emit('dragStart', this.dragPoint(e));
@@ -137,7 +139,8 @@ class UI {
 
   dragPoint(e) {
     const r = this.dragRect;
-    return { x: (e.clientX - r.left) / this.scale, y: (e.clientY - r.top) / this.scale };
+    const p = { x: (e.clientX - r.left) / this.scale, y: (e.clientY - r.top) / this.scale };
+    return this.unzoom ? this.unzoom(p) : p;
   }
 
   placeHandle(x, y) {
@@ -188,6 +191,38 @@ class UI {
       b.hidden = true;
       b.classList.remove('leave');
     }, 260);
+  }
+
+  // The nets' action button, bottom left: 'check' (the corner set), 'catch' (a right net open in the water), 'again'
+  // (a tangled net), or 'hidden'. Pressed, it drops away rather than vanishing.
+  setAction(mode) {
+    if (mode === this.actionMode) return;
+    const b = this.el.action;
+    const shown = !b.hidden;
+    this.actionMode = mode;
+    clearTimeout(this.actionLeaving);
+    b.classList.remove('leave');
+    if (mode !== 'hidden') {
+      b.dataset.mode = mode;
+      b.querySelector('.label').textContent = { check: 'Check', catch: 'Catch', again: 'Try again' }[mode];
+      b.hidden = false;
+      this.pop(b);
+      return;
+    }
+    if (!shown) { b.hidden = true; return; }
+    b.classList.add('leave');
+    this.actionLeaving = setTimeout(() => {
+      b.hidden = true;
+      b.classList.remove('leave');
+    }, 260);
+  }
+
+  // The middle of a HUD button, as a stage point, for the hint hand.
+  buttonPoint(el) {
+    const r = el.getBoundingClientRect();
+    const h = this.el.hits.parentElement.getBoundingClientRect();
+    const p = { x: (r.left + r.width * 0.42 - h.left) / this.scale, y: (r.top + r.height * 0.55 - h.top) / this.scale };
+    return this.unzoom ? this.unzoom(p) : p;
   }
 
   pop(el) {

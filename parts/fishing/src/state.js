@@ -7,6 +7,9 @@ const PHASE = {
   INTRO: 'intro',
   PUZZLE_READY: 'puzzleReady',
   DRAGGING: 'dragging',
+  CHECKING: 'checking',     // Check pressed: the net goes down and the view opens out, then the verdict
+  TANGLED: 'tangled',       // a wrong net, crumpled into a tangle, until Try again
+  FISHING: 'fishing',       // a right net open in the water: Catch is the child's, when a bunch swims in
   NET_LOWERING: 'netLowering',
   CATCHING: 'catching',
   NET_RAISING: 'netRaising',

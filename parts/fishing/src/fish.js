@@ -168,58 +168,60 @@ class Fish {
 }
 
 // --- the school ---------------------------------------------------------------------------
-// The school swims in two lanes across the water the lowered net reaches: one above the other,
-// a fish-height or more apart, swimming opposite ways at their own pace, so no two fish ever
-// overlap or meet head on. In a lane the fish go about in shoals of three or four, nose to tail
-// at their own depths, with open water between the shoals, so a net dropped as a shoal swims
-// under it nets the lot and one dropped over open water comes up with little or nothing: the
-// timing matters. Each fish eases a touch faster or slower to keep its place behind the one
-// ahead, so none catches up with another, stops or turns back; they loop round just out of
-// sight at the ends of the sea and float gently. The pace rises a little level by level.
-const SCHOOL_SIZE = [0.78, 0.88]; // a touch smaller than the leaping fish, so two lanes fit
+// The school is three bunches of fish (levels.js bunchesFor), one to a lane, in three lanes across the water the
+// lowered net reaches: one above another, a fish-height or more apart, each swimming its own way (chosen at random)
+// at its own pace, so no two fish ever overlap or meet head on. A bunch swims nose to tail, with the rest of its lane
+// open water, so the net catches the bunch that is under it as it closes and little or nothing over open water: the
+// child picks the bunch, and the moment. Each fish eases a touch faster or slower to keep its place behind the one
+// ahead, so none catches up with another, stops or turns back; they loop round just out of sight at the ends of the
+// sea and float gently. The pace rises a little level by level.
+const LANES = 3;
 const RUSH = 3;                   // seconds a whole new school takes to rush in and settle
-const LANE_SHARE = [0.9, 1.12];   // the two lanes' paces, as shares of the level's
+const LANE_PACE = [0.82, 1.18];   // a lane's pace, as a share of the level's, drawn between these
 const LANE_SWAY = 8;              // how far the lanes sway up and down together, px
 
 class Sea {
   constructor() {
-    this.lanes = LANE_SHARE.map((share, i) => ({ dir: i ? -1 : 1, share, y: 0, speed: 0, phase: Math.random() * TAU, rush: 0 }));
+    this.lanes = Array.from({ length: LANES }, (_, i) => ({ dir: i % 2 ? -1 : 1, share: 1, y: 0, speed: 0, phase: Math.random() * TAU, rush: 0 }));
     this.t = 0;
   }
 
-  // Lays the lanes over `area` (keeping their fish, who glide to the new depths) at `pace`
-  // pixels a second, and fills the school up to `keys.length` with newcomers of the kinds not
-  // already swimming, each queued out of sight at the start of the emptier lane to swim in
-  // when there's room (see steer). Nothing ever appears in view. `keep` is the school so far.
-  stock(keep, area, keys, { rare = false, pace = 50 } = {}) {
+  // Lays the lanes over `area` (keeping their fish, who glide to the new depths) at `pace` pixels a second, one bunch
+  // to a lane: a lane with no fish left swims whichever way chance says, at its own pace, and fills up to its
+  // bunch's count with newcomers of the bunch's kind and size (a lane with fish keeps its way and its kind), each
+  // queued out of sight at the lane's start to swim in when there's room (see steer). Nothing ever appears in view.
+  // `keep` is the school so far, `bunches` the level's (levels.js bunchesFor: { key, count, size }).
+  stock(keep, area, bunches, { rare = false, pace = 50 } = {}) {
     const band = area.bottom - area.top;
+    const school = keep.filter((f) => !f.gone && !f.caught && !f.leaving);
     this.lanes.forEach((lane, i) => {
       lane.base = area.top + band * (i + 0.5) / this.lanes.length;
       lane.y = lane.base;
+      const bunch = bunches[i % bunches.length];
+      if (!school.some((f) => f.lane === lane)) {
+        lane.dir = Math.random() < 0.5 ? -1 : 1;
+        lane.share = LANE_PACE[0] + Math.random() * (LANE_PACE[1] - LANE_PACE[0]);
+        lane.bunch = bunch;
+        lane.shoal = i + 1;
+      }
       lane.speed = pace * lane.share;
     });
+    // three bunches all swimming the same way read as one school: the middle lane turns if its neighbours agree with it
+    if (this.lanes.every((l) => l.dir === this.lanes[0].dir) && !school.some((f) => f.lane === this.lanes[1])) this.lanes[1].dir *= -1;
     const room = band / this.lanes.length;
-    const school = keep.filter((f) => !f.gone && !f.caught && !f.leaving);
-    const present = new Set(school.map((f) => f.key));
-    const pool = [...keys.filter((k) => !present.has(k)), ...keys.filter((k) => present.has(k))];
-    for (let n = 0; school.length < keys.length; n += 1) {
-      const lane = this.lanes.map((l) => ({ l, count: school.filter((f) => f.lane === l).length }))
-        .sort((a, b) => a.count - b.count || Math.random() - 0.5)[0].l;
+    for (const lane of this.lanes) {
+      const bunch = lane.bunch || bunches[0];
       const start = lane.dir > 0 ? area.left : area.right;
-      const f = new Fish(pool[n % pool.length], start, lane.y, lane.dir, SCHOOL_SIZE[0] + Math.random() * (SCHOOL_SIZE[1] - SCHOOL_SIZE[0]));
-      f.lane = lane;
-      f.rare = rare;
-      f.speed = lane.speed;
-      f.waiting = true;
-      f.queued = (this.queued = (this.queued || 0) + 1);
-      // newcomers to a lane make up shoals of three or four, in the order they swim in
-      if (!lane.shoalLeft) {
-        lane.shoal = (lane.shoal || 0) + 1;
-        lane.shoalLeft = 3 + Math.round(Math.random());
+      while (school.filter((f) => f.lane === lane).length < bunch.count) {
+        const f = new Fish(bunch.key, start, lane.y, lane.dir, bunch.size * (0.94 + Math.random() * 0.12));
+        f.lane = lane;
+        f.rare = rare;
+        f.speed = lane.speed;
+        f.waiting = true;
+        f.queued = (this.queued = (this.queued || 0) + 1);
+        f.shoal = lane.shoal; // one bunch to a lane: it swims nose to tail
+        school.push(f);
       }
-      f.shoal = lane.shoal;
-      lane.shoalLeft -= 1;
-      school.push(f);
     }
     // a whole new school (the first, or the golden one) rushes in: its lanes swim fast for a
     // moment, newcomers following on quickly, then ease to their pace; every fish in a lane

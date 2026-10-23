@@ -70,7 +70,9 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            again: !$('btn-again').hidden, dialogue: g.dialogue ? g.dialogue.who : null, ending: !!g.ending, title: g.title.visible,
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
-           away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden }; }'''
+           away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden,
+           action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
+           inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
@@ -81,11 +83,12 @@ UNDER = '''() => { const g = window.popoDebug.game, s = window.popoDebug.state, 
   const l = g.netRest.x + span.left + 40, r = g.netRest.x + span.right - 40;
   return s.fish.filter((f) => !f.leaving && !f.waiting && !f.caught && !f.gone && f.x > l && f.x < r).length; }'''
 
-# the corner and its place, as client points (the game's frame fills the window, so they are the page's too)
-POINTS = '''() => { const g = window.popoDebug.game, n = g.net, k = g.stage.scale;
+# the corner and its place (or the stop n stops from it), as client points, through the view's zoom on the net (a drag
+# zooms it in: Game.applyFocus); the game's frame fills the window, so they are the page's too
+POINTS = '''(n) => { const g = window.popoDebug.game, net = g.net, k = g.stage.scale, f = g.focus;
   const c = document.getElementById('stage').getBoundingClientRect();
-  const h = n.handle(), t = n.toStage(n.target);
-  return { handle: [h.x * k + c.left, h.y * k + c.top], target: [t.x * k + c.left, t.y * k + c.top] }; }'''
+  const at = (p) => [c.left + k * (f.ox + (p.x - f.ox) * f.z), c.top + k * (f.oy + (p.y - f.oy) * f.z)];
+  return { handle: at(net.handle()), target: at(net.toStage(net.stop(n || 0))) }; }'''
 
 # straight to the last net and its celebration, as the game's dev panel's Finish does
 FINISH = '''() => { const P = PopoGame, g = popoDebug.game, s = popoDebug.state, L = P.LEVELS, i = L.length - 1;
@@ -246,35 +249,79 @@ def silent(s):
     return s['held'] and s['ctx'] != 'running' and not s['music'] and not s['voice'] and s['effects'] == 0
 
 
-def catch_level(r, n, shot):
+def set_corner(r, n_stop):
+    """The net's corner onto the stop n_stop stops from its place: a drag (the view zooms in on the net as it starts),
+    or arrow taps by touch."""
+    ff = part(r.page, 'fishing')
+    if r.touch:
+        while r.fish()['stop'] != n_stop:
+            r.tap_el(ff, '#step-back' if r.fish()['stop'] > n_stop else '#step-on')
+            r.page.wait_for_timeout(180)
+        return
+    pts = ff.evaluate(POINTS, n_stop)
+    x0, y0 = pts['handle']
+    r.page.mouse.move(x0, y0)
+    r.page.mouse.down()
+    for i in range(1, 25):
+        to = ff.evaluate(POINTS, n_stop)['target']  # (the raft bobs on the waves, and the view zooms in)
+        r.page.mouse.move(x0 + (to[0] - x0) * i / 24, y0 + (to[1] - y0) * i / 24)
+        r.page.wait_for_timeout(28)
+    r.page.wait_for_timeout(200)
+    to = ff.evaluate(POINTS, n_stop)['target']
+    r.page.mouse.move(to[0], to[1])
+    r.page.mouse.up()
+
+
+def catch_level(r, n, shot, wrong_first=False):
     """Net n (its LEVELS index: 1 is the first parallelogram net, after the warm-up) with real input: the corner onto its
-    place (drag, or arrow taps by touch), then Drop Net as fish swim under the net; a drop the fish swim out from under
-    goes again."""
+    place (a drag zooms the view in on the net), Check (the net goes down and the view opens out), then Catch as a bunch
+    swims under the net; a catch that comes up empty goes again. wrong_first: a wrong corner first - the net tangles,
+    and Try again brings it back."""
     ff = part(r.page, 'fishing')
     st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n} is ready')
-    check(not st['ok'], f'{r.tag}: net {n} comes down, its corner off its place', f"stop {st['stop']}")
+    check(not st['ok'] and st['action'] is None and not st['drop'], f'{r.tag}: net {n} comes down, its corner off its place, no button yet', f"stop {st['stop']}")
     before = st['caught']
-    if r.touch:
-        for _ in range(abs(st['stop'])):
-            r.tap_el(ff, '#step-back' if r.fish()['stop'] > 0 else '#step-on')
-            r.page.wait_for_timeout(180)
-    else:
-        pts = ff.evaluate(POINTS)
-        x0, y0 = pts['handle']
-        r.page.mouse.move(x0, y0)
-        r.page.mouse.down()
-        for i in range(1, 25):
-            to = ff.evaluate(POINTS)['target']  # (the raft bobs on the waves)
-            r.page.mouse.move(x0 + (to[0] - x0) * i / 24, y0 + (to[1] - y0) * i / 24)
-            r.page.wait_for_timeout(16)
-        r.page.mouse.up()
-    st = until(r.fish, lambda s: s['ok'], 5, 'the corner on its place')
-    check(st['stop'] == 0, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"})')
+    if wrong_first:
+        set_corner(r, 1 if st['stop'] < 0 else -1)
+        st = until(r.fish, lambda s: s['action'] == 'check', 5, 'Check comes up')
+        check(not st['ok'] and (r.touch or st['zoom'] > 1.5), f'{r.tag}: a corner moved: the view zooms in on the net and Check comes up', f"zoom {st['zoom']}")
+        r.tap_el(ff, '#btn-action')
+        st = until(r.fish, lambda s: s['phase'] == 'tangled', 15, 'the wrong net tangles')
+        st = until(r.fish, lambda s: s['action'] == 'again', 10, 'Try again')
+        check(st['tangle'] == 1 and st['zoom'] == 1 and st['caught'] == before, f'{r.tag}: a wrong net goes down, tangles, and Try again comes up')
+        r.shot(f'{shot}t-tangled')
+        r.tap_el(ff, '#btn-action')
+        st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['handle'], 20, 'the net comes back')
+        check(st['tangle'] == 0 and not st['ok'] and st['action'] is None, f'{r.tag}: Try again: the net is untangled and comes down in its starting shape')
+    set_corner(r, 0)
+    st = until(r.fish, lambda s: s['ok'] and s['action'] == 'check', 5, 'the corner on its place, Check up')
+    check(st['stop'] == 0 and (r.touch or st['zoom'] > 1.5), f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag, the view zoomed in on the net"}) and Check comes up')
     r.shot(f'{shot}a-level-{n + 1}')
-    st = drop_when_under(r, before, 'the catch')
-    check(st['caught'] > before, f'{r.tag}: net {n}: Drop Net as fish swim under the net catches some', f"{st['caught'] - before} fish")
+    r.tap_el(ff, '#btn-action')
+    st = until(r.fish, lambda s: s['phase'] == 'fishing', 20, 'the right net down in the water')
+    check(st['action'] == 'catch' and st['zoom'] == 1 and not st['handle'], f'{r.tag}: Check: the right net locks, goes down as the view opens out, and Catch comes up')
+    st = catch_when_under(r, before, 'the catch')
+    check(st['caught'] > before, f'{r.tag}: net {n}: Catch as a bunch swims under the net catches some', f"{st['caught'] - before} fish")
     r.page.wait_for_timeout(900)
     r.shot(f'{shot}b-catch')
+
+
+def catch_when_under(r, before, what):
+    """Catch as a bunch swims into the net (again if it swam out first), until something is caught."""
+    ff = part(r.page, 'fishing')
+    for attempt in range(6):
+        end = time.time() + 60
+        while r.fish()['inside'] < 1:
+            if time.time() > end:
+                raise SystemExit('FAIL no bunch swam into the net')
+            r.page.wait_for_timeout(60)
+        r.tap_el(ff, '#btn-action')
+        until(r.fish, lambda s: s['phase'] != 'fishing', 5, 'the net closes')
+        st = until(r.fish, lambda s: s['caught'] > before or s['phase'] == 'fishing', 40, what)
+        if st['caught'] > before:
+            return st
+        print(f'     {r.tag}: the bunch swam out before the net closed; going again', flush=True)
+    return st
 
 
 def drop_when_under(r, before, what):
@@ -398,7 +445,7 @@ def journey(p, engine, size, url):
     fs = until(r.fish, lambda s: s['wave'] or not s['away'], 10, 'the wave brings Popo back')
     until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
     check(True, f'{r.tag}: the giant wave brings Popo back and Swiftee swoops in with her welcome')
-    catch_level(r, 1, '6')
+    catch_level(r, 1, '6', wrong_first=not r.touch)
     check(True, f'{r.tag}: the game carried on at its first parallelogram net (same waters), and a real catch there')
 
     # ---------- the end, and Play Again: the banner again, and a fresh lesson behind it ----------

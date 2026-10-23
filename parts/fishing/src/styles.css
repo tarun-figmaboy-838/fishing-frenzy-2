@@ -201,35 +201,33 @@ html, body {
   font: inherit;
   font-size: 3.4em;
   font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 0.32em 1.1em 0.36em 0.36em;
+  letter-spacing: 0.01em;
+  padding: 0.3em 1.05em 0.34em 0.85em;
   min-height: 44px;
   border-radius: 999px;
-  border: 0.12em solid #3b1d00;
-  background: linear-gradient(180deg, #fff27a 0%, #ffd23f 45%, #ffa51f 100%);
-  color: #3b1d00;
+  border: 0.09em solid #fff3d6;
+  background: linear-gradient(180deg, #ffc15e 0%, #f08a1d 100%);
+  color: #2b1600;
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: 0 0.22em 0 #3b1d00, 0 0.55em 1em rgba(0, 20, 60, 0.35), inset 0 0.12em 0 rgba(255, 255, 255, 0.8), inset 0 -0.18em 0 rgba(214, 100, 0, 0.35);
+  box-shadow: 0 0.16em 0 #a54a05, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55);
   transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
   animation: next-in 0.55s cubic-bezier(0.2, 1.7, 0.4, 1);
 }
 .drop-btn[hidden] { display: none; }
+/* the icon sits in the pill, before its word (no dark disc: a pill, as the lesson's Next) */
 .drop-btn .badge {
   display: grid;
   place-items: center;
-  width: 1.6em;
-  height: 1.6em;
-  border-radius: 50%;
-  background: #3b1d00;
-  color: #ffd23f;
+  width: 1.1em;
+  height: 1.1em;
+  color: #2b1600;
 }
-.drop-btn .badge svg { width: 64%; height: auto; }
+.drop-btn .badge svg { width: 100%; height: auto; }
 .drop-btn:hover { filter: brightness(1.06); }
 .drop-btn:active {
-  transform: translateY(0.18em);
-  box-shadow: 0 0.04em 0 #3b1d00, 0 0.25em 0.6em rgba(0, 20, 60, 0.3), inset 0 0.12em 0 rgba(255, 255, 255, 0.8), inset 0 -0.18em 0 rgba(214, 100, 0, 0.35);
+  transform: translateY(0.14em);
+  box-shadow: 0 0.03em 0 #a54a05, 0 0.22em 0.5em rgba(0, 20, 60, 0.3), inset 0 0.1em 0 rgba(255, 255, 255, 0.55);
 }
 .drop-btn:focus-visible { outline: 0.2em solid #fff; outline-offset: 0.2em; }
 /* the shine: a bright band swept across the face */
@@ -243,6 +241,17 @@ html, body {
   animation: shine 4s ease-in-out 1.5s infinite;
 }
 @keyframes next-in { from { transform: translateY(1.2em) scale(0.3); opacity: 0; } }
+/* the nets' action, bottom left (the same pill): Check in the orange, Catch in sea green, Try again in coral; its icon
+   is the moment's */
+.actions-left { position: absolute; left: 3.2%; bottom: 5%; display: flex; pointer-events: none; }
+.action-btn .ic { display: none; }
+.action-btn[data-mode="check"] .ic-check, .action-btn[data-mode="catch"] .ic-catch, .action-btn[data-mode="again"] .ic-again { display: block; }
+.action-btn[data-mode="catch"] { background: linear-gradient(180deg, #9fe87a 0%, #3fbf2c 100%); box-shadow: 0 0.16em 0 #1f6a14, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55); color: #0f3a0a; }
+.action-btn[data-mode="catch"] .badge { color: #0f3a0a; }
+.action-btn[data-mode="again"] { background: linear-gradient(180deg, #ffb48f 0%, #f26b3a 100%); box-shadow: 0 0.16em 0 #8a3414, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55); color: #4a1a06; }
+.action-btn[data-mode="again"] .badge { color: #4a1a06; }
+/* the view zooms in on the net for a drag (Game.applyFocus): the scene, the net's corner and the hint hand together */
+.scene, .hits, .hand { will-change: transform; }
 @keyframes shine { 0% { background-position: 150% 0; } 30%, 100% { background-position: -50% 0; } }
 .drop-btn.leave { animation: drop-leave 0.26s ease-in forwards; pointer-events: none; }
 @keyframes drop-leave { to { transform: translateY(0.5em) scale(0.6); opacity: 0; } }

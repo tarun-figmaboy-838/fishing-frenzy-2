@@ -14,7 +14,8 @@ A voiced maths adventure about parallelograms: part 2 of Fishing Frenzy, played 
    angles and diagonals, three checkpoints and a recall. Each screen moves on by itself once its voice is done; a
    screen that asks for something waits for it.
 4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job!"), and
-   eight nets, each a property to set before the net drops, asked as the
+   eight nets, each a property to set before the net goes down (a drag zooms in on the net; Check sends it down, right or
+   tangled; Catch closes it on the bunch of fish the child picks), asked as the
    lesson asks it; then "The End", and Play Again goes back to the front page.
 
 Two voices only: Popo's, and Swiftee's studio voice for every other line in both parts.

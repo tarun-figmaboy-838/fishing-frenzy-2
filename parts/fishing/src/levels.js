@@ -95,22 +95,20 @@ function shuffle(list) {
   return result;
 }
 
-// A level's sea is busy: CROWD times its `fish` swim about (at most MOST_FISH), more than one
-// drop can net, so the child times Drop Net for when fish swim under it. Every kind appears
-// before any repeats, and no two levels in a row open with the same mix.
-const CROWD = 3;
-const MOST_FISH = 22;
-const schoolSize = (level) => Math.min(MOST_FISH, level.fish * CROWD);
-let lastSchool = [];
-function schoolFor(level) {
-  const kinds = shuffle(NATURAL_FISH);
-  const school = Array.from({ length: schoolSize(level) }, (_, i) => kinds[i % kinds.length]);
-  if (school.every((key) => lastSchool.includes(key))) {
-    const fresh = NATURAL_FISH.find((key) => !lastSchool.includes(key));
-    if (fresh) school[0] = fresh;
-  }
-  lastSchool = school;
-  return school;
+// A level's sea holds three bunches of fish: three kinds, each bunch its own count (a few more on the later nets)
+// and its own size - a big bunch, a middling one and a small one - each swimming its own lane its own way (see Sea),
+// so the bunches never run into each other and the child picks which one to catch. No two levels in a row open
+// with the same three kinds.
+const BUNCHES = 3;
+const BUNCH_SIZES = [0.58, 0.68, 0.8]; // the bunches' fish sizes (three lanes fit under the net)
+let lastKinds = [];
+function bunchesFor(level) {
+  let kinds = shuffle(NATURAL_FISH).slice(0, BUNCHES);
+  if (kinds.every((key) => lastKinds.includes(key))) kinds = [NATURAL_FISH.find((key) => !lastKinds.includes(key)) || kinds[0], ...kinds.slice(1)];
+  lastKinds = kinds;
+  const sizes = shuffle(BUNCH_SIZES);
+  const extra = level.fish >= 6 ? 1 : 0;
+  return kinds.map((key, i) => ({ key, count: 2 + Math.floor(Math.random() * 3) + extra, size: sizes[i] + (Math.random() - 0.5) * 0.06 }));
 }
 
 // Story lines, delivered word by word. *Stressed* words land bigger with a boing, and a cue
@@ -152,5 +150,5 @@ const STORY = {
 // the parallelogram nets (the warm-up is not one of them)
 const NETS = LEVELS.filter((l) => !l.warmup).length;
 
-Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, NATURAL_FISH, STORY, shuffle, schoolFor, schoolSize });
+Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, NATURAL_FISH, STORY, shuffle, bunchesFor });
 })(window.PopoGame = window.PopoGame || {});

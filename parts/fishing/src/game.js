@@ -1,10 +1,11 @@
 (function (PopoGame) {
 'use strict';
-const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, schoolFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
+const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds of idling between hints once one has been shown
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
-const SCHOOL_TOP = 55;    // the school keeps this far below the surface
+const SCHOOL_TOP = 46;    // the school keeps this far below the surface
+const FOCUS = { zoom: 1.7, inMs: 550 }; // a drag zooms the view in on the net this much, this fast (applyFocus)
 const SCHOOL_MARGIN = 26; // and this far inside the net's footprint
 const TICK_GAP = 90;      // ms between measurement ticks while dragging
 const SWIM_BEYOND = 100;  // the school roams the whole sea, turning just out of sight at its ends
@@ -98,6 +99,9 @@ class Game {
     this.winch = new Winch();
     this.net = new Net();
     this.fx = new Effects();
+    // the net in focus (applyFocus): t 0..1 toward want, the zoom about (ox, oy) in stage px
+    this.focus = { t: 0, want: 0, ox: STAGE_W / 2, oy: STAGE_H / 2, ms: FOCUS.inMs, z: 1 };
+    this.ui.unzoom = (p) => this.unzoom(p);
     this.water = new WaterScene(document.getElementById('water'));
     this.raftRippleIn = 1;
     this.dialogue = null;
@@ -209,6 +213,8 @@ class Game {
     this.ui.hideHand();
     this.ui.showHandle(false);
     this.ui.setDrop('hidden');
+    this.ui.setAction('hidden');
+    this.focusReset();
     this.swiftee = null;
     this.wave = null;
     this.awaitingNext = null;
@@ -278,7 +284,9 @@ class Game {
     this.ui.el.hud.hidden = true;
     this.ui.showHandle(false);
     this.ui.setDrop('hidden');
+    this.ui.setAction('hidden');
     this.ui.hideHand();
+    this.focusReset();
     this.endLine();
     this.popo.travelShift = PopoGame.AWAY;
     this.showIdleScene();
@@ -292,6 +300,54 @@ class Game {
     if (zoom === 1) { scene.transform = ''; return; }
     scene.transformOrigin = `${((STAGE_W / 2) * k).toFixed(1)}px ${(STAGE_H * k).toFixed(1)}px`;
     scene.transform = `scale(${zoom.toFixed(4)})`;
+  }
+
+  // --- the net in focus ---------------------------------------------------------------------
+  // A drag zooms the view in on the net (as the lesson's camera dives: the scene, the net's corner and the hint hand
+  // scale together about the net's middle), so the child sets the corner on a big net; Check opens the view out
+  // again as the net goes down (focusOut over that time). The HUD (the plate, the buttons) stays as it is.
+  focusOn() {
+    const p = this.net.points, r = this.net.ring();
+    this.focus.ox = r.x + (p[0].x + p[1].x + p[2].x + p[3].x) / 4;
+    this.focus.oy = r.y + (p[0].y + p[1].y + p[2].y + p[3].y) / 4;
+    this.focus.ms = FOCUS.inMs;
+    this.focus.want = 1;
+  }
+
+  focusOut(ms) {
+    this.focus.ms = ms || FOCUS.inMs;
+    this.focus.want = 0;
+  }
+
+  focusReset() {
+    this.focus.t = 0;
+    this.focus.want = 0;
+    this.applyFocus(0);
+  }
+
+  // a stage point as the pointer sees it on the zoomed view, back to where it is in the scene
+  unzoom(p) {
+    const f = this.focus, z = f.z;
+    if (z === 1) return p;
+    return { x: f.ox + (p.x - f.ox) / z, y: f.oy + (p.y - f.oy) / z };
+  }
+
+  applyFocus(dt) {
+    const f = this.focus;
+    if (f.t !== f.want) {
+      const step = dt / Math.max(0.001, f.ms / 1000);
+      f.t = f.want > f.t ? Math.min(f.want, f.t + step) : Math.max(f.want, f.t - step);
+    }
+    const k = this.fx.reduced ? f.want : f.t * f.t * (3 - 2 * f.t);
+    const z = 1 + (FOCUS.zoom - 1) * k;
+    if (z === f.z && z === 1) return;
+    f.z = z;
+    if (this.camera.zoom !== 1) return; // (the lesson's camera has the view)
+    const s = this.stage.scale, origin = `${(f.ox * s).toFixed(1)}px ${(f.oy * s).toFixed(1)}px`, tf = z === 1 ? '' : `scale(${z.toFixed(4)})`;
+    for (const el of [this.ui.el.scene, this.ui.el.hits, this.ui.el.hand]) {
+      el.style.transformOrigin = origin;
+      el.style.transform = tf;
+    }
   }
 
   // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
@@ -432,7 +488,7 @@ class Game {
     // the water right under the net, down to where the lowered net reaches...
     this.fishArea = {
       left: this.netRest.x + span.left + SCHOOL_MARGIN, right: this.netRest.x + span.right - SCHOOL_MARGIN,
-      top, bottom: top + (span.bottom - span.top) - 40,
+      top, bottom: top + (span.bottom - span.top) - 26, // (three lanes of fish fit under the net)
     };
     // ...and the school roams the whole sea at that depth, so the net catches whoever is under it
     // when it lands: the child drops it as fish swim beneath
@@ -451,7 +507,7 @@ class Game {
   spawnSchool() {
     const level = LEVELS[state.level];
     const pace = (65 + 7 * state.level) * (level.rare ? 1.15 : 1);
-    state.fish = this.sea.stock(state.fish, this.swimArea, schoolFor(level), { rare: level.rare, pace });
+    state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
   }
 
   // The first school swims in on the narrator's cue (or straight away on Play Again).
@@ -474,7 +530,8 @@ class Game {
     this.lastTick = { value: this.net.stopAt, at: 0 };
     this.popo.idle();
     this.ui.showHandle(!free);
-    this.ui.setDrop('on');
+    this.ui.setDrop(free ? 'on' : 'hidden'); // (the nets check and catch with their own button: onAction)
+    this.ui.setAction('hidden');
     this.instruct(level.prompt, { voice: !(free && this.warmCatches) });
   }
 
@@ -559,6 +616,7 @@ class Game {
     // the corner keeps its offset from the pointer, so it never jumps under the finger
     this.drag = { dx: handle.x - local.x, dy: handle.y - local.y };
     this.audio.play('grab');
+    this.focusOn();
   }
 
   onDragMove(point) {
@@ -585,6 +643,7 @@ class Game {
     this.drag = null;
     state.phase = PHASE.PUZZLE_READY;
     state.idleTime = 0;
+    if (this.net.touched) this.ui.setAction('check'); // the corner set: Check is the child's
   }
 
   onNudge(dx, dy) {
@@ -605,6 +664,7 @@ class Game {
     state.idleTime = 0;
     this.net.stepHandle(steps);
     this.tickMeasure();
+    if (this.net.touched) this.ui.setAction('check');
   }
 
   // Drop Net, right or wrong: a wrong net goes down all the same (see dropNet).
@@ -613,6 +673,16 @@ class Game {
     this.stopHint();
     this.audio.play('ui');
     dropNet(this);
+  }
+
+  // The nets' one button: Check (the corner set), Catch (a right net open in the water, a bunch under it), Try again
+  // (a tangled net).
+  onAction() {
+    if (state.paused) return;
+    const mode = this.ui.actionMode;
+    if (mode === 'check' && state.phase === PHASE.PUZZLE_READY) { this.stopHint(); this.audio.play('ui'); checkNet(this); }
+    else if (mode === 'catch' && state.phase === PHASE.FISHING) { this.stopHint(); this.audio.play('ui'); catchNow(this); }
+    else if (mode === 'again' && state.phase === PHASE.TANGLED) { this.audio.play('ui'); tryAgain(this); }
   }
 
   // Tapping the water is just for fun: bubbles, a soft bloop, and curious fish come to look.
@@ -751,8 +821,13 @@ class Game {
   // reasons rather than copies. No hint says whether the net is right: Drop Net does. Any
   // touch cancels a hint.
   updateHint(dt) {
-    // a right frame waiting for its next drop needs no hint: the timing is the child's (but in the warm-up the hand
-    // shows where Drop Net is)
+    // a right net open in the water: the timing is the child's, but left a while, the hand shows where Catch is
+    if (state.phase === PHASE.FISHING) {
+      if (this.hint) { if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; } return; }
+      state.idleTime += dt;
+      if (state.idleTime > HINT_REPEAT) this.pointAt(this.ui.el.action);
+      return;
+    }
     if (state.phase !== PHASE.PUZZLE_READY || (this.netRight && LEVELS[state.level].type !== 'free')) return;
     if (this.hint) {
       if (this.hint.drag) this.advanceHand(dt);
@@ -768,7 +843,8 @@ class Game {
   // down (as in Fishing Frenzy). The hand shows how the corner slides (two stops the right way, never all the way to
   // its place) and the plate gives a nudge; on later nets the corner's marks pulse instead of a second hand.
   showHint() {
-    if (LEVELS[state.level].type === 'free') { this.pointAtDrop(); return; }
+    if (LEVELS[state.level].type === 'free') { this.pointAt(this.ui.el.drop); return; }
+    if (this.ui.actionMode === 'check') { this.pointAt(this.ui.el.action); return; } // the corner set: Check is next
     const drag = !this.handShown || state.level === 0;
     this.hint = { t: 0, drag };
     this.audio.play('hint');
@@ -782,13 +858,13 @@ class Game {
     this.hintShown = true;
   }
 
-  // The warm-up's hint: the hand taps Drop Net
-  pointAtDrop() {
-    const b = this.ui.el.drop.getBoundingClientRect(), h = this.ui.el.hits.getBoundingClientRect();
-    if (!b.width) return;
+  // The hand taps a button: Drop Net (the warm-up), Check or Catch
+  pointAt(el) {
+    if (el.hidden || !el.getBoundingClientRect().width) return;
     this.hint = { t: 0, drag: false };
     this.audio.play('hint');
-    this.ui.moveHand((b.left + b.width * 0.42 - h.left) / this.ui.scale, (b.top + b.height * 0.55 - h.top) / this.ui.scale);
+    const p = this.ui.buttonPoint(el);
+    this.ui.moveHand(p.x, p.y);
     this.ui.showHand(false);
     this.ui.pulseInstruction();
     this.hintShown = true;
@@ -1207,6 +1283,7 @@ class Game {
     if (this.deep.some((d) => d.gone)) this.deep = this.deep.filter((d) => !d.gone);
     for (const d of this.deep) d.update(dt);
     if (state.phase === PHASE.PUZZLE_READY || state.phase === PHASE.DRAGGING) this.placeHandle();
+    this.applyFocus(dt);
     this.updateHint(dt);
   }
 

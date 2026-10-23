@@ -75,7 +75,8 @@ const JUMPS = [
     if (state.phase !== PHASE.PUZZLE_READY) level(state.level);
     g.net.toStop(0);
   }],
-  ['Drop', () => game().onDrop()],
+  // the warm-up: Drop Net; a net: Check (the corner where it is), then Catch
+  ['Drop', () => { const g = game(); if (LEVELS[state.level].type === 'free') { g.onDrop(); return; } if (state.phase === PHASE.PUZZLE_READY) g.ui.setAction('check'); g.onAction(); }],
   ['Row on', () => {
     const g = game();
     begin(g);
@@ -126,7 +127,7 @@ JUMPS.forEach(([label, run], i) => {
   b.type = 'button';
   b.innerHTML = i < 10 ? `<kbd>${(i + 1) % 10}</kbd>` : '';
   b.appendChild(document.createTextNode(label));
-  b.addEventListener('click', (e) => { e.stopPropagation(); if (game()) run(); });
+  b.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.add('folded'); if (game()) run(); }); // (a jump folds the panel away: it never covers the game's buttons)
   panel.appendChild(b);
 });
 document.body.appendChild(panel);
