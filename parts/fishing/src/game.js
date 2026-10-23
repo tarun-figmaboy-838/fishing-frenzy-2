@@ -8,7 +8,7 @@ const SCHOOL_TOP = 46;    // the school keeps this far below the surface
 const FOCUS = { zoom: 1.7, inMs: 900 }; // the view zooms in on the net this much, this fast, as a net comes down (applyFocus)
 const SCHOOL_MARGIN = 26; // and this far inside the net's footprint
 const TICK_GAP = 90;      // ms between measurement ticks while dragging
-const SWIM_BEYOND = 100;  // the school roams the whole sea, turning just out of sight at its ends
+const SWIM_BEYOND = 320;  // the school swims round a loop reaching this far past the sea's ends (out of sight), long enough for three schools with water between
 const READ_PACE = 0.26;   // seconds a word stays new when a line is shown without its recording
 const QUICK_PACE = 0.09;  // ...and when a line the child has just heard comes back
 

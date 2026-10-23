@@ -170,9 +170,10 @@ The game is deployed as part of the journey: the repository's root is the static
   one of 8 or 9 big ones, each a mix of three or four kinds and of sizes) roam the sea at the depth the net reaches, a little quicker net by net (`Sea`); each
   bunch is packed into a loose, tall cloud (`Sea.pack`: an ellipse the whole band's height, no two fish touching) that
   swims as one, so it reads as a school (as a drawn shoal does) and never as a line. The three swim one way, whichever
-  chance says for a new school, in a loose line at one pace (`Sea.lead` brings each in behind the others), and loop
-  round the sea's ends keeping their distance, so they never run into each other and each swims through the net in
-  turn: the child presses Catch when the bunch they want is in it. The net gathers its mouth
+  chance says net by net (a school already in the sea turns round together), spread evenly round a loop that reaches
+  well past the sea's ends at one pace (`Sea.leads` brings each new one in to the widest free water), so they keep
+  their distance, never run into each other, and each swims through the net in turn: the child presses Catch when the
+  bunch they want is in it. The net gathers its mouth
   underwater, then rises as a bag with the catch in its belly, clear of the water. A net that closed on nothing comes
   up empty ("Huh?!") and goes down again for another go. A bunch the net didn't touch stays, whole, and swims on into
   the next level (rowing to new waters, it comes along); the rest of a bunch the net took part of swim off out of the
