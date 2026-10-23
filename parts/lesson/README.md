@@ -17,7 +17,7 @@ http://localhost:8000/ for the whole journey. Opened directly, `parts/lesson/ind
 starts with it); `parts/lesson/index.html?solo` plays the lesson on its own page, from a Next on the lake to its score
 card. The stage is 1920 × 1080, letterboxed to any window; mouse, touch and pen all work.
 
-## The lesson (storyboard "Parallelogram_Pages_5_to_56", PDF pages 1–52 → 59 screens)
+## The lesson (storyboard "Parallelogram_Pages_5_to_56", PDF pages 1–52 → 53 screens)
 
 Every screen carries its storyboard page as `pdf` in `js/lesson-data.js`. A question and its "That's correct!" page
 are one screen (the feedback is that screen's finished state); each checkpoint page is three challenge screens.
@@ -44,8 +44,8 @@ are one screen (the feedback is that screen's finished state); each checkpoint p
 | 46 | 46–47 | drag the segments into equal pairs (OA = OC, OB = OD) |
 | 47–48 | 48–49 | equal halves share a colour and tick marks → diagonals bisect each other |
 | 49–51 | 50 | **Checkpoint 3**: AO = 6 → OC · AO = 5, BO = 3 → OC, OD · choose the true statements |
-| 52–58 | 51–52 | animated recall on the same parallelogram: definition, parallel, equal sides, equal angles, supplementary, bisect |
-| 59 | — | Swiftee's goodbye; on the lesson's own page, the stars (first-try score over the 9 checkpoint challenges) and Play again |
+| 52 | 51–52 | the summary, as Fishing Frenzy's (`js/summary.js`): one glassy bubble per idea (definition, parallel, equal sides, equal angles, supplementary, bisect) in the middle of the card, Swiftee peeking over it to say its line, the bubbles gathering into albums at the sides; then Next (in the journey, the hand-over) |
+| 53 | — | Swiftee's goodbye; on the lesson's own page, the stars (first-try score over the 9 checkpoint challenges) and Play again |
 
 Geometry: 1 cm = 60 board px. The opening trapezium (CD 6 cm, AD 3 cm, ∠D 70°) becomes, when B is dragged, the
 storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°, ∠B = ∠D = 70°, all measured live.
@@ -84,6 +84,7 @@ js/
   lesson-data.js        every screen as data, in play order (the comment at its top lists every option)
   game-engine.js        the lesson: narration, flow, geometry, drags, checks, values for the markup, the journey hooks
   motion.js             the GSAP animations a screen plays (cleared on every screen change)
+  summary.js            screen 52: the summary bubbles (a port of Fishing Frenzy's)
   opening.js            the seashell, the pearl's bubble and the card, on the lake. In the journey the lake is the
                         fishing game's own, live under this see-through page (water.js passes the camera to it);
                         on its own page (?solo) water.js draws the same lake (lake-data.js, water-gl.js)

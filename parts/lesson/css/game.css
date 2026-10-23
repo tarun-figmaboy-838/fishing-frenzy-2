@@ -710,6 +710,27 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .dd-item{height:52px;font-size:30px}
 .stage .fill-ui:not(.match) .blank-row{gap:22px}
 /* the journey's end: Next under Swiftee (as Fishing Frenzy's), popping up once her goodbye is said */
-.stage .next.end-next{height:72px;min-width:188px;font-size:34px;padding:0 30px;gap:8px;animation:endNextIn .45s cubic-bezier(.2,1.6,.4,1) both}
+.stage .next.end-next{position:absolute;left:546px;top:622px;z-index:8;height:72px;min-width:188px;font-size:34px;padding:0 30px;gap:8px;animation:endNextIn .45s cubic-bezier(.2,1.6,.4,1) both} /* (188 wide, centred on 640) */
 .stage .next.end-next span{font-size:20px}
 @keyframes endNextIn{from{opacity:0;transform:translateY(16px) scale(.6)}}
+
+/* ---- the summary (js/summary.js, as Fishing Frenzy's): no board; Swiftee rises from behind the big bubble. She sits
+   under the bubble layer (.sum-root), so its rim hides her body. No CSS translate or scale on her or the bubble: GSAP's
+   clean-up on a screen change would carry it over as a transform ---- */
+.stage.in-card.scene.summary .swiftee{left:510.5px!important;top:123px!important;transform-origin:50% 0;opacity:0;animation:none!important;transition:none!important}
+.stage.in-card.scene.summary .bubble{left:0!important;right:0!important;margin:0 auto!important;top:auto!important;bottom:607px!important;max-width:1120px!important;z-index:8;transform-origin:50% 100%}
+.stage.in-card.scene.summary .bubble .bubble-tail{left:calc(50% - 15px)}
+.sum-root{position:absolute;left:0;top:0;width:1280px;height:720px;z-index:6;pointer-events:none}
+.sum-root:empty{display:none}
+.sum-root > svg{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:visible}
+.sum-root .summary-card.tappable{cursor:pointer;pointer-events:visiblePainted}
+/* a summary bubble's skin sways like a real bubble's (Summary.bubble); the idea inside stays still */
+.sum-root .sum-bub-skin{transform-box:fill-box;transform-origin:center;animation:bubSway 2.6s ease-in-out infinite alternate}
+@keyframes bubSway{from{scale:1 1}to{scale:1.014 .986}}
+@media (prefers-reduced-motion: reduce){.sum-root .sum-bub-skin{animation:none}}
+/* (the summary's Next is the same button, at the same place: under the ideas, and under Swiftee in the middle) */
+/* ---- the measuring room (screens 13 and 24, as Fishing Frenzy's): Swiftee stands a little higher and further right,
+   her feet on the sand's ledge, her bubble close above her (the walkers start and end at her size and place here) ---- */
+.stage.in-card.scene.measure-room .swiftee{left:53px!important;top:404px!important}
+.stage.in-card.scene.measure-room .bubble{left:63px!important;top:auto!important;bottom:288px!important;max-width:340px!important}
+.stage.in-card.scene.measure-room .bubble .bubble-tail{left:122px}

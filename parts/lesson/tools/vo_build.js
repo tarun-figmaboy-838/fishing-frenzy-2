@@ -199,6 +199,9 @@ function lessonLines() {
   const shown = (L) => keys.add(L.keep ? L.s : plain(L.t));
   // lines js/game-engine.js says itself on the tasks this lesson uses (checkDrag)
   const ENGINE = { dragB: ['BC is not parallel to AD yet. Keep dragging B to the right.', 'B went too far. Drag it back a little.'] };
+  // the summary's ideas (js/summary.js IDEAS): said on the recap screen, not from a screen's lines
+  ['A parallelogram is a quadrilateral with two pairs of opposite sides parallel.', 'Opposite sides are parallel.', 'Opposite sides are equal.',
+    'Opposite angles are equal.', 'Adjacent angles are supplementary. They add up to 180°.', 'Diagonals bisect each other.'].forEach((t) => keys.add(t));
   LESSON.steps.forEach((st) => {
     (st.lines || []).concat(st.after || []).forEach(shown);
     (ENGINE[st.task] || []).forEach((t) => keys.add(t));

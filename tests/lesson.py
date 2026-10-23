@@ -149,6 +149,13 @@ def main():
                 page.screenshot(path=str(SHOTS / ('%02d-%s.png' % (s['step'] + 1, s['id']))))
                 s = st()
             sid = s['id']
+            if sid == 'recap' and sid not in done_ids:  # the summary: every idea explained in turn, then Next
+                done_ids.add(sid)
+                until(lambda: page.locator('[data-qa="sum-next"]').count(), lambda n: n > 0, 150, 'the summary: Next after every idea')
+                time.sleep(0.6)
+                check(page.evaluate('() => (document.querySelector(".sum-root") || {}).getAttribute("data-state")') == 'READY' and page.evaluate('() => document.querySelectorAll(".sum-root .summary-card").length') == 6,
+                      'the summary: six ideas explained, their bubbles in the albums, Next up')
+                tap('[data-qa="sum-next"]')
             if sid not in done_ids and not s['done']:
                 done_ids.add(sid)
                 if sid == 'askPar':

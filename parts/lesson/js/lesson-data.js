@@ -250,19 +250,10 @@ const LESSON = {
         { id: 'bis', t: 'The diagonals bisect each other.', ok: true, wide: 1 }
       ] }, CP, { optWrap: 1 }),
 
-    // ---------- Part 9 · recall (pages 51-52): the properties replayed on the same parallelogram, one by one ----------
-    { pdf: 51, id: 'recall', lines: [{ m: 'happy', t: "Let's recall what we learnt\nabout parallelograms." }], f: DIAG },
-    { pdf: 52, id: 'recDef', autoNext: 900, lines: [{ t: 'A parallelogram is a quadrilateral\nwith two pairs of opposite\nsides parallel.', pulse: 1, pulseAt: 'parallelogram',
-      chips: [{ t: 'Parallelogram', k: 'name' }] }], f: PG },
-    { pdf: 52, id: 'recPar', autoNext: 900, lines: [{ t: 'Opposite sides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
-      { keep: 1, s: 'B C is parallel to A D.', glow: ['BC', 'DA'], chips: [{ t: 'BC ∥ AD', k: 'white' }] }], f: PG },
-    { pdf: 52, id: 'recEq', autoNext: 900, lines: [{ t: 'Opposite sides are equal.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'BC = AD', k: 'gold' }] }],
-      lenSeq: [[300, ['AB', 'CD']], [1500, ['DA', 'BC']]], f: Object.assign({ ticks: 1, lenSeq: 1 }, LENS) },
-    { pdf: 52, id: 'recAng', autoNext: 900, lines: [{ t: 'Opposite angles are equal.', chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠B = ∠D', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
-    { pdf: 52, id: 'recSupp', autoNext: 900, lines: [{ t: 'Adjacent angles are supplementary.\nThey add up to 180°.',
-      chips: [{ t: '∠A + ∠B = 180°', k: 'gold sm' }, { t: '∠B + ∠C = 180°', k: 'gold sm' }] }], f: { arcs: 'ABCD', supp: ['BA', 'BC'] } },
-    { pdf: 52, id: 'recDiag', lines: [{ t: 'Diagonals bisect each other.', chips: [{ t: 'AO = OC', k: 'gold' }, { t: 'BO = OD', k: 'gold' }] }],
-      f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
+    // ---------- Part 9 · recall (pages 51-52): the summary, as Fishing Frenzy's (js/summary.js): one glassy bubble per
+    // idea in the middle of the card, Swiftee peeking over it to say its line (the recap clips), the bubbles gathering
+    // into albums at the sides, then Next (in the journey, the hand-over to the fishing) ----------
+    { pdf: '51-52', id: 'recap', summary: 1, lines: [{ m: 'happy', t: "Let's recall what we learnt\nabout parallelograms." }] },
     { id: 'end', end: 1, lines: [{ m: 'celebrating', t: 'Amazing work! You know all\nabout parallelograms now.' }] }
   ]
 };

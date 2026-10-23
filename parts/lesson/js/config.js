@@ -62,7 +62,7 @@ const CONFIG = {
   board: { x: 640, y: 104 },         // the board's top-left on the stage
   // screen 14's measuring walk: her size on the shape, her spot on the sand (feet) and size there, her walking pace,
   // ms per cm along a side, the pause on each corner, the wait before she sets off and after she is home again
-  walker: { size: 110, homeX: 164, homeY: 665, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550, startMs: 850, homeMs: 850,
+  walker: { size: 150, homeX: 183, homeY: 631, homeSize: 259, strollPxPerMs: 0.42, msPerCm: 380, pauseMs: 550, startMs: 850, homeMs: 850,
     tips: [[488, 272], [484, 281], [494, 273], [489, 270], [486, 278], [483, 279], [491, 281], [489, 281]] }, // tape exit per walk frame (@2x cell px)
   // screen 24's protractor walk (js/angle-walker.js, as in Fishing Frenzy's lesson): scale = stage px per drawing px
   // (so the protractor covers the angle); homeK = her size at her spot against her size on the shape; carryPx =

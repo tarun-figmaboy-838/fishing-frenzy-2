@@ -28,6 +28,7 @@
 <script src="js/angle-frames.js"></script>
 <script src="js/angle-walker.js"></script>
 <script src="js/motion.js"></script>
+<script src="js/summary.js"></script>
 <script src="js/sfx.js"></script>
 <script src="js/vo_lines.js"></script>
 <script src="js/voice.js"></script>
@@ -200,6 +201,7 @@
 <img class="bird swiftee-still" src="assets/images/swiftee.webp" alt="Swiftee the bird" style="position: absolute; left: 42px; top: 29px; width: 180px; height: 198px">
 <canvas class="swiftee-sprite" width="256" height="256" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 259px; height: 259px"></canvas>
 </div>
+<div class="sum-root"></div>
 <div class="bubble {{bubCls}} {{bubHide}}" style="position: absolute; left: 240px; bottom: 322px; pointer-events: none; --pw: {{plateW}}px">
 <div aria-live="polite" class="bubble-text" style="font-size: {{wordSize}}px" data-qa="bubble">
 <sc-for list="{{words}}" as="wd" hint-placeholder-count="6">
@@ -222,11 +224,12 @@
 <span class="hand-move"><img src="assets/images/hand-nudge.webp" alt=""></span>
 </div>
 </sc-if>
+<!-- the journey's Next buttons, at the bottom middle of the card (as Fishing Frenzy's): the end's, under Swiftee's goodbye, and the
+     summary's, once every idea has been explained - the learner moves on when they choose -->
+<sc-if value="{{endNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next" data-qa="end-next" onClick="{{endGo}}">Next <span aria-hidden="true">▶</span></button></sc-if>
+<sc-if value="{{showSumNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next sum-next" data-qa="sum-next" onClick="{{sumNextGo}}">Next <span aria-hidden="true">▶</span></button></sc-if>
 
 </div>
-<sc-if value="{{endNext}}" hint-placeholder-val="{{ false }}">
-<button class="next end-next" data-qa="end-next" onClick="{{endGo}}" style="position: absolute; left: 206px; top: 588px; z-index: 6">Next <span aria-hidden="true">▶</span></button>
-</sc-if>
 <sc-if value="{{notStarted}}" hint-placeholder-val="{{ false }}">
 <button class="journey-next" data-qa="start" onClick="{{begin}}">Next <span aria-hidden="true">▶</span></button>
 </sc-if>
