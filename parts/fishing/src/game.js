@@ -228,7 +228,6 @@ class Game {
     this.winch = new Winch();
     this.net = new Net();
     this.net.textScale = this.labelScale();
-    this.net.arrowGap = this.ui.arrowGap() / this.stage.scale;
     this.net.sharpRes = this.textureRes();
     // until Popo lets it down, the net hangs wound up in a bundle under the boom's pulley
     this.net.visible = true;
@@ -372,7 +371,6 @@ class Game {
     const z = 1 + ((f.zoom || FOCUS.zoom) - 1) * k;
     if (z === f.z && z === 1) return;
     f.z = z;
-    this.net.viewZoom = z;
     if (this.camera.zoom !== 1) return; // (the lesson's camera has the view)
     const s = this.stage.scale, origin = `${(f.ox * s).toFixed(1)}px ${(f.oy * s).toFixed(1)}px`, tf = z === 1 ? '' : `scale(${z.toFixed(4)})`;
     for (const el of [this.ui.el.scene, this.ui.el.hits]) {
@@ -812,7 +810,6 @@ class Game {
     this.stage.resize();
     this.ui.setScale(this.stage.scale);
     this.net.textScale = this.labelScale();
-    this.net.arrowGap = this.ui.arrowGap() / this.stage.scale;
     this.net.sharpRes = this.textureRes();
     // keep the bubble, the corner and the hint on their marks even while paused
     if (this.dialogue && this.dialogue.who !== 'narrator') this.placeSpeech();

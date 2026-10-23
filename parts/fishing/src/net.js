@@ -48,6 +48,7 @@ const INK = 'rgba(12, 40, 70, 0.9)';
 const ANG = { A: '#ff7a00', B: '#00c853', C: '#9d4dff', D: '#ffab00' };
 const ANG_TXT = { A: '#ff9a3c', B: '#3ddc73', C: '#c08bff', D: '#ffc44d' };
 const CHEV = '#ff7a00';
+const ARROW_REACH = 44;  // how far from the knob's middle its two slide arrows sit (tight against it)
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
 
 // A level's solved parallelogram with its top edge at y 0: width, height and either the lean
@@ -92,8 +93,6 @@ class Net {
     this.track = { min: 0, max: 0 }; // the stops the corner can reach, counted from its place
     this.stopAt = 0;      // the stop it is at
     this.drawn = null;    // where the corner is drawn while it glides onto its new stop
-    this.arrowGap = 70;   // how far the slide arrows sit from the knob (Game.resize fits it)
-    this.viewZoom = 1;    // how far the view is zoomed in on the net (Game.applyFocus): the arrows sit nearer, zoomed
     this.sharpRes = 2;    // texture pixels per stage pixel once the shape holds still (Game.resize)
     this.textureRes = 0;
     this.tear = 0;        // 0 whole, 1 torn open by a catch a wrong net couldn't hold
@@ -596,37 +595,45 @@ class Net {
     ctx.restore();
   }
 
-  // How far from the knob its slide arrows sit (and their tap targets): just clear of the knob's own target on the
-  // screen, so nearer in the scene the further the view is zoomed in.
-  arrowReach() {
-    return this.arrowGap / Math.max(1, this.viewZoom || 1);
-  }
-
-  // Two arrows either side of the knob, in its own yellow, point the ways it can still slide along its track (each
-  // gone at its end of the track; the track itself isn't drawn); each rocks a little the way it points.
+  // Two chunky arrows tight against the knob, either side, in its own yellow with its brown rim and a gloss, point
+  // the ways it can still slide along its track (each gone at its end of the track; the track itself isn't drawn);
+  // they nod outward together, as a game's slider arrows do.
   drawArrows(ctx, knob) {
     const from = this.toStage(this.stop(this.track.min));
     const to = this.toStage(this.stop(this.track.max));
-    const k = this.textScale, reach = this.arrowReach();
+    const k = this.textScale;
     ctx.save();
     ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     const dir = normalize(sub(to, from));
-    const nudge = this.reduced ? 0 : Math.sin(this.time * 4) * 3;
+    const nudge = this.reduced ? 0 : (Math.sin(this.time * 4) + 1) * 2.5;
     for (const [sign, open] of [[1, this.stopAt < this.track.max], [-1, this.stopAt > this.track.min]]) {
       if (!open) continue;
-      const at = add(knob, times(dir, sign * (reach + nudge)));
-      const tip = add(at, times(dir, sign * 12 * k));
-      const back = times(dir, -sign * 9 * k);
-      const across = { x: -dir.y * 11 * k, y: dir.x * 11 * k };
+      const at = add(knob, times(dir, sign * (ARROW_REACH + nudge)));
+      const tip = add(at, times(dir, sign * 13 * k));
+      const back = add(at, times(dir, -sign * 8 * k));
+      const across = { x: -dir.y * 12 * k, y: dir.x * 12 * k };
+      const a = add(back, across), b = sub(back, across);
       ctx.beginPath();
-      ctx.moveTo(at.x + back.x + across.x, at.y + back.y + across.y);
+      ctx.moveTo(a.x, a.y);
       ctx.lineTo(tip.x, tip.y);
-      ctx.lineTo(at.x + back.x - across.x, at.y + back.y - across.y);
+      ctx.lineTo(b.x, b.y);
       ctx.closePath();
+      ctx.lineWidth = 7 * k;
+      ctx.strokeStyle = '#4a2c0f';
+      ctx.stroke();
       ctx.fillStyle = '#ffd84a';
       ctx.fill();
-      ctx.lineWidth = 3 * k;
-      ctx.strokeStyle = '#4a2c0f';
+      ctx.lineWidth = 2.5 * k;
+      ctx.strokeStyle = '#ffd84a';
+      ctx.stroke();
+      // a gloss along the upper edge (the edge nearer the sky)
+      const up = a.y <= b.y ? a : b, edge = sub(tip, up);
+      ctx.beginPath();
+      ctx.moveTo(up.x + edge.x * 0.2, up.y + edge.y * 0.2);
+      ctx.lineTo(up.x + edge.x * 0.7, up.y + edge.y * 0.7);
+      ctx.lineWidth = 2.2 * k;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
       ctx.stroke();
     }
     ctx.restore();
@@ -637,8 +644,7 @@ class Net {
   arrowPoints(knob) {
     if (this.locked || this.furl) return { back: null, on: null };
     const dir = normalize(sub(this.toStage(this.stop(this.track.max)), this.toStage(this.stop(this.track.min))));
-    const reach = this.arrowReach();
-    const at = (sign) => add(knob, times(dir, sign * reach));
+    const at = (sign) => add(knob, times(dir, sign * ARROW_REACH));
     return { back: this.stopAt > this.track.min ? at(-1) : null, on: this.stopAt < this.track.max ? at(1) : null };
   }
 

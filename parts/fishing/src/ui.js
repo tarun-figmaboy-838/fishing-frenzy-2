@@ -88,10 +88,6 @@ class UI {
     this.el.again.addEventListener('click', h('again'));
     this.el.next.addEventListener('click', h('next'));
     this.wireHandle();
-    // the arrows beside the knob: a tap moves the corner one stop that way
-    for (const [el, steps] of [[this.el.stepBack, -1], [this.el.stepOn, 1]]) {
-      el.addEventListener('click', (e) => { e.preventDefault(); this.emit('step', steps); });
-    }
   }
 
   on(name, fn) {
@@ -104,28 +100,59 @@ class UI {
 
   // --- the net's corner ------------------------------------------------------
   // One pointer at a time, captured so the drag carries on outside the button. The stage
-  // rectangle is measured once per drag (and again on resize), not on every move.
+  // rectangle is measured once per drag (and again on resize), not on every move. The two
+  // arrows sit tight against the knob, over its grab target: a press on one that stays put is
+  // a tap (the corner slides a stop that way), one that moves is the knob's drag, from where
+  // it began, so a drag never fails for starting on an arrow.
   wireHandle() {
     const handle = this.el.handle;
+    const begin = (e, el) => {
+      this.dragId = e.pointerId;
+      this.dragRect = this.el.hits.parentElement.getBoundingClientRect(); // (the stage: the hits layer itself zooms with the view)
+      el.setPointerCapture(e.pointerId);
+      handle.focus({ preventScroll: true });
+      this.emit('dragStart', this.dragPoint(e));
+    };
     handle.addEventListener('pointerdown', (e) => {
       if (this.dragId !== null || e.button > 0) return;
       e.preventDefault();
-      this.dragId = e.pointerId;
-      this.dragRect = this.el.hits.parentElement.getBoundingClientRect(); // (the stage: the hits layer itself zooms with the view)
-      handle.setPointerCapture(e.pointerId);
-      handle.focus({ preventScroll: true });
-      this.emit('dragStart', this.dragPoint(e));
+      begin(e, handle);
     });
-    handle.addEventListener('pointermove', (e) => {
+    const move = (e) => {
       if (e.pointerId === this.dragId) this.emit('dragMove', this.dragPoint(e));
-    });
+    };
     const end = (e) => {
       if (e.pointerId !== this.dragId) return;
       this.dragId = null;
       this.emit('dragEnd', this.dragPoint(e));
     };
-    handle.addEventListener('pointerup', end);
-    handle.addEventListener('pointercancel', end);
+    for (const el of [handle, this.el.stepBack, this.el.stepOn]) {
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', end);
+      el.addEventListener('pointercancel', end);
+    }
+    for (const [el, steps] of [[this.el.stepBack, -1], [this.el.stepOn, 1]]) {
+      el.addEventListener('pointerdown', (e) => {
+        if (this.dragId !== null || e.button > 0) return;
+        e.preventDefault();
+        this.press = { id: e.pointerId, x: e.clientX, y: e.clientY, start: e };
+        el.setPointerCapture(e.pointerId);
+      });
+      el.addEventListener('pointermove', (e) => {
+        const p = this.press;
+        if (!p || e.pointerId !== p.id || this.dragId !== null || Math.hypot(e.clientX - p.x, e.clientY - p.y) < 8) return;
+        this.press = null;
+        begin(p.start, el);
+        this.emit('dragMove', this.dragPoint(e));
+      });
+      el.addEventListener('pointerup', (e) => {
+        const p = this.press;
+        this.press = null;
+        if (p && e.pointerId === p.id) this.emit('step', steps);
+      });
+      el.addEventListener('pointercancel', () => { this.press = null; });
+      el.addEventListener('click', (e) => { e.preventDefault(); if (e.detail === 0) this.emit('step', steps); }); // (the keyboard)
+    }
     handle.addEventListener('keydown', (e) => {
       const step = { ArrowLeft: [-NUDGE, 0], ArrowRight: [NUDGE, 0], ArrowUp: [0, -NUDGE], ArrowDown: [0, NUDGE] }[e.key];
       if (step) {
@@ -163,14 +190,6 @@ class UI {
       el.hidden = !p || this.el.handle.hidden;
       if (p) el.style.transform = `translate(${(p.x * this.scale).toFixed(1)}px, ${(p.y * this.scale).toFixed(1)}px)`;
     }
-  }
-
-  // How far the arrows sit from the knob, in CSS pixels: just clear of the knob's own (bigger)
-  // target, so a drag that starts on the knob's edge never taps an arrow instead.
-  // (The sizes are the CSS's: the knob's target is max(60px, 8.4em), an arrow's 44px.)
-  arrowGap() {
-    const em = parseFloat(getComputedStyle(this.el.hits).fontSize);
-    return Math.max(60, 8.4 * em) / 2 + 22 + 4;
   }
 
   // Drop Net, the one action: 'on' while the child solves, 'hidden' while the net is down. It
