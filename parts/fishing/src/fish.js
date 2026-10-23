@@ -190,16 +190,24 @@ class Sea {
   // to a lane: each bunch is a cloud of fish of mixed kinds and sizes packed into an ellipse the whole band's height
   // (no two touching, see pack), and the three swim one way (a new school: whichever way chance says) in a loose
   // line, all at the level's pace, so each is a full, tall school and they never run into each other: a cloud
-  // swims in from out of sight behind the others (lead) and loops round the sea's ends keeping its distance. A lane
-  // with fish keeps its kind and its fish; newcomers come in behind as a cloud of their own. `keep` is the school
-  // so far, `bunches` the level's (levels.js bunchesFor: { kinds, key, count, size }).
+  // swims in from out of sight behind the others (lead) and loops round the sea's ends keeping its distance. A bunch
+  // the net didn't touch stays, whole; one it took part of is done: the rest swim off out of the sea for good and a
+  // whole new bunch comes in behind them, so there are always three whole schools and never a straggling few.
+  // `keep` is the school so far, `bunches` the level's (levels.js bunchesFor: { kinds, key, count, size }).
   stock(keep, area, bunches, { rare = false, pace = 50 } = {}) {
     const band = area.bottom - area.top, loop = area.right - area.left;
-    const school = keep.filter((f) => !f.gone && !f.caught && !f.leaving);
-    if (school.length) this.dir = school[0].lane.dir;
+    const school = keep.filter((f) => !f.gone && !f.caught); // (those leaving still swim, until they're out of sight)
+    const staying = school.filter((f) => !f.leaving);
+    if (school.length) this.dir = (staying[0] || school[0]).lane.dir;
     else { this.dir = Math.random() < 0.5 ? -1 : 1; this.phase = Math.random() * TAU; }
     this.lanes.forEach((lane, i) => {
-      if (!school.some((f) => f.lane === lane)) { lane.bunch = bunches[i % bunches.length]; lane.shoal = i + 1; }
+      const have = staying.filter((f) => f.lane === lane);
+      lane.fresh = !lane.bunch || have.length < lane.bunch.count;
+      if (lane.fresh) {
+        for (const f of have) f.swimAway();
+        lane.bunch = bunches[i % bunches.length];
+        lane.shoal = i + 1;
+      }
       lane.dir = this.dir;
       lane.share = 1;
       lane.phase = this.phase; // (the pace breathes the same for every bunch, so none gains on another)
@@ -209,14 +217,13 @@ class Sea {
       lane.y = lane.base;
     });
     const start = this.dir > 0 ? area.left : area.right;
+    let newcomers = 0;
     for (const lane of this.lanes) {
-      const bunch = lane.bunch || bunches[0];
-      const have = school.filter((f) => f.lane === lane);
-      if (have.length >= bunch.count) continue;
-      const fresh = [];
-      while (have.length + fresh.length < bunch.count) {
+      if (!lane.fresh) continue;
+      const bunch = lane.bunch, fresh = [];
+      while (fresh.length < bunch.count) {
         const kinds = bunch.kinds || [bunch.key];
-        const f = new Fish(kinds[Math.floor(Math.random() * kinds.length)], 0, lane.y, lane.dir, bunch.size * (0.82 + Math.random() * 0.36)); // (mixed kinds and sizes, as a school)
+        const f = new Fish(kinds[Math.floor(Math.random() * kinds.length)], 0, lane.y, lane.dir, bunch.size * (0.74 + Math.random() * 0.52)); // (mixed kinds and sizes, as a school)
         f.lane = lane;
         f.rare = rare;
         f.speed = lane.speed;
@@ -235,11 +242,11 @@ class Sea {
         f.waiting = false;
         school.push(f);
       });
+      newcomers += fresh.length;
     }
-    // a whole new school (the first, or the golden one) rushes in: its lanes swim fast for a
-    // moment, then ease to their pace; every fish in a lane speeds and slows together, so none gains on another
-    const newcomers = school.length - keep.filter((f) => !f.gone && !f.caught && !f.leaving).length;
-    if (newcomers > school.length / 2) for (const lane of this.lanes) lane.rush = RUSH;
+    // a whole new school (the first, or the golden one) rushes in: it swims fast for a moment, then eases to its
+    // pace; every fish speeds and slows together, so none gains on another
+    if (newcomers > staying.length) for (const lane of this.lanes) lane.rush = RUSH;
     for (const f of school) f.driftAmp = 1; // (a gentle float; the cloud is packed with room for it)
     return school;
   }

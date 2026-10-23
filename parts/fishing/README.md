@@ -150,9 +150,10 @@ The game is deployed as part of the journey: the repository's root is the static
   parallel is for the eye, zoomed in, and Check); on the length levels the side given and the one being set, in
   centimetres, each just outside its side; on the angle levels the angle given and the one being set, as wedges filled
   in the corners' own colours with their degrees; on the diagonals level the diagonals, O and their four halves; on the
-  last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and two yellow arrows
-  either side of the knob point the ways it can still slide (a tap on one moves it a stop; the track itself isn't
-  drawn). The labels are laid out together so none covers another. The answer lies further from the start level by level (5 to 9
+  last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and a trail of two
+  yellow chevrons tight against the knob on each open side runs the way it can still slide, as a game shows a swipe
+  (a tap on a trail moves it a stop; the track itself isn't drawn). The labels are laid out together so none covers
+  another. The answer lies further from the start level by level (5 to 9
   stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
   it is plainly the thing to look at.
 - **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, 1.7x about the
@@ -173,15 +174,17 @@ The game is deployed as part of the journey: the repository's root is the static
   round the sea's ends keeping their distance, so they never run into each other and each swims through the net in
   turn: the child presses Catch when the bunch they want is in it. The net gathers its mouth
   underwater, then rises as a bag with the catch in its belly, clear of the water. A net that closed on nothing comes
-  up empty ("Huh?!") and goes down again for another go. The fish the net missed stay and swim on into the next
-  level (rowing to new waters, they come along), joined by newcomers; for the golden final school they swim off out
-  of the sea as the golden fish swim in behind them. No fish ever vanishes or pops into view; a whole new school (the
+  up empty ("Huh?!") and goes down again for another go. A bunch the net didn't touch stays, whole, and swims on into
+  the next level (rowing to new waters, it comes along); the rest of a bunch the net took part of swim off out of the
+  sea and a whole new bunch comes in behind them, so there are always three whole schools and never a straggling
+  few; for the golden final school every fish swims off as the golden fish swim in behind them. No fish ever vanishes or pops into view; a whole new school (the
   first, the golden one) rushes in, fast for a moment, so the sea fills at once.
 - **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
   alone, the hand shows how the corner slides, two stops the right way (never all the way to
   its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the
-  measurements, so the game teaches rather than solves itself; the corner set, the little hand sits on Check, and
-  on a net left open in the water a while, on Catch. No hint says whether the net is right; Check does.
+  measurements, so the game teaches rather than solves itself; the corner set, the little hand comes down from above
+  onto Check, and on a net left open in the water a while, onto Catch. No hint says whether the net is right; Check
+  does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every

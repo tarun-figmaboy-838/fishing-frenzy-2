@@ -109,7 +109,7 @@ function bunchesFor(level) {
   lastKinds = pool.slice(0, 3);
   const order = shuffle([0, 1, 2]); // which lane gets which bunch
   return order.map((b, i) => {
-    const [lo, hi] = BUNCH_COUNTS[b], n = 2 + Math.floor(Math.random() * 3); // (its kinds: two to four)
+    const [lo, hi] = BUNCH_COUNTS[b], n = 3 + Math.floor(Math.random() * 2); // (its kinds: three or four)
     return { kinds: pool.slice(i * 4, i * 4 + n), key: pool[i * 4], count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: BUNCH_SIZES[b] + (Math.random() - 0.5) * 0.04 };
   });
 }
