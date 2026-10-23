@@ -894,8 +894,10 @@ class Game {
   // The hand taps a button: Drop Net (the warm-up), Check or Catch
   pointAt(el, again = false) {
     if (el.hidden || !el.getBoundingClientRect().width) return;
-    const p = this.ui.buttonPoint(el, this.ui.buttonLow(el)); // (a bottom button: the hand sits over it, not off the screen)
+    const low = this.ui.buttonLow(el); // (a bottom pill: the hand comes from above, not off the screen)
+    const p = this.ui.buttonPoint(el, low);
     if (!again) this.ui.showHand(false);
+    this.ui.el.hand.classList.toggle('low', low);
     this.ui.moveHand(p.x, p.y);
     if (again) return; // (placed again as the view moves)
     this.hint = { t: 0, drag: false };

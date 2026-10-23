@@ -96,6 +96,13 @@ html, body {
   0%, 100% { margin: 0; }
   50% { margin: 0.7em 0 0 0.7em; }
 }
+/* on a pill along the bottom of the stage the hand comes from above instead (turned a quarter, UI.moveHand), its
+   finger on the pill's face pointing down and left and the rest of it up over the water, never off the screen */
+.hand.low { transform-origin: 0 0; animation-name: hand-tap-low; }
+@keyframes hand-tap-low {
+  0%, 100% { margin: 0; }
+  50% { margin: 0.7em 0 0 -0.7em; }
+}
 
 /* ---------- HUD ---------- */
 .hud { position: absolute; inset: 0; pointer-events: none; }

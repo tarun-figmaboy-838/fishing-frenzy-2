@@ -237,13 +237,14 @@ class UI {
     }, 260);
   }
 
-  // Where the hint hand's fingertip goes on a HUD button, as a stage point: on its face, or (low: a button along the
-  // bottom of the stage, where a hand hanging from its face would run off the screen) on its top edge towards its
-  // right end, so the little hand sits over the pill and its word stays readable.
+  // Where the hint hand's fingertip goes on a HUD button, as a stage point: on its face, left of its middle (the
+  // hand hangs down and right of its finger), or, low (a pill along the bottom of the stage, where a hand hanging
+  // from it would run off the screen), on its face right of the middle: there the hand comes from above (.hand.low,
+  // moveHand), so its word stays readable and nothing leaves the screen.
   buttonPoint(el, low = false) {
     const r = el.getBoundingClientRect();
     const h = this.el.hits.parentElement.getBoundingClientRect();
-    const p = low ? { x: (r.left + r.width * 0.9 - h.left) / this.scale, y: (r.top + r.height * 0.04 - h.top) / this.scale }
+    const p = low ? { x: (r.left + r.width * 0.68 - h.left) / this.scale, y: (r.top + r.height * 0.42 - h.top) / this.scale }
       : { x: (r.left + r.width * 0.42 - h.left) / this.scale, y: (r.top + r.height * 0.55 - h.top) / this.scale };
     return this.unzoom ? this.unzoom(p) : p;
   }
@@ -541,7 +542,8 @@ class UI {
   // top-left corner, so it scales from there)
   moveHand(x, y) {
     const q = this.zoomed ? this.zoomed({ x, y }) : { x, y, z: 1 };
-    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '');
+    const low = this.el.hand.classList.contains('low'); // (from above: turned a quarter about its fingertip)
+    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '') + (low ? ' rotate(-90deg)' : '');
   }
 
   showRotateHint(show) {
