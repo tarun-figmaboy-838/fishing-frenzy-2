@@ -44,6 +44,10 @@ const KNOT = RING_KNOT;
 // the outline of a torn hole, as shares of its full size, all the way round
 const RAGGED = [1, 0.62, 0.9, 0.7, 1, 0.58, 0.86, 0.66, 0.97, 0.6, 0.92, 0.72, 1, 0.64, 0.84, 0.7];
 const INK = 'rgba(12, 40, 70, 0.9)';
+// the lesson's colours: one per angle (its wedge, and its value), and its orange parallel arrows and navy ticks
+const ANG = { A: '#ff7a00', B: '#00c853', C: '#9d4dff', D: '#ffab00' };
+const ANG_TXT = { A: '#ff9a3c', B: '#3ddc73', C: '#c08bff', D: '#ffc44d' };
+const CHEV = '#ff7a00';
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
 
 // A level's solved parallelogram with its top edge at y 0: width, height and either the lean
@@ -89,6 +93,7 @@ class Net {
     this.stopAt = 0;      // the stop it is at
     this.drawn = null;    // where the corner is drawn while it glides onto its new stop
     this.arrowGap = 70;   // how far the slide arrows sit from the knob (Game.resize fits it)
+    this.viewZoom = 1;    // how far the view is zoomed in on the net (Game.applyFocus): the arrows sit nearer, zoomed
     this.sharpRes = 2;    // texture pixels per stage pixel once the shape holds still (Game.resize)
     this.textureRes = 0;
     this.tear = 0;        // 0 whole, 1 torn open by a catch a wrong net couldn't hold
@@ -515,7 +520,6 @@ class Net {
     }
     ctx.restore();
     ctx.filter = 'none';
-    if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]);
     if (this.flash > 0) {
       ctx.save();
       ctx.globalAlpha *= this.flash * 0.7;
@@ -527,6 +531,7 @@ class Net {
     }
     if (showing) this.drawMeasurements(ctx, corners);
     if (this.glow) this.drawGlow(ctx, corners);
+    if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]); // (over the marks, under the knob)
     if (this.furl < 1) {
       // the eyelets fold away into the bundle as the net winds up
       ctx.save();
@@ -591,32 +596,37 @@ class Net {
     ctx.restore();
   }
 
-  // Two little arrows beside the knob show which ways it slides along its track (each fades out
-  // at the end of the track); the track itself isn't drawn.
+  // How far from the knob its slide arrows sit (and their tap targets): just clear of the knob's own target on the
+  // screen, so nearer in the scene the further the view is zoomed in.
+  arrowReach() {
+    return this.arrowGap / Math.max(1, this.viewZoom || 1);
+  }
+
+  // Two arrows either side of the knob, in its own yellow, point the ways it can still slide along its track (each
+  // gone at its end of the track; the track itself isn't drawn); each rocks a little the way it points.
   drawArrows(ctx, knob) {
     const from = this.toStage(this.stop(this.track.min));
     const to = this.toStage(this.stop(this.track.max));
-    const k = this.textScale;
+    const k = this.textScale, reach = this.arrowReach();
     ctx.save();
-    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     const dir = normalize(sub(to, from));
     const nudge = this.reduced ? 0 : Math.sin(this.time * 4) * 3;
     for (const [sign, open] of [[1, this.stopAt < this.track.max], [-1, this.stopAt > this.track.min]]) {
       if (!open) continue;
-      const at = add(knob, times(dir, sign * (this.arrowGap + nudge)));
-      const tip = add(at, times(dir, sign * 9 * k));
+      const at = add(knob, times(dir, sign * (reach + nudge)));
+      const tip = add(at, times(dir, sign * 12 * k));
       const back = times(dir, -sign * 9 * k);
-      const across = { x: -dir.y * 10 * k, y: dir.x * 10 * k };
+      const across = { x: -dir.y * 11 * k, y: dir.x * 11 * k };
       ctx.beginPath();
       ctx.moveTo(at.x + back.x + across.x, at.y + back.y + across.y);
       ctx.lineTo(tip.x, tip.y);
       ctx.lineTo(at.x + back.x - across.x, at.y + back.y - across.y);
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = 7 * k;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      ctx.lineWidth = 3.5 * k;
-      ctx.strokeStyle = '#ffd84a';
+      ctx.closePath();
+      ctx.fillStyle = '#ffd84a';
+      ctx.fill();
+      ctx.lineWidth = 3 * k;
+      ctx.strokeStyle = '#4a2c0f';
       ctx.stroke();
     }
     ctx.restore();
@@ -627,7 +637,8 @@ class Net {
   arrowPoints(knob) {
     if (this.locked || this.furl) return { back: null, on: null };
     const dir = normalize(sub(this.toStage(this.stop(this.track.max)), this.toStage(this.stop(this.track.min))));
-    const at = (sign) => add(knob, times(dir, sign * this.arrowGap));
+    const reach = this.arrowReach();
+    const at = (sign) => add(knob, times(dir, sign * reach));
     return { back: this.stopAt > this.track.min ? at(-1) : null, on: this.stopAt < this.track.max ? at(1) : null };
   }
 
@@ -886,7 +897,6 @@ class Net {
       case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel':
         // the parallel marks say which pair of sides; whether they are parallel is for the eye (zoomed in) and Check
-        this.drawSideHighlight(ctx, c, L.sides);
         this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2);
         break;
       case 'length':
@@ -917,50 +927,38 @@ class Net {
     }
   }
 
-  // A side's label sits just inside its midpoint, clear of the water, the sling and the mast;
-  // on a side the moving corner pulls, it sits a little toward the fixed end, clear of the knob.
+  // A side's label sits just outside its midpoint (as the lesson's lengths do), clear of the mesh; on a side the
+  // moving corner pulls, it sits a little toward the fixed end, clear of the knob.
   drawLength(ctx, c, name, value, live = false) {
     const [i, j] = side(name);
     const mid = lerp(c[i], c[j], this.clearOfKnob(i, j));
     const centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
-    const at = add(mid, times(normalize(sub(centre, mid)), 30 * this.textScale));
+    const at = add(mid, times(normalize(sub(mid, centre)), 34 * this.textScale));
     this.text(ctx, `${name} ${value}`, at.x, at.y, live ? 26 : 22, live ? '#ffd84a' : '#fff', live);
   }
 
-  // A soft band along the sides a parallel level is about.
-  drawSideHighlight(ctx, c, sides) {
-    ctx.save();
-    ctx.lineWidth = 18;
-    ctx.strokeStyle = 'rgba(255, 240, 150, 0.28)';
-    ctx.beginPath();
-    for (const name of sides) {
-      const [i, j] = side(name);
-      ctx.moveTo(c[i].x, c[i].y);
-      ctx.lineTo(c[j].x, c[j].y);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  // Parallel marks as in a geometry book: chevrons on the pair of sides, faint until the
-  // sides are parallel, then bright green.
+  // Parallel marks as the lesson draws them: orange chevrons on a white halo at the middle of each side of the pair
+  // (one on one pair, two on the other), bright green once the pair is found (lit).
   drawTicks(ctx, c, sides, lit, count) {
     ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const k = this.textScale;
     for (const name of sides) {
       const [i, j] = side(name);
       const u = normalize(sub(c[j], c[i]));
       const mid = midpoint(c[i], c[j]);
       for (let pass = 0; pass < 2; pass += 1) {
-        ctx.lineWidth = pass ? (lit ? 2.5 : 1.6) : (lit ? 4.5 : 3);
-        ctx.strokeStyle = pass ? (lit ? GLOW : 'rgba(255, 255, 255, 0.6)') : (lit ? '#2b5a2c' : 'rgba(40, 30, 10, 0.45)');
+        ctx.lineWidth = (pass ? 3.4 : 7.5) * k;
+        ctx.strokeStyle = pass ? (lit ? GLOW : CHEV) : 'rgba(255, 255, 255, 0.95)';
         ctx.beginPath();
-        for (let k = 0; k < count; k += 1) {
-          const o = (k - (count - 1) / 2) * 9;
+        for (let n = 0; n < count; n += 1) {
+          const o = (n - (count - 1) / 2) * 13 * k;
           const px = mid.x + u.x * o;
           const py = mid.y + u.y * o;
-          ctx.moveTo(px - u.x * 7 - u.y * 7, py - u.y * 7 + u.x * 7);
-          ctx.lineTo(px + u.x * 5, py + u.y * 5);
-          ctx.lineTo(px - u.x * 7 + u.y * 7, py - u.y * 7 - u.x * 7);
+          ctx.moveTo(px - u.x * 9 * k - u.y * 9 * k, py - u.y * 9 * k + u.x * 9 * k);
+          ctx.lineTo(px + u.x * 6 * k, py + u.y * 6 * k);
+          ctx.lineTo(px - u.x * 9 * k + u.y * 9 * k, py - u.y * 9 * k - u.x * 9 * k);
         }
         ctx.stroke();
       }
@@ -975,7 +973,8 @@ class Net {
     return j === this.movable ? 0.4 : i === this.movable ? 0.6 : 0.5;
   }
 
-  // A small interior arc at a corner with its degrees along the bisector.
+  // An angle as the lesson draws it: a wedge filled in the corner's own colour, rimmed in white, and its degrees just
+  // beyond it along the bisector, in that colour (gold while the child sets it).
   drawAngle(ctx, c, letter, value, live = false, fill = null) {
     const i = corner(letter);
     const v = c[i];
@@ -983,27 +982,22 @@ class Net {
     const a2 = Math.atan2(c[(i + 1) % 4].y - v.y, c[(i + 1) % 4].x - v.x);
     let sweep = a2 - a1;
     sweep = Math.atan2(Math.sin(sweep), Math.cos(sweep)); // the interior angle, never the reflex one
-    const radius = 40;
+    const radius = 44 * this.textScale;
     ctx.save();
-    if (fill) {
-      ctx.fillStyle = fill;
-      ctx.beginPath();
-      ctx.moveTo(v.x, v.y);
-      ctx.arc(v.x, v.y, radius + 14, a1, a1 + sweep, sweep < 0);
-      ctx.closePath();
-      ctx.fill();
-    }
     ctx.beginPath();
+    ctx.moveTo(v.x, v.y);
     ctx.arc(v.x, v.y, radius, a1, a1 + sweep, sweep < 0);
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = INK;
-    ctx.stroke();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = live ? '#ffd84a' : '#fff';
+    ctx.closePath();
+    ctx.fillStyle = fill || ANG[letter];
+    ctx.globalAlpha *= 0.92;
+    ctx.fill();
+    ctx.globalAlpha /= 0.92;
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.stroke();
     ctx.restore();
     const mid = a1 + sweep / 2;
-    this.text(ctx, value, v.x + Math.cos(mid) * 72, v.y + Math.sin(mid) * 72, live ? 28 : 24, live ? '#ffd84a' : '#fff', live);
+    this.text(ctx, value, v.x + Math.cos(mid) * (radius + 30 * this.textScale), v.y + Math.sin(mid) * (radius + 30 * this.textScale), live ? 28 : 24, live ? '#ffd84a' : ANG_TXT[letter], live);
   }
 
   // The diagonals as thin ropes, the point O where they cross, and the four halves measured.
@@ -1072,7 +1066,7 @@ class Net {
       ctx.stroke();
     }
     if (step.angles) {
-      for (const letter of step.angles) this.drawAngle(ctx, c, letter, `${this.degreesShown(letter)}°`, false, 'rgba(143, 247, 168, 0.55)');
+      for (const letter of step.angles) this.drawAngle(ctx, c, letter, `${this.degreesShown(letter)}°`, false, GLOW);
     }
     if (step.halves || step.diagonals) {
       const [a, b, cc, d] = c;
@@ -1146,29 +1140,32 @@ class Net {
     ctx.fill();
   }
 
-  // Small lettered discs beside the corners: the top ones out toward the sky, the bottom ones
-  // straight below their weights (further out at the knob).
+  // The corner letters, as the lesson writes them: bold navy on a white halo, just outside each corner (the top ones
+  // out toward the sky, the bottom ones below their weights; the knob's across its track, off the arrows' way).
   drawLabels(ctx, c) {
     const centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
     const k = this.textScale;
+    ctx.save();
+    ctx.font = FONT(26 * k);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
     c.forEach((p, i) => {
-      const gap = (i === this.movable && !this.locked ? 52 : 34) * k;
       const out = normalize(sub(p, centre));
-      const dir = normalize({ x: out.x * 0.35, y: i >= 2 ? 1 : -1 });
+      let dir = normalize({ x: out.x * 0.45, y: i >= 2 ? 1 : -1 }), gap = 30 * k;
+      if (i === this.movable && !this.locked && this.along) { // across the track, away from the net
+        const t = this.along.dir, side = { x: -t.y, y: t.x };
+        dir = side.x * out.x + side.y * out.y >= 0 ? side : { x: -side.x, y: -side.y };
+        gap = 50 * k;
+      }
       const at = add(p, times(dir, gap));
-      ctx.beginPath();
-      ctx.arc(at.x, at.y, 14 * k, 0, TAU);
-      ctx.fillStyle = '#fff8e8';
-      ctx.fill();
-      ctx.lineWidth = 2.5 * k;
-      ctx.strokeStyle = '#3b1d00';
-      ctx.stroke();
-      ctx.font = FONT(19 * k);
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#3b1d00';
+      ctx.lineWidth = 6 * k;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.strokeText(CORNERS[i], at.x, at.y + k);
+      ctx.fillStyle = '#123b63';
       ctx.fillText(CORNERS[i], at.x, at.y + k);
     });
+    ctx.restore();
   }
 
   // Readable on any background: white (or coloured) text with a dark edge. Live values swell
