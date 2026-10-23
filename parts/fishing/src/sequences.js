@@ -184,10 +184,10 @@ async function banner(game) {
     state.phase = PHASE.TITLE;
     await clock.wait(reduced ? 100 : 350, token);
     popoArrives(game, token, { hop: false }).catch(swallow);
-    // the fish set off under the water as he settles; the logo pops in as the big one leaps
-    await clock.wait(reduced ? 1600 : 3000, token);
-    title.sendFish();
-    await clock.wait(reduced ? 200 : 2700, token);
+    // the logo pops in as he settles, then Play bobs up
+    await clock.wait(reduced ? 1600 : 3600, token);
+    title.showLogo();
+    await clock.wait(reduced ? 200 : 2100, token);
     title.showPlay();
   } catch (e) {
     swallow(e);
@@ -670,10 +670,8 @@ async function mystery(game, token) {
       lastT = t;
     });
     winch.working = 0;
-    // it breaks free and drops back into the lake; the net springs up, but out of square: its right angles are gone,
-    // its sides still parallel, and a "?" over it (Net.drawShapeMarks)
+    // it breaks free and drops back into the lake; the net springs up, but out of square: a shape Popo has never seen
     audio.play('boing');
-    net.mystery = true;
     const pulled = net.points.map((p) => ({ ...p }));
     const left = before.map((p, i) => (i >= 2 ? { x: p.x - push, y: p.y } : { ...p }));
     const drop = { x: big.x, y: big.y };

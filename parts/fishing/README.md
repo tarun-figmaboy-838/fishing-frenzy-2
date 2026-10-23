@@ -45,7 +45,7 @@ journey` part of `src/game.js`:
   (`Journey.progress`) and when the banner is up (`Journey.ready`); the lesson then loads behind
   it, unseen.
 - **Play** (`Game.handOver`): inside the tap, `Journey.play()` unlocks the shell's sound and tells
-  it; the banner clears away as ever (Play bursts, the logo pops away, the fish leap home), and
+  it; the banner clears away as ever (Play bursts, the logo pops away), and
   the shell's commands (`main.js`) take it from there:
   - `story` — at once: the game goes on as Play does on its own (the narrator, the first school,
     the warm-up net). `args.lesson`: the lesson follows the warm-up; `args.afterLesson`

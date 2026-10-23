@@ -135,11 +135,10 @@
       this.run++;
       (this.timers || []).forEach(clearTimeout); this.timers = [];
       if (this.ctx) { this.ctx.revert(); this.ctx = null; }
-      const sw = document.querySelector('.stage .swiftee'), bub = document.querySelector('.stage .bubble');
+      const sw = document.querySelector('.stage .swiftee');
       if (sw && G) G.set(sw, { clearProps: 'transform,opacity' });
       this.peekMask(false);
-      if (bub) { bub.style.marginBottom = ''; bub.style.maxWidth = ''; }
-      if (this.root) this.root.innerHTML = '';
+      if (this.root) { this.root.innerHTML = ''; delete this.root.dataset.spot; }
       this.root = null; this.S = null; this.busy = false;
     },
     // also written to the root as data-state, for tests and debugging
@@ -156,12 +155,13 @@
 
     // ---------- Swiftee: the lesson's own mascot element, moved between the two SPOTs ----------
     place(where, down, ms) {
-      const sw = document.querySelector('.stage .swiftee'), bub = document.querySelector('.stage .bubble');
+      const sw = document.querySelector('.stage .swiftee');
       this.spot = where || this.spot || 'middle';
       const P0 = Object.assign({}, SPOT[this.spot]);
       if (this.spot === 'peek') P0.y += BUB.peekDy; // (her face and mask clear the bubble's top as she peeks)
-      // keep her speech bubble above her head; in the middle it stays narrow enough to fit between the albums
-      if (bub) { bub.style.marginBottom = (-P0.y - (this.spot === 'peek' ? BUB.tailDy : 0)) + 'px'; bub.style.maxWidth = this.spot === 'middle' ? '470px' : ''; }
+      // her speech bubble sits just over her head at either spot (css/game.css .sum-root[data-spot] + .bubble: an inline
+      // style would be written over by the stage's next render); in the middle it stays narrow enough to fit between the albums
+      if (this.root) this.root.dataset.spot = this.spot;
       if (!sw || !G) return Promise.resolve(this.live());
       const to = { y: P0.y + (down ? P0.hide : 0), scale: P0.s, opacity: down ? 0 : 1 };
       const mask = () => this.peekMask(this.spot === 'peek'); // (behind the see-through bubble: cut out where it covers her)

@@ -115,7 +115,6 @@ class Net {
     this.glow = null;
     this.pouch = 0;
     this.drawn = null;
-    this.mystery = false; // the warm-up's net, pulled out of square by the giant fish (drawShapeMarks)
     const xs = this.solved.map((p) => p.x);
     const ys = this.solved.map((p) => p.y);
     // the corner stays near the frame, out of the water, clear of the ring, the raft and the edge
@@ -521,51 +520,7 @@ class Net {
       ctx.restore();
     }
     if (showing) this.drawLabels(ctx, corners);
-    if (this.level && this.level.type === 'free' && !this.furl && !this.pouch) this.drawShapeMarks(ctx, corners);
     ctx.restore();
-  }
-
-  // The warm-up's net (type 'free') tells its shape by its marks alone: a right-angle square in each corner while it is
-  // Popo's rectangle; once the giant fish has pulled it out of square (mystery), the squares are gone, the parallel
-  // arrows show on both pairs of sides (still parallel) and a big "?" floats over it: what shape is it now?
-  drawShapeMarks(ctx, c) {
-    const MARK = '#ffd84a', EDGE = 'rgba(40, 24, 6, 0.75)';
-    const stroke = (path) => { // a bold yellow mark with a dark edge, readable on the net and the sky
-      for (let pass = 0; pass < 2; pass += 1) {
-        ctx.lineWidth = pass ? 4 : 8.5;
-        ctx.strokeStyle = pass ? MARK : EDGE;
-        ctx.beginPath();
-        path();
-        ctx.stroke();
-      }
-    };
-    ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    if (!this.mystery) {
-      c.forEach((p, i) => {
-        const a = normalize(sub(c[(i + 1) % 4], p)), b = normalize(sub(c[(i + 3) % 4], p)), s = 34;
-        stroke(() => { ctx.moveTo(p.x + a.x * s, p.y + a.y * s); ctx.lineTo(p.x + (a.x + b.x) * s, p.y + (a.y + b.y) * s); ctx.lineTo(p.x + b.x * s, p.y + b.y * s); });
-      });
-      ctx.restore();
-      return;
-    }
-    // one arrow on AB and CD, two on BC and AD, all pointing the same way along their pair
-    for (const [name, count] of [['AB', 1], ['CD', 1], ['BC', 2], ['AD', 2]]) {
-      const [i, j] = side(name), from = name === 'CD' ? c[3] : name === 'BC' ? c[1] : c[i], to = name === 'CD' ? c[2] : name === 'BC' ? c[2] : c[j];
-      const u = normalize(sub(to, from)), mid = midpoint(from, to);
-      stroke(() => {
-        for (let k = 0; k < count; k += 1) {
-          const o = (k - (count - 1) / 2) * 16, x = mid.x + u.x * o, y = mid.y + u.y * o;
-          ctx.moveTo(x - u.x * 12 - u.y * 12, y - u.y * 12 + u.x * 12);
-          ctx.lineTo(x + u.x * 6, y + u.y * 6);
-          ctx.lineTo(x - u.x * 12 + u.y * 12, y - u.y * 12 - u.x * 12);
-        }
-      });
-    }
-    ctx.restore();
-    const mid = midpoint(midpoint(c[0], c[2]), midpoint(c[1], c[3]));
-    this.text(ctx, '?', mid.x, mid.y - 6 + Math.sin(this.time * 3) * 6, 120, MARK, true);
   }
 
 
@@ -853,7 +808,6 @@ class Net {
     image();
     ctx.restore();
   }
-
 
   framePath(ctx, c) {
     ctx.beginPath();
