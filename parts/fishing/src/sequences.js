@@ -330,14 +330,13 @@ async function lowerNet(game, token, ms) {
     net.drop = winch.ropeOut;
     net.ropePhase = winch.ropeOut;
   };
-  const smooth = (t) => t * t * t * (t * (t * 6 - 15) + 10);
   winch.working = 1;
   audio.crank(ms / 1000);
   let splashed = net.ring().y + net.bottom() >= game.waterline;
   let lastBubble = 0;
   const sway = net.swing;
   await clock.tween(ms, token, (t) => {
-    const k = smooth(t);
+    const k = ease.inOut(t); // (under way at once, as a winch paying out: no long hesitation before it moves)
     payOut(from + (depth - from) * k);
     net.swing = reduced ? 0 : (sway + Math.sin(t * Math.PI * 2) * 0.012) * (1 - t);
     const bottom = net.ring().y + net.bottom();
@@ -407,7 +406,7 @@ async function checkNet(game) {
     state.phase = PHASE.CHECKING;
     net.locked = true;
     popo.squash = 0.07; // Popo takes hold of the wheel
-    await clock.wait(right ? (reduced ? 300 : 650) : 200, token);
+    await clock.wait(right ? (reduced ? 200 : 320) : 150, token);
     const down = reduced ? 1100 : 2400;
     game.focusOut(down);
     await lowerNet(game, token, down);
