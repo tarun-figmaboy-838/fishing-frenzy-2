@@ -595,9 +595,9 @@ class Net {
     ctx.restore();
   }
 
-  // Two chunky arrows tight against the knob, either side, in its own yellow with its brown rim and a gloss, point
-  // the ways it can still slide along its track (each gone at its end of the track; the track itself isn't drawn);
-  // they nod outward together, as a game's slider arrows do.
+  // The ways the knob can still slide, shown as a game shows a swipe: a trail of two chevrons tight against it on
+  // each open side, in its own yellow with a dark rim, lighting up one after the other away from the knob so they
+  // run the way it can go (the track itself isn't drawn; a closed end has no trail).
   drawArrows(ctx, knob) {
     const from = this.toStage(this.stop(this.track.min));
     const to = this.toStage(this.stop(this.track.max));
@@ -606,35 +606,27 @@ class Net {
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     const dir = normalize(sub(to, from));
-    const nudge = this.reduced ? 0 : (Math.sin(this.time * 4) + 1) * 2.5;
+    const perp = { x: -dir.y, y: dir.x };
     for (const [sign, open] of [[1, this.stopAt < this.track.max], [-1, this.stopAt > this.track.min]]) {
       if (!open) continue;
-      const at = add(knob, times(dir, sign * (ARROW_REACH + nudge)));
-      const tip = add(at, times(dir, sign * 13 * k));
-      const back = add(at, times(dir, -sign * 8 * k));
-      const across = { x: -dir.y * 12 * k, y: dir.x * 12 * k };
-      const a = add(back, across), b = sub(back, across);
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(tip.x, tip.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.closePath();
-      ctx.lineWidth = 7 * k;
-      ctx.strokeStyle = '#4a2c0f';
-      ctx.stroke();
-      ctx.fillStyle = '#ffd84a';
-      ctx.fill();
-      ctx.lineWidth = 2.5 * k;
-      ctx.strokeStyle = '#ffd84a';
-      ctx.stroke();
-      // a gloss along the upper edge (the edge nearer the sky)
-      const up = a.y <= b.y ? a : b, edge = sub(tip, up);
-      ctx.beginPath();
-      ctx.moveTo(up.x + edge.x * 0.2, up.y + edge.y * 0.2);
-      ctx.lineTo(up.x + edge.x * 0.7, up.y + edge.y * 0.7);
-      ctx.lineWidth = 2.2 * k;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
-      ctx.stroke();
+      for (let n = 0; n < 2; n += 1) {
+        const wave = this.reduced ? 0.7 : (Math.sin(this.time * 5 - n * 1.3) + 1) / 2; // (runs outward)
+        const size = (1 - n * 0.18) * k, d = ARROW_REACH + n * 15 * k + (this.reduced ? 0 : wave * 2.5);
+        const tip = add(knob, times(dir, sign * (d + 5 * size)));
+        const back = add(knob, times(dir, sign * (d - 4 * size)));
+        const a = add(back, times(perp, 9 * size)), b = sub(back, times(perp, 9 * size));
+        ctx.globalAlpha = 0.45 + 0.55 * wave;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(tip.x, tip.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.lineWidth = 8 * size;
+        ctx.strokeStyle = '#4a2c0f';
+        ctx.stroke();
+        ctx.lineWidth = 4 * size;
+        ctx.strokeStyle = '#ffd84a';
+        ctx.stroke();
+      }
     }
     ctx.restore();
   }
