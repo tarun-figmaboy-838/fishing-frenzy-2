@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
+const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds of idling between hints once one has been shown
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
@@ -182,17 +182,21 @@ class Game {
   }
 
   // From the end screen, the circle closes and opens again on the first net (closeCurtain). In the
-  // journey the shell takes it back to its banner instead (backToTitle), and a new lesson.
+  // journey the shell takes it back to its banner instead (backToTitle), and a new lesson. Either
+  // way the next game has new nets (levels.js freshLevels).
   playAgain() {
+    if (this.ending && this.ending.closing) return;
+    this.runs = (this.runs || 0) + 1;
+    freshLevels(this.runs);
     if (this.ending && this.embedded) {
-      if (this.ending.closing) return;
       this.ending.closing = true; // (once)
       this.ui.showAgain(false);
+      this.ui.hideGoal();
       window.Journey.finish({ levels: NETS, fish: state.caught }); // inside the tap
       return;
     }
     if (this.ending) {
-      if (!this.ending.closing) closeCurtain(this);
+      closeCurtain(this);
       return;
     }
     this.reset();
@@ -210,6 +214,7 @@ class Game {
     this.transition = null;
     this.ui.showPause(false);
     this.ui.showAgain(false);
+    this.ui.hideGoal();
     this.ui.hideNext();
     this.ui.hideHand();
     this.ui.showHandle(false);

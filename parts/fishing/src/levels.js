@@ -83,6 +83,31 @@ const LEVELS = [
     hint: 'So, in any parallelogram, opposite sides are parallel and equal.' },
 ];
 
+// The catch to go for over the eight nets, the Master Catch: the most a run can net is about 95 (the biggest bunch
+// each time, caught whole), so it takes good choices and good timing, and a run that falls short has a reason to go
+// again (The End shows the catch against it: Game.theEnd, UI.showGoal).
+const GOAL = 75;
+
+// Play Again brings new nets (Game.playAgain): the same eight lessons in the same order, but each net its own shape
+// (a little wider or taller, leaning more or less, the corner starting elsewhere on its track), the final net turned
+// a little differently, and the tour of the waters starting one lake on, so a second game is never the first again.
+const BASE_LEVELS = LEVELS.map((l) => ({ ...l }));
+function freshLevels(run) {
+  const vary = (v, lo, hi) => v * (lo + Math.random() * (hi - lo));
+  LEVELS.splice(0, LEVELS.length, ...BASE_LEVELS.map((b) => {
+    const l = { ...b };
+    if (!run || b.warmup) return l;
+    l.width = Math.round(vary(b.width, 0.92, 1.08));
+    l.height = Math.round(vary(b.height, 0.92, 1.08));
+    if (b.lean !== undefined) l.lean = Math.round(vary(b.lean, 0.7, 1.3));
+    if (b.rotate !== undefined) l.rotate = b.rotate + Math.round((Math.random() - 0.5) * 6);
+    l.start = Math.sign(b.start) * Math.max(4, Math.abs(b.start) + (Math.random() < 0.5 ? -1 : 1));
+    l.location = (b.location + run) % LOCATIONS.length;
+    return l;
+  }));
+  return LEVELS;
+}
+
 // The fish Popo nets, drawn in assets/sprites/fish-natural.webp (tools/build-assets.py).
 const NATURAL_FISH = Object.keys(PopoGame.FISH_NATURAL_ATLAS.boxes);
 
@@ -153,5 +178,5 @@ const STORY = {
 // the parallelogram nets (the warm-up is not one of them)
 const NETS = LEVELS.filter((l) => !l.warmup).length;
 
-Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, NATURAL_FISH, STORY, shuffle, bunchesFor });
+Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, shuffle, bunchesFor });
 })(window.PopoGame = window.PopoGame || {});

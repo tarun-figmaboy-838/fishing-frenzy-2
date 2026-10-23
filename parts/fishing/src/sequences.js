@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, NATURAL_FISH, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
+const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
 
 function swallow(e) {
   if (!(e instanceof Cancelled)) throw e;
@@ -1244,6 +1244,11 @@ async function theEnd(game, token) {
   audio.play('tada');
   ui.setCatch(game.landed, 'cheer');
   await clock.wait(reduced ? 600 : 1300, token);
+  // the run's catch against the Master Catch: the reason to play again, or the prize
+  const won = ui.showGoal(game.landed, GOAL);
+  audio.play(won ? 'tada' : 'bloop');
+  if (won) { game.confettiFrom(STAGE_W * 0.18, STAGE_H * 0.78); audio.play('combo3'); }
+  await clock.wait(reduced ? 300 : 700, token);
   ui.showAgain(true);
   audio.play('bloop');
 }
@@ -1257,6 +1262,7 @@ async function closeCurtain(game, { title = false } = {}) {
   ending.closing = true;
   ending.laugh = false;
   game.ui.showAgain(false);
+  game.ui.hideGoal();
   game.audio.play('iris');
   const from = ending.r;
   try {

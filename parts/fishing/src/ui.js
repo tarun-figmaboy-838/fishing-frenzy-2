@@ -514,6 +514,26 @@ class UI {
     if (show) this.el.again.focus({ preventScroll: true });
   }
 
+  // The End's catch card: `n` fish against the Master Catch `goal`, the bar filling to it, and the line: how many
+  // more it would take, or, done, the Master Catch itself. Returns whether the goal was reached.
+  showGoal(n, goal) {
+    const card = document.getElementById('goal'), won = n >= goal;
+    document.getElementById('goal-n').textContent = n;
+    card.querySelector('.goal-of').textContent = `/ ${goal}`;
+    document.getElementById('goal-line').textContent = won ? `Master Catch! You caught ${n} fish!` : `${goal - n} more for the Master Catch. Play again?`;
+    card.classList.toggle('won', won);
+    card.hidden = false;
+    const fill = document.getElementById('goal-fill');
+    fill.style.width = '0';
+    void fill.offsetWidth;
+    fill.style.width = `${Math.min(100, (100 * n) / goal).toFixed(1)}%`;
+    return won;
+  }
+
+  hideGoal() {
+    document.getElementById('goal').hidden = true;
+  }
+
   // The end screen moves the scene (the water and the world) under its circle; the curtain,
   // HUD and buttons stay put.
   panScene(x, y) {

@@ -72,7 +72,8 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
            away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden,
            action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
-           inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length }; }'''
+           inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length,
+           goal: !$('goal').hidden, goalLine: $('goal-line').textContent, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
@@ -456,7 +457,11 @@ def journey(p, engine, size, url):
     page.wait_for_timeout(400)
     r.shot('7-the-end')
     check(fs['phase'] == 'gameComplete' and r.shell()['lesson'] is None, f'{r.tag}: after level 8, The End and Play Again (no lesson loaded yet)')
+    check(fs['goal'] and 'Master Catch' in fs['goalLine'], f'{r.tag}: The End shows the catch against the Master Catch (75): "{fs["goalLine"]}"')
+    widths_before = fs['widths']
     r.tap_el(part(page, 'fishing'), '#btn-again')
+    fs2 = r.fish()
+    check(fs2['runs'] == 1 and fs2['widths'] != widths_before, f'{r.tag}: Play Again brings new nets (run {fs2["runs"]}, the nets reshaped)')
     st = until(r.shell, lambda s: s['phase'] == 'front', 3, 'back to the front page')
     page.wait_for_timeout(250)
     r.shot('8a-circle-closes')
