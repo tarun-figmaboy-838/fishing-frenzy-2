@@ -81,7 +81,7 @@ html, body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 4.6em;
+  width: 4.2em; /* (small enough to sit on a pill along the bottom of the stage without running off it) */
   height: auto;
   pointer-events: none;
   filter: drop-shadow(0 0.3em 0.5em rgba(0, 0, 0, 0.3));
@@ -95,13 +95,6 @@ html, body {
 @keyframes hand-tap {
   0%, 100% { margin: 0; }
   50% { margin: 0.7em 0 0 0.7em; }
-}
-/* on a pill along the bottom of the stage the hand comes from above instead (turned a quarter, UI.moveHand), its
-   finger on the pill's face pointing down and left and the rest of it up over the water, never off the screen */
-.hand.low { transform-origin: 0 0; animation-name: hand-tap-low; }
-@keyframes hand-tap-low {
-  0%, 100% { margin: 0; }
-  50% { margin: 0.7em 0 0 -0.7em; }
 }
 
 /* ---------- HUD ---------- */

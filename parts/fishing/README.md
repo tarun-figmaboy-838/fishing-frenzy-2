@@ -182,9 +182,8 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
   alone, the hand shows how the corner slides, two stops the right way (never all the way to
   its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the
-  measurements, so the game teaches rather than solves itself; the corner set, the little hand comes down from above
-  onto Check, and on a net left open in the water a while, onto Catch. No hint says whether the net is right; Check
-  does.
+  measurements, so the game teaches rather than solves itself; the corner set, the little hand sits on the middle of
+  Check, and on a net left open in the water a while, of Catch. No hint says whether the net is right; Check does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
