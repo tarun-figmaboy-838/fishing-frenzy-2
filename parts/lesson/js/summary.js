@@ -204,6 +204,10 @@
       });
       g._marks = mk('g', {}, vis);
       g._dots = ['A', 'B', 'C', 'D'].map((k) => mk('circle', { cx: P[k].x, cy: P[k].y, r: 4.2, fill: '#fff', stroke: INK.base, 'stroke-width': 2.2, opacity: 0 }, vis));
+      // the corner letters, as on the lesson's board, so the line's AB, CD and ∠A can be found in the bubble
+      const OFF = { A: [-11, -9], B: [11, -9], C: [11, 13], D: [-11, 13] };
+      g._letters = ['A', 'B', 'C', 'D'].map((k) => mk('text', { x: f1(P[k].x + OFF[k][0]), y: f1(P[k].y + OFF[k][1] + 4), 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 900,
+        'font-family': 'Nunito, system-ui, sans-serif', fill: INK.navy, stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke', 'stroke-linejoin': 'round', opacity: 0, text: k }, vis));
       // the name plate centred on the bubble's bottom edge
       g._tag = this.nameTag(pp, cx, cy + BUB.r - 2, c.label);
       g._tag.setAttribute('opacity', 0);
@@ -337,10 +341,11 @@
         sides.forEach((s, i) => { const L = g._sides[s], ab = SIDES[s], from = s === 'DC' ? P.C : P[ab[0]], to = s === 'DC' ? P.D : P[ab[1]]; this.growLine(L, from, to, 150, i * 140); });
         this.later(80, () => this.sfx('glint'));
         g._dots.forEach((d, i) => this.pop(d, i * 140));
+        g._letters.forEach((d, i) => this.pop(d, 120 + i * 140));
         this.later(560, () => { g._fill.setAttribute('opacity', 1); if (g._fill.animate && !reduced()) try { g._fill.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260 }); } catch (e) {} });
         t = 680;
       } else {
-        [g._fill].concat(sides.map((s) => g._sides[s]), g._dots).forEach((el) => el.setAttribute('opacity', 1));
+        [g._fill].concat(sides.map((s) => g._sides[s]), g._dots, g._letters).forEach((el) => el.setAttribute('opacity', 1));
         if (!reduced() && g._vis.animate) try { g._vis.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, fill: 'backwards' }); } catch (e) {}
         t = 160;
       }
@@ -383,7 +388,7 @@
         });
         t += V.wedges.length * 260 + 260;
       }
-      if (V.ticks) { this.later(t, () => { this.marks(g); this.sfx('shimmer'); }); t += 80 * 6 + 380; }
+      if (V.ticks) { this.later(t, () => { this.marks(g); this.sfx('shimmer'); }); t += 80 * 6 + 380; this.later(t - 200, () => this.lengths(g)); t += 300; }
       if (V.diag) { // the diagonals draw themselves from corner to corner, O appears, then the halves' ticks
         g._diag = [['A', 'C'], ['B', 'D']].map(([a, b], i) => {
           const L = mk('line', { x1: P[a].x, y1: P[a].y, x2: P[a].x, y2: P[a].y, stroke: INK.navy, 'stroke-width': 3, 'stroke-linecap': 'round', opacity: 0 }, g._marks);
@@ -393,7 +398,9 @@
         this.later(t, () => this.sfx('glint'));
         t += 720;
         g._o = mk('circle', { cx: f1(O.x), cy: f1(O.y), r: 4.2, fill: '#fff', stroke: INK.navy, 'stroke-width': 2.2, opacity: 0 }, g._marks);
-        this.pop(g._o, t); this.later(t, () => this.sfx('pop')); t += 260;
+        g._oName = mk('text', { x: f1(O.x + 2), y: f1(O.y - 9), 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 900, 'font-family': 'Nunito, system-ui, sans-serif',
+          fill: INK.navy, stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke', 'stroke-linejoin': 'round', opacity: 0, text: 'O' }, g._marks);
+        this.pop(g._o, t); this.pop(g._oName, t + 120); this.later(t, () => this.sfx('pop')); t += 260;
         this.later(t, () => { this.halfMarks(g); this.sfx('shimmer'); }); t += 80 * 6 + 380;
       }
       // move the corner dots to the top so nothing covers them
@@ -416,6 +423,14 @@
       [['AB', 1], ['DC', 1], ['DA', 2], ['BC', 2]].forEach(([s, n]) => { const ab = SIDES[s]; g._ticks.push(...this.tickAt(g, P[ab[0]], P[ab[1]], n)); });
       g._ticks.forEach((k, j) => this.pop(k, j * 80));
     },
+    // the equal sides' lengths (the lesson's 6 cm and 3 cm), each beside its side in the side's colour
+    lengths(g) {
+      const L = [['AB', '6 cm', INK.base, 0, -15], ['DC', '6 cm', INK.base, 0, 19], ['DA', '3 cm', INK.leg, -24, 3], ['BC', '3 cm', INK.leg, 24, 3]];
+      g._lengths = L.map(([s, t, fill, dx, dy]) => { const ab = SIDES[s], mx = (P[ab[0]].x + P[ab[1]].x) / 2, my = (P[ab[0]].y + P[ab[1]].y) / 2;
+        return mk('text', { x: f1(mx + dx), y: f1(my + dy), 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 900, 'font-family': 'Nunito, system-ui, sans-serif', fill: fill,
+          stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke', 'stroke-linejoin': 'round', opacity: 0, text: t }, g._marks); });
+      g._lengths.forEach((k, j) => this.pop(k, j * 90));
+    },
     // the diagonals' equal halves: one tick on AO and OC, two on BO and OD
     halfMarks(g) {
       g._halves = [];
@@ -433,7 +448,7 @@
       else if (kind === 'pair' || kind === 'pairs') { this.trace([sd.AB, sd.DC], true); this.later(500, () => this.trace([sd.DA, sd.BC], true)); if (kind === 'pair') this.warmPulse(c._chev, '1.7'); } // one pair, then the other
       else if (kind === 'chev') this.warmPulse(c._chev, '1.7');
       else if (kind === 'lit') this.trace(c._lit, true);
-      else if (kind === 'ticks') { this.warmPulse(c._ticks, '1.6'); }
+      else if (kind === 'ticks') { this.warmPulse(c._ticks, '1.6'); this.warmPulse(c._lengths, '1.3'); }
       else if (kind === 'wedges') this.anglePulse(c);
       else if (kind === 'add') this.add(c);
       else if (kind === 'values') this.warmPulse(c._values, '1.5');
@@ -603,8 +618,8 @@
       this.setState('REPLAY_EXPLANATION', id);
       // reset the bubble to its starting state so reveal() can draw it again
       [c._bands, c._wedgeG, c._marks].forEach((el) => { while (el.firstChild) el.removeChild(el.firstChild); });
-      c._chev = c._lit = c._wedges = c._values = c._ticks = c._eq = c._diag = c._o = c._halves = null;
-      [c._fill].concat(Object.keys(c._sides).map((s) => c._sides[s]), c._dots).forEach((el) => el.setAttribute('opacity', 0));
+      c._chev = c._lit = c._wedges = c._values = c._ticks = c._lengths = c._eq = c._diag = c._o = c._oName = c._halves = null;
+      [c._fill].concat(Object.keys(c._sides).map((s) => c._sides[s]), c._dots, c._letters).forEach((el) => el.setAttribute('opacity', 0));
       S.active = id;
       const ms = this.reveal(c);
       return this.hold(ms + 200).then((ok) => ok && this.say(c._c)).then((ok) => {
