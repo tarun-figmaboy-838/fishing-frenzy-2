@@ -71,7 +71,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
            away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden,
-           action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
+           action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
            inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
@@ -280,11 +280,13 @@ def catch_level(r, n, shot, wrong_first=False):
     ff = part(r.page, 'fishing')
     st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n} is ready')
     check(not st['ok'] and st['action'] is None and not st['drop'], f'{r.tag}: net {n} comes down, its corner off its place, no button yet', f"stop {st['stop']}")
+    st = until(r.fish, lambda s: s['zoom'] > 1.6, 5, 'the view zooms in on the net')
+    check(True, f'{r.tag}: the view zooms in on the net by itself as it comes down')
     before = st['caught']
     if wrong_first:
         set_corner(r, 1 if st['stop'] < 0 else -1)
         st = until(r.fish, lambda s: s['action'] == 'check', 5, 'Check comes up')
-        check(not st['ok'] and (r.touch or st['zoom'] > 1.5), f'{r.tag}: a corner moved: the view zooms in on the net and Check comes up', f"zoom {st['zoom']}")
+        check(not st['ok'] and st['zoom'] > 1.5, f'{r.tag}: a corner moved: Check comes up, the view still on the net', f"zoom {st['zoom']}")
         r.tap_el(ff, '#btn-action')
         st = until(r.fish, lambda s: s['phase'] == 'tangled', 15, 'the wrong net tangles')
         st = until(r.fish, lambda s: s['action'] == 'again', 10, 'Try again')
@@ -295,7 +297,7 @@ def catch_level(r, n, shot, wrong_first=False):
         check(st['tangle'] == 0 and not st['ok'] and st['action'] is None, f'{r.tag}: Try again: the net is untangled and comes down in its starting shape')
     set_corner(r, 0)
     st = until(r.fish, lambda s: s['ok'] and s['action'] == 'check', 5, 'the corner on its place, Check up')
-    check(st['stop'] == 0 and (r.touch or st['zoom'] > 1.5), f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag, the view zoomed in on the net"}) and Check comes up')
+    check(st['stop'] == 0 and st['zoom'] > 1.5, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and Check comes up')
     r.shot(f'{shot}a-level-{n + 1}')
     r.tap_el(ff, '#btn-action')
     st = until(r.fish, lambda s: s['phase'] == 'fishing', 20, 'the right net down in the water')

@@ -95,20 +95,20 @@ function shuffle(list) {
   return result;
 }
 
-// A level's sea holds three bunches of fish: three kinds, each bunch its own count (a few more on the later nets)
-// and its own size - a big bunch, a middling one and a small one - each swimming its own lane its own way (see Sea),
-// so the bunches never run into each other and the child picks which one to catch. No two levels in a row open
+// A level's sea holds three bunches of fish: three kinds, each bunch its own size and count - a shoal of small fish
+// (8 to 16), a middling bunch (4 to 7) and a few big ones (2 to 4) - each swimming its own lane its own way (see
+// Sea), so the bunches never run into each other and the child picks which to catch. No two levels in a row open
 // with the same three kinds.
 const BUNCHES = 3;
-const BUNCH_SIZES = [0.58, 0.68, 0.8]; // the bunches' fish sizes (three lanes fit under the net)
+const BUNCH_SIZES = [0.5, 0.66, 0.84];  // the bunches' fish sizes: small, middling, big (three lanes fit under the net)
+const BUNCH_COUNTS = [[8, 16], [4, 7], [2, 4]]; // ...and how many of each
 let lastKinds = [];
 function bunchesFor(level) {
   let kinds = shuffle(NATURAL_FISH).slice(0, BUNCHES);
   if (kinds.every((key) => lastKinds.includes(key))) kinds = [NATURAL_FISH.find((key) => !lastKinds.includes(key)) || kinds[0], ...kinds.slice(1)];
   lastKinds = kinds;
-  const sizes = shuffle(BUNCH_SIZES);
-  const extra = level.fish >= 6 ? 1 : 0;
-  return kinds.map((key, i) => ({ key, count: 2 + Math.floor(Math.random() * 3) + extra, size: sizes[i] + (Math.random() - 0.5) * 0.06 }));
+  const order = shuffle([0, 1, 2]); // which lane gets which bunch
+  return kinds.map((key, i) => { const [lo, hi] = BUNCH_COUNTS[order[i]]; return { key, count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: BUNCH_SIZES[order[i]] + (Math.random() - 0.5) * 0.04 }; });
 }
 
 // Story lines, delivered word by word. *Stressed* words land bigger with a boing, and a cue

@@ -53,7 +53,7 @@ const CONFIG = {
     scale: 2,                        // the shape's largest size (board px -> stage px): each screen draws it as big as fits
     top: 96, topChips: 158, bottom: 690, // the stack's room: under the question plate (20-94) (or under tags above the shape) to the sand
     maxW: 1160, introCx: 860, introW: 680, measureCx: 790, measureW: 940, // widths; screen 1 (as Fishing Frenzy's) and the measuring walks sit right of Swiftee, clear of her bubble
-    padX: 40, padTop: 34, padBottom: 34, lenPadX: 30, lenPadY: 20, // room round the shape for letters / lengths (board px)
+    padX: 40, padTop: 50, padBottom: 54, lenPadX: 30, lenPadY: 20, // room round the shape for its letters (40 / 42 out from the corners, 21 tall) and lengths (board px)
     // answers under the shape (stage px): Fishing Frenzy's answer pills on its card (74 px drawn 1.18x: 87), two-column
     // rows, answer boxes and their tiles
     optGap: 24, optH: 87, optGapX: 12, fillH: 66, tileH: 64,

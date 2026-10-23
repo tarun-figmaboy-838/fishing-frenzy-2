@@ -21,6 +21,7 @@ const TRACK_STOPS = 12; // at most this many stops each way from its place
 // a hair of rounding for "exactly": a stop either has the property or misses it by a step
 const EXACT = { parallel: 1e-3, metres: 0.01, degrees: 0.1 };
 const tenths = (m) => Math.round(m * 10) / 10;
+const cm = (m) => (Math.abs(m - Math.round(m)) < 0.05 ? String(Math.round(m)) : m.toFixed(1));
 // The loaded bag hangs below the open frame by this much, keeping the hauled catch
 // clear of the water. Its mouth and toe gather around a broad rounded belly.
 const POUCH = { depth: 0.3, most: 45 };
@@ -43,7 +44,6 @@ const KNOT = RING_KNOT;
 // the outline of a torn hole, as shares of its full size, all the way round
 const RAGGED = [1, 0.62, 0.9, 0.7, 1, 0.58, 0.86, 0.66, 0.97, 0.6, 0.92, 0.72, 1, 0.64, 0.84, 0.7];
 const INK = 'rgba(12, 40, 70, 0.9)';
-const TWIST = [0.5, -0.65, 0.55, -0.45]; // a tangled net: how far each corner twists (radians), in toward the middle
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
 
 // A level's solved parallelogram with its top edge at y 0: width, height and either the lean
@@ -83,6 +83,7 @@ class Net {
     this.textScale = 1;   // labels grow on small screens so they stay readable (see Game.resize)
     this.ropePhase = 0;   // rope twists slide as rope pays out
     this.furl = 0;        // 0 open, 1 wound up into a bundle under the ring (between nets)
+    this.tangle = 0;      // continuous crumpling of the same mesh, from open to tangled
     this.pouch = 0;       // 0 open, 1 closed into a bag around its catch
     this.track = { min: 0, max: 0 }; // the stops the corner can reach, counted from its place
     this.stopAt = 0;      // the stop it is at
@@ -116,7 +117,7 @@ class Net {
     this.glow = null;
     this.pouch = 0;
     this.drawn = null;
-    this.tangle = 0; // a wrong net crumpled into a tangle (framed, drawKnots)
+    this.tangle = 0; // a wrong net crumpled into a tangle (framed)
     const xs = this.solved.map((p) => p.x);
     const ys = this.solved.map((p) => p.y);
     // the corner stays near the frame, out of the water, clear of the ring, the raft and the edge
@@ -170,18 +171,11 @@ class Net {
   }
 
   // --- the mesh and the bag ------------------------------------------------------------
-  // The frame as drawn: the moving corner where it is gliding, the rest where they are. Tangled (a wrong net), the
-  // corners pull in toward the middle, each twisted its own way, so the mesh crumples between them.
+  // Keep the logical frame convex. Folding the surface instead of twisting its corners
+  // avoids inverted texture triangles and keeps the sling, floats and eyelets attached.
   framed() {
     const p = this.points.map((q) => ({ ...q }));
     if (this.drawn) p[this.movable] = { ...this.drawn };
-    if (this.tangle > 0) {
-      const c = midpoint(midpoint(p[0], p[1]), midpoint(p[2], p[3])), k = this.tangle;
-      return p.map((q, i) => {
-        const d = sub(q, c), a = TWIST[i] * k, s = 1 - 0.36 * k;
-        return add(c, times({ x: d.x * Math.cos(a) - d.y * Math.sin(a), y: d.x * Math.sin(a) + d.y * Math.cos(a) }, s));
-      });
-    }
     return p;
   }
 
@@ -190,7 +184,18 @@ class Net {
   // The whole sheet folds into a cinched, rounded pouch as the lifting rope tightens.
   meshPoint(u, v, p = this.framed()) {
     const [a, b, c, d] = p;
-    const q = lerp(lerp(a, b, u), lerp(d, c, u), v);
+    let x = u, y = v;
+    if (this.tangle > 0) {
+      const k = this.tangle;
+      // Broad shoulders, a pinched waist and a weighted, sagging hem. Extend the
+      // same surface beyond the border so floats never look pasted on or clipped.
+      x = 0.5 + (u - 0.5) * (1 - k * (0.24 + 0.28 * Math.sin(Math.PI * v) ** 2))
+        + k * 0.07 * Math.sin(TAU * v);
+      y = 0.5 + (v - 0.5) * (1 - 0.24 * k)
+        + k * 0.09 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v)
+        + k * 0.035 * Math.sin(TAU * u);
+    }
+    const q = lerp(lerp(a, b, x), lerp(d, c, x), y);
     if (!this.pouch) return q;
     // The mouth drawn up into the ring's bottom bar (net 0, KNOT), the broad loaded belly and
     // rounded toe below it, hanging plumb from the ring whichever way the open frame leaned,
@@ -511,7 +516,6 @@ class Net {
     ctx.restore();
     ctx.filter = 'none';
     if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]);
-    if (this.tangle > 0) this.drawKnots(ctx, frame);
     if (this.flash > 0) {
       ctx.save();
       ctx.globalAlpha *= this.flash * 0.7;
@@ -534,40 +538,6 @@ class Net {
     ctx.restore();
   }
 
-
-  // A tangled net: rope loops knotted through the crumpled mesh, and strands pulled across it.
-  drawKnots(ctx, frame) {
-    const k = this.tangle;
-    const at = (u, v) => this.toStage(this.meshPoint(u, v, frame));
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    const strands = [[0.12, 0.3, 0.7, 0.62], [0.85, 0.25, 0.3, 0.8], [0.4, 0.1, 0.55, 0.9]];
-    for (let pass = 0; pass < 2; pass += 1) {
-      ctx.lineWidth = pass ? 2.6 : 5;
-      ctx.strokeStyle = pass ? '#e0b060' : '#5a3a14';
-      ctx.beginPath();
-      for (const [u0, v0, u1, v1] of strands) {
-        const a = at(u0, v0), b = at(u1, v1), m = at((u0 + u1) / 2 + 0.08, (v0 + v1) / 2 - 0.12);
-        ctx.moveTo(a.x, a.y);
-        ctx.quadraticCurveTo(m.x, m.y, b.x, b.y);
-      }
-      for (const [u, v, r, tilt] of [[0.3, 0.42, 16, 0.4], [0.66, 0.56, 19, -0.5], [0.46, 0.74, 14, 0.2]]) {
-        const p = at(u, v);
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(tilt);
-        ctx.scale(k, k);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, r, r * 0.6, 0, 0, TAU);
-        ctx.moveTo(-r * 0.7, r * 0.3);
-        ctx.ellipse(-r * 0.2, r * 0.35, r * 0.75, r * 0.4, 0.5, 0, TAU);
-        ctx.restore();
-      }
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
 
   // Transparent depth over the catch, beneath the front mesh. Curved folds and a
   // bound neck give the bag volume without an opaque sticker hiding the fish.
@@ -672,17 +642,18 @@ class Net {
   // needs few rows of triangles; the bag's curves get more.
   drawGenerated(ctx, wet, frame) {
     const key = JSON.stringify(frame) + this.pouch;
-    const changed = this.textureKey !== key;
+    const surfaceKey = `${key}|${this.tangle.toFixed(4)}`;
+    const changed = this.textureKey !== surfaceKey;
     if (changed) {
       this.stillFrames = 0;
     } else if (this.textureRes < this.sharpRes && (this.stillFrames = (this.stillFrames || 0) + 1) >= 2) {
       this.textureKey = null;
     }
-    if (this.textureKey !== key) {
+    if (this.textureKey !== surfaceKey) {
       const res = changed ? 1 : this.sharpRes;
       this.textureRes = res;
-      this.textureKey = key;
-      const rows = this.pouch ? 18 : 6;
+      this.textureKey = surfaceKey;
+      const rows = this.pouch || this.tangle ? 24 : 6;
       const img = PopoGame.assets.netPolished;
       const map = (u, v) => this.meshPoint(u, v, frame);
       // registration is on the rope centreline; the outer floats and weights come along
@@ -907,7 +878,7 @@ class Net {
   measure(ctx, c) {
     const L = this.level;
     if (!L) return;
-    const m = (name) => `${this.metresShown(name).toFixed(1)} cm`;
+    const m = (name) => `${cm(this.metresShown(name))} cm`; // (7 cm, 5.5 cm: as the lesson writes lengths)
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     // Only what the task is about is on the net - the value given and the one the child sets - so nothing clutters
     // it or gives the answer away: the net is checked by pressing Check, not by reading it
@@ -1069,7 +1040,7 @@ class Net {
     const put = (from, to, name, value, sign, along = 0.5) => {
       const mid = lerp(from, to, along);
       const u = normalize(sub(to, from));
-      this.text(ctx, `${name} ${value.toFixed(1)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 20, '#ffd84a', true);
+      this.text(ctx, `${name} ${cm(value)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 20, '#ffd84a', true);
     };
     const toward = (end) => (end === this.movable && !this.locked ? 0.38 : 0.5);
     put(a, o, 'AO', h.AO, 1, 1 - toward(0));
@@ -1150,32 +1121,27 @@ class Net {
     });
   }
 
-  // The one corner that moves: a big knob with a breathing halo. It looks the same wherever it
-  // is, so it never gives away its place.
+  // The one corner that moves: a big knob that pulses, a dot swelling and settling in a soft glow (no rings). It
+  // looks the same wherever it is, so it never gives away its place.
   drawHandle(ctx, p) {
     const pulse = this.reduced ? 0.5 : (Math.sin(this.time * 3.2) + 1) / 2;
-    const r = 34 + pulse * 12;
-    const g = ctx.createRadialGradient(p.x, p.y, 10, p.x, p.y, r);
-    g.addColorStop(0, `rgba(255, 214, 90, ${0.6 + pulse * 0.25})`);
-    g.addColorStop(1, 'rgba(255, 214, 90, 0)');
-    ctx.fillStyle = g;
+    const r = 17 + pulse * 6;
+    const halo = ctx.createRadialGradient(p.x, p.y, r * 0.6, p.x, p.y, r + 18);
+    halo.addColorStop(0, `rgba(255, 214, 90, ${0.45 + pulse * 0.2})`);
+    halo.addColorStop(1, 'rgba(255, 214, 90, 0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r + 18, 0, TAU);
+    ctx.fill();
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, TAU);
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = `rgba(255, 255, 255, ${0.55 + pulse * 0.4})`;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 24 + pulse * 4, 0, TAU);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 16, 0, TAU);
     ctx.fillStyle = '#ffd84a';
     ctx.fill();
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = '#4a2c0f';
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(p.x - 5, p.y - 5, 5, 0, TAU);
+    ctx.arc(p.x - r * 0.3, p.y - r * 0.3, r * 0.3, 0, TAU);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.fill();
   }

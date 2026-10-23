@@ -13,6 +13,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes word-in{from{transform:translateY(.35em) scale(.4);opacity:0}}
 /* (a little smaller than the game's 1.3: the plate's words sit closer than its instruction's) */
 @keyframes word-boing{0%{transform:scale(.2);opacity:0}55%{transform:scale(1.15);opacity:1}80%{transform:scale(.97)}}
+/* on the plate a key word bounces up instead of swelling wide (a long word scaled 1.15 ran into its neighbours) */
+@keyframes plate-boing{0%{transform:translateY(.4em) scale(.5);opacity:0}55%{transform:translateY(-.14em) scale(1.06);opacity:1}80%{transform:translateY(.03em) scale(.99)}100%{transform:none}}
 .w.key{color:#e06600} /* the lesson's key words, in orange (as in Fishing Frenzy's bubble) */
 .bubA{animation:bubA .26s ease-out}
 .bubB{animation:bubB .26s ease-out}
@@ -174,8 +176,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes optIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
 
 /* highlighted side: a touch bolder in its own colour, under its marker (.hl) */
-.edge.lit{stroke-width:7px}
-.edge.lit.emph{stroke-width:8px}
+.edge.lit.emph{stroke-width:9px}
 /* ...and so do the diagonals, their halves, O and the length labels when a line names them */
 .diag{transition:stroke-width .3s cubic-bezier(.3,0,.3,1)}.diag.emph{stroke-width:7px}
 .hseg.emph{stroke-width:8px;filter:drop-shadow(0 0 4px rgba(255,196,0,.9))}
@@ -313,16 +314,14 @@ a{color:#123b63}a:hover{color:#0b2742}
 .chip-row.top{align-content:flex-start!important}
 
 /* ===== The named side (as in Fishing Frenzy's lesson) =====
-   A sunflower-yellow marker redraws it - a glowing pen tip runs from one end to the other and the side turns bold
-   yellow behind it, edged in navy so the bright yellow stands out on the aqua - and it stays marked while it is talked
-   about; the other sides step back (.edge.dim). pathLength is 100. A named corner grows into a ring (engine). */
-.hl{opacity:0;pointer-events:none;stroke:#ffd000;stroke-linecap:round}
-.hl.on{opacity:1;stroke-width:9px;stroke-dasharray:100 100;animation:hlDraw .55s cubic-bezier(.45,0,.35,1) both;
-  filter:drop-shadow(0 0 0.8px #0b2a55) drop-shadow(0 0 0.8px #0b2a55) drop-shadow(0 0 0.6px #0b2a55)}
-@keyframes hlDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
-.hlp.hl{stroke:#ffffff}
-.hlp.hl.on{stroke-width:15px;stroke-dasharray:.4 300;animation:hlPen .55s cubic-bezier(.45,0,.35,1) both;filter:drop-shadow(0 0 2px #ff9d00) drop-shadow(0 0 5px #ffb300)}
-@keyframes hlPen{0%{stroke-dashoffset:0;opacity:1}90%{stroke-dashoffset:-100;opacity:1}100%{stroke-dashoffset:-100;opacity:0}}
+   The side glows gold in its own colour and a soft light runs along it, end to end, over and over, while it is talked
+   about (no flat marker, no dark edge); the other sides step back (.edge.dim). pathLength is 100: the light is one
+   bright dash of the path. A named corner grows into a ring (engine). */
+.hl{opacity:0;pointer-events:none;stroke:#fff;stroke-linecap:round}
+.hl.on{opacity:.9;stroke-width:11px;stroke-dasharray:18 82;animation:hlRun 1.2s linear infinite;filter:blur(2.2px) drop-shadow(0 0 5px #ffd000)}
+@keyframes hlRun{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.hlp.hl{display:none}
+.edge.lit{stroke-width:8px;filter:drop-shadow(0 0 3px rgba(255,208,0,.95)) drop-shadow(0 0 7px rgba(255,208,0,.55))}
 /* dim with stroke-opacity: GSAP animates opacity on the sides (entrances), and a CSS opacity transition would lag them */
 .board .tag.tapme{pointer-events:auto;cursor:pointer}
 .edge.dim{stroke-opacity:.38;filter:none} /* (the navy outline would smudge a stepped-back side darker) */
@@ -331,7 +330,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .vdot.on{filter:drop-shadow(0 0 5px rgba(255,196,0,.95))}
 .vdot.drag-cue{transform-box:fill-box;transform-origin:center;animation:dragCue 1.3s ease-in-out infinite}
 @keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.3);filter:drop-shadow(0 0 7px rgba(255,196,0,.95))}}
-@media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none}.hlp.hl.on{display:none}.vdot{transition:none}.vdot.drag-cue{animation:none}}
+@media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
 .wedge.dim{opacity:.22}.tag.alab.dim{opacity:.42}
@@ -616,6 +615,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card.scene.plate .bubble-text .w.brk{display:none}
 .stage.in-card.scene.plate .w.cur{color:#fff8ec}
 .stage.in-card.scene.plate .w.key,.stage.in-card.scene.plate .w.cur.key{color:#ffd166;font-weight:700}
+.stage.in-card.scene.plate .w.key.cur{animation:plate-boing .55s cubic-bezier(.2,1.6,.4,1) both;transform-origin:50% 100%}
 .stage.in-card .bubble:not(:has(.w.on,.w.cur)){opacity:0}
 /* (and hidden outright off the plate: the bubA/bubB pop animates opacity, which would show it empty for its 0.26 s) */
 .stage.in-card:not(.plate) .bubble:not(:has(.w.on,.w.cur)){visibility:hidden}
@@ -668,12 +668,13 @@ a{color:#123b63}a:hover{color:#0b2742}
    speech bubble's shrink-to-widest-line width is not for it) */
 .stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
 .stage.in-card.scene.plate .bubble-text .w{display:inline-block;margin:0 .14em}
+.stage.in-card.scene.plate .bubble-text .w.key{margin:0 .24em} /* (room for its bounce) */
 /* the plate fits its line (engine plateWidth: no empty glass round a short one) and glides to the next part's size;
    .plate-measure is the hidden copy it is measured on, in the plate's own type */
 .plate-measure{position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;display:inline-block;white-space:nowrap;box-sizing:border-box;
   padding:0 38px;border:2.4px solid transparent;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.3;letter-spacing:.01em}
 .plate-measure .w{display:inline-block;margin:0 .14em} /* (its font-size is set as it measures) */
-.plate-measure .w.key{font-weight:700}
+.plate-measure .w.key{font-weight:700;margin:0 .24em}
 
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{width:var(--pw,1000px)!important;height:74px}
 /* ===== the plate, calm (no glitches): one size; a line's words keep their places from the start (each pops in as it

@@ -63,6 +63,8 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   in gold. The whole line sits on one line, each word popping in as the voice reaches it (as the game's own plate); the
   plate fits its line, measured on a hidden copy in its own type (`plateFit`, `CONFIG.plateMaxW`), and a line too long
   for the card is set smaller. A question comes back, shown not said, after a tip.
+- **A lit side.** A side a line lights (a cue's `glow`) glows gold in its own colour with a soft light running along
+  it, end to end, while it is talked about (css `.hl`); the other sides step back.
 - **Dual coding.** As Swiftee says a part's name the part itself grows for a moment (`partCues` / `emphasize`): a
   side (AB, "A B", legs, bases, sides), an angle (∠A, angles: the wedges, or the corners before the angles are drawn),
   a length, a diagonal (AC, diagonals), point O, a half (AO, segments); a line's own `cues` add a glow, a name card, a

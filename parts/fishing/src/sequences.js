@@ -314,7 +314,7 @@ function backToPuzzle(game, level) {
   state.phase = PHASE.PUZZLE_READY;
   state.idleTime = state.misses >= 2 ? level.hintDelay - 1.5 : 0;
   ui.showHandle(true);
-  if (level.type === 'free') ui.setDrop('on'); else ui.setAction('hidden'); // (Check comes once the corner is moved)
+  if (level.type === 'free') ui.setDrop('on'); else { ui.setAction('hidden'); game.focusOn(); } // (Check comes once the corner is moved)
 }
 
 // --- the nets after the lesson: Check, a tangle or a catch -------------------------------------

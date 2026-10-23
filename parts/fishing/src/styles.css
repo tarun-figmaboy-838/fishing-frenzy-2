@@ -74,7 +74,7 @@ html, body {
 .handle:active { cursor: grabbing; }
 .handle[hidden] { display: none; }
 .handle:focus { outline: none; }
-.handle:focus-visible { box-shadow: 0 0 0 0.35em rgba(255, 255, 255, 0.9), 0 0 0 0.7em var(--amber); }
+.handle:focus-visible { box-shadow: none; } /* (no ring round the knob: it pulses on the canvas, drawn as the one corner to move) */
 
 /* ---------- hint hand: taps on its own, or shows the drag once (positioned from game.js) ---------- */
 .hand {
@@ -91,6 +91,7 @@ html, body {
 .hand[hidden] { display: none; }
 .hand.drag { animation: none; }
 .hand.fade { opacity: 0; }
+.hand.up { transform-origin: 0 0; } /* (turned 180 about its fingertip: it comes down from above onto a bottom button) */
 /* the fingertip is the image's top-left corner, so tapping moves along the finger */
 @keyframes hand-tap {
   0%, 100% { margin: 0; }
@@ -195,64 +196,73 @@ html, body {
 }
 .drop-btn {
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
-  gap: 0.45em;
-  font: inherit;
+  gap: 0.4em;
+  font-family: 'Baloo 2', Fredoka, "Arial Rounded MT Bold", sans-serif;
   font-size: 3.4em;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.01em;
-  padding: 0.3em 1.05em 0.34em 0.85em;
+  padding: 0.22em 0.9em 0.26em 0.75em;
   min-height: 44px;
   border-radius: 999px;
-  border: 0.09em solid #fff3d6;
-  background: linear-gradient(180deg, #ffc15e 0%, #f08a1d 100%);
-  color: #2b1600;
+  --pill-line: #e3901a;
+  border: 0.09em solid #fff;
+  background: linear-gradient(180deg, #ffe066 0%, #ffcb33 40%, #ffa71f 74%, #f58c12 100%);
+  box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.18em 0 rgba(205, 100, 0, 0.38), inset 0 0.06em 0 rgba(255, 255, 255, 0.55);
+  color: #4a2300;
+  text-shadow: 0 0.04em 0 rgba(255, 244, 200, 0.75);
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: 0 0.16em 0 #a54a05, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55);
-  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+  filter: drop-shadow(0 0.18em 0.24em rgba(120, 60, 0, 0.22));
+  transition: transform 0.12s ease, filter 0.12s ease;
   animation: next-in 0.55s cubic-bezier(0.2, 1.7, 0.4, 1);
 }
 .drop-btn[hidden] { display: none; }
-/* the icon sits in the pill, before its word (no dark disc: a pill, as the lesson's Next) */
+/* the icon sits in the pill, before its word */
 .drop-btn .badge {
   display: grid;
   place-items: center;
   width: 1.1em;
   height: 1.1em;
-  color: #2b1600;
+  color: #4a2300;
 }
 .drop-btn .badge svg { width: 100%; height: auto; }
-.drop-btn:hover { filter: brightness(1.06); }
-.drop-btn:active {
-  transform: translateY(0.14em);
-  box-shadow: 0 0.03em 0 #a54a05, 0 0.22em 0.5em rgba(0, 20, 60, 0.3), inset 0 0.1em 0 rgba(255, 255, 255, 0.55);
-}
-.drop-btn:focus-visible { outline: 0.2em solid #fff; outline-offset: 0.2em; }
-/* the shine: a bright band swept across the face */
+/* the jelly's highlight, top left */
 .drop-btn::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.7) 50%, transparent 62%) 150% 0 / 200% 100% no-repeat;
+  z-index: -1;
+  left: 12%;
+  top: 10%;
+  width: 24%;
+  height: 24%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
   pointer-events: none;
-  animation: shine 4s ease-in-out 1.5s infinite;
 }
+.drop-btn:hover { transform: translateY(-0.08em); filter: brightness(1.05) drop-shadow(0 0.26em 0.3em rgba(120, 60, 0, 0.26)); }
+.drop-btn:active {
+  transform: translateY(0.12em);
+  transition-duration: 0.06s;
+  box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.09em 0 rgba(205, 100, 0, 0.38), inset 0 0.06em 0 rgba(255, 255, 255, 0.55);
+  filter: drop-shadow(0 0.06em 0.09em rgba(120, 60, 0, 0.2));
+}
+.drop-btn:focus-visible { outline: 0.12em solid #fff; outline-offset: 0.12em; }
 @keyframes next-in { from { transform: translateY(1.2em) scale(0.3); opacity: 0; } }
 /* the nets' action, bottom left (the same pill): Check in the orange, Catch in sea green, Try again in coral; its icon
    is the moment's */
-.actions-left { position: absolute; left: 3.2%; bottom: 5%; display: flex; pointer-events: none; }
+.actions-left { position: absolute; right: 3.2%; bottom: 5%; display: flex; pointer-events: none; } /* (bottom right, as Drop Net) */
 .action-btn .ic { display: none; }
 .action-btn[data-mode="check"] .ic-check, .action-btn[data-mode="catch"] .ic-catch, .action-btn[data-mode="again"] .ic-again { display: block; }
-.action-btn[data-mode="catch"] { background: linear-gradient(180deg, #9fe87a 0%, #3fbf2c 100%); box-shadow: 0 0.16em 0 #1f6a14, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55); color: #0f3a0a; }
+.action-btn[data-mode="catch"] { --pill-line: #2f9617; background: linear-gradient(180deg, #c4f79f 0%, #8fe66a 40%, #5bd13a 74%, #3fb524 100%); box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.18em 0 rgba(20, 110, 10, 0.35), inset 0 0.06em 0 rgba(255, 255, 255, 0.5); color: #0f3a0a; text-shadow: 0 0.04em 0 rgba(230, 255, 215, 0.75); filter: drop-shadow(0 0 0.3em rgba(80, 200, 60, 0.45)) drop-shadow(0 0.18em 0.24em rgba(20, 90, 10, 0.25)); }
 .action-btn[data-mode="catch"] .badge { color: #0f3a0a; }
-.action-btn[data-mode="again"] { background: linear-gradient(180deg, #ffb48f 0%, #f26b3a 100%); box-shadow: 0 0.16em 0 #8a3414, 0 0.5em 1em rgba(0, 20, 60, 0.32), inset 0 0.1em 0 rgba(255, 255, 255, 0.55); color: #4a1a06; }
+.action-btn[data-mode="again"] { --pill-line: #c4552a; background: linear-gradient(180deg, #ffc9a8 0%, #ffa073 40%, #f7764a 74%, #e85a2c 100%); box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.18em 0 rgba(150, 50, 10, 0.38), inset 0 0.06em 0 rgba(255, 255, 255, 0.55); color: #4a1a06; text-shadow: 0 0.04em 0 rgba(255, 230, 215, 0.75); }
 .action-btn[data-mode="again"] .badge { color: #4a1a06; }
-/* the view zooms in on the net for a drag (Game.applyFocus): the scene, the net's corner and the hint hand together */
-.scene, .hits, .hand { will-change: transform; }
-@keyframes shine { 0% { background-position: 150% 0; } 30%, 100% { background-position: -50% 0; } }
+/* the view zooms in on the net (Game.applyFocus): the scene and the net's corner together (the hint hand follows
+   through its own transform) */
+.scene, .hits { will-change: transform; }
 .drop-btn.leave { animation: drop-leave 0.26s ease-in forwards; pointer-events: none; }
 @keyframes drop-leave { to { transform: translateY(0.5em) scale(0.6); opacity: 0; } }
 

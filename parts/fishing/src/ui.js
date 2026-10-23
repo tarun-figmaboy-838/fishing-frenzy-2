@@ -84,6 +84,7 @@ class UI {
     this.el.drop.addEventListener('click', h('drop'));
     this.el.action.addEventListener('click', h('action'));
     this.unzoom = null; // the game's: a pointer on the zoomed-in view back to stage coordinates (Game.applyFocus)
+    this.zoomed = null; // ...and a stage point to where the zoomed-in view shows it
     this.el.again.addEventListener('click', h('again'));
     this.el.next.addEventListener('click', h('next'));
     this.wireHandle();
@@ -217,12 +218,18 @@ class UI {
     }, 260);
   }
 
-  // The middle of a HUD button, as a stage point, for the hint hand.
-  buttonPoint(el) {
+  // Where the hint hand's fingertip goes on a HUD button, as a stage point: on its face, or (fromAbove) at its top edge,
+  // the hand coming down onto it. low: whether the button sits along the bottom of the stage.
+  buttonPoint(el, fromAbove = false) {
     const r = el.getBoundingClientRect();
     const h = this.el.hits.parentElement.getBoundingClientRect();
-    const p = { x: (r.left + r.width * 0.42 - h.left) / this.scale, y: (r.top + r.height * 0.55 - h.top) / this.scale };
+    const p = fromAbove ? { x: (r.left + r.width * 0.5 - h.left) / this.scale, y: (r.top + r.height * 0.1 - h.top) / this.scale }
+      : { x: (r.left + r.width * 0.42 - h.left) / this.scale, y: (r.top + r.height * 0.55 - h.top) / this.scale };
     return this.unzoom ? this.unzoom(p) : p;
+  }
+  buttonLow(el) {
+    const r = el.getBoundingClientRect(), h = this.el.hits.parentElement.getBoundingClientRect();
+    return (r.top + r.height / 2 - h.top) / h.height > 0.6;
   }
 
   pop(el) {
@@ -495,9 +502,11 @@ class UI {
 
 
   // --- hint hand ---------------------------------------------------------------
-  showHand(dragging = false) {
+  // up: the hand comes down from above (a button along the bottom: hanging below it, it would run off the screen)
+  showHand(dragging = false, up = false) {
     this.el.hand.hidden = false;
     this.el.hand.classList.toggle('drag', dragging);
+    this.el.hand.classList.toggle('up', up);
     this.el.hand.classList.remove('fade');
   }
 
@@ -507,11 +516,15 @@ class UI {
 
   hideHand() {
     this.el.hand.hidden = true;
-    this.el.hand.classList.remove('fade', 'drag');
+    this.el.hand.classList.remove('fade', 'drag', 'up');
   }
 
+  // (the hand's own transform carries the view's zoom on the net, Game.applyFocus: its fingertip is the image's
+  // top-left corner, so it scales from there)
   moveHand(x, y) {
-    this.el.hand.style.transform = `translate(${(x * this.scale).toFixed(1)}px, ${(y * this.scale).toFixed(1)}px)`;
+    const q = this.zoomed ? this.zoomed({ x, y }) : { x, y, z: 1 };
+    const up = this.el.hand.classList.contains('up'); // (turned about its fingertip, it points down from above)
+    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '') + (up ? ' rotate(180deg)' : '');
   }
 
   showRotateHint(show) {

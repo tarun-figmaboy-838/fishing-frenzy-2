@@ -3,8 +3,8 @@
 Popo's parallelogram net: a browser game for Grade 8 about parallelograms. Popo the polar bear fishes with a net hung
 from a winch on his raft. Before he lowers it, the child fixes its shape: three of its corners A, B, C, D are fixed,
 and the fourth slides along a track, stop by stop, until the net has the property the level asks for - as the drag
-starts the view zooms in on the net, so the corner is set on a big net, and once it is set Check comes up (a pill,
-bottom left). Check sends the net slowly down while the view opens out again: a right net locks with its praise and
+net comes down the view zooms in on it, so the corner is set on a big net, and once it is set Check comes up (a pill,
+bottom right). Check sends the net slowly down while the view opens out again: a right net locks with its praise and
 lights its property on the way, and sits open in the water with Catch for the child; a wrong one crumples into a
 tangle ("Whoopsie Doopsie!", the hint) and Try again winds it up, untangles it and brings it down in its starting
 shape. Meanwhile three bunches of fish - three kinds, each its own count and size, each swimming its own way in its own
@@ -152,18 +152,22 @@ The game is deployed as part of the journey: the repository's root is the static
   last net the four sides. Vertex labels A–D are always there, and two little arrows beside the knob show which ways
   the corner slides (a tap on one moves it a stop; the track itself isn't drawn). The labels are laid out together so
   none covers another. The answer lies further from the start level by level (5 to 9 stops).
-- **The drag and Check.** As a drag starts the view zooms in on the net (`Game.applyFocus`, 1.7x about the net's
-  middle, as the lesson's camera dives: the scene, the net's corner and the hint hand together; the HUD stays), so the
-  corner is set on a big net; the corner moved, Check comes up as a pill bottom left (`UI.setAction`). Check
+- **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, 1.7x about the
+  net's middle, as the lesson's camera dives: the scene and the net's corner together, the hint hand through its own
+  transform; the HUD stays), so the corner is set on a big net; the corner moved, Check comes up as a pill bottom
+  right (`UI.setAction`). Check
   (`checkNet` in `src/sequences.js`) tests the frame: a right one locks with a click, holds a moment glowing as its
   praise begins, and either way the net goes slowly down while the view opens out again with it. A wrong net
-  crumples into a tangle in the water (`Net.tangle`: its corners pull in and twist, knots and strands over the mesh;
-  the fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
+  crumples into a tangle in the water (`Net.tangle`: its corners pull in and twist, so the mesh itself crumples; the
+  fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
 - **The catch.** A right net sits open in the water with Catch (`catchNow`). Three bunches of fish (`bunchesFor` in
-  `src/levels.js`: three kinds, each its own count and size) roam the sea in three lanes at the depth the net reaches,
-  each lane swimming its own way at its own pace (`Sea`), so the bunches never run into each other and each swims
-  through the net in turn: the child presses Catch when the bunch they want is in it. The net gathers its mouth
+  `src/levels.js`: three kinds - a shoal of 8 to 16 small fish, a bunch of 4 to 7 middling ones, 2 to 4 big ones, each
+  fish its own size within its bunch) roam the sea in three lanes at the depth the net reaches, each lane swimming
+  its own way at its own pace, a little quicker net by net (`Sea`); a bunch with the room swims as a cloud, two
+  staggered rows, so it reads as a school and never as a line, and no fish ever touches another. The bunches never
+  run into each other and each swims through the net in turn: the child presses Catch when the bunch they want is
+  in it. The net gathers its mouth
   underwater, then rises as a bag with the catch in its belly, clear of the water. A net that closed on nothing comes
   up empty ("Huh?!") and goes down again for another go. The fish the net missed stay and swim on into the next
   level (rowing to new waters, they come along), joined by newcomers; for the golden final school they swim off out
@@ -173,7 +177,8 @@ The game is deployed as part of the journey: the repository's root is the static
   alone, the hand shows how the corner slides, two stops the right way (never all the way to
   its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the
   measurements, so the game teaches rather than solves itself; the corner set, the hand points at Check, and a net
-  left open in the water a while, at Catch. No hint says whether the net is right; Check does.
+  left open in the water a while, at Catch (coming down from above onto a bottom button, never up from off the
+  screen). No hint says whether the net is right; Check does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
@@ -188,8 +193,8 @@ The game is deployed as part of the journey: the repository's root is the static
   Fredoka has no angle sign. Popo's own lines are its cream speech bubble with dark ink and an orange key
   word, growing word by word with its line breaks pinned. Sound and pause are its round orange
   icon buttons. The buttons are pills in the lesson's Next look (orange, a cream rim, dark lettering, the icon inline):
-  the warm-up's Drop Net bottom right, and the nets' one action bottom left - Check (orange), Catch (sea green), Try
-  again (coral). Drop Net, as it was: a sunny face
+  the warm-up's Drop Net and the nets' one action, both bottom right - Check (orange), Catch (sea green), Try again
+  (coral). Drop Net, as it was: a sunny face
   with dark-brown outline, label (about 10:1 contrast) and a lip it presses down onto, the net
   icon in a badge; it pops in and a shine sweeps it now and then.
   The pause card's buttons match it, and the end screen's Play Again is the same button.

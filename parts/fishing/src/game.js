@@ -5,7 +5,7 @@ const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave
 const HINT_REPEAT = 7;    // seconds of idling between hints once one has been shown
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
 const SCHOOL_TOP = 46;    // the school keeps this far below the surface
-const FOCUS = { zoom: 1.7, inMs: 550 }; // a drag zooms the view in on the net this much, this fast (applyFocus)
+const FOCUS = { zoom: 1.7, inMs: 900 }; // the view zooms in on the net this much, this fast, as a net comes down (applyFocus)
 const SCHOOL_MARGIN = 26; // and this far inside the net's footprint
 const TICK_GAP = 90;      // ms between measurement ticks while dragging
 const SWIM_BEYOND = 100;  // the school roams the whole sea, turning just out of sight at its ends
@@ -102,6 +102,7 @@ class Game {
     // the net in focus (applyFocus): t 0..1 toward want, the zoom about (ox, oy) in stage px
     this.focus = { t: 0, want: 0, ox: STAGE_W / 2, oy: STAGE_H / 2, ms: FOCUS.inMs, z: 1 };
     this.ui.unzoom = (p) => this.unzoom(p);
+    this.ui.zoomed = (p) => { const f = this.focus; return { x: f.ox + (p.x - f.ox) * f.z, y: f.oy + (p.y - f.oy) * f.z, z: f.z }; };
     this.water = new WaterScene(document.getElementById('water'));
     this.raftRippleIn = 1;
     this.dialogue = null;
@@ -303,15 +304,32 @@ class Game {
   }
 
   // --- the net in focus ---------------------------------------------------------------------
-  // A drag zooms the view in on the net (as the lesson's camera dives: the scene, the net's corner and the hint hand
-  // scale together about the net's middle), so the child sets the corner on a big net; Check opens the view out
-  // again as the net goes down (focusOut over that time). The HUD (the plate, the buttons) stays as it is.
+  // As a net comes down the view zooms in on it by itself (as the lesson's camera dives: the scene, the net's corner
+  // and the hint hand scale together about the net's middle), so the child sets the corner on a big net; Check opens
+  // the view out again as the net goes down (focusOut over that time). The HUD (the plate, the buttons) stays as it is.
+  // The zoom fits the net and the whole of its corner's track (every stop the corner can reach), with a margin, so
+  // nothing the child needs leaves the screen: as much as FOCUS.zoom, less where the track is wide, about a point
+  // chosen so the fitted box sits inside the stage (scaling about a point off the box's middle slides it along).
   focusOn() {
-    const p = this.net.points, r = this.net.ring();
-    this.focus.ox = r.x + (p[0].x + p[1].x + p[2].x + p[3].x) / 4;
-    this.focus.oy = r.y + (p[0].y + p[1].y + p[2].y + p[3].y) / 4;
-    this.focus.ms = FOCUS.inMs;
     this.focus.want = 1;
+    this.focus.fit = true; // (measured on the zoom's first frame, once the net's place on the stage is fresh)
+  }
+
+  fitFocus() {
+    const net = this.net, f = this.focus, PAD = 70;
+    const pts = [...net.points, net.stop(net.track.min), net.stop(net.track.max), { x: 0, y: 0 }].map((q) => net.toStage(q));
+    const x0 = Math.min(...pts.map((q) => q.x)) - PAD, x1 = Math.max(...pts.map((q) => q.x)) + PAD;
+    const y0 = Math.min(...pts.map((q) => q.y)) - PAD, y1 = Math.max(...pts.map((q) => q.y)) + PAD;
+    const z = Math.max(1.05, Math.min(FOCUS.zoom, STAGE_W / (x1 - x0), STAGE_H / (y1 - y0)));
+    const place = (lo, hi, size) => { // the origin that keeps [lo, hi] on screen at zoom z: between its two bounds, nearest its middle
+      const c = (lo + hi) / 2;
+      const min = (hi * z - size) / (z - 1), max = (lo * z) / (z - 1);
+      return min > max ? c : Math.max(min, Math.min(max, c));
+    };
+    f.ox = place(x0, x1, STAGE_W);
+    f.oy = place(y0, y1, STAGE_H);
+    f.zoom = z;
+    f.ms = FOCUS.inMs;
   }
 
   focusOut(ms) {
@@ -334,19 +352,24 @@ class Game {
 
   applyFocus(dt) {
     const f = this.focus;
+    if (f.fit && f.want === 1 && f.t === 0) { f.fit = false; this.fitFocus(); }
     if (f.t !== f.want) {
       const step = dt / Math.max(0.001, f.ms / 1000);
       f.t = f.want > f.t ? Math.min(f.want, f.t + step) : Math.max(f.want, f.t - step);
     }
     const k = this.fx.reduced ? f.want : f.t * f.t * (3 - 2 * f.t);
-    const z = 1 + (FOCUS.zoom - 1) * k;
+    const z = 1 + ((f.zoom || FOCUS.zoom) - 1) * k;
     if (z === f.z && z === 1) return;
     f.z = z;
     if (this.camera.zoom !== 1) return; // (the lesson's camera has the view)
     const s = this.stage.scale, origin = `${(f.ox * s).toFixed(1)}px ${(f.oy * s).toFixed(1)}px`, tf = z === 1 ? '' : `scale(${z.toFixed(4)})`;
-    for (const el of [this.ui.el.scene, this.ui.el.hits, this.ui.el.hand]) {
+    for (const el of [this.ui.el.scene, this.ui.el.hits]) {
       el.style.transformOrigin = origin;
       el.style.transform = tf;
+    }
+    if (this.hint) { // (the hint hand places itself through the zoom, UI.moveHand)
+      if (this.hint.drag) this.advanceHand(0);
+      else if (this.hintAt) this.pointAt(this.hintAt, true);
     }
   }
 
@@ -488,7 +511,7 @@ class Game {
     // the water right under the net, down to where the lowered net reaches...
     this.fishArea = {
       left: this.netRest.x + span.left + SCHOOL_MARGIN, right: this.netRest.x + span.right - SCHOOL_MARGIN,
-      top, bottom: top + (span.bottom - span.top) - 26, // (three lanes of fish fit under the net)
+      top, bottom: top + (span.bottom - span.top) - 8, // (three lanes of fish fit under the net)
     };
     // ...and the school roams the whole sea at that depth, so the net catches whoever is under it
     // when it lands: the child drops it as fish swim beneath
@@ -506,7 +529,7 @@ class Game {
   // new lane depths and are joined by newcomers; each level's school swims a little quicker.
   spawnSchool() {
     const level = LEVELS[state.level];
-    const pace = (65 + 7 * state.level) * (level.rare ? 1.15 : 1);
+    const pace = (58 + 13 * state.level) * (level.rare ? 1.15 : 1); // quicker net by net
     state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
   }
 
@@ -532,6 +555,7 @@ class Game {
     this.ui.showHandle(!free);
     this.ui.setDrop(free ? 'on' : 'hidden'); // (the nets check and catch with their own button: onAction)
     this.ui.setAction('hidden');
+    if (!free) this.focusOn(); // the net down: the view comes in on it
     this.instruct(level.prompt, { voice: !(free && this.warmCatches) });
   }
 
@@ -616,7 +640,6 @@ class Game {
     // the corner keeps its offset from the pointer, so it never jumps under the finger
     this.drag = { dx: handle.x - local.x, dy: handle.y - local.y };
     this.audio.play('grab');
-    this.focusOn();
   }
 
   onDragMove(point) {
@@ -859,13 +882,16 @@ class Game {
   }
 
   // The hand taps a button: Drop Net (the warm-up), Check or Catch
-  pointAt(el) {
+  pointAt(el, again = false) {
     if (el.hidden || !el.getBoundingClientRect().width) return;
-    this.hint = { t: 0, drag: false };
-    this.audio.play('hint');
-    const p = this.ui.buttonPoint(el);
+    const low = this.ui.buttonLow(el); // a bottom button: the hand comes down from above, not up from off the screen
+    const p = this.ui.buttonPoint(el, low);
+    if (!again) this.ui.showHand(false, low);
     this.ui.moveHand(p.x, p.y);
-    this.ui.showHand(false);
+    if (again) return; // (placed again as the view moves)
+    this.hint = { t: 0, drag: false };
+    this.hintAt = el;
+    this.audio.play('hint');
     this.ui.pulseInstruction();
     this.hintShown = true;
   }
@@ -890,6 +916,7 @@ class Game {
   stopHint() {
     if (!this.hint) return;
     this.hint = null;
+    this.hintAt = null;
     this.net.hintPulse = 0;
     this.ui.hideHand();
   }
