@@ -166,16 +166,17 @@ The game is deployed as part of the journey: the repository's root is the static
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
 - **The catch.** A right net sits open in the water with Catch (`catchNow`). Three bunches of fish (`bunchesFor` in
   `src/levels.js`: a shoal of 8 to 16 small fish, a bunch of 4 to 7 middling ones, 2 to 4 big ones, each a mix of two
-  to four kinds and of sizes) roam the sea in three lanes at the depth the net reaches, each lane swimming its own way
-  at its own pace, a little quicker net by net (`Sea`); each bunch is packed into a loose cloud (`Sea.pack`: an ellipse
-  the lane's height, no two fish touching) that swims as one, so it reads as a school and never as a line. The bunches never
-  run into each other and each swims through the net in turn: the child presses Catch when the bunch they want is
-  in it. The net gathers its mouth
+  to four kinds and of sizes) roam the sea at the depth the net reaches, a little quicker net by net (`Sea`); each
+  bunch is packed into a loose, tall cloud (`Sea.pack`: an ellipse the whole band's height, no two fish touching) that
+  swims as one, so it reads as a school (as a drawn shoal does) and never as a line. The three swim one way, whichever
+  chance says for a new school, in a loose line at one pace (`Sea.lead` brings each in behind the others), and loop
+  round the sea's ends keeping their distance, so they never run into each other and each swims through the net in
+  turn: the child presses Catch when the bunch they want is in it. The net gathers its mouth
   underwater, then rises as a bag with the catch in its belly, clear of the water. A net that closed on nothing comes
   up empty ("Huh?!") and goes down again for another go. The fish the net missed stay and swim on into the next
   level (rowing to new waters, they come along), joined by newcomers; for the golden final school they swim off out
   of the sea as the golden fish swim in behind them. No fish ever vanishes or pops into view; a whole new school (the
-  first, the golden one) rushes in, its lanes fast for a moment, so the sea fills at once.
+  first, the golden one) rushes in, fast for a moment, so the sea fills at once.
 - **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
   alone, the hand shows how the corner slides, two stops the right way (never all the way to
   its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the

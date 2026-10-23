@@ -177,8 +177,8 @@ class Fish {
 // sea and float gently. The pace rises a little level by level.
 const LANES = 3;
 const RUSH = 3;                   // seconds a whole new school takes to rush in and settle
-const LANE_PACE = [0.82, 1.18];   // a lane's pace, as a share of the level's, drawn between these
-const LANE_SWAY = 8;              // how far the lanes sway up and down together, px
+const LANE_SWAY = 8;              // how far the school sways up and down, px
+const CLOUD_GAP = 130;            // the least water between one bunch and the next along the loop, px
 
 class Sea {
   constructor() {
@@ -186,37 +186,29 @@ class Sea {
     this.t = 0;
   }
 
-  // Lays the lanes over `area` (keeping their fish, who glide to the new depths) at `pace` pixels a second, one bunch
-  // to a lane: a lane with no fish left swims whichever way chance says, at its own pace, and gets its bunch - a cloud
-  // of fish of mixed sizes packed into an ellipse the lane's height (no two touching, see pack), the whole cloud
-  // swimming in from out of sight at the lane's start as one, so it reads as a school. A lane with fish keeps its
-  // way, its kind and its fish, newcomers packed round them. `keep` is the school so far, `bunches` the level's
-  // (levels.js bunchesFor: { key, count, size }).
+  // Lays the school over `area` (keeping its fish, who glide to the new depth) at `pace` pixels a second, one bunch
+  // to a lane: each bunch is a cloud of fish of mixed kinds and sizes packed into an ellipse the whole band's height
+  // (no two touching, see pack), and the three swim one way (a new school: whichever way chance says) in a loose
+  // line, all at the level's pace, so each is a full, tall school and they never run into each other: a cloud
+  // swims in from out of sight behind the others (lead) and loops round the sea's ends keeping its distance. A lane
+  // with fish keeps its kind and its fish; newcomers come in behind as a cloud of their own. `keep` is the school
+  // so far, `bunches` the level's (levels.js bunchesFor: { kinds, key, count, size }).
   stock(keep, area, bunches, { rare = false, pace = 50 } = {}) {
-    const band = area.bottom - area.top;
+    const band = area.bottom - area.top, loop = area.right - area.left;
     const school = keep.filter((f) => !f.gone && !f.caught && !f.leaving);
+    if (school.length) this.dir = school[0].lane.dir;
+    else { this.dir = Math.random() < 0.5 ? -1 : 1; this.phase = Math.random() * TAU; }
     this.lanes.forEach((lane, i) => {
-      const bunch = bunches[i % bunches.length];
-      if (!school.some((f) => f.lane === lane)) {
-        lane.dir = Math.random() < 0.5 ? -1 : 1;
-        lane.share = LANE_PACE[0] + Math.random() * (LANE_PACE[1] - LANE_PACE[0]);
-        lane.bunch = bunch;
-        lane.shoal = i + 1;
-      }
-      lane.speed = pace * lane.share;
-    });
-    // three bunches all swimming the same way read as one school: the middle lane turns if its neighbours agree with it
-    if (this.lanes.every((l) => l.dir === this.lanes[0].dir) && !school.some((f) => f.lane === this.lanes[1])) this.lanes[1].dir *= -1;
-    // each lane's room follows its bunch: the shoal of small fish gets the most (as a school does), the few big ones the least
-    const weights = this.lanes.map((l) => { const z = l.bunch ? l.bunch.size : 0.66; return z <= 0.58 ? 1.35 : z >= 0.78 ? 0.9 : 1; });
-    const total = weights.reduce((a, b) => a + b, 0);
-    let at = area.top;
-    this.lanes.forEach((lane, i) => {
-      lane.room = band * weights[i] / total;
-      lane.base = at + lane.room / 2;
+      if (!school.some((f) => f.lane === lane)) { lane.bunch = bunches[i % bunches.length]; lane.shoal = i + 1; }
+      lane.dir = this.dir;
+      lane.share = 1;
+      lane.phase = this.phase; // (the pace breathes the same for every bunch, so none gains on another)
+      lane.speed = pace;
+      lane.room = band;
+      lane.base = area.top + band / 2;
       lane.y = lane.base;
-      at += lane.room;
     });
+    const start = this.dir > 0 ? area.left : area.right;
     for (const lane of this.lanes) {
       const bunch = lane.bunch || bunches[0];
       const have = school.filter((f) => f.lane === lane);
@@ -232,13 +224,12 @@ class Sea {
         f.queued = (this.queued = (this.queued || 0) + 1);
         fresh.push(f);
       }
-      // the cloud, packed; it swims in from out of sight at the lane's start (newcomers to a lane with fish come in
-      // behind them the same way, packed round the ones already swimming)
-      const start = lane.dir > 0 ? area.left : area.right;
-      const offs = this.pack(fresh, lane.room, have.map((f) => ({ x: f.x, y: f.depth, w: f.w, h: f.h })), start, lane.dir);
+      // the cloud, packed; it swims in from out of sight, behind every fish already in the sea
+      const offs = this.pack(fresh, band);
+      const lead = this.lead(offs.reach, school, start, this.dir, loop);
       fresh.forEach((f, n) => {
         f.depth = offs[n].y;
-        f.x = start - lane.dir * (offs.reach + f.w / 2) + offs[n].x;
+        f.x = start - this.dir * lead + offs[n].x;
         f.baseY = lane.y + f.depth;
         f.y = f.baseY;
         f.waiting = false;
@@ -253,16 +244,16 @@ class Sea {
     return school;
   }
 
-  // Packs `fish` into a cloud: an ellipse as tall as the lane allows (room) and as long as the fish need, each fish
-  // at a random spot where it touches no other (`taken`: boxes already in the lane, in the same coordinates) - big
-  // ones first. Returns each fish's offset { x, y } from the cloud's middle (x along the lane), and `reach`: how far
-  // the cloud extends from its middle, so it can start out of sight.
-  pack(fish, room, taken, start, dir) {
+  // Packs `fish` into a cloud: an ellipse as tall as the band allows (room) and as long as the fish need, each fish
+  // at a random spot where it touches no other - big ones first. Returns each fish's offset { x, y } from the cloud's
+  // middle (x along the way it swims), and `reach`: how far the cloud extends from its middle, so it can start out
+  // of sight.
+  pack(fish, room) {
     const GAP = 9; // (room for each fish's float and bob)
     const sorted = [...fish].sort((a, b) => b.h - a.h);
     const ry = Math.max(room / 2 - 2, Math.max(...sorted.map((f) => f.h)) / 2 + 2);
     let rx = Math.max(...sorted.map((f) => f.w)) * 0.8 + sorted.reduce((a, f) => a + (f.w + GAP) * (f.h + GAP), 0) * 1.4 / (Math.PI * ry);
-    const placed = taken.map((b) => ({ ...b })), out = new Map();
+    const placed = [], out = new Map();
     const clear = (x, y, w, h) => placed.every((b) => Math.abs(b.x - x) >= (b.w + w) / 2 + GAP || Math.abs(b.y - y) >= (b.h + h) / 2 + GAP);
     for (const f of sorted) {
       let spot = null;
@@ -283,11 +274,29 @@ class Sea {
     return offs;
   }
 
+  // How far behind the sea's start (out of sight) a new cloud reaching `reach` from its middle should enter so that,
+  // on the loop the school swims round, it is CLOUD_GAP clear of every other fish both ahead and behind: the nearest
+  // such place, or, in a sea too full for one, the place with the most room.
+  lead(reach, others, start, dir, loop) {
+    const fish = others.filter((f) => !f.gone && !f.caught).map((f) => ({ d: (((dir * (f.x - start)) % loop) + loop) % loop, r: f.w / 2 }));
+    let best = reach, bestGap = -Infinity;
+    for (let L = reach; L <= loop + reach; L += 8) {
+      let gap = Infinity;
+      for (const o of fish) {
+        const d = (o.d + L) % loop; // (how far ahead of the new cloud's middle that fish swims, round the loop)
+        gap = Math.min(gap, d - reach - o.r, loop - d - reach - o.r);
+      }
+      if (gap >= CLOUD_GAP) return L;
+      if (gap > bestGap) { bestGap = gap; best = L; }
+    }
+    return best;
+  }
+
   // Each frame: every fish's speed eases toward its lane's pace (which breathes a little, the same for the whole
-  // lane), so a lane's cloud swims as one and never changes shape: no fish ever closes on another.
+  // school), so each cloud swims as one and never changes shape: no fish ever closes on another.
   steer(fish, area, dt) {
     this.t += dt;
-    // the lanes sway gently up and down together, so they stay apart
+    // the school sways gently up and down
     const sway = Math.sin(this.t * 0.23) * LANE_SWAY;
     for (const lane of this.lanes) {
       if (lane.base !== undefined) lane.y = lane.base + sway;
