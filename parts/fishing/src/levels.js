@@ -134,7 +134,10 @@ function bunchesFor(level) {
   const order = shuffle([0, 1, 2]); // which lane gets which bunch
   return order.map((b, i) => {
     const [lo, hi] = BUNCH_COUNTS[b], n = 3 + Math.floor(Math.random() * 2); // (its kinds: three or four)
-    return { kinds: pool.slice(i * 4, i * 4 + n), key: pool[i * 4], count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: BUNCH_SIZES[b] + (Math.random() - 0.5) * 0.04 };
+    // (the hook's sea - the warm-up net's - is all small fish, the size of the school that swims into its net, so no
+    // fish there looks giant beside it)
+    const size = level && level.warmup ? BUNCH_SIZES[0] : BUNCH_SIZES[b];
+    return { kinds: pool.slice(i * 4, i * 4 + n), key: pool[i * 4], count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: size + (Math.random() - 0.5) * 0.04 };
   });
 }
 
@@ -187,11 +190,12 @@ const HOOK_NETS = {
     [[-200, 0], [220, 0], [300, -24], [-260, 0]], // (the parallelogram but for corner C, flared out to the right)
   ],
   right: [[-200, 0], [220, 0], [160, 0], [-260, 0]],
-  // each tangle's uneven pull on the corners (px) and its twist (radians)
+  // each tangle's uneven pull on the corners: the order the corners give way in (A 0, B 1, C 2, D 3), how far each is
+  // pulled (px), and the lean (radians) the pulls add up to - a different failure each time
   pulls: [
-    { twist: 0.2, by: [[16, 10], [-12, 26], [-36, -14], [30, -24]] },
-    { twist: -0.24, by: [[24, 18], [10, -12], [-30, -20], [-6, -30]] },
-    { twist: 0.26, by: [[-10, 26], [-26, 8], [-16, -34], [34, -10]] },
+    { order: [2, 1, 3, 0], twist: 0.2, by: [[16, 10], [-12, 26], [-36, -14], [30, -24]] },
+    { order: [0, 3, 1, 2], twist: -0.24, by: [[24, 18], [10, -12], [-30, -20], [-6, -30]] },
+    { order: [3, 2, 0, 1], twist: 0.26, by: [[-10, 26], [-26, 8], [-16, -34], [34, -10]] },
   ],
 };
 // The shape the lesson's first screen draws (its trapezium), in this stage's pixels: the hook's net turns into it as the

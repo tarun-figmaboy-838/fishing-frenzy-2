@@ -843,20 +843,23 @@ async function readyNet(game, token, ms) {
   winch.working = 0;
 }
 
-// The wrong net in the water: its corners pull unevenly (`pull.by`), the frame twists (`pull.twist`) and the mesh
-// tangles; the fish under it dart off.
+// The wrong net in the water: its corners are pulled unevenly - one after another (`pull.order`), each its own way and
+// distance (`pull.by`, and the lean `pull.twist` the uneven pulls add up to) - so the frame loses its shape and the mesh
+// tangles; the net is never turned or shrunk as a whole, and the sling stays on its corners. The fish under it dart off.
 async function tangleNet(game, token, ms, pull) {
   const { net, fx, audio } = game;
   const from = net.points.map((p) => ({ ...p }));
   const c = { x: from.reduce((t, p) => t + p.x, 0) / 4, y: from.reduce((t, p) => t + p.y, 0) / 4 };
+  const lean = (p) => ({ x: c.x + (p.x - c.x) * Math.cos(pull.twist) - (p.y - c.y) * Math.sin(pull.twist), y: c.y + (p.x - c.x) * Math.sin(pull.twist) + (p.y - c.y) * Math.cos(pull.twist) });
+  const to = from.map((p, i) => { const q = lean(p); return { x: q.x + pull.by[i][0], y: q.y + pull.by[i][1] }; });
+  const order = pull.order || [0, 1, 2, 3], LAG = 0.17, SPAN = 1 - LAG * 3;
   audio.play('tangle');
   for (const f of state.fish) if (!f.gone && !f.waiting && !f.caught && net.contains(f)) f.startle();
   let lastPuff = 0;
   await clock.tween(ms, token, (t) => {
-    const k = ease.inOut(t), a = pull.twist * k, sc = 1 - 0.14 * k;
     net.points = from.map((p, i) => {
-      const dx = (p.x - c.x) * sc, dy = (p.y - c.y) * sc;
-      return { x: c.x + dx * Math.cos(a) - dy * Math.sin(a) + pull.by[i][0] * k, y: c.y + dx * Math.sin(a) + dy * Math.cos(a) + pull.by[i][1] * k };
+      const k = fx.reduced ? Math.min(1, t * 2) : ease.inOut(Math.min(1, Math.max(0, (t - order.indexOf(i) * LAG) / SPAN)));
+      return geo.lerp(p, to[i], k);
     });
     net.tangle = fx.reduced ? Math.min(1, t * 2) : 1 - (1 - t) ** 2;
     net.swing = fx.reduced ? 0 : Math.sin(t * 30) * 0.035 * (1 - t);
@@ -866,6 +869,7 @@ async function tangleNet(game, token, ms, pull) {
       fx.puff(p.x, p.y, 0, 2, true);
     }
   });
+  net.points = to;
   net.swing = 0;
 }
 
@@ -904,7 +908,8 @@ async function fishBumpsCorner(game, token, to) {
   const { net, fx, audio } = game;
   const wl = game.waterline, corner = () => net.toStage(net.points[2]), q = fx.reduced;
   const c0 = corner();
-  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], c0.x + 300, wl + 130, -1, 0.72);
+  // (one of the sea's own small fish, the size of the school that follows it into the net)
+  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], c0.x + 300, wl + 130, -1, 0.5);
   game.leapers.push(fish);
   try {
     const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + 80, y: wl + 16 };
