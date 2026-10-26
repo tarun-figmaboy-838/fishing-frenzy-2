@@ -288,7 +288,7 @@ def set_corner(r, n_stop):
 
 def catch_level(r, n, shot, wrong_first=False):
     """Net n (its LEVELS index: 1 is the first parallelogram net, after the warm-up) with real input: the corner onto its
-    place (a drag zooms the view in on the net), Check (the net goes down and the view opens out), then Catch as a bunch
+    place (a drag zooms the view in on the net) - right, the net locks and goes down by itself as the view opens out - then Catch as a bunch
     swims under the net; a catch that comes up empty goes again. wrong_first: a wrong corner first - the net tangles,
     and Try again brings it back."""
     ff = part(r.page, 'fishing')
@@ -310,12 +310,11 @@ def catch_level(r, n, shot, wrong_first=False):
         st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['handle'], 20, 'the net comes back')
         check(st['tangle'] == 0 and not st['ok'] and st['action'] is None, f'{r.tag}: Try again: the net is untangled and comes down in its starting shape')
     set_corner(r, 0)
-    st = until(r.fish, lambda s: s['ok'] and s['action'] == 'check', 5, 'the corner on its place, Check up')
-    check(st['stop'] == 0 and st['zoom'] > 1.4, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and Check comes up')
+    st = until(r.fish, lambda s: s['phase'] != 'puzzleReady' and s['action'] is None, 3, 'the right net locks by itself')
+    check(st['stop'] == 0 and st['ok'], f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and it locks by itself: no Check to press', f"phase {st['phase']}")
     r.shot(f'{shot}a-level-{n + 1}')
-    r.tap_el(ff, '#btn-action')
     st = until(r.fish, lambda s: s['phase'] == 'fishing', 20, 'the right net down in the water')
-    check(st['action'] == 'catch' and st['zoom'] == 1 and not st['handle'], f'{r.tag}: Check: the right net locks, goes down as the view opens out, and Catch comes up')
+    check(st['action'] == 'catch' and st['zoom'] == 1 and not st['handle'], f'{r.tag}: the right net locks by itself, goes down as the view opens out, and Catch comes up')
     st = catch_when_under(r, before, 'the catch')
     check(st['caught'] > before, f'{r.tag}: net {n}: Catch as a bunch swims under the net catches some', f"{st['caught'] - before} fish")
     r.page.wait_for_timeout(900)

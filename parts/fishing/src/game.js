@@ -724,13 +724,21 @@ class Game {
     this.audio.play('tick');
   }
 
-  // Let go, the corner stays exactly where the child put it; Drop Net tells whether it's right.
+  // Let go, the corner stays exactly where the child put it (cornerSet).
   onDragEnd() {
     if (state.phase !== PHASE.DRAGGING) return;
     this.drag = null;
     state.phase = PHASE.PUZZLE_READY;
     state.idleTime = 0;
-    if (this.net.touched) this.ui.setAction('check'); // the corner set: Check is the child's
+    this.cornerSet();
+  }
+
+  // The corner set right, the shape is the answer: the net locks with its praise and goes down by itself (checkNet), no
+  // button to press. Set anywhere else, Check is the child's - a checked wrong net goes down and tangles.
+  cornerSet() {
+    if (!this.net.touched) return;
+    if (this.net.check().ok) checkNet(this);
+    else this.ui.setAction('check');
   }
 
   onNudge(dx, dy) {
@@ -751,7 +759,7 @@ class Game {
     state.idleTime = 0;
     this.net.stepHandle(steps);
     this.tickMeasure();
-    if (this.net.touched) this.ui.setAction('check');
+    this.cornerSet();
   }
 
   // Drop Net, right or wrong: a wrong net goes down all the same (see dropNet).
