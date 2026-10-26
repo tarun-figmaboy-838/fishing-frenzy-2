@@ -2,7 +2,7 @@
 'use strict';
 const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
-const HINT_REPEAT = 7;    // seconds of idling between hints once one has been shown
+const HINT_REPEAT = 7;    // seconds a right net waits in the water before the hand shows where Catch is (once)
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
 const SCHOOL_TOP = 46;    // the school keeps this far below the surface
 const FOCUS = { zoom: 1.7, inMs: 900 }; // the view zooms in on the net this much, this fast, as a net comes down (applyFocus)
@@ -576,6 +576,7 @@ class Game {
     this.ambient = refreshShadows(this.ambient, 4, this.area);
     this.deep = refreshDeep(this.deep, 6, { top: this.swimArea.bottom + 24, bottom: STAGE_H - 26 });
     this.hintShown = false;
+    this.catchHinted = false;
     this.handShown = false;
     return before;
   }
@@ -934,7 +935,7 @@ class Game {
     if (state.phase === PHASE.FISHING) {
       if (this.hint) { if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; } return; }
       state.idleTime += dt;
-      if (state.idleTime > HINT_REPEAT) this.pointAt(this.ui.el.action);
+      if (state.idleTime > HINT_REPEAT && !this.catchHinted) { this.catchHinted = true; this.pointAt(this.ui.el.action); } // (once)
       return;
     }
     // (a right corner with Check up still gets the hand, on Check; a right corner without it needs no hint)
@@ -944,9 +945,10 @@ class Game {
       else if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; }
       return;
     }
+    // one hint a net, after its quiet spell (never again and again)
+    if (this.hintShown) return;
     state.idleTime += dt;
-    const delay = this.hintShown ? HINT_REPEAT : LEVELS[state.level].hintDelay;
-    if (state.idleTime > delay) this.showHint();
+    if (state.idleTime > LEVELS[state.level].hintDelay) this.showHint();
   }
 
   // A quiet spell brings the pointing hand, never the voice again: the instruction is said once, as its net comes
