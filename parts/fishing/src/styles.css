@@ -254,7 +254,10 @@ html, body {
    is the moment's */
 .actions-left { position: absolute; right: 3.2%; bottom: 5%; display: flex; pointer-events: none; } /* (bottom right, as Drop Net) */
 .action-btn .ic { display: none; }
-.action-btn[data-mode="check"] .ic-check, .action-btn[data-mode="catch"] .ic-catch, .action-btn[data-mode="again"] .ic-again { display: block; }
+.action-btn[data-mode="catch"] .ic-catch, .action-btn[data-mode="again"] .ic-again { display: block; }
+/* Check is its word alone (no tick), evenly padded */
+.action-btn[data-mode="check"] .badge { display: none; }
+.action-btn[data-mode="check"] { padding-left: 0.9em; }
 .action-btn[data-mode="catch"] { --pill-line: #2f9617; background: linear-gradient(180deg, #c4f79f 0%, #8fe66a 40%, #5bd13a 74%, #3fb524 100%); box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.18em 0 rgba(20, 110, 10, 0.35), inset 0 0.06em 0 rgba(255, 255, 255, 0.5); color: #0f3a0a; text-shadow: 0 0.04em 0 rgba(230, 255, 215, 0.75); filter: drop-shadow(0 0 0.3em rgba(80, 200, 60, 0.45)) drop-shadow(0 0.18em 0.24em rgba(20, 90, 10, 0.25)); }
 .action-btn[data-mode="catch"] .badge { color: #0f3a0a; }
 .action-btn[data-mode="again"] { --pill-line: #c4552a; background: linear-gradient(180deg, #ffc9a8 0%, #ffa073 40%, #f7764a 74%, #e85a2c 100%); box-shadow: 0 0 0 0.06em var(--pill-line), inset 0 -0.18em 0 rgba(150, 50, 10, 0.38), inset 0 0.06em 0 rgba(255, 255, 255, 0.55); color: #4a1a06; text-shadow: 0 0.04em 0 rgba(255, 230, 215, 0.75); }
