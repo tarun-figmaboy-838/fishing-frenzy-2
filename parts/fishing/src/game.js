@@ -597,10 +597,16 @@ class Game {
     this.delivery = null;
     if (!words.length) return 0;
     const seconds = voice ? this.speak(text) : 0;
-    const times = seconds ? spokenTimes(words, seconds) : readingTimes(words, pace);
-    this.delivery = { times, next: 0, t: 0 };
+    const times = seconds ? this.voicedTimes(words, text, seconds) : readingTimes(words, pace);
+    this.delivery = { times, next: 0, t: 0, src: seconds ? this.audio.voiceSource : null };
     this.updateDelivery(0);
     return Math.max(seconds, times[times.length - 1] + pace);
+  }
+
+  // When each word of a voiced line is said: measured from its recording where the lesson measured it (the nets'
+  // prompts, praise and hints are its clips), else shared out over the recording by the words' lengths.
+  voicedTimes(words, text, seconds) {
+    return this.audio.wordTimes('narrator', text, words) || spokenTimes(words, seconds);
   }
 
   // The prompt read again (the first hint): its words stay on the plate and each gives a little
@@ -613,14 +619,17 @@ class Game {
       return;
     }
     const seconds = this.speak(text);
-    const times = seconds ? spokenTimes(shown.words, seconds) : readingTimes(shown.words, READ_PACE);
-    this.delivery = { times, next: 0, t: 0, bounce: true };
+    const times = seconds ? this.voicedTimes(shown.words, text, seconds) : readingTimes(shown.words, READ_PACE);
+    this.delivery = { times, next: 0, t: 0, bounce: true, src: seconds ? this.audio.voiceSource : null };
   }
 
+  // The words follow the voice's own playhead while it plays (so a slow frame never lets them drift from it), and the
+  // game's clock otherwise.
   updateDelivery(dt) {
     const d = this.delivery;
     if (!d) return;
-    d.t += dt;
+    const heard = this.audio.voiceTime(d.src);
+    d.t = heard >= 0 ? Math.max(d.t, heard) : d.t + dt;
     while (d.next < d.times.length && d.t >= d.times[d.next]) {
       if (d.bounce) this.ui.bounceWord(d.next);
       else this.ui.showWord(d.next);
@@ -988,7 +997,7 @@ class Game {
       this.ui.showLine(line.who, words);
       this.placeSpeech();
       const voiced = this.audio.speak(line.who, line.text);
-      if (voiced) this.paceToVoice(this.dialogue, voiced);
+      if (voiced) { this.paceToVoice(this.dialogue, voiced); this.dialogue.src = this.audio.voiceSource; }
       else if (narrator) this.audio.play('narrate');
     });
   }
@@ -1063,7 +1072,8 @@ class Game {
     }
     if (d.next < d.words.length) {
       if (d.voiced) {
-        d.elapsed += dt;
+        const heard = this.audio.voiceTime(d.src); // (on the voice's own clock while it plays)
+        d.elapsed = heard >= 0 ? Math.max(d.elapsed, heard) : d.elapsed + dt;
         while (d.next < d.words.length && d.elapsed >= d.times[d.next]) this.revealWord(d, true);
       } else {
         d.wait -= dt;

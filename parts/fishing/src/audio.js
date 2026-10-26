@@ -13,6 +13,23 @@ const CHORDS = [
   [196.0, 246.94, 293.66, 392.0],    // G
 ];
 
+// The lesson's measure of one of its clips (../lesson/js/vo_lines.js, loaded before this script): its words as the
+// lesson splits them ("5 cm" and "AB = 7 cm" kept whole, joined by no-break spaces), when each starts in the clip, and
+// where its speech ends; null if it isn't there.
+let lessonIndex = null;
+function lessonLine(url) {
+  const id = (url.match(/(vo\d+)\.ogg/) || [])[1];
+  if (!id || typeof VO_LINES === 'undefined') return null;
+  if (!lessonIndex) {
+    lessonIndex = new Map();
+    for (const [text, v] of Object.entries(VO_LINES)) lessonIndex.set(v[0], { text, times: v[2], end: v[3] });
+  }
+  const e = lessonIndex.get(id);
+  if (!e || !e.times) return null;
+  const words = e.text.replace(/(\d) (cm)\b/g, '$1\u00a0$2').replace(/ ([=+\u2212]) /g, '\u00a0$1\u00a0').split(/[ \t\n]+/).filter(Boolean);
+  return words.length === e.times.length ? { words, times: e.times, end: e.end } : null;
+}
+
 // A line's key in voice-data.js: who it is, and its text without its *stress* marks, in lower case.
 function voiceKey(who, text) {
   return `${who}:${text.replace(/\*/g, '').replace(/…/g, '...').replace(/’/g, "'").split(/\s+/).filter(Boolean).join(' ')}`.toLowerCase();
@@ -59,16 +76,43 @@ class AudioEngine {
   }
 
   // The lesson's clips the nets borrow, fetched once Play is tapped (they are first needed after the lesson), so the
-  // banner loads without them.
+  // banner loads without them. Each brings the lesson's own measure of when every word starts in it
+  // (../lesson/js/vo_lines.js), so the words on the plate come exactly as they are said (wordTimes).
   fetchLaterVoices() {
     const later = this.laterVoices;
     this.laterVoices = [];
     for (const [key, src] of later) {
       const [url, at] = src.split('#');
+      const measured = lessonLine(url);
       fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && this.decodeVoice(bytes))
-        .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration) }); })
+        .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration), measured }); })
         .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
     }
+  }
+
+  // When each of `words` (the plate's words, UI wordsOf) is said, in seconds from the line's start, from the lesson's
+  // measure of its clip: null for a line without one (its words are then shared out by length). The lesson splits a
+  // line a little differently ("AB = 7 cm" is one of its words, four of the plate's), so the plate's words are matched
+  // to the lesson's by their letters, and the parts of one lesson word follow each other through it.
+  wordTimes(who, text, words) {
+    const v = this.voiceBuffers.get(voiceKey(who, text));
+    const m = v && v.measured;
+    if (!m || !words.length) return null;
+    const norm = (t) => t.replace(/\*/g, '').replace(/…/g, '...').replace(/’/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
+    if (norm(words.map((w) => w.text).join(' ')) !== norm(m.words.join(' ').replace(/\u00a0/g, ' '))) return null;
+    const out = [];
+    m.words.forEach((lw, i) => {
+      const parts = lw.split('\u00a0'), start = m.times[i], next = i + 1 < m.times.length ? m.times[i + 1] : m.end || start + 0.4;
+      parts.forEach((_, j) => out.push(Math.max(0, start + ((next - start) * 0.8 * j) / parts.length - v.lead)));
+    });
+    return out.length === words.length ? out : null;
+  }
+
+  // Where the line playing now is, in seconds from its start (on the sound's own clock, so the words never drift from
+  // the voice, however the frames go); -1 once `src` is no longer the voice playing.
+  voiceTime(src) {
+    if (!this.ctx || !src || this.voiceSource !== src) return -1;
+    return this.ctx.currentTime - this.voiceStartAt;
   }
 
   // Plays a recorded line and returns its length in seconds (0 when there is no recording,
@@ -90,6 +134,7 @@ class AudioEngine {
     };
     src.start(now, v.lead);
     this.voiceSource = src;
+    this.voiceStartAt = now;
     return v.buf.duration - v.lead;
   }
 
