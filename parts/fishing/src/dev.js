@@ -58,7 +58,12 @@ const JUMPS = [
     g.ui.showHandle(false);
     g.ui.setDrop('hidden');
     const token = newToken();
-    mystery(g, token).catch(() => {});
+    // ...and on to the first parallelogram net, as the game goes on after it (in the journey: after the lesson)
+    const first = LEVELS.findIndex((l) => !l.warmup);
+    mystery(g, token)
+      .then(() => { state.fish = state.fish.filter((f) => !f.gone && !f.caught); const before = g.prepareLevel(first); g.spawnSchool(); return letNetDown(g, token, before); })
+      .then(() => g.beginPuzzle())
+      .catch(() => {});
   }],
   ['Wave in', () => {
     const g = game();
