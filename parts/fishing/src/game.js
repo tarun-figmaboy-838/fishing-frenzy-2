@@ -320,18 +320,22 @@ class Game {
   }
 
   fitFocus() {
-    const net = this.net, f = this.focus, PAD = 70;
+    // the room round the net for its labels and letters grows with them on a small screen (labelScale)
+    const net = this.net, f = this.focus, PAD = 40 + 30 * net.textScale;
     const pts = [...net.points, net.stop(net.track.min), net.stop(net.track.max), { x: 0, y: 0 }].map((q) => net.toStage(q));
     const x0 = Math.min(...pts.map((q) => q.x)) - PAD, x1 = Math.max(...pts.map((q) => q.x)) + PAD;
     const y0 = Math.min(...pts.map((q) => q.y)) - PAD, y1 = Math.max(...pts.map((q) => q.y)) + PAD;
-    const z = Math.max(1.05, Math.min(FOCUS.zoom, STAGE_W / (x1 - x0), STAGE_H / (y1 - y0)));
-    const place = (lo, hi, size) => { // the origin that keeps [lo, hi] on screen at zoom z: between its two bounds, nearest its middle
+    // the zoomed net keeps below the HUD's top row (the plate, the counter, sound and pause), which is bigger on a
+    // small screen (its type never shrinks below a readable size), so nothing on the net goes under the plate
+    const em = parseFloat(getComputedStyle(this.stage.root).fontSize) / this.stage.scale || 10, top = Math.min(STAGE_H * 0.3, 9.4 * em);
+    const z = Math.max(1.05, Math.min(FOCUS.zoom, STAGE_W / (x1 - x0), (STAGE_H - top) / (y1 - y0)));
+    const place = (lo, hi, from, to) => { // the origin that keeps [lo, hi] inside [from, to] at zoom z: between its two bounds, nearest its middle
       const c = (lo + hi) / 2;
-      const min = (hi * z - size) / (z - 1), max = (lo * z) / (z - 1);
+      const min = (hi * z - to) / (z - 1), max = (lo * z - from) / (z - 1);
       return min > max ? c : Math.max(min, Math.min(max, c));
     };
-    f.ox = place(x0, x1, STAGE_W);
-    f.oy = place(y0, y1, STAGE_H);
+    f.ox = place(x0, x1, 0, STAGE_W);
+    f.oy = place(y0, y1, top, STAGE_H);
     f.zoom = z;
     f.ms = FOCUS.inMs;
   }

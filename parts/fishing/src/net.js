@@ -849,16 +849,50 @@ class Net {
     this.measure(ctx, c);
     const labels = this.labelQueue;
     this.labelQueue = null;
-    this.placeLabels(labels);
+    this.placeLabels(labels, this.labelObstacles(c));
     for (const l of labels) this.text(ctx, l.string, l.x, l.y, l.px, l.colour, l.live);
   }
 
+  // What the labels must keep clear of, as boxes on the stage (x0, y0, x1, y1) with the way a label may be pushed off
+  // ('x' slides it along, 'y' moves it up or down, else either): the lifting ring and its shackle (a label slides off it
+  // sideways, along its side), the weights hanging under the bottom rope, the corner letters and the knob with its two
+  // slide arrows.
+  labelObstacles(c) {
+    const k = this.textScale, r = this.ring(), out = [];
+    out.push({ x0: r.x - 18, y0: r.y - 10, x1: r.x + 18, y1: r.y + RING_KNOT + 10, axis: 'x' });
+    const h = distance(midpoint(c[0], c[1]), midpoint(c[3], c[2])), hang = Math.max(22, h * 0.13);
+    const [d, cc] = [c[3], c[2]], steps = 8;
+    for (let i = 0; i < steps; i += 1) {
+      const p = lerp(d, cc, (i + 0.5) / steps), half = distance(d, cc) / steps / 2 + 2;
+      out.push({ x0: p.x - half, y0: p.y - 4, x1: p.x + half, y1: p.y + hang, axis: 'y' });
+    }
+    this.letterPoints(c).forEach((p) => out.push({ x0: p.x - 13 * k, y0: p.y - 15 * k, x1: p.x + 13 * k, y1: p.y + 15 * k }));
+    if (!this.locked && !this.furl) {
+      const q = c[this.movable], reach = (ARROW_REACH + 24) * k;
+      out.push({ x0: q.x - reach, y0: q.y - 26 * k, x1: q.x + reach, y1: q.y + 26 * k });
+    }
+    return out;
+  }
+
   // Nudges overlapping labels apart, each pair along the way they overlap least, a few rounds.
-  placeLabels(labels) {
+  placeLabels(labels, obstacles = []) {
     const k = this.textScale;
     const half = (l) => ({ w: (l.string.length * l.px * 0.55 * k) / 2 + 4, h: (l.px * 1.15 * k) / 2 });
     for (let round = 0; round < 16; round += 1) {
       let moved = false;
+      // first off whatever they must keep clear of (only the label moves), then apart from each other
+      for (const l of labels) {
+        const hl = half(l);
+        for (const o of obstacles) {
+          const ox = Math.min(l.x + hl.w, o.x1) - Math.max(l.x - hl.w, o.x0);
+          const oy = Math.min(l.y + hl.h, o.y1) - Math.max(l.y - hl.h, o.y0);
+          if (ox <= 0 || oy <= 0) continue;
+          moved = true;
+          const cx = (o.x0 + o.x1) / 2, cy = (o.y0 + o.y1) / 2;
+          if (o.axis === 'x' || (o.axis !== 'y' && ox < oy)) l.x += (ox + 1) * (l.x >= cx ? 1 : -1);
+          else l.y += (oy + 1) * (l.y >= cy ? 1 : -1);
+        }
+      }
       for (let i = 0; i < labels.length; i += 1) {
         for (let j = i + 1; j < labels.length; j += 1) {
           const a = labels[i];
@@ -1140,15 +1174,12 @@ class Net {
 
   // The corner letters, as the lesson writes them: bold navy on a white halo, just outside each corner (the top ones
   // out toward the sky, the bottom ones below their weights; the knob's across its track, off the arrows' way).
-  drawLabels(ctx, c) {
+  // Where each corner letter sits (stage points): just outside its corner, the top ones out toward the sky, the bottom
+  // ones below their weights, the knob's across its track, off the arrows' way.
+  letterPoints(c) {
     const centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
     const k = this.textScale;
-    ctx.save();
-    ctx.font = FONT(26 * k);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineJoin = 'round';
-    c.forEach((p, i) => {
+    return c.map((p, i) => {
       const out = normalize(sub(p, centre));
       let dir = normalize({ x: out.x * 0.45, y: i >= 2 ? 1 : -1 }), gap = 30 * k;
       if (i === this.movable && !this.locked && this.along) { // across the track, away from the net
@@ -1156,7 +1187,20 @@ class Net {
         dir = side.x * out.x + side.y * out.y >= 0 ? side : { x: -side.x, y: -side.y };
         gap = 50 * k;
       }
-      const at = add(p, times(dir, gap));
+      return add(p, times(dir, gap));
+    });
+  }
+
+  drawLabels(ctx, c) {
+    const k = this.textScale;
+    const points = this.letterPoints(c);
+    ctx.save();
+    ctx.font = FONT(26 * k);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    c.forEach((p, i) => {
+      const at = points[i];
       ctx.lineWidth = 6 * k;
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
       ctx.strokeText(CORNERS[i], at.x, at.y + k);
