@@ -3,14 +3,16 @@
 A voiced maths adventure about parallelograms: part 2 of Fishing Frenzy, played the way part 1 is, as one journey:
 
 1. **The front page** is Popo's live "Fishing Frenzy 2" banner (`parts/fishing`): Popo on his raft, the logo, Play.
-2. **The warm-up** (`parts/fishing`): Popo fishes with his net on the winch; the child just taps Drop Net as fish swim
-   under it, three catches, Popo cheering each. Then the problem: a giant fish grabs the net and pulls it out of square
-   before it breaks free ("Whoa! A giant fish!", "Come on, big fish!", "Huh?! I haven't seen that one before!");
-   Swiftee swoops in with "Let's find out!" and Next, and the giant wave carries Popo away.
+2. **The hook** (`parts/fishing`, `STORY.hook`): a short scripted story with nothing to press. Popo's nets tangle in
+   the water, three shapes in a row; a leaping fish knocks the last one's corner over and it becomes a parallelogram,
+   which stays open; a school swims into it and Popo hauls up the catch. Swiftee names the shape, Popo wonders what it
+   is, and on "Let's find out!" the scene dims, the net's four edges are traced, its mesh fades and its outline glides
+   into the lesson's first shape as the camera dives under the water.
 3. **Swiftee's parallelogram lesson** (`parts/lesson`), played over the game's own lake, as in part 1: the game goes on
-   drawing its water and fish under the lesson's see-through frame, and the lesson's camera glides the game's view down
-   to the sand, where a seashell opens, its pearl blows up the
-   lesson's card and Swiftee, in her diving mask, dives in. 59 screens: from a trapezium to a parallelogram, its sides,
+   drawing its water and fish under the lesson's see-through frame. After the hook the lesson dissolves in over the
+   net's outline and starts on that shape at once; opened first (`?start=lesson`), its camera glides the game's view
+   down to the sand, where a seashell opens, its pearl blows up the lesson's card and Swiftee, in her diving mask,
+   dives in. 59 screens: from a trapezium to a parallelogram, its sides,
    angles and diagonals, three checkpoints and a recall. Each screen moves on by itself once its voice is done; a
    screen that asks for something waits for it.
 4. **Popo's parallelogram nets** (`parts/fishing`): the wave brings Popo back, Swiftee welcomes him ("Great job!"), and
