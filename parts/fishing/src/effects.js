@@ -233,7 +233,9 @@ class Effects {
       gradient.addColorStop(0, `rgba(125, 210, 235, ${0.025 + Math.sin(phase * 0.83) * 0.008})`);
       gradient.addColorStop(1, 'rgba(125, 210, 235, 0)');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, this.waterline, STAGE_W, STAGE_H - this.waterline);
+      // only its own circle (clear beyond it), not the whole sea three times over: the same light, a fraction of the fill
+      const top = Math.max(this.waterline, y - 470);
+      ctx.fillRect(Math.max(0, x - 470), top, Math.min(STAGE_W, x + 470) - Math.max(0, x - 470), Math.min(STAGE_H, y + 470) - top);
       // Broad, very faint pools on the painted sand, without tiled white patterns.
       ctx.save();
       ctx.translate(x, SEABED_Y + 48);

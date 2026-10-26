@@ -119,6 +119,9 @@ class Fish {
 
   draw(ctx) {
     if (this.gone || this.waiting) return;
+    // a fish round the loop past the sea's ends is out of sight: nothing to draw (its glow, flip and hop included)
+    const reach = Math.max(this.w, this.h) * this.scale * 0.75 + 40;
+    if (this.x + reach < 0 || this.x - reach > STAGE_W) return;
     const bob = this.frozen && this.subtleWiggle ? 0 : Math.sin(this.bobPhase) * 2;
     let rot = 0;
     if (this.wiggleT >= 0) {

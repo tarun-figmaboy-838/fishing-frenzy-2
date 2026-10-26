@@ -20,6 +20,7 @@ class Stage {
     this.curtainCtx = this.curtain.getContext('2d');
     this.scale = 1;
     this.dpr = 1;
+    this.dprCap = 2; // the most canvas pixels per screen pixel (Game.watchFrameRate lowers it on a slow device)
     this.portrait = false;
     this.resize();
   }
@@ -34,7 +35,7 @@ class Stage {
     const w = Math.round(STAGE_W * scale);
     const h = Math.round(STAGE_H * scale);
     this.scale = scale;
-    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.dpr = Math.min(this.dprCap, window.devicePixelRatio || 1);
     this.root.style.width = `${w}px`;
     this.root.style.height = `${h}px`;
     this.root.style.setProperty('--scale', scale);

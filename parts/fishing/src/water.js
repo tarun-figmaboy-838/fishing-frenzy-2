@@ -49,6 +49,7 @@ uniform float uShift;
 uniform vec4 uHump;
 uniform float uLean;
 uniform vec4 uPlants[8];
+uniform vec2 uPlantBand; // (the rows the weed can bend in: from above its highest tip to its lowest root)
 uniform sampler2D uMaskFrom;
 uniform sampler2D uMaskTo;
 
@@ -64,24 +65,32 @@ float hump(float x) {
 vec2 displace(vec2 p, float open, float water) {
   float t = uTime;
   vec2 d = vec2(0.0);
+  // Each part is worked out only where it moves anything (the sky has no refraction, the sea no surface waves, the
+  // water above the weed no weed), so the pass costs a phone or tablet far less; the picture is the same.
   // rolling waves across the painted surface band
   float s = open * uSurface * smoothstep(water - 75.0, water - 25.0, p.y) * (1.0 - smoothstep(water + 8.0, water + 40.0, p.y));
-  d.y += s * (${WAVE_GLSL});
-  d.x += s * (4.5 * sin(t * 0.33) + 1.8 * sin(p.x * 0.02 - t * 0.7));
+  if (s > 0.0) {
+    d.y += s * (${WAVE_GLSL});
+    d.x += s * (4.5 * sin(t * 0.33) + 1.8 * sin(p.x * 0.02 - t * 0.7));
+  }
   // refraction below the surface, stronger with depth
-  float u = smoothstep(uWater + 6.0, uWater + 150.0, p.y);
-  float depth = clamp((p.y - uWater) / (uStage.y - uWater), 0.0, 1.0);
-  d.x += u * (2.4 + 3.4 * depth) * (0.6 * sin(p.y * 0.045 + t * 0.8) + 0.4 * sin(p.x * 0.012 + p.y * 0.03 - t * 0.55));
-  d.y += u * (1.2 + 2.0 * depth) * sin(p.x * 0.02 + p.y * 0.01 + t * 0.7);
+  if (p.y > uWater + 6.0) {
+    float u = smoothstep(uWater + 6.0, uWater + 150.0, p.y);
+    float depth = clamp((p.y - uWater) / (uStage.y - uWater), 0.0, 1.0);
+    d.x += u * (2.4 + 3.4 * depth) * (0.6 * sin(p.y * 0.045 + t * 0.8) + 0.4 * sin(p.x * 0.012 + p.y * 0.03 - t * 0.55));
+    d.y += u * (1.2 + 2.0 * depth) * sin(p.x * 0.02 + p.y * 0.01 + t * 0.7);
+  }
   // seaweed bends above its roots; rocks and sand around it stay put
-  for (int i = 0; i < 8; i++) {
-    vec4 pl = uPlants[i];
-    if (pl.y <= pl.x) continue;
-    float inside = smoothstep(pl.x - 6.0, pl.x + 10.0, p.x) * (1.0 - smoothstep(pl.y - 10.0, pl.y + 6.0, p.x));
-    // bends grow toward the plant's tip and stop just above it, so the water and sky above stay put
-    float h = clamp((pl.w - p.y) / max(1.0, pl.w - pl.z), 0.0, 1.0) * smoothstep(pl.z - 36.0, pl.z, p.y);
-    float bend = h * h * (7.0 * sin(t * 0.9 + pl.x * 0.013) + 2.6 * sin(t * 1.7 + p.y * 0.05 + pl.x));
-    d.x += inside * bend;
+  if (p.y > uPlantBand.x && p.y < uPlantBand.y) {
+    for (int i = 0; i < 8; i++) {
+      vec4 pl = uPlants[i];
+      if (pl.y <= pl.x) continue;
+      float inside = smoothstep(pl.x - 6.0, pl.x + 10.0, p.x) * (1.0 - smoothstep(pl.y - 10.0, pl.y + 6.0, p.x));
+      // bends grow toward the plant's tip and stop just above it, so the water and sky above stay put
+      float h = clamp((pl.w - p.y) / max(1.0, pl.w - pl.z), 0.0, 1.0) * smoothstep(pl.z - 36.0, pl.z, p.y);
+      float bend = h * h * (7.0 * sin(t * 0.9 + pl.x * 0.013) + 2.6 * sin(t * 1.7 + p.y * 0.05 + pl.x));
+      d.x += inside * bend;
+    }
   }
   return d * uAmp;
 }
@@ -107,10 +116,14 @@ void main() {
   float pan = uStage.x - ${OVERLAP.toFixed(1)};
   float oxFrom = -uMix * pan;
   float oxTo = oxFrom + pan;
-  float open = openWater(uMaskFrom, p - vec2(oxFrom, 0.0));
-  if (uMix > 0.0) open = mix(open, openWater(uMaskTo, p - vec2(oxTo, 0.0)), smoothstep(oxTo, oxTo + ${OVERLAP.toFixed(1)}, p.x));
   float hp = hump(p.x);
   float water = uWater - hp; // the surface here, lifted by the giant wave
+  // the open-water mask only matters where the surface moves (its waves and glints), so it is read only there
+  float open = 0.0;
+  if (p.y > water - 80.0 && p.y < uWater + 45.0) {
+    open = openWater(uMaskFrom, p - vec2(oxFrom, 0.0));
+    if (uMix > 0.0) open = mix(open, openWater(uMaskTo, p - vec2(oxTo, 0.0)), smoothstep(oxTo, oxTo + ${OVERLAP.toFixed(1)}, p.x));
+  }
   vec2 q = p + displace(p, open, water);
   float inWave = 0.0;
   if (hp > 0.5 && p.y >= water && p.y < uWater + 260.0) {
@@ -135,20 +148,25 @@ void main() {
   // light: a caustic net on the sand (faint through the water), soft shafts from the surface,
   // a slow shimmer, and glints on the wave crests
   float t = uTime;
-  float under = smoothstep(uWater + 6.0, uWater + 150.0, p.y);
-  float depth = clamp((p.y - uWater) / (uStage.y - uWater), 0.0, 1.0);
-  vec2 cp = p * 0.016;
-  float n = sin(cp.x * 1.3 + t * 0.7 + sin(cp.y * 1.7 + t * 0.5) * 1.6) + sin(cp.y * 2.1 - t * 0.6 + sin(cp.x * 1.1 - t * 0.4) * 1.6);
-  float net = pow(max(0.0, 1.0 - abs(n) * 0.75), 5.0);
-  float sand = smoothstep(uSeabed - 25.0, uSeabed + 35.0, p.y);
-  float caustic = net * (sand * 0.24 + under * (1.0 - sand) * 0.05);
-  float rays = pow(max(0.0, sin(p.x * 0.010 + p.y * 0.0040 - t * 0.22)), 12.0)
-    + 0.7 * pow(max(0.0, sin(p.x * 0.0063 - p.y * 0.0026 + t * 0.17 + 1.7)), 14.0);
-  rays *= under * (1.0 - depth * 0.85) * 0.10;
-  float shimmer = under * 0.03 * sin(p.x * 0.006 + t * 0.4 + p.y * 0.004);
+  float caustic = 0.0, rays = 0.0, shimmer = 0.0, sparkle = 0.0;
+  if (p.y > uWater + 6.0) { // (all of it is under the surface: nothing to work out in the sky)
+    float under = smoothstep(uWater + 6.0, uWater + 150.0, p.y);
+    float depth = clamp((p.y - uWater) / (uStage.y - uWater), 0.0, 1.0);
+    vec2 cp = p * 0.016;
+    float n = sin(cp.x * 1.3 + t * 0.7 + sin(cp.y * 1.7 + t * 0.5) * 1.6) + sin(cp.y * 2.1 - t * 0.6 + sin(cp.x * 1.1 - t * 0.4) * 1.6);
+    float net = pow(max(0.0, 1.0 - abs(n) * 0.75), 5.0);
+    float sand = smoothstep(uSeabed - 25.0, uSeabed + 35.0, p.y);
+    caustic = net * (sand * 0.24 + under * (1.0 - sand) * 0.05);
+    rays = pow(max(0.0, sin(p.x * 0.010 + p.y * 0.0040 - t * 0.22)), 12.0)
+      + 0.7 * pow(max(0.0, sin(p.x * 0.0063 - p.y * 0.0026 + t * 0.17 + 1.7)), 14.0);
+    rays *= under * (1.0 - depth * 0.85) * 0.10;
+    shimmer = under * 0.03 * sin(p.x * 0.006 + t * 0.4 + p.y * 0.004);
+  }
   float ss = uSurface * smoothstep(uWater - 60.0, uWater - 20.0, p.y) * (1.0 - smoothstep(uWater + 4.0, uWater + 30.0, p.y));
-  float glint = max(0.0, sin(p.x * 0.013 + t * 1.25)) * max(0.0, sin(p.x * 0.051 + t * 2.0));
-  float sparkle = open * ss * 0.22 * glint * glint;
+  if (ss > 0.0) {
+    float glint = max(0.0, sin(p.x * 0.013 + t * 1.25)) * max(0.0, sin(p.x * 0.051 + t * 2.0));
+    sparkle = open * ss * 0.22 * glint * glint;
+  }
   // the giant wave: glassy and sunlit at the crest, deeper below, with foam tumbling along the crest and streaming
   // down the face, and a bright edge along its lifted surface
   if (inWave > 0.5) {
@@ -194,7 +212,7 @@ class WaterScene {
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
-    for (const name of ['uFrom', 'uTo', 'uStage', 'uTime', 'uWater', 'uSeabed', 'uMix', 'uAmp', 'uSurface', 'uShift', 'uHump', 'uLean', 'uPlants', 'uMaskFrom', 'uMaskTo']) {
+    for (const name of ['uFrom', 'uTo', 'uStage', 'uTime', 'uWater', 'uSeabed', 'uMix', 'uAmp', 'uSurface', 'uShift', 'uHump', 'uLean', 'uPlants', 'uPlantBand', 'uMaskFrom', 'uMaskTo']) {
       this.u[name] = gl.getUniformLocation(this.program, name);
     }
     gl.uniform1i(this.u.uFrom, 0);
@@ -254,8 +272,8 @@ class WaterScene {
       this.canvas.height = height;
       if (this.ok) this.gl.viewport(0, 0, width, height);
     }
-    this.canvas.style.width = cssWidth;
-    this.canvas.style.height = cssHeight;
+    if (this.canvas.style.width !== cssWidth) this.canvas.style.width = cssWidth; // (called every frame: no style write unless it changed)
+    if (this.canvas.style.height !== cssHeight) this.canvas.style.height = cssHeight;
   }
 
   show(visible) {
@@ -304,8 +322,11 @@ class WaterScene {
     gl.uniform4f(this.u.uHump, hm.x, hm.h, hm.back, hm.front);
     gl.uniform1f(this.u.uLean, hm.lean);
     const data = new Float32Array(32);
-    plants.slice(0, 8).forEach((p, i) => data.set([p.left, p.right, p.top, p.root], i * 4));
+    const used = plants.slice(0, 8);
+    used.forEach((p, i) => data.set([p.left, p.right, p.top, p.root], i * 4));
     gl.uniform4fv(this.u.uPlants, data);
+    // (36: the bend eases in that far above a tip, as the shader's smoothstep does)
+    gl.uniform2f(this.u.uPlantBand, used.length ? Math.min(...used.map((p) => p.top)) - 40 : 0, used.length ? Math.max(...used.map((p) => p.root)) + 1 : 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     return true;
   }

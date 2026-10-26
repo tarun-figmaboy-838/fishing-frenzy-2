@@ -712,7 +712,11 @@ class Net {
         g.closePath();
         g.clip();
         g.transform(A, B, C, D, d0.x - A * s0.x - C * s0.y, d0.y - B * s0.x - D * s0.y);
-        g.drawImage(img, 0, 0);
+        // only the part of the picture under this triangle (with a pixel to spare), not the whole picture clipped: the
+        // same mesh, much less to draw each time the shape changes (a drag, the bag closing, a tangle)
+        const sx0 = Math.max(0, Math.floor(Math.min(s0.x, s1.x, s2.x)) - 2), sy0 = Math.max(0, Math.floor(Math.min(s0.y, s1.y, s2.y)) - 2);
+        const sx1 = Math.min(img.width, Math.ceil(Math.max(s0.x, s1.x, s2.x)) + 2), sy1 = Math.min(img.height, Math.ceil(Math.max(s0.y, s1.y, s2.y)) + 2);
+        if (sx1 > sx0 && sy1 > sy0) g.drawImage(img, sx0, sy0, sx1 - sx0, sy1 - sy0, sx0, sy0, sx1 - sx0, sy1 - sy0);
         g.restore();
       };
       for (let y = 0; y < rows; y += 1) {

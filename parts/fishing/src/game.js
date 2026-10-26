@@ -145,6 +145,8 @@ class Game {
     this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
     this.camera = { zoom: 1, pan: 1 }; // the lesson's camera over this lake (setCamera)
+    this.cameraAt = 0;        // when it last moved (performance.now)
+    this.backdropOn = false;  // the lesson is over this lake (backdrop): drawn every other frame while its camera holds
     ui.setScale(stage.scale);
     this.applyLocation();
     this.title = new TitleScreen(this); // the banner's logo and Play button (src/title.js)
@@ -285,6 +287,7 @@ class Game {
   // its water and fish under the lesson's card, silent, its buttons away and Popo off with the giant wave (he is
   // already, after the warm-up; with ?start=lesson or a dev jump he goes now), and the lesson's camera moves its view.
   backdrop() {
+    this.backdropOn = true;
     this.audio.hold(true);
     this.ui.el.hud.hidden = true;
     this.ui.showHandle(false);
@@ -300,6 +303,7 @@ class Game {
   // The lesson's camera: its glide down from this view to the sand (pan 1 -> 0: the painting drawn up to SCENE_SHIFT
   // higher, so its sea floor shows) and its dive after the card (zoom, about the bottom middle of the stage).
   setCamera({ zoom = 1, pan = 1 } = {}) {
+    if (zoom !== this.camera.zoom || pan !== this.camera.pan) this.cameraAt = performance.now();
     this.camera = { zoom, pan };
     const k = this.stage.scale, scene = this.ui.el.scene.style;
     if (zoom === 1) { scene.transform = ''; return; }
@@ -382,6 +386,8 @@ class Game {
     f.z = z;
     if (this.camera.zoom !== 1) return; // (the lesson's camera has the view)
     const s = this.stage.scale, origin = `${(f.ox * s).toFixed(1)}px ${(f.oy * s).toFixed(1)}px`, tf = z === 1 ? '' : `scale(${z.toFixed(4)})`;
+    if (f.applied === origin + tf) return; // (held still: nothing to write)
+    f.applied = origin + tf;
     for (const el of [this.ui.el.scene, this.ui.el.hits]) {
       el.style.transformOrigin = origin;
       el.style.transform = tf;
@@ -394,6 +400,7 @@ class Game {
 
   // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
   wake() {
+    this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.setCamera({ zoom: 1, pan: 1 }); // (the lesson's camera may have left the view down in the water)
     this.ui.el.hud.hidden = false;
     this.popo.travelShift = 0;
@@ -405,6 +412,7 @@ class Game {
   // (?start=lesson, args.afterLesson: the wave brings Popo back and the parallelogram nets begin). args.lesson: the
   // lesson follows the warm-up.
   story(args) {
+    this.backdropOn = false; // (the lake is the game again: drawn every frame)
     const held = this.holding;
     this.holding = false;
     this.lessonAfter = !!(args && args.lesson);
@@ -451,6 +459,7 @@ class Game {
 
   // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
   goOn() {
+    this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.setCamera({ zoom: 1, pan: 1 });
     this.ui.el.hud.hidden = false;
     this.audio.hold(false);
@@ -463,6 +472,7 @@ class Game {
   // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
   // closes and opens again on the banner.
   backToTitle() {
+    this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.holding = false;
     this.lessonAfter = false;
     this.afterLesson = false;
@@ -856,13 +866,21 @@ class Game {
     this.water.resize(Math.round(c.width * k), Math.round(c.height * k), c.style.width, c.style.height);
   }
 
+  // A device that can't keep up steps down, one step each time frames have run slow (under about 38 a second) for a
+  // couple of seconds, for good: the water pass at 60% of its size, then the drawing at no more than 1.5 and then 1
+  // pixel per screen pixel (a phone or tablet's 2-3 doubled the pixels drawn every frame), then the water at 42%. The
+  // scene stays the same, a little softer; the game stays smooth.
   watchFrameRate(dt) {
     this.frameAvg = this.frameAvg * 0.97 + dt * 0.03;
     this.slowFor = this.frameAvg > 0.026 ? this.slowFor + dt : 0;
-    if (this.slowFor > 2 && this.waterQuality > 0.6) {
-      this.waterQuality = 0.6;
-      this.slowFor = 0;
-    }
+    if (this.slowFor <= 2.5) return;
+    this.slowFor = 0;
+    this.frameAvg = 1 / 60; // (measured afresh after each step)
+    const stage = this.stage, dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (this.waterQuality > 0.6) this.waterQuality = 0.6;
+    else if (stage.dprCap > 1.5 && dpr > 1.5) { stage.dprCap = 1.5; this.resize(); }
+    else if (stage.dprCap > 1 && dpr > 1) { stage.dprCap = 1; this.resize(); }
+    else if (this.waterQuality > 0.42) this.waterQuality = 0.42;
   }
 
   // --- hints ------------------------------------------------------------------
@@ -974,7 +992,10 @@ class Game {
     this.lastFrame = now;
     try {
       if (!state.paused && !document.hidden) this.update(dt);
-      this.draw();
+      // under the lesson (backdrop) the lake is only its surroundings: it is drawn every other frame while the lesson's
+      // camera holds still, leaving the device's time to the lesson (its camera's glides are drawn every frame)
+      const still = this.backdropOn && now - this.cameraAt > 400;
+      if (!still || (this.drawSkip = !this.drawSkip)) this.draw();
     } finally {
       requestAnimationFrame((t) => this.loop(t, id));
     }
@@ -1197,7 +1218,7 @@ class Game {
       const c = document.createElement('canvas');
       c.width = 400;
       c.height = 16;
-      const cx = c.getContext('2d');
+      const cx = c.getContext('2d', { willReadFrequently: true }); // (read back once: no stall of the GPU for it)
       cx.drawImage(img, 500, this.waterline - SCENE_SHIFT + 8, 800, 32, 0, 0, 400, 16);
       const d = cx.getImageData(0, 0, 400, 16).data;
       const sum = [0, 0, 0];
