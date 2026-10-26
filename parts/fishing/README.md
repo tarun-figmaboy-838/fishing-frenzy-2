@@ -173,9 +173,15 @@ The game is deployed as part of the journey: the repository's root is the static
   last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and a trail of two
   yellow chevrons tight against the knob on each open side runs the way it can still slide, as a game shows a swipe
   (a tap on a trail moves it a stop; the track itself isn't drawn; the trails reach out with the readings on a small
-  screen, so their tap targets never overlap the knob). The labels are laid out together so none covers another, and
-  each keeps clear of the lifting ring, the weights, the corner letters and the knob (`Net.labelObstacles`); the zoom
-  keeps the net below the HUD's top row. The answer lies further from the start level by level (5 to 9
+  screen, so their tap targets never overlap the knob). The labels are laid out together so none covers another
+  (`Net.placeLabels`): each starts clear of its own line by its own measured size (a side's length square off its
+  side, an angle's value past its arc, a half's beside its diagonal), keeps clear of the lifting ring, the weights,
+  the corner letters, the knob and its arrows, the crane, the raft and Popo (`Net.labelObstacles`), never sits across
+  a drawn line - the frame's sides, the sling's legs, the lifting rope, the diagonals (`Net.labelLines`) - and stays
+  inside what the view shows. One that can't be freed by nudging takes the nearest free spot (just inside its side,
+  the next triangle, a size smaller), and O stays by the crossing. The layout is kept until the net's shape, its words
+  or the view change, and the words are drawn last, over the whole scene (`Net.drawWords`), never dimmed under the
+  water. The zoom keeps the net below the HUD's top row. The answer lies further from the start level by level (5 to 9
   stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
   it is plainly the thing to look at.
 - **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, up to 1.7x, as
@@ -225,7 +231,7 @@ The game is deployed as part of the journey: the repository's root is the static
   Fredoka has no angle sign. Popo's own lines are its cream speech bubble with dark ink and an orange key
   word, growing word by word with its line breaks pinned. Sound and pause are its round orange
   icon buttons. The buttons are pills in the lesson's Next look (orange, a cream rim, dark lettering, the icon inline):
-  Drop Net (the warm-up's; the hook needs no button) and the nets' one action, both bottom right - Check (orange), Catch (sea green), Try again
+  Drop Net (the warm-up's; the hook needs no button) and the nets' one action, both bottom right - Check (orange, its word alone), Catch (sea green), Try again
   (coral). Drop Net, as it was: a sunny face
   with dark-brown outline, label (about 10:1 contrast) and a lip it presses down onto, the net
   icon in a badge; it pops in and a shine sweeps it now and then.

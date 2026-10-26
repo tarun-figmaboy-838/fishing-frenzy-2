@@ -342,6 +342,7 @@ class Game {
     // the zoomed net keeps below the HUD's top row (the plate, the counter, sound and pause), which is bigger on a
     // small screen (its type never shrinks below a readable size), so nothing on the net goes under the plate
     const em = parseFloat(getComputedStyle(this.stage.root).fontSize) / this.stage.scale || 10, top = Math.min(STAGE_H * 0.3, 9.4 * em);
+    this.hudTop = top; // (the net's labels keep below it too: Game.draw)
     // (fitted once, as the net comes down, while the raft bobs a few pixels on the waves: 3% to spare for that)
     const z = Math.max(1.05, Math.min(FOCUS.zoom, (0.97 * STAGE_W) / (x1 - x0), (0.97 * (STAGE_H - top)) / (y1 - y0)));
     // the origin that keeps [lo, hi] inside [from, to] at zoom z: between its two bounds, nearest its middle; where it
@@ -1059,6 +1060,8 @@ class Game {
     d.hold = (seconds - d.times[d.times.length - 1]) * 1000 + (d.tail != null ? d.tail : Math.max(1200, d.words.length * 170));
   }
 
+  // The speaker's bubble sits by their head where the view shows it: through the zoom on the net, which Popo stays in
+  // (fitFocus), as the bubble itself is not zoomed.
   placeSpeech() {
   // The speaker's bubble sits by their head where the view shows it: through the zoom on the net, which Popo stays in
   // (fitFocus), as the bubble itself is not zoomed.
@@ -1093,8 +1096,8 @@ class Game {
     return room >= 7 * em ? Math.min(room, 15 * em) : 0;
   }
 
-  // The crane on the raft, on the stage (it rides the waves with the raft): its mast, or its whole height (from the top
-  // of its arch to the deck) for the zoom to keep below the HUD.
+  // The crane on the raft, on the stage (it rides the waves with the raft): its mast, its base (the drum and its foot),
+  // or its boom across the top (`top`, for the zoom to keep below the HUD).
   craneBox(part) {
     const { popo, winch } = this;
     const pts = winch.box(part).map(([x, y]) => popo.transformPoint(x, y));
@@ -1520,6 +1523,13 @@ class Game {
     this.drawFocusDim(ctx); // (zoomed in on the net: the scene so far goes dark, what follows stays lit)
     // the net hangs over the fish; its lifting rope comes down from the boom's end pulley
     const { popo, winch } = this;
+    // (the net's labels keep off the crane and off Popo too, Net.labelObstacles, and inside what the view shows: below
+    // the HUD's top row, through the zoom on the net once it is in, or going in)
+    this.net.sceneBoxes = ['mast', 'top', 'base'].map((part) => this.craneBox(part)).concat([popo.box(), popo.raftBox()]);
+    const f = this.focus, z = f.want === 1 && f.zoom ? f.zoom : 1, top = this.hudTop || 0, inset = 8;
+    this.net.viewBox = z === 1
+      ? { x0: inset, y0: top + inset, x1: STAGE_W - inset, y1: STAGE_H - inset }
+      : { x0: f.ox - f.ox / z + inset, y0: f.oy + (top - f.oy) / z + inset, x1: f.ox + (STAGE_W - f.ox) / z - inset, y1: f.oy + (STAGE_H - f.oy) / z - inset };
     this.net.draw(ctx, { waterline: this.waterline, pulley: { hub: popo.transformPoint(winch.hub.x, winch.hub.y), exit: popo.transformPoint(winch.exit.x, winch.exit.y) } });
     // the raft, the machine on it and Popo at its wheel ride the waves as one; Popo is drawn
     // after the machine so his wheel's shaft meets the axle (rowing, he paddles behind it)
@@ -1551,6 +1561,7 @@ class Game {
     if (this.swiftee) this.swiftee.draw(ctx);
     this.drawPoof(ctx);
     this.fx.drawFront(ctx);
+    this.net.drawWords(ctx); // (the net's measures and letters over all of it: nothing in the scene ever covers them)
     this.drawConfetti(ctx);
     this.drawFliers(ctx);
     ctx.restore();

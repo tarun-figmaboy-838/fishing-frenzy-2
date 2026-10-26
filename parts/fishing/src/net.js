@@ -50,6 +50,34 @@ const ANG_TXT = { A: '#ff9a3c', B: '#3ddc73', C: '#c08bff', D: '#ffc44d' };
 const CHEV = '#ff7a00';
 const ARROW_REACH = 44;  // how far from the knob's middle its two slide arrows sit (tight against it)
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
+// A label's half width and height on the stage, as Net.text draws it: its words measured in the font (kept once the
+// font has loaded), its dark edge and a hair to spare, at the net's textScale.
+const measurer = document.createElement('canvas').getContext('2d');
+const measured = new Map();
+function labelHalf(string, px, k) {
+  const key = `${px}|${string}`;
+  let w = measured.get(key);
+  if (w === undefined) {
+    measurer.font = FONT(px);
+    w = measurer.measureText(string).width;
+    if (!document.fonts || document.fonts.check(measurer.font)) measured.set(key, w);
+  }
+  return { w: ((w + 5) / 2 + 3) * k, h: (px * 0.5 + 4) * k };
+}
+// how far a label's box reaches from its middle along the unit direction n
+const reach = (half, n) => Math.abs(n.x) * half.w + Math.abs(n.y) * half.h;
+// does the segment a-b cross the box (x0, y0, x1, y1)? (Liang-Barsky)
+function crosses(box, a, b) {
+  let t0 = 0, t1 = 1;
+  const dx = b.x - a.x, dy = b.y - a.y;
+  for (const [p, q] of [[-dx, a.x - box.x0], [dx, box.x1 - a.x], [-dy, a.y - box.y0], [dy, box.y1 - a.y]]) {
+    if (p === 0) { if (q < 0) return false; continue; }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t); else t1 = Math.min(t1, t);
+    if (t0 > t1) return false;
+  }
+  return true;
+}
 
 // A level's solved parallelogram with its top edge at y 0: width, height and either the lean
 // (how far the top edge sits right of the bottom) or the angle at A, optionally turned.
@@ -457,6 +485,8 @@ class Net {
   // --- drawing --------------------------------------------------------------------
   draw(ctx, { waterline, pulley }) {
     if (!this.visible) return;
+    this.readyLabels = null;
+    this.letterCorners = null;
     const r = this.ring();
     const reach = Math.max(...this.points.map((p) => length(p))) + 80 + this.sagDepth() * this.pouch;
     const top = Math.min(pulley.hub.y - 30, r.y - reach);
@@ -482,6 +512,18 @@ class Net {
     }
   }
 
+  // The words on the net - its measures and its corner letters - drawn once, after the scene (Game.draw: after the
+  // raft, its water and the splashes), so they are never split at the surface, dimmed under it or covered: they're what
+  // the child reads.
+  drawWords(ctx) {
+    if (!this.visible || (!this.readyLabels && !this.letterCorners)) return;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    for (const l of this.readyLabels || []) this.text(ctx, l.string, l.x, l.y, l.px, l.colour, l.live);
+    if (this.letterCorners) this.drawLabels(ctx, this.letterCorners);
+    ctx.restore();
+  }
+
   drawAll(ctx, ring, pulley, wet) {
     const frame = this.framed();
     const corners = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => this.toStage(this.meshPoint(u, v, frame)));
@@ -496,6 +538,7 @@ class Net {
     // lashed to its bottom bar with two turns, which hide the legs' ends. The machine's painted
     // rope, tiled.
     drawPulleyWrap(ctx, pulley.hub, pulley.exit, this.ropePhase);
+    this.ropeTop = pulley.exit; // (the labels keep off the lifting rope: labelLines)
     drawRope(ctx, pulley.exit, { x: ring.x, y: ring.y + 6 }, ROPE_WIDTH, this.ropePhase);
     // the sling's legs come down to the top corners; closing into a bag, the mouth rises into
     // the ring and they shorten away to nothing
@@ -540,7 +583,7 @@ class Net {
       this.drawCorners(ctx, corners, wet);
       ctx.restore();
     }
-    if (showing) this.drawLabels(ctx, corners);
+    if (showing) this.letterCorners = corners; // (drawn once both passes are done: draw)
     ctx.restore();
   }
 
@@ -894,14 +937,47 @@ class Net {
     this.measure(ctx, c);
     const labels = this.labelQueue;
     this.labelQueue = null;
-    this.placeLabels(labels, this.labelObstacles(c));
-    for (const l of labels) this.text(ctx, l.string, l.x, l.y, l.px, l.colour, l.live);
+    // (laid out afresh only when something it depends on has changed - the words, the frame's shape, the scene round
+    // the net, the view - as seen from corner A, so the raft's bob alone never relays it out: within 4 px on the net
+    // and 8 px round it, which the crane's and Popo's boxes have to spare, labelObstacles; otherwise as last time)
+    const c0 = c[0], v = this.viewBox;
+    const words = [this.textScale.toFixed(3), this.locked, ...labels.map((l) => `${l.string}|${l.px}`),
+      v ? [v.x0, v.y0, v.x1, v.y1].map((e) => Math.round(e / 8)).join(',') : ''].join(';');
+    const nums = [], tol = [];
+    const put = (q, by) => { nums.push(q.x - c0.x, q.y - c0.y); tol.push(by, by); };
+    c.forEach((q) => put(q, 4));
+    labels.forEach((l) => put(l, 4));
+    for (const b of this.sceneBoxes || []) { put({ x: b.x0, y: b.y0 }, 8); put({ x: b.x1, y: b.y1 }, 8); }
+    if (this.ropeTop) put(this.ropeTop, 8);
+    const last = this.labelCache;
+    if (last && last.words === words && last.nums.length === nums.length && nums.every((n, i) => Math.abs(n - last.nums[i]) <= tol[i])) {
+      labels.forEach((l, i) => { const m = last.out[i]; l.x = c0.x + m.x; l.y = c0.y + m.y; l.px = m.px; });
+    } else {
+      this.placeLabels(labels, this.labelObstacles(c), this.labelLines(c));
+      this.labelCache = { words, nums, out: labels.map((l) => ({ x: l.x - c0.x, y: l.y - c0.y, px: l.px })) };
+    }
+    this.readyLabels = labels; // (drawn once both passes are done: draw)
+  }
+
+  // The lines drawn on and over the net that no label may sit across: the frame's four sides and the sling's two legs
+  // up to the ring (`edge`: a label on the net, an angle's or a half's, leaves them inward, any other outward, so a
+  // side's length never ends up inside the frame or the sling), the diagonals when they're up and the lifting rope.
+  labelLines(c) {
+    const r = this.ring(), knot = { x: r.x, y: r.y + KNOT };
+    const k = this.textScale;
+    const lines = [[c[0], c[1], 12], [c[1], c[2], 4], [c[2], c[3], 4], [c[3], c[0], 4], [knot, c[0], 3], [knot, c[1], 3]]
+      .map(([a, b, pad]) => ({ a, b, pad: pad * k, edge: true })); // (the top rope's floats stand out from it)
+    lines.push({ a: this.ropeTop || { x: r.x, y: r.y - 600 }, b: r, pad: 3 * k });
+    if (this.level && this.level.type === 'diagonals') lines.push({ a: c[0], b: c[2], pad: 4 * k }, { a: c[1], b: c[3], pad: 4 * k });
+    lines.centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
+    lines.frame = c;
+    return lines;
   }
 
   // What the labels must keep clear of, as boxes on the stage (x0, y0, x1, y1) with the way a label may be pushed off
   // ('x' slides it along, 'y' moves it up or down, else either): the lifting ring and its shackle (a label slides off it
-  // sideways, along its side), the weights hanging under the bottom rope, the corner letters and the knob with its two
-  // slide arrows.
+  // sideways, along its side), the weights hanging under the bottom rope, the corner letters, the knob with its two
+  // slide arrows, and the crane and Popo beside the net.
   labelObstacles(c) {
     const k = this.textScale, r = this.ring(), out = [];
     out.push({ x0: r.x - 18, y0: r.y - 10, x1: r.x + 18, y1: r.y + RING_KNOT + 10, axis: 'x' });
@@ -912,21 +988,61 @@ class Net {
       out.push({ x0: p.x - half, y0: p.y - 4, x1: p.x + half, y1: p.y + hang, axis: 'y' });
     }
     this.letterPoints(c).forEach((p) => out.push({ x0: p.x - 13 * k, y0: p.y - 15 * k, x1: p.x + 13 * k, y1: p.y + 15 * k }));
-    if (!this.locked && !this.furl) {
-      const q = c[this.movable], reach = (ARROW_REACH + 24) * k;
-      out.push({ x0: q.x - reach, y0: q.y - 26 * k, x1: q.x + reach, y1: q.y + 26 * k });
+    if (!this.locked && !this.furl) { // the knob, and its two pairs of arrows out along the track
+      const q = c[this.movable], dir = normalize(sub(this.toStage(this.stop(this.track.max)), this.toStage(this.stop(this.track.min))));
+      out.push({ x0: q.x - 26 * k, y0: q.y - 26 * k, x1: q.x + 26 * k, y1: q.y + 26 * k });
+      for (const sign of [1, -1]) {
+        const m = add(q, times(dir, sign * 53 * k));
+        out.push({ x0: m.x - 20 * k, y0: m.y - 20 * k, x1: m.x + 20 * k, y1: m.y + 20 * k });
+      }
     }
+    if (this.level && this.level.type === 'diagonals') { // (the dot where the diagonals cross)
+      const o = intersection(c[0], c[2], c[1], c[3]) || midpoint(c[0], c[2]);
+      out.push({ x0: o.x - 12, y0: o.y - 12, x1: o.x + 12, y1: o.y + 12 });
+    }
+    // the crane and Popo beside the net (the game's: Game.draw), so no label lands on the copper or on him
+    for (const b of this.sceneBoxes || []) out.push({ x0: b.x0 - 10, y0: b.y0 - 10, x1: b.x1 + 10, y1: b.y1 + 10 });
     return out;
   }
 
-  // Nudges overlapping labels apart, each pair along the way they overlap least, a few rounds.
-  placeLabels(labels, obstacles = []) {
+  // Nudges overlapping labels apart, each pair along the way they overlap least, a few rounds; and slides any label
+  // that sits across one of the net's lines off it, square to the line, on the side its middle is (so a side's length
+  // stays outside the frame and a half's beside its diagonal).
+  placeLabels(labels, obstacles = [], lines = []) {
     const k = this.textScale;
-    const half = (l) => ({ w: (l.string.length * l.px * 0.55 * k) / 2 + 4, h: (l.px * 1.15 * k) / 2 });
-    for (let round = 0; round < 16; round += 1) {
+    const half = (l) => labelHalf(l.string, l.px, k);
+    const boxAt = (x, y, hl, pad = 0) => ({ x0: x - hl.w - pad, y0: y - hl.h - pad, x1: x + hl.w + pad, y1: y + hl.h + pad });
+    const overlap = (a, b) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > 0 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > 0;
+    for (const l of labels) l.want = { x: l.x, y: l.y };
+    // off a line: square to it, just clear of it (with its margin)
+    const offLines = (l) => {
       let moved = false;
-      // first off whatever they must keep clear of (only the label moves), then apart from each other
+      if (l.pinned) return false;
+      const hl = half(l);
+      for (const { a, b, pad, edge } of lines) {
+        if (!crosses(boxAt(l.x, l.y, hl, pad), a, b)) continue;
+        const u = normalize(sub(b, a));
+        if (!Number.isFinite(u.x)) continue;
+        const n = { x: -u.y, y: u.x };
+        const d = dot(sub(l, a), n);
+        let way = d >= 0 ? 1 : -1;
+        if (edge) {
+          const inward = dot(sub(lines.centre, a), n) >= 0 ? 1 : -1;
+          way = l.inside ? inward : -inward;
+        }
+        const need = reach(hl, n) + pad + 2 * k - way * d;
+        if (need <= 0) continue;
+        l.x += n.x * way * need;
+        l.y += n.y * way * need;
+        moved = true;
+      }
+      return moved;
+    };
+    for (let round = 0; round < 40; round += 1) {
+      let moved = false;
+      // off whatever they must keep clear of (only the label moves), apart from each other, and last off the lines
       for (const l of labels) {
+        if (l.pinned) continue;
         const hl = half(l);
         for (const o of obstacles) {
           const ox = Math.min(l.x + hl.w, o.x1) - Math.max(l.x - hl.w, o.x0);
@@ -946,20 +1062,93 @@ class Net {
           const hb = half(b);
           const ox = ha.w + hb.w - Math.abs(a.x - b.x);
           const oy = ha.h + hb.h - Math.abs(a.y - b.y);
-          if (ox <= 0 || oy <= 0) continue;
+          if (ox <= 0 || oy <= 0 || (a.pinned && b.pinned)) continue;
           moved = true;
+          // (a pinned label holds still: the other makes all the way)
+          const sa = a.pinned ? 0 : b.pinned ? 2 : 1, sb = b.pinned ? 0 : a.pinned ? 2 : 1;
           if (oy < ox) {
             const d = (oy / 2 + 1) * (b.y >= a.y ? 1 : -1);
-            a.y -= d;
-            b.y += d;
+            a.y -= d * sa;
+            b.y += d * sb;
           } else {
             const d = (ox / 2 + 1) * (b.x >= a.x ? 1 : -1);
-            a.x -= d;
-            b.x += d;
+            a.x -= d * sa;
+            b.x += d * sb;
           }
         }
       }
+      for (const l of labels) if (offLines(l)) moved = true;
+      // ...and inside what the view shows (below the HUD's top row; through the zoom on the net)
+      const v = this.viewBox;
+      if (v) {
+        for (const l of labels) {
+          if (l.pinned) continue;
+          const hl = half(l), x = Math.max(v.x0 + hl.w, Math.min(v.x1 - hl.w, l.x)), y = Math.max(v.y0 + hl.h, Math.min(v.y1 - hl.h, l.y));
+          if (x !== l.x || y !== l.y) { l.x = x; l.y = y; moved = true; }
+        }
+      }
       if (!moved) break;
+    }
+    // A label the nudging couldn't free (a crowded net, a small screen): the nearest free spot round where it wanted
+    // to be - on the net if it belongs there (failing that, just off it), and failing that a size smaller. The blocked
+    // ones are placed nearest-first, each against the labels already settled, so one that has room close by gets it.
+    const frame = lines.frame;
+    const view = this.viewBox;
+    const isFree = (l, x, y, hl, inside, others) => {
+      if (view && (x - hl.w < view.x0 || x + hl.w > view.x1 || y - hl.h < view.y0 || y + hl.h > view.y1)) return false;
+      for (const { a, b, pad } of lines) if (crosses(boxAt(x, y, hl, pad), a, b)) return false;
+      const box = boxAt(x, y, hl);
+      for (const o of obstacles) if (overlap(box, o)) return false;
+      for (const m of others) if (m !== l && overlap(box, boxAt(m.x, m.y, half(m)))) return false;
+      return !frame || insideConvex({ x, y }, frame) === inside;
+    };
+    // the cheapest spot: how far it moves, plus a little for a size smaller and more for the other side of the frame
+    // (a side's length just inside its side beats one far off; an angle's value just outside its corner beats none)
+    // (searched round where it wanted to be, and round its alternative - a side's length just inside its side, a
+    // half's beside the other side of it, an angle's value just outside its corner - which costs a little more)
+    const nearest = (l, others) => {
+      const own = { x: l.want.x, y: l.want.y, inside: l.inside }, alt = l.alt;
+      const tries = [[own, 1, 0], [own, 0.88, 50 * k]]
+        .concat(alt ? [[alt, 1, 30 * k], [alt, 0.88, 80 * k]] : [])
+        .concat([[{ ...own, inside: !l.inside }, 1, 90 * k], [own, 0.78, 100 * k], [{ ...own, inside: !l.inside }, 0.88, 130 * k]]);
+      let best = null;
+      for (const [from, shrink, penalty] of tries) {
+        if (best && penalty >= best.cost) continue;
+        const hl = labelHalf(l.string, l.px * shrink, k), inside = from.inside;
+        let found = false;
+        for (let r = 0; r <= 180 * k && !found && (!best || penalty + r < best.cost); r += 6 * k) {
+          const steps = r ? 16 : 1;
+          for (let i = 0; i < steps; i += 1) {
+            const t = (i / steps) * TAU, x = from.x + Math.cos(t) * r, y = from.y + Math.sin(t) * r;
+            if (isFree(l, x, y, hl, inside, others)) { best = { x, y, shrink, cost: penalty + r }; found = true; break; }
+          }
+        }
+      }
+      return best;
+    };
+    const settled = labels.filter((l) => l.pinned || isFree(l, l.x, l.y, half(l), l.inside, labels));
+    let blocked = labels.filter((l) => !settled.includes(l));
+    // (each one's best spot is searched once, and again only if a label settling since has taken it)
+    const spots = new Map(blocked.map((l) => [l, nearest(l, settled)]));
+    while (blocked.length) {
+      let pick = null;
+      for (const l of blocked) {
+        const spot = spots.get(l);
+        if (!pick || (spot && (!pick.spot || spot.cost < pick.spot.cost))) pick = { l, spot };
+      }
+      const { l, spot } = pick;
+      if (spot) {
+        l.x = spot.x;
+        l.y = spot.y;
+        l.px *= spot.shrink;
+      }
+      settled.push(l);
+      blocked = blocked.filter((m) => m !== l);
+      const taken = boxAt(l.x, l.y, half(l));
+      for (const m of blocked) {
+        const sp = spots.get(m);
+        if (!sp || overlap(boxAt(sp.x, sp.y, labelHalf(m.string, m.px * sp.shrink, k)), taken)) spots.set(m, nearest(m, settled));
+      }
     }
   }
 
@@ -1006,12 +1195,19 @@ class Net {
 
   // A side's label sits just outside its midpoint (as the lesson's lengths do), clear of the mesh; on a side the
   // moving corner pulls, it sits a little toward the fixed end, clear of the knob.
+  // (square off the side, out of the frame, as far as the label's own size needs: a long label beside a steep side
+  // stands off further than one along a level side)
   drawLength(ctx, c, name, value, live = false) {
     const [i, j] = side(name);
     const mid = lerp(c[i], c[j], this.clearOfKnob(i, j));
     const centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
-    const at = add(mid, times(normalize(sub(mid, centre)), 34 * this.textScale));
-    this.text(ctx, `${name} ${value}`, at.x, at.y, live ? 26 : 22, live ? '#ffd84a' : '#fff', live);
+    const u = normalize(sub(c[j], c[i]));
+    let n = { x: -u.y, y: u.x };
+    if (dot(n, sub(mid, centre)) < 0) n = times(n, -1);
+    const string = `${name} ${value}`, px = live ? 26 : 22, k = this.textScale;
+    const off = 12 * k + reach(labelHalf(string, px, k), n), at = add(mid, times(n, off));
+    // (where there's no room outside its side, just inside it beats far away: alt)
+    this.text(ctx, string, at.x, at.y, px, live ? '#ffd84a' : '#fff', live, { alt: { ...sub(mid, times(n, off)), inside: true } });
   }
 
   // Parallel marks as the lesson draws them: orange chevrons on a white halo at the middle of each side of the pair
@@ -1073,8 +1269,11 @@ class Net {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.stroke();
     ctx.restore();
-    const mid = a1 + sweep / 2;
-    this.text(ctx, value, v.x + Math.cos(mid) * (radius + 30 * this.textScale), v.y + Math.sin(mid) * (radius + 30 * this.textScale), live ? 28 : 24, live ? '#ffd84a' : ANG_TXT[letter], live);
+    // the value just past the arc, on its bisector, as far out as its own size needs
+    const mid = a1 + sweep / 2, dir = { x: Math.cos(mid), y: Math.sin(mid) }, px = live ? 28 : 24;
+    const out = radius + 10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir);
+    this.text(ctx, value, v.x + dir.x * out, v.y + dir.y * out, px, live ? '#ffd84a' : ANG_TXT[letter], live,
+      { inside: true, alt: { x: v.x - dir.x * (10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir)), y: v.y - dir.y * (10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir)), inside: false } });
   }
 
   // The diagonals as thin ropes, the point O where they cross, and the four halves measured.
@@ -1102,22 +1301,45 @@ class Net {
     ctx.stroke();
     ctx.restore();
     const k = this.textScale;
-    // O sits in the gap between the two upper halves' labels, just under the crossing
-    this.text(ctx, 'O', o.x, o.y + 24 * k, 22, '#fff');
+    // O sits right by the crossing, in the widest of the four angles the diagonals make there (the roomiest), just
+    // clear of both diagonals and the dot, and stays put there while the halves' labels find their places
+    const hO = labelHalf('O', 22, k), rays = [a, b, cc, d].map((q) => normalize(sub(q, o))), obstacles = this.labelObstacles(c);
+    // (it keeps the angle it is in until another is clearly roomier, so it never hops between two as the raft bobs)
+    const wedges = [];
+    for (let i = 0; i < 4; i += 1) {
+      const u1 = rays[i], u2 = rays[(i + 1) % 4], bis = normalize(add(u1, u2));
+      if (!Number.isFinite(bis.x)) continue;
+      const sin = Math.abs(u1.x * bis.y - u1.y * bis.x);
+      const clear = (u) => (reach(hO, { x: -u.y, y: u.x }) + 5 * k) / Math.max(sin, 0.05);
+      let t = Math.max(clear(u1), clear(u2), 12 + reach(hO, bis) + 3 * k);
+      const stop = t + 60 * k;
+      const blocked = (q) => obstacles.some((b) => Math.min(q.x + hO.w, b.x1) > Math.max(q.x - hO.w, b.x0) && Math.min(q.y + hO.h, b.y1) > Math.max(q.y - hO.h, b.y0));
+      while (t < stop && blocked(add(o, times(bis, t)))) t += 2 * k;
+      if (t < stop && insideConvex(add(o, times(bis, t)), c)) wedges.push({ i, t, at: add(o, times(bis, t)) });
+    }
+    let best = wedges.reduce((m, w) => (!m || w.t < m.t ? w : m), null);
+    const kept = wedges.find((w) => w.i === this.oWedge);
+    if (kept && best && kept.t <= best.t * 1.25) best = kept;
+    if (best) this.oWedge = best.i;
+    const atO = best ? best.at : { x: o.x, y: o.y + 24 * k };
+    this.text(ctx, 'O', atO.x, atO.y, 22, '#fff', false, { inside: true, pinned: true });
     if (!labels) return;
     const h = this.halvesShown();
-    // each half's label sits beside its middle (toward O on the moving corner's half, clear of
-    // the knob), out on the side away from O's other halves
+    // each half's label sits beside its middle (toward O on the moving corner's half, clear of the knob), each in a
+    // triangle of its own of the four the diagonals cut the net into: AO in the top one, BO the right, OC the bottom
+    // and OD the left, so no two crowd one triangle
     const put = (from, to, name, value, sign, along = 0.5) => {
       const mid = lerp(from, to, along);
-      const u = normalize(sub(to, from));
-      this.text(ctx, `${name} ${cm(value)} cm`, mid.x - u.y * 30 * k * sign, mid.y + u.x * 30 * k * sign, 20, '#ffd84a', true);
+      const u = normalize(sub(to, from)), n = { x: -u.y * sign, y: u.x * sign };
+      const string = `${name} ${cm(value)} cm`, off = 8 * k + reach(labelHalf(string, 20, k), n);
+      // (the half's other side, in the next triangle, if its own has no room: alt)
+      this.text(ctx, string, mid.x + n.x * off, mid.y + n.y * off, 20, '#ffd84a', true, { inside: true, alt: { x: mid.x - n.x * off, y: mid.y - n.y * off, inside: true } });
     };
     const toward = (end) => (end === this.movable && !this.locked ? 0.38 : 0.5);
-    put(a, o, 'AO', h.AO, 1, 1 - toward(0));
+    put(a, o, 'AO', h.AO, -1, 1 - toward(0));
     put(o, cc, 'OC', h.OC, 1, toward(2));
     put(b, o, 'BO', h.BO, -1, 1 - toward(1));
-    put(o, d, 'OD', h.OD, -1, toward(3));
+    put(o, d, 'OD', h.OD, 1, toward(3));
   }
 
   // The property highlight: sides, angles or diagonal halves light up, one step at a time.
@@ -1257,9 +1479,11 @@ class Net {
 
   // Readable on any background: white (or coloured) text with a dark edge. Live values swell
   // a little while a hint is on.
-  text(ctx, string, x, y, px, colour, live = false) {
+  // opts.inside: a label that belongs on the net (an angle's value, a diagonal's half, O), kept inside its frame where
+  // there's room; opts.pinned: one that stays just where it is put (O by the crossing), the others making way.
+  text(ctx, string, x, y, px, colour, live = false, opts = {}) {
     if (this.labelQueue) {
-      this.labelQueue.push({ string, x, y, px, colour, live });
+      this.labelQueue.push({ string, x, y, px, colour, live, inside: !!opts.inside, pinned: !!opts.pinned, alt: opts.alt });
       return;
     }
     const swell = (live && this.hintPulse > 0 && !this.reduced ? 1 + 0.15 * Math.abs(Math.sin(this.time * 8)) : 1) * this.textScale;

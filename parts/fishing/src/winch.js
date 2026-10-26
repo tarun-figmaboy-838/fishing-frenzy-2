@@ -72,7 +72,7 @@ class Winch {
   // upright, its collars and the arch over it) or 'top' (the arch and boom, the machine's highest part, out to the end
   // pulley).
   box(part) {
-    const [x0, y0, x1, y1] = part === 'mast' ? [196, 69, 400, 1190] : [196, 60, 1240, 210];
+    const [x0, y0, x1, y1] = { mast: [196, 69, 400, 1190], base: [62, 700, 443, 1196] }[part] || [196, 60, 1240, 210];
     return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(at).map((p) => [p.x, p.y]);
   }
 
