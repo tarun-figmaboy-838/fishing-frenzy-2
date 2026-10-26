@@ -667,3 +667,9 @@ html, body {
    neighbours, all showing, keep their room. */
 .words .w, .line .w { transform-origin: 0 75%; }
 @keyframes word-beat { 40% { transform: translateY(-0.18em) scale(1.05); } }
+
+/* the speech bubble's tail keeps pointing at its speaker when the bubble has had to move aside (UI.placeSpeech: --tail
+   is how far right of the bubble's usual place the speaker is) */
+.speech { transform-origin: calc(0.6em + var(--tail, 0px)) 100%; }
+.speech::before { left: calc(0.75em + var(--tail, 0px)); }
+.speech::after { left: calc(0.95em + var(--tail, 0px)); }

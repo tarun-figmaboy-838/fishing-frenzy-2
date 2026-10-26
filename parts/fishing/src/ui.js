@@ -331,14 +331,43 @@ class UI {
   }
 
   // (x, y) is where the tail points. The bubble sits above and to the right of it, so it's
-  // nudged down or left when it would run off the top or right of the stage.
+  // nudged down or left when it would run off the top or right of the stage, and kept clear of the HUD's top row
+  // (the counter, sound and pause: on a small screen their type never shrinks, so a bubble reached them): it slides
+  // away from them sideways, or goes below them if there's no room. Its tail keeps pointing at (x, y) wherever the
+  // bubble has had to move (--tail).
   placeSpeech(x, y) {
     const b = this.speechBox || { w: 0, h: 0, em: 0 };
     const width = this.el.hits.clientWidth;
-    const left = Math.min(x * this.scale, width - b.w + 0.6 * b.em - 4);
-    const top = Math.max(y * this.scale, b.h + 14); // clear of the top edge, even as it pops
-    this.el.speech.style.left = `${left.toFixed(1)}px`;
-    this.el.speech.style.top = `${top.toFixed(1)}px`;
+    const ax = x * this.scale, inset = 0.6 * b.em;
+    let left = Math.min(ax, width - b.w + inset - 4);
+    let top = Math.max(y * this.scale, b.h + 14); // clear of the top edge, even as it pops
+    for (const r of this.hudBoxes()) {
+      const l0 = left - inset;
+      if (l0 + b.w <= r.l - 6 || l0 >= r.r + 6 || top <= r.t - 6 || top - b.h >= r.b + 6) continue;
+      const toLeft = r.l - 6 - b.w + inset, toRight = r.r + 6 + inset;
+      if ((r.l + r.r) / 2 > l0 + b.w / 2 && toLeft - inset >= 4) left = Math.min(left, toLeft);
+      else if ((r.l + r.r) / 2 <= l0 + b.w / 2 && toRight - inset + b.w <= width - 4) left = Math.max(left, toRight);
+      else top = Math.max(top, r.b + 6 + b.h);
+    }
+    const tail = Math.max(0, Math.min(b.w - 2.4 * b.em, ax - left));
+    const st = this.el.speech.style;
+    st.left = `${left.toFixed(1)}px`;
+    st.top = `${top.toFixed(1)}px`;
+    st.setProperty('--tail', `${tail.toFixed(1)}px`);
+  }
+
+  // The HUD's top-row pieces a speech bubble keeps clear of, in stage pixels (measured once per size, while the HUD
+  // shows).
+  hudBoxes() {
+    if (this.el.hud.hidden) return [];
+    if (this.hudCache && this.hudCache.scale === this.scale) return this.hudCache.boxes;
+    const st = this.el.hud.parentElement.getBoundingClientRect();
+    const boxes = [this.el.catch, this.el.sound.parentElement].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left - st.left, t: r.top - st.top, r: r.right - st.left, b: r.bottom - st.top };
+    }).filter((r) => r.r - r.l > 2);
+    if (boxes.length) this.hudCache = { scale: this.scale, boxes };
+    return boxes;
   }
 
   hideLines() {
@@ -385,6 +414,7 @@ class UI {
 
   showHud() {
     this.el.hud.hidden = false;
+    this.hudCache = null;
   }
 
   // --- delivered text ------------------------------------------------------------
