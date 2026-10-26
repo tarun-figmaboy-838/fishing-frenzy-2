@@ -634,6 +634,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card .tag.mtag,.stage.in-card .tag.alab{background:none!important;box-shadow:none!important;padding:0!important;border:0!important;border-radius:0;
   font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-size:21px;font-weight:900;color:#1656e0;
   text-shadow:0 0 3px #fff,0 0 3px #fff,2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,1.5px 1.5px 0 #fff,-1.5px -1.5px 0 #fff,1.5px -1.5px 0 #fff,-1.5px 1.5px 0 #fff}
+/* the lengths a touch larger than the angle sizes (they are read from across the shape) */
+.stage.in-card .tag.mtag{font-size:24px}
 /* an unknown ('?') stands out as Fishing Frenzy's do: larger than the values round it */
 .stage.in-card .tag.mtag.q{color:#00806d;font-size:29px}
 .stage.in-card .tag.alab.q{font-size:calc(29px / var(--bz, 1))}

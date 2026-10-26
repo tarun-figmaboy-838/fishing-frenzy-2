@@ -750,7 +750,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const onto = (a, b) => (Math.hypot(a.x1 - b.x1, a.y1 - b.y1) + Math.hypot(a.x2 - b.x2, a.y2 - b.y2) <= Math.hypot(a.x1 - b.x2, a.y1 - b.y2) + Math.hypot(a.x2 - b.x1, a.y2 - b.y1)
           ? b : Object.assign({}, b, { x1: b.x2, y1: b.y2, x2: b.x1, y2: b.y1 }));
         // (one pair at a time, each given the time to be seen through before the next begins)
-        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); Motion.slideMatch(a, onto(a, seg(pr[1]))); } }, at); at += 2400; });
+        // (the pair being compared lights, the others stay quiet; the first side's length rides with its copy and lands
+        // on the opposite's - the same value)
+        const lab = (k1, k2) => { const L = this.lenAt || {}, a = L[k1] && this.boardToStage(L[k1]), b = L[k2] && this.boardToStage(L[k2]);
+          return a && b && !/ off\b/.test(L[k1].cls) ? { t: L[k1].t, from: a, to: b, px: 24 * (this.sceneFit(this.cur()).k || 1), col: k1 === 'AB' || k1 === 'CD' ? '#1656e0' : '#00806d' } : null; };
+        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); at += 2400; });
+        if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
         if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); at += 2600; });
         if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 2400; });
         if (c.rails) this.tm(() => { if (tok === this.stepTok) Motion.rails(c.rails.map(seg)); }, at);
@@ -1961,7 +1966,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it).
         // A label whose box would reach a side of the shape (a thin triangle: BO's on a wide, low figure lay on AB) goes
         // to the half's other side instead, into the next triangle
-        const hw = this.textW(H[k], '900 21px Nunito') / 2, hh = 13, off = MK.tickHalf + 8 + hw * Math.abs(nx) + hh * Math.abs(ny);
+        const hw = this.textW(H[k], '900 24px Nunito') / 2, hh = 15, off = MK.tickHalf + 8 + hw * Math.abs(nx) + hh * Math.abs(ny);
         const Q = [A, B, C, D], area = Q.reduce((t, p, i) => t + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) > 0 ? 1 : -1;
         const inside = (x, y) => Q.every((p, i) => { const q = Q[(i + 1) % 4], L2 = this.dist(p, q) || 1;
           return area * ((q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x)) / L2 >= 2.5 + 6; }); // past the side's stroke, and a gap
@@ -1993,7 +1998,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
       if ((nx * (mx - cx) + ny * (my - cy) < 0) === !!out) { nx = -nx; ny = -ny; }
       // the label's own box (css: plain 21px Nunito 900, no padding): half width / half height in board px
-      const hw = this.textW(text, '900 21px Nunito') / 2, hh = 13;
+      const hw = this.textW(text, '900 24px Nunito') / 2, hh = 15;
       const off = hw * Math.abs(nx) + hh * Math.abs(ny) + CONFIG.marks.labelGap + Math.max(12 * Math.abs(ny), marked(p, q) ? CONFIG.marks.markGap : 0);
       return { t: text, x: r1(mx + nx * off), y: r1(my + ny * off), cls: cls + (show ? '' : ' off') };
     };
@@ -2005,10 +2010,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), isM && !!s.tap.AB));
     tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four inside, by their sides
     const lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
-    tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), !!f.legLen && lon('DA')));
-    tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), !!f.legLen && lon('BC')));
-    tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), !!f.sideLen && lon('AB')));
-    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), !!f.sideLen && lon('CD')));
+    {
+      const L = { DA: side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), !!f.legLen && lon('DA')), BC: side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), !!f.legLen && lon('BC')),
+        AB: side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), !!f.sideLen && lon('AB')), CD: side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), !!f.sideLen && lon('CD')) };
+      this.lenAt = L; // (where each length sits: the equal-sides slide carries one onto its opposite, runCue)
+      tags.push(L.DA, L.BC, L.AB, L.CD);
+    }
     if (fig && fig.sides) {
       const E = { AB: [A, B], BC: [B, C], CD: [D, C], DA: [D, A] };
       Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); tags.push(side(E[k][0], E[k][1], t, 'mtag fig' + (k === 'BC' || k === 'DA' ? ' mleg' : '') + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true)); });

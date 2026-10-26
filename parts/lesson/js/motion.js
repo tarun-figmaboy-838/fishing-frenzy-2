@@ -178,14 +178,21 @@
     // equal sides: a glowing copy of side a lifts off, glides onto its opposite b (a slide: every point moves the same
     // way, the same distance) and fits it exactly, beats once, rests there so the fit can be seen, and fades. Paced to
     // be followed: the lift, a slow glide, the beat, the rest
-    slideMatch(a, b, col) {
+    // lab { t, from, to, px, col }: the side's length rides along with it, from its own place onto the opposite's
+    slideMatch(a, b, col, lab) {
       if (!G || reduced || !this.fx()) return 0;
       const ln = this.mk('line', { x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: col || a.col || '#1e7bff', 'stroke-width': 8, 'stroke-linecap': 'round', opacity: 0, 'class': 'math-copy' });
-      add(() => G.timeline({ onComplete: () => ln.remove() })
-        .to(ln, { opacity: 1, 'stroke-width': 11, duration: 0.35 })
-        .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 1.4, ease: 'power2.inOut' }, 0.45)
-        .to(ln, { 'stroke-width': 14, duration: 0.22, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.9)
-        .to(ln, { opacity: 0, duration: 0.45 }, 2.75));
+      const tx = lab ? this.mk('text', { x: lab.from.x.toFixed(1), y: lab.from.y.toFixed(1), 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': lab.px.toFixed(1), 'font-weight': 900,
+        'font-family': "Nunito, 'Noto Sans Math', system-ui, sans-serif", fill: lab.col || '#1656e0', stroke: '#fff', 'stroke-width': 4, 'paint-order': 'stroke', opacity: 0, text: lab.t }) : null;
+      add(() => {
+        const tl = G.timeline({ onComplete: () => { ln.remove(); if (tx) tx.remove(); } })
+          .to(ln, { opacity: 1, 'stroke-width': 11, duration: 0.35 })
+          .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 1.4, ease: 'power2.inOut' }, 0.45)
+          .to(ln, { 'stroke-width': 14, duration: 0.22, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.9)
+          .to(ln, { opacity: 0, duration: 0.45 }, 2.75);
+        if (tx) tl.to(tx, { opacity: 1, duration: 0.3 }, 0.15).to(tx, { attr: { x: lab.to.x, y: lab.to.y }, duration: 1.4, ease: 'power2.inOut' }, 0.45).to(tx, { opacity: 0, duration: 0.45 }, 2.75);
+        return tl;
+      });
       return 3200;
     },
     // equal angles: a copy of the wedge at one corner turns a half-turn about the shape's centre O and lands exactly on
