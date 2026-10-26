@@ -42,9 +42,9 @@ const CONFIG = {
   build: { pxPerMs: 0.36, delayMs: 450, settleMs: 1300, ofLine: 0.85, minMs: 1600, maxMs: 3600, rushMs: 450 },
   // flow: a finished screen moves on advanceMs after its last line (voice-over) ends (explanation screens by themselves; a
   // question or task waits for the learner, then moves on after its feedback). A question's answers, or a task's corner,
-  // are live answersMs after the screen starts (while Swiftee asks). In the journey, the lesson's last screen hands over
-  // to the fishing on its Next.
-  flow: { advanceMs: 1600, answersMs: 900 },
+  // come in as Swiftee says the question's last word (at the latest answersMaxMs after the screen starts, should her
+  // voice stall). In the journey, the lesson's last screen hands over to the fishing on its Next.
+  flow: { advanceMs: 1600, answersMaxMs: 15000 },
   plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 2600 },

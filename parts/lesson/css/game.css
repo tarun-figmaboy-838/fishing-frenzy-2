@@ -755,3 +755,19 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage svg.math-fx .math-glow{filter:drop-shadow(0 0 5px rgba(255,208,0,.85))}
 .stage svg.math-fx .math-copy{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px rgba(255,255,255,.8))} /* a side's copy on the move: its own colour, a white glow */
 .stage svg.math-fx .math-star{filter:drop-shadow(0 3px 4px rgba(0,20,60,.35))}
+
+/* ===== focus and voice sync =====
+   While the voice names a part, the others of its kind step back for that moment (engine geo: sides .edge.dim, a lone
+   diagonal .diag.dim, the halves .hseg.dim, the lengths .mtag.dim; the angles have their own focus, .wedge.dim), so the
+   eye goes straight to what is being said. Cards that arrive together come in one after another (engine staggerChips,
+   CHIP_GAP 320 ms), each with its sound, never all at once. */
+.diag{transition:stroke-width .3s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
+.diag.dim{stroke-opacity:.28}
+.hseg{transition:stroke-width .3s cubic-bezier(.3,0,.3,1),stroke-opacity .3s ease}
+.hseg.dim{stroke-opacity:.3;filter:none}
+.tag.mtag{transition:transform .3s cubic-bezier(.3,0,.3,1),opacity .3s ease}
+.stage.in-card .tag.mtag.dim{opacity:.4}
+.stage .chip.cd1{animation-delay:.32s!important}
+.stage .chip.cd2{animation-delay:.64s!important}
+.stage .chip.cd3{animation-delay:.96s!important}
+@media (prefers-reduced-motion: reduce){.diag,.hseg,.tag.mtag{transition:none}}

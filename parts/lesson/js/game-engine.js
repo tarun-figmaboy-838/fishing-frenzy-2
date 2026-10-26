@@ -9,6 +9,8 @@
 // =====================================================================
 const JOURNEY = typeof window !== 'undefined' && window.Journey && window.Journey.embedded ? window.Journey : null;
 // the lesson's key words (reference KEY_WORDS, with the parallelogram's own terms)
+// cards that arrive together come in this far apart (ms; css .chip.cd1-.cd3 delays match)
+const CHIP_GAP = 320;
 const KEY_WORDS = /^(polygon|quadrilaterals?|trapeziums?|parallelograms?|parallel|bases?|legs?|sides?|opposite|adjacent|angles?|supplementary|vertex|vertices|equal|diagonals?|bisect|segments?|180°)$/;
 window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   constructor(props) {
@@ -49,6 +51,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   asks(st) { return !!(st.task || st.opts || st.fill); }
   // while Swiftee gives a screen's instructions nothing can be answered, tapped or dragged yet
   busy() { return !!this.state.listen; }
+  // the question has been asked: the answers rise in, and the hand's wait starts
+  askedNow() { if (this.state.listen) this.setState({ listen: false }, () => this.armHand()); }
   // the free-fill state of a fill / match check
   freshFill() { return { at: {}, locked: {}, sel: null, drag: null, checking: false, bad: {}, open: null, closing: false, menu: null }; }
   cur() { return this.steps()[this.state.step]; }
@@ -432,6 +436,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const setReveal = (n) => {
       if (!keep) this.setState({ reveal: n });
+      if (n >= words.length && L === this.askLine && tok === this.narrTok) this.askedNow(); // (the question is out: its answers come)
       if (atIdx >= 0 && n >= atIdx + 1) highlight();
       if (pAt >= 0 && n >= pAt + 1) firePulse();
       if (gAt >= 0 && n >= gAt + 1) fireGrow();
@@ -473,7 +478,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const P = this.state.P;
       Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
     };
-    let cardShown = !(keep && L.chips); // (the glow below applies to any line)
+    let cardShown = !L.chips; // a line's cards come in as its voice starts (the glow below applies to any line)
     let glowOn = false;
     // glowAt: the highlight waits for that word
     const atIdx = L.glowAt ? words.findIndex((w) => w.toLowerCase().replace(/[^a-z-]/g, '').indexOf(L.glowAt) === 0) : -1;
@@ -701,7 +706,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (!q || q.tok !== this.stepTok) return;
     if (q.i >= q.lines.length) { this.q = null; if (q.done) q.done(); this.armIdle(); return; }
     const L = q.lines[q.i++];
-    if (L.chips && !L.keep) this.addChips(L.chips); // a voice-only line shows its card in sync with the voice (say)
     this.say(L, () => this.qNext());
   }
   interject(L) {
@@ -749,11 +753,20 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (c.pulse) Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
     if (c.ms) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null, chipHi: null }); }, c.ms);
   }
+  // cards arriving together come in one after another (css .chip.cd1-.cd3, CHIP_GAP apart), each with its own sound:
+  // the shape's name a chime, any other card a soft pop rising note by note
+  staggerChips(cs) {
+    const N = window.Sfx ? Sfx.notes : [523.25, 659.25, 783.99, 1046.5, 1318.5];
+    return cs.map((c, i) => {
+      const name = /\bname\b/.test(c.k);
+      this.sfx(name ? 'chime' : 'pop', { f: name ? undefined : N[Math.min(i, N.length - 1)] * 1.5, v: 0.6, delay: (i * CHIP_GAP) / 1000 });
+      return i ? Object.assign({}, c, { k: c.k + ' cd' + Math.min(i, 3) }) : c;
+    });
+  }
   addChips(cs) {
     const have = this.state.chips.map((c) => c.t), add = cs.filter((c) => have.indexOf(c.t) < 0);
-    // a card arrives: the shape's name with a chime, any other card with a soft pop
-    if (add.length) this.sfx(add.some((c) => /\bname\b/.test(c.k)) ? 'chime' : 'pop', { f: 880, v: 0.6 });
-    this.setState({ chips: this.state.chips.concat(add) });
+    if (!add.length) return;
+    this.setState({ chips: this.state.chips.concat(this.staggerChips(add)) });
   }
   replay() {
     if (!this.state.started || !this.curLine) return;
@@ -954,9 +967,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
     // as in Fishing Frenzy, the answers (and the corner to drag) come in just after the screen does: the learner may act
     // while Swiftee is still asking, so nothing ever seems stuck waiting for her line to end
-    if (!!(st.lines || []).length && this.asks(st)) { const tok = this.stepTok; this.tm(() => { if (tok === this.stepTok && this.state.listen) this.setState({ listen: false }); }, CONFIG.flow.answersMs); }
+    // the answers (and the corner to drag) come in with the voice: as Swiftee says the question's last word they rise in,
+    // one after another, so the learner hears what is asked before choosing. (A voice that stalls never holds them back
+    // for long: CONFIG.flow.answersMaxMs.)
+    this.askLine = this.asks(st) ? (st.lines || []).filter((x) => !x.keep && x.t).pop() || null : null;
+    if (!!(st.lines || []).length && this.asks(st)) { const tok = this.stepTok; this.tm(() => { if (tok === this.stepTok && this.state.listen) this.askedNow(); }, CONFIG.flow.answersMaxMs); }
     const lines = () => this.playLines(st.lines, () => {
-      if (this.state.listen) this.setState({ listen: false }, () => this.armHand()); else this.armHand();
+      if (this.state.listen) this.askedNow(); else this.armHand();
       if (st.task === 'measure' && st.auto) this.tm(() => this.autoMeasure(), 400);
       // screen 24: after her line her bubble fades, then she measures the angles with the protractor
       else if (st.task === 'measureAngles' && st.auto) this.tm(() => { this.setState({ bubOff: true }); this.tm(() => this.autoAngles(), 400); }, CONFIG.angleWalk.leadMs);
@@ -1354,14 +1371,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
-      this.setState({ done: true, results: results, chips: st.okChips || s.chips });
+      this.setState({ done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
       this.cheer();
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
     } else if (o.ok) {
       picks[o.id] = 'good';
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
-      this.setState({ picks: picks, done: true, results: results, chips: st.okChips || s.chips });
+      this.setState({ picks: picks, done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
       this.cheer();
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       this.okGlow(st);
@@ -1500,7 +1517,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (D.blanks.every((x) => locked[x.id])) {
         const s = this.state, results = Object.assign({}, s.results);
         if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
-        this.setState({ done: true, results: results, chips: st.okChips || s.chips });
+        this.setState({ done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
         this.cheer();
         this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       } else { this.sfx('snap'); this.poke(); }
@@ -1561,7 +1578,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (D.blanks.every((b) => ok[b.id])) {
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
-      this.setState({ fill: Object.assign({}, F, { locked: locked, checking: false }), done: true, results: results, chips: st.okChips || s.chips });
+      this.setState({ fill: Object.assign({}, F, { locked: locked, checking: false }), done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
       this.cheer();
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       return;
@@ -1643,7 +1660,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const baseCol = () => PAL.line;
     const legCol = () => (pair2 ? PAL.pair2 : legsPlain ? PAL.slate : PAL.line);
     // emph (named in the voice-over), lit / dim (the named sides lead, the others step back)
-    const eCls = (k) => 'e' + k + (s.emph && s.emph[k] ? ' emph' : '') + (lit[k] ? ' lit' : nLit && nLit < 4 ? ' dim' : '');
+    // focus: a side the voice names grows and, while it is named, the sides it does not name step back too (as a lit
+    // side's do), so the eye goes to the part being talked about
+    const nNamed = ['AB', 'BC', 'CD', 'DA'].filter((k) => s.emph && s.emph[k]).length;
+    const eCls = (k) => 'e' + k + (s.emph && s.emph[k] ? ' emph' : '') + (lit[k] ? ' lit' : (nLit && nLit < 4) || (!nLit && nNamed && nNamed < 4 && !(s.emph && s.emph[k])) ? ' dim' : '');
     // build (screen 1): the shape draws itself while Swiftee talks - empty panel, then a glowing pink pen runs
     // D->A->B->C->D in one continuous stroke, leaving each finished edge behind; corners (dot + letter) appear as
     // the pen reaches them. Then a soft glow settles round the outline and the fill fades in (s.build, runBuild).
@@ -1731,13 +1751,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.ch2 = Object.assign({ p: (arrows('DA') + arrows('BC')) || 'M0,0', d: dsp(showPar2) }, glide('DA'));
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;
-    g.dAC = seg(A, C, !!(f.diag || s.diag.AC), { cls: s.emph && s.emph.dAC ? 'emph' : '' });
-    g.dBD = seg(B, D, !!(f.diag || s.diag.BD), { cls: s.emph && s.emph.dBD ? 'emph' : '' });
+    // (a diagonal named alone: the other steps back while it is said)
+    const dCls = (k) => (s.emph && s.emph[k] ? 'emph' : s.emph && (s.emph.dAC || s.emph.dBD) ? 'dim' : '');
+    g.dAC = seg(A, C, !!(f.diag || s.diag.AC), { cls: dCls('dAC') });
+    g.dBD = seg(B, D, !!(f.diag || s.diag.BD), { cls: dCls('dBD') });
     // split: the four halves in four colours; halfPairs: the equal halves share a colour (OA, OC pink; OB, OD blue)
     {
       const HC = f.halfPairs ? { A: PAL.vA, C: PAL.vA, B: PAL.vB, D: PAL.vB } : { A: PAL.vA, B: PAL.vB, C: PAL.vC, D: PAL.vD };
       const on = !!(f.split || f.halfPairs);
-      ['A', 'B', 'C', 'D'].forEach((k) => { g['h' + k] = seg(O0(), P[k], on, { c: HC[k], cls: 'hseg' + (f.halfPairs ? ' pr' : '') + (s.emph && s.emph['h' + k] ? ' emph' : '') }); });
+      const hNamed = ['hA', 'hB', 'hC', 'hD'].some((k) => s.emph && s.emph[k]); // (a half named: the halves it is not step back)
+      ['A', 'B', 'C', 'D'].forEach((k) => { g['h' + k] = seg(O0(), P[k], on, { c: HC[k], cls: 'hseg' + (f.halfPairs ? ' pr' : '') + (s.emph && s.emph['h' + k] ? ' emph' : hNamed ? ' dim' : '') }); });
     }
     // connect: the line follows the finger from the picked corner
     g.cn = s.conn ? seg(P[s.conn.from], { x: s.conn.x, y: s.conn.y }, true) : seg(A, A, false);
@@ -1896,7 +1919,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // carrying arrows or ticks keeps them clear (markGap))
     const marked = (p, q) => { const k = [p, q].map((V) => ['A', 'B', 'C', 'D'].find((x) => P[x] === V)).sort().join('');
       const key = { AB: 'AB', BC: 'BC', CD: 'CD', AD: 'DA' }[k]; return !!(key && (nArrows[key] || nTicks[key])); };
-    const emL = (k) => (s.emph && s.emph['l' + k] ? ' emph' : ''); // (the lengths grow when the line names them)
+    const lNamed = ['lAB', 'lBC', 'lCD', 'lDA'].filter((k) => s.emph && s.emph[k]).length;
+    const emL = (k) => (s.emph && s.emph['l' + k] ? ' emph' : lNamed && lNamed < 4 ? ' dim' : ''); // (the lengths grow when the line names them; the others step back)
     const side = (p, q, text, cls, show) => {
       const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
