@@ -90,6 +90,20 @@ function drawSunburst(ctx, x, y, r, turn) {
 // Twinkles either side of The End on the end screen, from its middle.
 const ENDING_TWINKLES = [[-420, -50], [-370, 40], [-440, 95], [400, -60], [440, 30], [370, 100], [-300, -110]];
 
+// Where a line's words have got to, on the voice's own clock while it moves (so a slow frame never lets them drift from
+// it). A clock that stands still - the audio device not started yet, or interrupted, while the context still says it is
+// running - never holds the words: after half a second the game's clock takes over, and once the voice's clock moves
+// again the words wait for it to catch up (they never go back). heard: the voice's time, -1 once it has stopped.
+function voiceClock(d, heard, dt, at) {
+  if (heard >= 0 && heard > (d.lastHeard === undefined ? -1 : d.lastHeard)) {
+    d.lastHeard = heard;
+    d.still = 0;
+    return Math.max(at, heard);
+  }
+  d.still = (d.still || 0) + dt;
+  return heard < 0 || d.still > 0.5 ? at + dt : at;
+}
+
 class Game {
   constructor({ stage, ui, audio }) {
     this.stage = stage;
@@ -665,8 +679,7 @@ class Game {
   updateDelivery(dt) {
     const d = this.delivery;
     if (!d) return;
-    const heard = this.audio.voiceTime(d.src);
-    d.t = heard >= 0 ? Math.max(d.t, heard) : d.t + dt;
+    d.t = voiceClock(d, this.audio.voiceTime(d.src), dt, d.t);
     while (d.next < d.times.length && d.t >= d.times[d.next]) {
       if (d.bounce) this.ui.bounceWord(d.next);
       else this.ui.showWord(d.next);
@@ -1171,8 +1184,7 @@ class Game {
     }
     if (d.next < d.words.length) {
       if (d.voiced) {
-        const heard = this.audio.voiceTime(d.src); // (on the voice's own clock while it plays)
-        d.elapsed = heard >= 0 ? Math.max(d.elapsed, heard) : d.elapsed + dt;
+        d.elapsed = voiceClock(d, this.audio.voiceTime(d.src), dt, d.elapsed); // (on the voice's own clock while it plays)
         while (d.next < d.words.length && d.elapsed >= d.times[d.next]) this.revealWord(d, true);
       } else {
         d.wait -= dt;
