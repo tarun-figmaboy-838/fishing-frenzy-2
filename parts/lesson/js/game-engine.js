@@ -718,6 +718,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const tok = this.stepTok;
     this.say(L, () => {
       if (tok !== this.stepTok) return;
+      if (this.state.meet) this.tm(() => { if (tok === this.stepTok) this.hideMeet(); }, 1400); // (the lines stay a moment)
       if (this.q) { this.qNext(); if (this.q) return; } // (a reply cut the question short: it ends there, and comes back below)
       // a tip or hint on a question still open: the question comes back on the plate, shown, not said again
       const st = this.cur(), q = this.question(st);
@@ -735,6 +736,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
+    if (c.meet) this.showMeet(c.meet);
     if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
     // diagonals' halves fold onto each other, parallel sides run out as rails - one pair after another
@@ -972,7 +974,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1151,7 +1153,17 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.tm(() => { if (this.buildArmed) this.runBuild(); }, CONFIG.build.delayMs + 2500 + (st.voiceDelay || 0));
     }
     if (st.enterChips) this.tm(() => this.addChips(st.enterChips), Motion.reduced ? 0 : 450); // the screen's cards come in
-    if (st.sideNums) Motion.sideNums((i) => { this.emphasize([['DA', 'AB', 'BC', 'CD'][i]]); this.sfx('pop', { f: (window.Sfx ? Sfx.notes : [523.25, 659.25, 783.99, 1046.5, 1318.5])[i], v: 0.8 }); });
+    // screen 2: the sides are counted one by one - as each number lands its side lights (the light runs along it once)
+    // and stays lit, 1, 2, 3, 4, so the four sides build up; all four lit a moment, then the outline settles
+    if (st.sideNums) {
+      const order = ['DA', 'AB', 'BC', 'CD'], tok = this.stepTok;
+      Motion.sideNums((i) => {
+        if (tok !== this.stepTok) return;
+        this.setState({ glow: order.slice(0, i + 1) });
+        this.sfx('pop', { f: (window.Sfx ? Sfx.notes : [523.25, 659.25, 783.99, 1046.5, 1318.5])[i], v: 0.8 });
+        if (i === order.length - 1) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, 1600);
+      });
+    }
     if (st.assemble) {
       const P = this.state.P;
       Motion.holdSmall((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
@@ -1402,7 +1414,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       picks[o.id] = 'bad';
       this.setState({ picks: picks, cfuFirst: false });
       this.sfx('bad');
-      this.interject({ m: CONFIG.swiftee.wrong, t: o.fb });
+      this.interject({ m: CONFIG.swiftee.wrong, t: o.fb, cues: o.fbCues });
       this.poke();
     }
   }
@@ -2078,7 +2090,54 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   }
   zoomTf(st) {
     const Z = this.sceneFit(st), B = CONFIG.board || { x: 640, y: 104 };
-    return 'translate(' + (Z.F.cx - B.x) + 'px, ' + (Z.F.cy - B.y) + 'px) scale(' + Z.k.toFixed(3) + ') translate(' + (-Z.cx).toFixed(1) + 'px, ' + (-Z.cy).toFixed(1) + 'px)';
+    // (and, while two sides are carried on until they meet, out about the shape's bottom middle just far enough for
+    // their meeting point to show under the plate - never further; the same three steps otherwise, so it glides)
+    let out = ' translate(0px, 0px) scale(1) translate(0px, 0px)';
+    const M = this.meetZoom(st, Z);
+    if (M) out = ' translate(' + M.px.toFixed(1) + 'px, ' + M.y1.toFixed(1) + 'px) scale(' + M.f.toFixed(3) + ') translate(' + (-M.px).toFixed(1) + 'px, ' + (-M.y1).toFixed(1) + 'px)';
+    return 'translate(' + (Z.F.cx - B.x) + 'px, ' + (Z.F.cy - B.y) + 'px) scale(' + Z.k.toFixed(3) + ') translate(' + (-Z.cx).toFixed(1) + 'px, ' + (-Z.cy).toFixed(1) + 'px)' + out;
+  }
+  // the zoom out (f) about the shape's bottom middle (px, y1) that shows where the sides being carried on meet
+  meetZoom(st, Z) {
+    const X = this.state.meet && this.meetPoint(this.state.meet);
+    if (!X) return null;
+    Z = Z || this.sceneFit(st);
+    const P = this.shapeP(), y1 = Math.max(P.C.y, P.D.y), px = (Math.min(P.A.x, P.D.x) + Math.max(P.B.x, P.C.x)) / 2;
+    const bottom = Z.F.cy + Z.k * (y1 - Z.cy), top = CONFIG.card.top + 24;
+    return { px: px, y1: y1, f: Math.max(0.4, Math.min(1, (bottom - top) / (Z.k * Math.max(1, y1 - X.y)))) };
+  }
+  // where two sides of the shape, carried on, meet (board px), or null if they never do (parallel)
+  meetPoint(pair) {
+    const P = this.shapeP(), end = (k) => [P[k[0]], P[k[1]]];
+    const [a, b] = end(pair[0]), [c, d] = end(pair[1]);
+    const r = { x: b.x - a.x, y: b.y - a.y }, q = { x: d.x - c.x, y: d.y - c.y }, den = r.x * q.y - r.y * q.x;
+    if (Math.abs(den) < 1e-6) return null;
+    const t = ((c.x - a.x) * q.y - (c.y - a.y) * q.x) / den;
+    return { x: a.x + r.x * t, y: a.y + r.y * t };
+  }
+  // A wrong "these are parallel": the two sides light and are carried on, past their ends, until they meet - the
+  // card zooming out just enough to show where (zoomTf) - while the tip is said; then they go and the card comes back
+  showMeet(pair) {
+    const tok = this.stepTok, X = this.meetPoint(pair);
+    if (!X || !window.Motion) return;
+    this.setState({ meet: pair, glow: pair });
+    this.tm(() => { // (once the zoom has settled: the lines are drawn on the stage, where the zoomed shape now is)
+      if (tok !== this.stepTok || !this.state.meet) return;
+      const P = this.shapeP(), PAL = CONFIG.palette, toStage = (p) => this.boardToStage(p);
+      const lines = pair.map((k) => {
+        const a = P[k[0]], b = P[k[1]], near = Math.hypot(a.x - X.x, a.y - X.y) < Math.hypot(b.x - X.x, b.y - X.y) ? a : b;
+        const from = toStage(near), to = toStage(X);
+        return from && to ? { x1: from.x, y1: from.y, x2: to.x, y2: to.y, col: k === 'AB' || k === 'CD' ? PAL.line : PAL.pair2 } : null;
+      }).filter(Boolean);
+      const at = toStage(X);
+      if (lines.length === 2 && at) Motion.meet(lines, at);
+    }, Motion.reduced ? 0 : 800);
+  }
+  hideMeet() {
+    if (!this.state.meet) return;
+    const tok = this.stepTok;
+    if (window.Motion) Motion.unmeet();
+    this.tm(() => { if (tok === this.stepTok) this.setState({ meet: null, glow: null }); }, Motion.reduced ? 0 : 420);
   }
   // a caption screen (reference isPlate): no Swiftee - her line is the navy plate across the top. She stays where she
   // does something: the first screen (she arrives and speaks), the measuring walk and the end
@@ -2204,6 +2263,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.summary ? ' summary' : '') + (st.task === 'measure' || st.task === 'measureAngles' ? ' measure-room' : '') + (st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look; summary / measure-room: their own places for Swiftee (css/game.css)
       boardTf: isLesson ? this.zoomTf(st) : 'none',
       boardZ: isLesson ? this.sceneFit(st).k : 1, // the board's zoom: angle values keep one size on screen (css .tag.alab)
+      meetZ: (isLesson && this.meetZoom(st) || { f: 1 }).f.toFixed(3), // (zoomed out to show where sides meet: the letters keep their size)
       boardCls: fadeV,
       // the shape (and its labels) zooms once about its own centre on a cue (Motion.pop)
       popO: s.P ? Math.round((s.P.A.x + s.P.B.x + s.P.C.x + s.P.D.x) / 4) + 'px ' + Math.round((s.P.A.y + s.P.B.y + s.P.C.y + s.P.D.y) / 4) + 'px' : 'center',

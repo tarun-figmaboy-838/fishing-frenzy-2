@@ -643,7 +643,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card .tag.mtag.hA{color:#e65100}.stage.in-card .tag.mtag.hB{color:#00963f}.stage.in-card .tag.mtag.hC{color:#6a35b8}.stage.in-card .tag.mtag.hD{color:#b86e00}
 .stage.in-card .tag.mtag.hv{animation:fade .45s ease-out backwards}
 .stage.in-card .tag.mtag.hv.hd1{animation-delay:.4s}.stage.in-card .tag.mtag.hv.hd2{animation-delay:.8s}.stage.in-card .tag.mtag.hv.hd3{animation-delay:1.2s}
-.stage.in-card .tag.vlab{color:#123b63;font-size:21px}
+.stage.in-card .tag.vlab{color:#123b63;font-size:calc(21px / var(--mz, 1));transition:font-size .7s cubic-bezier(.22,.8,.3,1)}
 /* angle values keep one size on screen at any zoom, like their wedges (--bz: the board's zoom, from the engine), with the
    white outline in em so it scales with them (Fishing Frenzy's lesson) */
 .stage.in-card .tag.alab{font-size:calc(21px / var(--bz, 1));text-shadow:0 0 .14em #fff,0 0 .14em #fff,.095em 0 0 #fff,-.095em 0 0 #fff,0 .095em 0 #fff,0 -.095em 0 #fff,.07em .07em 0 #fff,-.07em -.07em 0 #fff,.07em -.07em 0 #fff,-.07em .07em 0 #fff}

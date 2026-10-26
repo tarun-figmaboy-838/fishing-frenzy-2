@@ -53,6 +53,7 @@
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
       const fx = document.querySelector('.stage svg.math-fx'); if (fx) fx.innerHTML = ''; // (the maths in motion: gone with the screen)
+      this.meetEls = null;
       if (ctx) ctx.revert();
       sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
       const els = $(ANIMATED); // (none yet before the lesson's first screen: GSAP warns about an empty target)
@@ -86,8 +87,8 @@
         const tl = G.timeline({ delay: 0.45 });
         els.forEach((el, i) => {
           tl.fromTo(el, Object.assign({ opacity: 0, scale: 0.9, x: 0, y: 0 }, from[i]),
-            Object.assign({ opacity: 1, scale: 1, x: 0, y: 0 }, ENTER, reduced ? { duration: 0 } : {}), i * 0.65)
-            .call(() => onLand && onLand(i), null, i * 0.65 + 0.5);
+            Object.assign({ opacity: 1, scale: 1, x: 0, y: 0 }, ENTER, reduced ? { duration: 0 } : {}), i * 1.0)
+            .call(() => onLand && onLand(i), null, i * 1.0 + 0.5);
         });
         return tl;
       });
@@ -250,6 +251,33 @@
         this.mk('rect', { x: ((r.left - sr.left) / k - PAD).toFixed(1), y: ((r.top - sr.top) / k - PAD).toFixed(1), width: (r.width / k + 2 * PAD).toFixed(1), height: (r.height / k + 2 * PAD).toFixed(1), rx: 8, fill: '#000' }, mask);
       });
       return { url: 'url(#' + id + ')', remove: () => mask.remove() };
+    },
+    // two sides that are not parallel, carried on: each dashed line grows from its side's end until the two meet, and a
+    // dot marks where (stage px; kept off the words: wordMask). unmeet() fades them away.
+    meet(lines, at) {
+      if (!this.fx()) return 0;
+      this.unmeet(true);
+      const words = this.wordMask(), g = this.mk('g', { 'class': 'math-meet' });
+      if (words) g.setAttribute('mask', words.url);
+      this.meetEls = { g: g, words: words };
+      const lns = lines.map((l) => this.mk('line', { x1: l.x1.toFixed(1), y1: l.y1.toFixed(1), x2: l.x1.toFixed(1), y2: l.y1.toFixed(1), stroke: l.col || '#00b8a9', 'stroke-width': 4, 'stroke-dasharray': '10 8', 'stroke-linecap': 'round' }, g));
+      const dot = this.mk('circle', { cx: at.x.toFixed(1), cy: at.y.toFixed(1), r: 0, fill: '#fff', stroke: '#ff7a00', 'stroke-width': 3.5 });
+      this.meetEls.dot = dot;
+      if (!G || reduced) { lns.forEach((ln, i) => { ln.setAttribute('x2', lines[i].x2); ln.setAttribute('y2', lines[i].y2); }); dot.setAttribute('r', 7); return 0; }
+      add(() => {
+        const tl = G.timeline();
+        lns.forEach((ln, i) => tl.to(ln, { attr: { x2: lines[i].x2, y2: lines[i].y2 }, duration: 1.3, ease: 'power1.inOut' }, 0));
+        tl.to(dot, { attr: { r: 9 }, duration: 0.25, ease: 'back.out(2.5)' }, 1.3).to(dot, { attr: { r: 7 }, duration: 0.2 }, 1.55);
+        return tl;
+      });
+      return 1750;
+    },
+    unmeet(now) {
+      const m = this.meetEls; this.meetEls = null;
+      if (!m) return;
+      const gone = () => { m.g.remove(); m.dot.remove(); if (m.words) m.words.remove(); };
+      if (now || !G || reduced) { gone(); return; }
+      add(() => G.to([m.g, m.dot], { opacity: 0, duration: 0.35, onComplete: gone }));
     },
     // parallel sides: dashed rails shoot out past both ends of each side and run side by side - they never meet (kept
     // off the words: wordMask)

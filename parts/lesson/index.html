@@ -114,7 +114,7 @@
 <circle sc-camel-cx="{{g.kD.x}}" sc-camel-cy="{{g.kD.y}}" r="28" data-qa="vtx-D" sc-camel-display="{{g.kD.d}}" class="{{g.kD.cls}}" onClick="{{g.kD.click}}" onPointerDown="{{g.kD.down}}" fill="rgba(0,0,0,0.001)" style="cursor: {{g.kD.cur}}"></circle>
 </g>
 </svg>
-<div class="board {{boardCls}}" style="position: absolute; left: 640px; top: 104px; width: 520px; height: 420px; pointer-events: none; transform: {{boardTf}}; --bz: {{boardZ}}">
+<div class="board {{boardCls}}" style="position: absolute; left: 640px; top: 104px; width: 520px; height: 420px; pointer-events: none; transform: {{boardTf}}; --bz: {{boardZ}}; --mz: {{meetZ}}">
 <div class="pop-g" style="position: absolute; left: 0px; top: 0px; width: 520px; height: 420px; transform-origin: {{popO}}">
 <sc-for list="{{tags}}" as="tg" hint-placeholder-count="4">
 <div class="tag {{tg.cls}}" onClick="{{tg.click}}" style="left: {{tg.x}}px; top: {{tg.y}}px; --rot: {{tg.r}}">{{tg.t}}</div>
