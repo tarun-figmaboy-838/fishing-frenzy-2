@@ -34,9 +34,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 .halo{animation:halo 1.2s ease-in-out infinite}
 @keyframes halo{0%,100%{stroke-opacity:.25;stroke-width:4}50%{stroke-opacity:.7;stroke-width:10}}
 
-.nudge{animation:nudge 1.1s ease-in-out infinite}
+.nudge{animation:none} /* (the arrow beside the corner to drag only shows the way: the corner itself pulses) */
 @keyframes nudge{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
-.tag{position:absolute;transform:translate(-50%,-50%);font-weight:800;font-size:18px;padding:5px 14px;border-radius:10px;background:#fff;white-space:nowrap;box-shadow:0 2px 6px rgba(18,59,99,.12)}
+.tag{position:absolute;transform:translate(-50%,-50%) rotate(var(--rot,0deg));font-weight:800;font-size:18px;padding:5px 14px;border-radius:10px;background:#fff;white-space:nowrap;box-shadow:0 2px 6px rgba(18,59,99,.12)}
 .vlab{background:transparent;box-shadow:none;padding:0;font-size:21px;font-weight:900;color:#123b63}
 .alab{background:rgba(255,255,255,.75);box-shadow:none;padding:1px 6px;font-size:17px;font-weight:900;color:#123b63}
 
@@ -328,8 +328,12 @@ a{color:#123b63}a:hover{color:#0b2742}
 .vdot{transition:r .45s cubic-bezier(.3,0,.3,1),stroke .3s ease,stroke-width .3s ease,filter .3s ease}
 /* a named corner: the dot grows gold with a soft gold glow; the corner to drag pulses gently with a gold glow (as there) */
 .vdot.on{filter:drop-shadow(0 0 5px rgba(255,196,0,.95))}
-.vdot.drag-cue{transform-box:fill-box;transform-origin:center;animation:dragCue 1.3s ease-in-out infinite}
-@keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.3);filter:drop-shadow(0 0 7px rgba(255,196,0,.95))}}
+.vdot.drag-cue{transform-box:fill-box;transform-origin:center;animation:dragCue 1.4s ease-in-out infinite}
+@keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.45);filter:drop-shadow(0 0 8px rgba(255,196,0,.95))}}
+/* an angle to tap: the wedge itself beats gently out from its corner, brighter at the top of each beat */
+.wedge.try{animation:wedgeTry 1.4s ease-in-out infinite}
+@keyframes wedgeTry{0%,100%{transform:scale(1);filter:none}50%{transform:scale(1.22);filter:brightness(1.12) drop-shadow(0 0 5px rgba(255,196,0,.85))}}
+@media (prefers-reduced-motion: reduce){.wedge.try{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
 @media (prefers-reduced-motion: reduce){.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */

@@ -803,7 +803,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur(), s = this.state, P = s.P;
     if (!s.started || st.end || s.done) return null;
     const t = st.task;
-    if (t === 'tapEq') return null; // never the answer: the corners to try glow instead (.vp)
+    if (t === 'tapEq') return null; // never the answer: the angles to try pulse instead (.wedge.try)
     if (t === 'connect') { // from a corner toward its opposite corner
       const a = s.diag.AC ? 'B' : 'A', b = this.opp(a), L = this.dist(P[a], P[b]) || 1, k2 = Math.min(130, L * 0.6) / L;
       return { qa: 'vtx-' + a, kind: 'drag', dx: Math.round((P[b].x - P[a].x) * k2), dy: Math.round((P[b].y - P[a].y) * k2) };
@@ -1872,9 +1872,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         cls: (gold && vOn(k) ? 'on' : '') + (drag && !s.moved && !s.dragging ? ' drag-cue' : '') };
       const tapV = task === 'tapEq' && !s.done;
       const conn = task === 'connect' && !s.done && !fig;
-      const pulse = (tapV && !s.ang[k] && k !== st.ref) || (conn && !(s.conn && s.conn.from === k)); // the corners to try glow
+      // what the learner is to touch is what pulses - never a ring or a disc round it: on a tap-the-angle question each
+      // angle still to try (its wedge) beats gently from its corner; on the diagonals each corner to draw from (its dot)
+      const pulse = (tapV && !s.ang[k] && k !== st.ref) || (conn && !(s.conn && s.conn.from === k));
+      if (pulse && !this.busy()) {
+        if (tapV && g['a' + k]) g['a' + k].cls += ' try';
+        if (conn) g['v' + k].cls += ' drag-cue';
+      }
       g['k' + k] = {
-        x: r1(Vk.x), y: r1(Vk.y), d: dsp(tapV || drag || conn), cls: pulse && !this.busy() ? 'vp' : '',
+        x: r1(Vk.x), y: r1(Vk.y), d: dsp(tapV || drag || conn), cls: '',
         cur: drag ? (s.dragging ? 'grabbing' : 'grab') : 'pointer',
         click: tapV ? () => this.tapVertex(k) : noop,
         down: drag || conn ? (e) => this.down(k, e) : noop
@@ -1884,7 +1890,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (dk) {
       // over a top-side length label the arrow sits left of the corner so both stay readable
       const Vk = P[dk], y0 = r1(Vk.y + (Vk.y < 280 ? -40 : 42)), x = r1(Vk.x - (dk === 'A' && f.sideLen ? 44 : 0));
-      g.halo = { x: r1(Vk.x), y: r1(Vk.y), d: dsp(!s.dragging) };
+      g.halo = { x: r1(Vk.x), y: r1(Vk.y), d: 'none' }; // (no ring round it: the corner itself pulses, .drag-cue)
       g.arw = {
         p: 'M' + (x - 26) + ',' + y0 + ' L' + (x + 26) + ',' + y0,
         h: 'M' + (x - 40) + ',' + y0 + ' L' + (x - 27) + ',' + (y0 - 7) + ' L' + (x - 27) + ',' + (y0 + 7) + ' Z M' + (x + 40) + ',' + y0 + ' L' + (x + 27) + ',' + (y0 - 7) + ' L' + (x + 27) + ',' + (y0 + 7) + ' Z',
