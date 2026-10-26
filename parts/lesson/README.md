@@ -70,7 +70,9 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   a length, a diagonal (AC, diagonals), point O, a half (AO, segments); a line's own `cues` add a glow, a name card, a
   pulse, an angle focus (`focus`: the named angles stay vivid, the others step back) or the sum card lifting (`hiEq`).
   While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
-  explained. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
+  explained. Focus: while a part is named, the others of its kind step back too (sides, a lone diagonal, the halves,
+  the lengths, the angles), so the eye goes to what is being said. A line's cards come in as its voice starts, and
+  cards that arrive together come in one after another (`CHIP_GAP`, 320 ms), never all at once. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
 - **One place for the shape.** Every screen keeps the same lane under the shape (two rows of name tags), so the shape
   has one centre and one size from screen to screen whatever comes and goes under it (`sceneFit`); only a block
   taller than the lane pulls it up, and the measuring screens and the first put it right of Swiftee.
@@ -84,7 +86,7 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   on, a line whose clip cannot play shows silently, and the journey never uses the device's speech voice.
 - **The named side**: a sunflower-yellow marker redraws it, a glowing pen tip running along it, while the other sides
   step back; named angles and corners grow. Parallel arrows, equal ticks and name tags arrive on their words.
-- **Checks**: answers appear once the question has been asked; a wrong answer shakes with a tip and can be tried again;
+- **Checks**: answers rise in, one after another, as Swiftee says the question's last word (`askedNow`); a wrong answer shakes with a tip and can be tried again;
   a right one turns green with the correct sound and confetti. A checkpoint counts if it was right first time.
 - **Idle**: the hand shows what to tap or drag after 8 s with no touch; an instruction is said once, never again (as in Fishing Frenzy)
   (at most 3 times).

@@ -152,6 +152,10 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Stage.** The world is a fixed 1672x941 logical space scaled to the viewport. The paintings
   have their waterline 41% down, so they are drawn `SCENE_SHIFT` lower (the water pass carries
   the sky on above them), putting the water at about 60% and leaving the sky to the net.
+  A device that can't keep up steps down, one step each time frames run slow for a couple of seconds, for good
+  (`Game.watchFrameRate`): the water pass at 60% of its size, then the drawing at no more than 1.5 and then 1 canvas
+  pixel per screen pixel (`Stage.dprCap`), then the water at 42%. The water pass works out each effect only where it
+  moves anything, and under the lesson the lake is drawn every other frame while the lesson's camera holds still.
 - **Teaching the shape.** The net carries only what its level is about, drawn as the lesson draws it, nothing that
   clutters it or gives the answer away: on the parallel levels the pair's orange parallel chevrons (whether they are
   parallel is for the eye, zoomed in, and Check); on the length levels the side given and the one being set, in
@@ -159,8 +163,10 @@ The game is deployed as part of the journey: the repository's root is the static
   in the corners' own colours with their degrees; on the diagonals level the diagonals, O and their four halves; on the
   last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and a trail of two
   yellow chevrons tight against the knob on each open side runs the way it can still slide, as a game shows a swipe
-  (a tap on a trail moves it a stop; the track itself isn't drawn). The labels are laid out together so none covers
-  another. The answer lies further from the start level by level (5 to 9
+  (a tap on a trail moves it a stop; the track itself isn't drawn; the trails reach out with the readings on a small
+  screen, so their tap targets never overlap the knob). The labels are laid out together so none covers another, and
+  each keeps clear of the lifting ring, the weights, the corner letters and the knob (`Net.labelObstacles`); the zoom
+  keeps the net below the HUD's top row. The answer lies further from the start level by level (5 to 9
   stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
   it is plainly the thing to look at.
 - **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, 1.7x about the
@@ -197,7 +203,9 @@ The game is deployed as part of the journey: the repository's root is the static
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
   other line (the narrator's, every prompt, praise and hint) is Swiftee's studio voice - Fishing
   Frenzy's own clips, and the lesson's (`../lesson/assets/vo/`, loaded by path and played from
-  their first word). Each net's lines are worded exactly as she recorded them.
+  their first word). Each net's lines are worded exactly as she recorded them. For the lesson's clips the plate's
+  words come at the lesson's own measure of when each word is said (`../lesson/js/vo_lines.js`, `AudioEngine.wordTimes`),
+  and every voiced line's words follow the voice's playhead (`AudioEngine.voiceTime`), so they never drift from it.
 - **HUD.** Narration follows the Fishing Frenzy games: the instruction (prompt, praise, hint)
   and the narrator's lines sit on one translucent navy plate with a faint gold rim, white
   text and the key word in gold, fitted to the words. The instruction is always one line (a
