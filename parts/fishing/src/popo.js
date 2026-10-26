@@ -18,6 +18,8 @@ const FRAMES = [
   { shaft: [661, 293.5], head: [300, 24], lift: -2.75 },
   { shaft: [616, 293], head: [260, 20], lift: -3 },
 ];
+// each pose's drawn pixels in its frame (left, top, right, bottom; measured from the sheet's alpha)
+const POSE_BOX = [[115, 52, 662, 557], [72, 66, 621, 556], [111, 24, 666, 508], [59, 20, 622, 507]];
 const S = 0.37; // sheet pixels to stage pixels, the same both ways
 // He cranks at his own brisk, steady pace while the winch runs, poses (quarter turns) a second:
 // the drum's rope speeds up and slows down, but a bear turning a wheel keeps a rhythm.
@@ -153,6 +155,26 @@ class Popo {
     const o = this.frameOrigin();
     const h = FRAMES[this.frame].head;
     return this.transformPoint(o.x + h[0] * S, o.y + h[1] * S);
+  }
+
+  // The seated bear on the stage, his wheel included: the box round the drawn pixels of all four poses (POSE_BOX), so it
+  // holds still as he turns his wheel (the zoom on the net keeps him in view: Game.fitFocus).
+  box() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    FRAMES.forEach((f, i) => {
+      const ox = this.axle.x - f.shaft[0] * S, oy = this.axle.y - (f.shaft[1] - f.lift) * S, b = POSE_BOX[i];
+      for (const [x, y] of [[b[0], b[1]], [b[2], b[1]], [b[0], b[3]], [b[2], b[3]]]) {
+        const q = this.transformPoint(ox + x * S, oy + y * S);
+        x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y);
+      }
+    });
+    return { x0, y0, x1, y1 };
+  }
+
+  // The raft's logs and bucket on the stage (their drawn pixels: x 4-368, y 277-390 of the prop's cell), riding the waves.
+  raftBox() {
+    const k = PROP.scale, pts = [[4, 277], [368, 277], [4, 390], [368, 390]].map(([x, y]) => this.transformPoint((x - PROP.mid) * k, (y - PROP.bottom) * k));
+    return { x0: Math.min(...pts.map((p) => p.x)), y0: Math.min(...pts.map((p) => p.y)), x1: Math.max(...pts.map((p) => p.x)), y1: Math.max(...pts.map((p) => p.y)) };
   }
 
   bucketPoint() {

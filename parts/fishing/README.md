@@ -178,9 +178,11 @@ The game is deployed as part of the journey: the repository's root is the static
   keeps the net below the HUD's top row. The answer lies further from the start level by level (5 to 9
   stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
   it is plainly the thing to look at.
-- **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, 1.7x about the
-  net's middle, as the lesson's camera dives: the scene and the net's corner together, the hint hand through its own
-  transform; the HUD stays), so the corner is set on a big net; the corner moved, Check comes up as a pill bottom
+- **The drag and Check.** As a net comes down the view zooms in on it by itself (`Game.applyFocus`, up to 1.7x, as
+  the lesson's camera dives: the scene and the net's corner together, the hint hand through its own transform; the HUD
+  stays), so the corner is set on a big net. The zoom (`Game.fitFocus`) fits the net, every stop of its corner, the
+  crane and Popo at his wheel, whole (`Popo.box`), so he stays in view beside his net: about 1.45x to 1.7x by net
+  and screen; the corner moved, Check comes up as a pill bottom
   right (`UI.setAction`). Check
   (`checkNet` in `src/sequences.js`) tests the frame: a right one locks with a click, holds a moment glowing as its
   praise begins, and either way the net goes slowly down while the view opens out again with it. A wrong net

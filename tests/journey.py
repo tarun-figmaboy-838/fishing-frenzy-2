@@ -73,7 +73,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
            away: Math.abs(g.popo.travelShift) > 1600, handle: !$('handle').hidden,
-           action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
+           action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), fit: +(g.focus.zoom || 0).toFixed(2), bearIn: (() => { const b = g.popo.box(), f = g.focus, sx = (x) => f.ox + (x - f.ox) * f.z; return sx(b.x0) >= 0 && sx(b.x1) <= PopoGame.STAGE_W; })(), tangle: +g.net.tangle.toFixed(2),
            inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length,
            goal: !$('goal').hidden, goalLine: $('goal-line').textContent, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
 
@@ -91,6 +91,9 @@ HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net
            pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('btn-next').hidden || !$('handle').hidden,
            school: school.length, schoolCaught: school.filter((f) => f.caught).length, fx: !!g.hookFx, cam: [g.camera.zoom, g.camera.pan],
            hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
+# every line the game says, as it says it (installed before Play, so none is missed however quick)
+RECORD_LINES = '''() => { const g = window.popoDebug.game; if (g.__recording) return; g.__recording = true; window.__lines = [];
+  const say = g.say.bind(g); g.say = (line, token) => { window.__lines.push(line.who + ':' + line.text.replace(/\\*/g, '')); return say(line, token); }; }'''
 # the hook's lines as levels.js has them (speaker and words, no emphasis marks)
 HOOK_LINES = '''() => Object.values(PopoGame.STORY.hook).map((l) => l.who + ':' + l.text.replace(/\\*/g, ''))'''
 
@@ -291,13 +294,13 @@ def catch_level(r, n, shot, wrong_first=False):
     ff = part(r.page, 'fishing')
     st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == n, 90, f'net {n} is ready')
     check(not st['ok'] and st['action'] is None and not st['drop'], f'{r.tag}: net {n} comes down, its corner off its place, no button yet', f"stop {st['stop']}")
-    st = until(r.fish, lambda s: s['zoom'] > 1.6, 5, 'the view zooms in on the net')
-    check(True, f'{r.tag}: the view zooms in on the net by itself as it comes down')
+    st = until(r.fish, lambda s: s['fit'] > 1.4 and s['zoom'] >= s['fit'] - 0.01, 5, 'the view zooms in on the net')
+    check(st['bearIn'], f'{r.tag}: the view zooms in on the net by itself as it comes down, Popo at his wheel still in it', f"zoom {st['zoom']}")
     before = st['caught']
     if wrong_first:
         set_corner(r, 1 if st['stop'] < 0 else -1)
         st = until(r.fish, lambda s: s['action'] == 'check', 5, 'Check comes up')
-        check(not st['ok'] and st['zoom'] > 1.5, f'{r.tag}: a corner moved: Check comes up, the view still on the net', f"zoom {st['zoom']}")
+        check(not st['ok'] and st['zoom'] > 1.4, f'{r.tag}: a corner moved: Check comes up, the view still on the net', f"zoom {st['zoom']}")
         r.tap_el(ff, '#btn-action')
         st = until(r.fish, lambda s: s['phase'] == 'tangled', 15, 'the wrong net tangles')
         st = until(r.fish, lambda s: s['action'] == 'again', 10, 'Try again')
@@ -308,7 +311,7 @@ def catch_level(r, n, shot, wrong_first=False):
         check(st['tangle'] == 0 and not st['ok'] and st['action'] is None, f'{r.tag}: Try again: the net is untangled and comes down in its starting shape')
     set_corner(r, 0)
     st = until(r.fish, lambda s: s['ok'] and s['action'] == 'check', 5, 'the corner on its place, Check up')
-    check(st['stop'] == 0 and st['zoom'] > 1.5, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and Check comes up')
+    check(st['stop'] == 0 and st['zoom'] > 1.4, f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and Check comes up')
     r.shot(f'{shot}a-level-{n + 1}')
     r.tap_el(ff, '#btn-action')
     st = until(r.fish, lambda s: s['phase'] == 'fishing', 20, 'the right net down in the water')
@@ -361,8 +364,6 @@ def hook(r):
         if time.time() > end:
             raise SystemExit(f'FAIL the hook never reached the lesson (lines so far: {lines})')
         h = ff.evaluate(HOOK)
-        if h['line'] and (not lines or lines[-1] != h['line']):
-            lines.append(h['line'])
         if h['tangle'] > 0.9 and not tangled:
             tangled = True
             seen['tangles'] += 1
@@ -388,6 +389,7 @@ def hook(r):
                 shots.add('fx'); r.page.wait_for_timeout(500); r.shot('3c-hook-outline')
         r.page.wait_for_timeout(80)
     h = ff.evaluate(HOOK)
+    lines = ff.evaluate('() => window.__lines.slice(0, 10)')
     check(lines == want, f'{r.tag}: the hook says its ten lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
     check(seen['tangles'] == 3 and seen['wrongTangled'] and not seen['invalid'],
           f'{r.tag}: the wrong nets (not parallelograms) tangle in the water, three times', f"{seen['tangles']} tangles")
@@ -420,6 +422,7 @@ def journey(p, engine, size, url):
     r.shot('1-banner')
 
     # ---------- Play: the game's story at once, and its first net (the intro) ----------
+    part(page, 'fishing').evaluate(RECORD_LINES)
     play_tap(r)
     page.wait_for_timeout(200)
     st, fs = r.shell(), r.fish()

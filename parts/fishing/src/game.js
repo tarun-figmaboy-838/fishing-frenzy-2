@@ -319,9 +319,10 @@ class Game {
   // As a net comes down the view zooms in on it by itself (as the lesson's camera dives: the scene, the net's corner
   // and the hint hand scale together about the net's middle), so the child sets the corner on a big net; Check opens
   // the view out again as the net goes down (focusOut over that time). The HUD (the plate, the buttons) stays as it is.
-  // The zoom fits the net and the whole of its corner's track (every stop the corner can reach), with a margin, so
-  // nothing the child needs leaves the screen: as much as FOCUS.zoom, less where the track is wide, about a point
-  // chosen so the fitted box sits inside the stage (scaling about a point off the box's middle slides it along).
+  // The zoom fits the net and the whole of its corner's track (every stop the corner can reach), with a margin, and
+  // Popo at his wheel, so nothing the child needs leaves the screen and the net's fisherman stays beside it: as much
+  // as FOCUS.zoom, less where the track is wide, about a point chosen so the fitted box sits inside the stage (scaling
+  // about a point off the box's middle slides it along).
   focusOn() {
     this.focus.want = 1;
     this.focus.fit = true; // (measured on the zoom's first frame, once the net's place on the stage is fresh)
@@ -331,10 +332,13 @@ class Game {
     // the room round the net for its labels and letters grows with them on a small screen (labelScale)
     const net = this.net, f = this.focus, PAD = 40 + 30 * net.textScale;
     const pts = [...net.points, net.stop(net.track.min), net.stop(net.track.max), { x: 0, y: 0 }].map((q) => net.toStage(q));
-    const x0 = Math.min(...pts.map((q) => q.x)) - PAD, x1 = Math.max(...pts.map((q) => q.x)) + PAD;
+    // ...and Popo at his wheel, whole: the net is his, and the view keeps him in it
+    const bear = this.popo.box();
+    const x0 = Math.min(Math.min(...pts.map((q) => q.x)) - PAD, bear.x0 - 12), x1 = Math.max(...pts.map((q) => q.x)) + PAD;
     // ...and the crane's boom, which runs across the top of the view: kept below the HUD too, so the counter and the
     // plate sit on open sky, not on the copper pipe
-    const y0 = Math.min(Math.min(...pts.map((q) => q.y)) - PAD, this.craneBox('top').y0 - 16), y1 = Math.max(...pts.map((q) => q.y)) + PAD;
+    const y0 = Math.min(Math.min(...pts.map((q) => q.y)) - PAD, this.craneBox('top').y0 - 16, bear.y0 - 12);
+    const y1 = Math.max(Math.max(...pts.map((q) => q.y)) + PAD, bear.y1 + 8);
     // the zoomed net keeps below the HUD's top row (the plate, the counter, sound and pause), which is bigger on a
     // small screen (its type never shrinks below a readable size), so nothing on the net goes under the plate
     const em = parseFloat(getComputedStyle(this.stage.root).fontSize) / this.stage.scale || 10, top = Math.min(STAGE_H * 0.3, 9.4 * em);
@@ -1056,14 +1060,28 @@ class Game {
   }
 
   placeSpeech() {
+  // The speaker's bubble sits by their head where the view shows it: through the zoom on the net, which Popo stays in
+  // (fitFocus), as the bubble itself is not zoomed.
     const bird = this.dialogue && this.dialogue.who === 'swiftee' && this.swiftee;
     if (bird) {
-      const h = bird.head();
-      this.ui.placeSpeech(h.x, h.y);
+      const h = bird.head(), p = this.inView(h.x, h.y);
+      this.ui.placeSpeech(p.x, p.y);
       return;
     }
-    const head = this.popo.headTop();
-    this.ui.placeSpeech(head.x + 36, head.y + 16, [this.craneBox('mast')]);
+    const head = this.popo.headTop(), p = this.inView(head.x, head.y);
+    this.ui.placeSpeech(p.x + 36, p.y + 16, [this.mastInView()]);
+  }
+
+  // a scene point where the view shows it (through the zoom on the net; the lesson's camera has a view of its own)
+  inView(x, y) {
+    const f = this.focus;
+    if (f.z === 1 || this.camera.zoom !== 1) return { x, y };
+    return { x: f.ox + (x - f.ox) * f.z, y: f.oy + (y - f.oy) * f.z };
+  }
+
+  mastInView() {
+    const m = this.craneBox('mast'), a = this.inView(m.x0, m.y0), b = this.inView(m.x1, m.y1);
+    return { x0: a.x, y0: a.y, x1: b.x, y1: b.y };
   }
 
   // Popo's bubble fits between the stage's left edge and the crane's mast (UI.placeSpeech keeps it off the mast), so
@@ -1071,7 +1089,7 @@ class Game {
   // 7 of its letters' em), it keeps its usual width.
   popoBubbleWidth() {
     const em = parseFloat(getComputedStyle(this.ui.el.speech).fontSize) || 20;
-    const room = this.craneBox('mast').x0 * this.stage.scale - 14;
+    const room = this.mastInView().x0 * this.stage.scale - 14;
     return room >= 7 * em ? Math.min(room, 15 * em) : 0;
   }
 
