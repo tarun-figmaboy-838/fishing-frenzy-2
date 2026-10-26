@@ -756,6 +756,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (c.chip) this.addChips([c.chip]);
     if (c.glow) this.sfx('glint', { v: 0.9 }); // a side (or the outline) lights up on its word
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
+    else if (c.hi !== undefined) this.setState({ chipHi: c.hi || null }); // (a card that lifts on its word, the shape left calm)
     if (c.pulse) Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
     if (c.ms) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null, chipHi: null }); }, c.ms);
   }

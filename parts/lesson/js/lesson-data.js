@@ -57,8 +57,8 @@ const LESSON = {
     // once. Screen 4 never lights up AB/CD on "parallel": screen 5 asks which pair is parallel.
     { pdf: 3, id: 'special', skin: 'intro', lines: [{ m: 'happy', t: 'This is a special type of\nquadrilateral called trapezium.', growAt: 'special',
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1 } },
-    { pdf: 4, id: 'onePair', skin: 'intro', lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.',
-      cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: { noLetters: 1 } },
+    { pdf: 4, id: 'onePair', skin: 'intro', enterChips: [{ t: 'Trapezium', k: 'name' }],
+      lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.' }], f: { noLetters: 1 } },
     Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?' }],
       // right answer: AD ∥ BC folds away and AB ∥ CD settles alone in the centre, green (storyboard page 6)
       ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 },
@@ -79,25 +79,25 @@ const LESSON = {
     // name lands on its own row below the pair, the whole outline glows once and the shape pulses
     { pdf: 10, id: 'defPg', chipRows: 1, chipTop: 428,
       lines: [{ t: 'We call this a parallelogram.', cues: [
-        { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
-        { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'], hi: 'AD ∥ BC' },
-        { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }], f: PG },
+        { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, hi: 'AB ∥ CD' },
+        { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, hi: 'AD ∥ BC' },
+        { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], hi: 'Parallelogram', ms: 1400 }] }], f: PG },
     // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
     // Swiftee says it, AB + CD glow with their card, then AD + BC with theirs; "parallelogram" pops the name card in on
     // its own row and the whole outline glows once
     { pdf: 11, id: 'defFull', chipRows: 1, chipTop: 428,
-      enterChips: [{ t: 'AB ∥ CD', k: 'white' }, { t: 'AD ∥ BC', k: 'white' }],
+      enterChips: [{ t: 'AB ∥ CD', k: 'white' }, { t: 'AD ∥ BC', k: 'white' }, { t: 'Parallelogram', k: 'name' }],
       lines: [{ t: 'A quadrilateral where both pairs\nof opposite sides are parallel is\ncalled a parallelogram.', cues: [
         { at: 'pairs', glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
         { at: 'sides', glow: ['DA', 'BC'], hi: 'AD ∥ BC' },
-        { at: 'called', glow: null },
-        { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], pulse: 1, ms: 1300 }] }],
+        { at: 'called', glow: null, hi: null },
+        { at: 'parallelogram', hi: 'Parallelogram', ms: 1400 }] }],
       f: PG },
 
     // ---------- Part 2 · opposite side lengths (pages 12-20) ----------
     // (the sides light on "lengths" / "equal": the question is about them, and nothing else is on the board yet)
     { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?', cues: [{ at: 'lengths', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
-    { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?', cues: [{ at: 'equal', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
+    { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?' }], f: PG },
     { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's measure them." }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
     { pdf: 15, id: 'interesting', lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
@@ -112,7 +112,7 @@ const LESSON = {
       ], f: LENS }, PRACTICE),
     { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'equal', match: [['AB', 'CD'], ['DA', 'BC']] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }],
       f: Object.assign({ ticks: 1 }, LENS) },
-    { pdf: 19, id: 'soAny', lines: [{ t: 'So, in any parallelogram…', glow: ['AB', 'CD', 'DA', 'BC'],
+    { pdf: 19, id: 'soAny', lines: [{ t: 'So, in any parallelogram…',
       chips: [{ t: 'AB ∥ CD', k: 'white sm' }, { t: 'AD ∥ BC', k: 'white sm' }, { t: 'AB = CD', k: 'white sm' }, { t: 'AD = BC', k: 'white sm' }] }],
       f: Object.assign({ ticks: 1 }, PG, LENS) },
     { pdf: 20, id: 'sidesSum', lines: [{ m: 'happy', t: 'So, in any parallelogram,\nopposite sides are\nparallel and equal.',
