@@ -611,7 +611,7 @@ class Net {
       if (!open) continue;
       for (let n = 0; n < 2; n += 1) {
         const wave = this.reduced ? 0.7 : (Math.sin(this.time * 5 - n * 1.3) + 1) / 2; // (runs outward)
-        const size = (1 - n * 0.18) * k, d = ARROW_REACH + n * 15 * k + (this.reduced ? 0 : wave * 2.5);
+        const size = (1 - n * 0.18) * k, d = ARROW_REACH * k + n * 15 * k + (this.reduced ? 0 : wave * 2.5);
         const tip = add(knob, times(dir, sign * (d + 5 * size)));
         const back = add(knob, times(dir, sign * (d - 4 * size)));
         const a = add(back, times(perp, 9 * size)), b = sub(back, times(perp, 9 * size));
@@ -632,11 +632,13 @@ class Net {
   }
 
   // Where the two slide arrows sit beside the knob at `knob` (a stage point), each null at its
-  // end of the track; their tap targets go there (Game.placeHandle).
+  // end of the track; their tap targets go there (Game.placeHandle). They reach out with the labels on a small screen
+  // (textScale), so the two 48 px targets never overlap each other or the knob's middle (where a tap is the knob's own,
+  // not a step).
   arrowPoints(knob) {
     if (this.locked || this.furl) return { back: null, on: null };
     const dir = normalize(sub(this.toStage(this.stop(this.track.max)), this.toStage(this.stop(this.track.min))));
-    const at = (sign) => add(knob, times(dir, sign * ARROW_REACH));
+    const at = (sign) => add(knob, times(dir, sign * (ARROW_REACH + 7) * this.textScale));
     return { back: this.stopAt > this.track.min ? at(-1) : null, on: this.stopAt < this.track.max ? at(1) : null };
   }
 
