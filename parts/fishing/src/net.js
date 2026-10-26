@@ -1011,6 +1011,17 @@ class Net {
       const o = intersection(c[0], c[2], c[1], c[3]) || midpoint(c[0], c[2]);
       out.push({ x0: o.x - 12, y0: o.y - 12, x1: o.x + 12, y1: o.y + 12 });
     }
+    // the parallel marks at the middles of the marked sides
+    // (each chevron's own points, as drawTicks draws them, and a little air)
+    for (const [name, n] of Object.entries(this.markedSides || {})) {
+      const [i, j] = side(name), m = midpoint(c[i], c[j]), u = normalize(sub(c[j], c[i])), pts = [];
+      for (let q = 0; q < n; q += 1) {
+        const o = (q - (n - 1) / 2) * 13 * k, px = m.x + u.x * o, py = m.y + u.y * o;
+        pts.push({ x: px - u.x * 9 * k - u.y * 9 * k, y: py - u.y * 9 * k + u.x * 9 * k }, { x: px + u.x * 6 * k, y: py + u.y * 6 * k }, { x: px - u.x * 9 * k + u.y * 9 * k, y: py - u.y * 9 * k - u.x * 9 * k });
+      }
+      const pad = 3 * k;
+      out.push({ x0: Math.min(...pts.map((q) => q.x)) - pad, y0: Math.min(...pts.map((q) => q.y)) - pad, x1: Math.max(...pts.map((q) => q.x)) + pad, y1: Math.max(...pts.map((q) => q.y)) + pad });
+    }
     // the crane and Popo beside the net (the game's: Game.draw), so no label lands on the copper or on him
     for (const b of this.sceneBoxes || []) out.push({ x0: b.x0 - 10, y0: b.y0 - 10, x1: b.x1 + 10, y1: b.y1 + 10 });
     return out;
@@ -1231,6 +1242,10 @@ class Net {
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     // Only what the task is about is on the net - the value given and the one the child sets - so nothing clutters
     // it or gives the answer away: the net is checked by pressing Check, not by reading it
+    // (the side nets are parallelograms in the making: both pairs carry their parallel marks - one chevron on AB and
+    // CD, two on BC and AD - with the lengths, so opposite sides equal and parallel are seen together)
+    const bothPairs = () => { this.drawTicks(ctx, c, ['AB', 'CD'], false, 1); this.drawTicks(ctx, c, ['BC', 'DA'], false, 2); };
+    this.markedSides = { sides: 1, parallelogram: 1 }[L.type] ? { AB: 1, CD: 1, BC: 2, DA: 2 } : L.type === 'parallel' ? Object.fromEntries(L.sides.map((k) => [k === 'AD' ? 'DA' : k, L.sides[0] === 'AB' ? 1 : 2])) : null;
     switch (L.type) {
       case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel':
@@ -1242,6 +1257,7 @@ class Net {
         this.drawLength(ctx, c, L.side, m(L.side), true);
         break;
       case 'sides': { // the two sides given, and the two the child sets (their opposites)
+        bothPairs();
         const given = Object.keys(L.metres);
         for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, given.includes(name) ? `${L.metres[name]} cm` : m(name), !given.includes(name));
         break;
@@ -1259,6 +1275,7 @@ class Net {
         break;
       default: {
         // the whole parallelogram: both pairs of sides (the check is that opposite sides match)
+        bothPairs();
         const mine = ['AB', 'BC', 'CD', 'AD'].filter((name) => name.includes(L.corner));
         for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, m(name), mine.includes(name));
       }
@@ -1292,9 +1309,14 @@ class Net {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const k = this.textScale;
+    // (the marks on a pair point the same way, as parallel marks do: each side's direction is turned to agree with the
+    // first side's, whichever way round its letters are named)
+    let first = null;
     for (const name of sides) {
       const [i, j] = side(name);
-      const u = normalize(sub(c[j], c[i]));
+      let u = normalize(sub(c[j], c[i]));
+      if (!first) first = u;
+      else if (dot(u, first) < 0) u = times(u, -1);
       const mid = midpoint(c[i], c[j]);
       for (let pass = 0; pass < 2; pass += 1) {
         ctx.lineWidth = (pass ? 3.4 : 7.5) * k;
