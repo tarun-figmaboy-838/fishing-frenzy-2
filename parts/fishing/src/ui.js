@@ -589,9 +589,17 @@ class UI {
 
   // (the hand's own transform carries the view's zoom on the net, Game.applyFocus: its fingertip is the image's
   // top-left corner, so it scales from there)
+  // The hand hangs down and right of its fingertip, so pointing at a pill along the bottom of the stage it would run
+  // off the screen: its fingertip then moves up (or left) just enough for the whole hand, and its tap, to stay on it -
+  // still on the pill.
   moveHand(x, y) {
     const q = this.zoomed ? this.zoomed({ x, y }) : { x, y, z: 1 };
-    this.el.hand.style.transform = `translate(${(q.x * this.scale).toFixed(1)}px, ${(q.y * this.scale).toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '');
+    const hand = this.el.hand, stage = this.el.hits.parentElement;
+    let px = q.x * this.scale, py = q.y * this.scale;
+    const w = hand.offsetWidth * q.z, h = hand.offsetHeight * q.z, tap = 0.7 * parseFloat(getComputedStyle(hand).fontSize || 0); // (hand-tap moves it 0.7em)
+    if (h) py = Math.min(py, stage.clientHeight - h - tap - 4);
+    if (w) px = Math.min(px, stage.clientWidth - w - tap - 4);
+    hand.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px)` + (q.z !== 1 ? ` scale(${q.z.toFixed(4)})` : '');
   }
 
   showRotateHint(show) {

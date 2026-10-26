@@ -488,7 +488,7 @@ html, body {
   .instruction { font-size: 2.4em; padding: 0.7em 1.4em 0.7em 1em; min-height: 2.4em; }
   .hud-top { gap: 0.6em; left: 1em; right: 1em; top: 1em; }
   .drop-btn { font-size: 2.6em; }
-  .hand { width: 7em; height: 7em; }
+  .hand { width: 5.6em; height: auto; } /* (its own proportions: forced square it was squashed) */
 }
 
 @media (prefers-reduced-motion: reduce) {
