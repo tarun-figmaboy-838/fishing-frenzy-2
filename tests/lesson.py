@@ -226,7 +226,8 @@ def main():
                     asked(); pick('OC', '5'); pick('OD', '3')
                     check(st()['done'], 'Checkpoint 3b: OC = 5 and OD = 3 finish it')
                 elif sid == 'cp3c':
-                    wrong_then('[data-qa="opt-aobo"]', ['[data-qa="opt-aooc"]', '[data-qa="opt-bood"]', '[data-qa="opt-bis"]'], 'Checkpoint 3c (select all)')
+                    wrong_then('[data-qa="opt-aobo"]', ['[data-qa="opt-aooc"]', '[data-qa="opt-bood"]'], 'Checkpoint 3c (select all)')
+                    check(page.locator('[data-qa="opt-bis"]').count() == 0, 'Checkpoint 3c: no fifth answer (bisecting is what the right answer shows)')
             if sid == 'end':
                 until(st, lambda s: not s['talking'], 30, 'the goodbye')
                 time.sleep(1.5)
