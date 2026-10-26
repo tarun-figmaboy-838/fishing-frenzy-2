@@ -126,10 +126,13 @@ def main():
                 time.sleep(0.5)
             check(st()['done'], what + ': the right answer finishes it')
 
-        def pick(blank, value):
+        def pick(blank, value):  # the answer box, then the choice under the boxes that carries the value
             tap('[data-qa="blank-%s"]' % blank)
             time.sleep(0.35)
-            tap('[data-qa="ddopt-%s"]' % value)
+            qa = page.evaluate('(v) => { const t = [...document.querySelectorAll(".tile-row .tile")].find((b) => b.textContent.trim() === v); return t ? t.getAttribute("data-qa") : null; }', value)
+            if not qa:
+                raise RuntimeError('no choice ' + value)
+            tap('[data-qa="%s"]' % qa)
             time.sleep(0.5)
 
         # ---- before the start: the lake and its Next; no Back, Next or screen list anywhere ----

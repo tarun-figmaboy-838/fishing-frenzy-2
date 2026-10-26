@@ -1545,9 +1545,17 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.poke();
     }, CONFIG.dropdown.wrongMs);
   }
+  // A tap on an answer box picks it as the one the next choice goes into (no menu over the shape: the choices are the
+  // tiles under the boxes, always in view); a match box that holds a segment empties again
   blankTap(id) {
-    if (this.isDropdown()) { this.ddOpen(id); return; }
     const F = this.state.fill;
+    if (this.isDropdown()) {
+      if (this.state.done || F.checking || F.locked[id] || this.busy()) return;
+      this.touched = true; this.hideHand();
+      this.setState({ fill: Object.assign({}, F, { sel: id }) });
+      this.sfx('tap');
+      return;
+    }
     if (this.state.done || F.checking || F.locked[id] || this.busy()) return;
     const at = Object.assign({}, F.at); delete at[id]; // tapping a filled blank empties it again
     this.setState({ fill: Object.assign({}, F, { at: at, sel: id }) });
@@ -2021,7 +2029,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const rows = (st.opts.some((o) => !o.wide) ? 1 : 0) + st.opts.filter((o) => o.wide).length; // short ones in a row, each wide one under
       return C.optGap + rows * C.optH + (rows - 1) * C.optGapX;
     }
-    if (st.fill) return C.optGap + C.fillH + (st.fill.match ? C.optGapX + C.tileH : 0);
+    if (st.fill) return C.optGap + C.fillH + C.optGapX + C.tileH; // (the answer boxes, and the choices under them)
     if (st.practice || !this.hasChips(st)) return 0;
     return C.chipGap + (st.chipRows ? C.rowsH : C.chipLane);
   }
@@ -2104,11 +2112,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const actB = FD && !s.done ? this.activeBlank() : null;
     const dd = !!(FD && !FD.match);
     const blanks = FD ? FD.blanks.map((b, i) => ({ id: b.id, pre: b.pre || '', post: b.post || '', eq: FD.match && i % 2 === 0 ? '=' : '',
-      ph: dd && !F.at[b.id] ? 'ph' : '', exp: dd && F.open === b.id ? 'true' : 'false',
+      ph: dd && !F.at[b.id] ? 'ph' : '', exp: 'false',
       gap: FD.match && i % 2 === 1 && i < FD.blanks.length - 1 ? 'gap' : '',
-      t: F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' + (F.open === b.id ? ' open' : '') : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : ''),
+      t: F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : ''),
       tap: () => this.blankTap(b.id) })) : [];
-    const tiles = FD && FD.match ? FD.tiles.map((t, i) => ({ t: t, i: i, cls: 'tile' + (this.tileUsed(t) ? ' used' : '') + (F.drag && F.drag.t === t ? ' lift' : ''), down: (e) => this.tileDown(t, e) })) : [];
+    // the choices: tiles under the boxes, tapped (into the picked box) or dragged onto a box; a number may be used twice
+    const tiles = FD ? FD.tiles.map((t, i) => ({ t: t, i: i, cls: 'tile' + (this.tileUsed(t) ? ' used' : '') + (F.drag && F.drag.t === t ? ' lift' : '') + (s.done || F.checking ? ' spent' : ''), down: (e) => this.tileDown(t, e) })) : [];
     const opts = hasOpts ? st.opts.map(mk) : [];
     // end
     const nRight = Object.keys(s.results).filter((k) => s.results[k]).length;
@@ -2125,8 +2134,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       isLesson: isLesson && s.started,
       isCfu1: !!st.grid,
       fillOn: !!FD, blanks: blanks, tiles: tiles,
-      menuOn: !!(dd && F.open), menu: F.menu ? { x: F.menu.x, y: F.menu.y, w: F.menu.w, cls: 'dd-menu' + (F.menu.up ? ' up' : '') + (F.closing ? ' closing' : '') } : { x: 0, y: 0, w: 0, cls: 'dd-menu' },
-      menuItems: dd && F.open ? FD.tiles.map((t) => ({ t: t, pick: () => this.pickBlank(F.open, t) })) : [], fillCls: 'fill-ui ' + fadeV + (this.busy() ? ' wait' : ' go') + (FD && FD.match ? ' match' : ''),
+      menuOn: false, menu: F.menu ? { x: F.menu.x, y: F.menu.y, w: F.menu.w, cls: 'dd-menu' + (F.menu.up ? ' up' : '') + (F.closing ? ' closing' : '') } : { x: 0, y: 0, w: 0, cls: 'dd-menu' },
+      menuItems: [], fillCls: 'fill-ui ' + fadeV + (this.busy() ? ' wait' : ' go') + (FD && FD.match ? ' match' : ''),
       ghostOn: !!(F.drag), ghost: F.drag ? { t: F.drag.t, x: Math.round(F.drag.x), y: Math.round(F.drag.y) } : { t: '', x: 0, y: 0 },
       gridCls: fadeV + (this.busy() ? ' wait' : ' go'),
       isEnd: !!st.end && !JOURNEY, // (in the journey the fishing follows: no score card or Play again, but Next)

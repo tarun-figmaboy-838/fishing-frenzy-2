@@ -664,6 +664,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* once every tile is placed the spent tray fades away instead of leaving greyed ghosts under the answer */
 .stage .tile-row{transition:opacity .4s ease,transform .4s ease}
 .stage .tile-row:not(:has(.tile:not(.used))){opacity:0;transform:translateY(8px);pointer-events:none}
+/* the number choices (screens 20, 21, 37, 50) stay in view under their boxes - no menu over the shape - and step back
+   once the boxes are all right (or while a wrong one is shown) */
+.stage .tile-row:has(.tile.spent){opacity:.35;pointer-events:none}
 /* the plate's words: one line of inline blocks, spaced as the bubble's flex gap; the plate sizes itself to its text (the
    speech bubble's shrink-to-widest-line width is not for it) */
 .stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
