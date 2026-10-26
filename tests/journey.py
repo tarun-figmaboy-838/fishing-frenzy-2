@@ -6,18 +6,20 @@ installed is used if Playwright's own is missing), at 1280x720 with a mouse and 
 
   front page  the fishing game's own live banner, shown first; the lesson loads, unseen, behind it once it's ready
   intro       a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the game's story
-              starts at once (the narrator, the first school); the warm-up's three real catches (Drop Net as fish swim
-              under the net), then its problem: the giant fish, Swiftee's "Let's find out!" and a real tap on Next
-  lesson      the giant wave carries Popo off and the lesson dissolves in over the empty lake; the game goes on drawing
-              its lake under the lesson (which plays over it), silent (no music, effects or voice; its context asleep),
-              its buttons away; the lesson begins (seashell, card, screen 1); jumped to its last screen, a real tap on the
-              Next under Swiftee hands over
+              starts at once: the hook, its ten lines in order (nothing to press meanwhile) - the wrong nets tangle, a
+              leaping fish knocks the last one into a parallelogram, which stays open, the scripted school swims into
+              it and all of it is caught, Swiftee names the shape, and "Let's find out!" carries the net's outline into
+              the lesson (the scene dims, the HUD steps away, the camera dives to the lesson's own view)
+  lesson      the lesson dissolves in over the net's outline and starts on its first shape at once (no seashell
+              opening); the game goes on drawing its lake under the lesson (which plays over it), silent (no music,
+              effects or voice; its context asleep), its buttons away, Popo away; jumped to its last screen, a real tap
+              on the Next under Swiftee hands over
   fishing     the game wakes under the lesson's frame as it dissolves out: the wave brings Popo back, Swiftee welcomes
               him, and a real catch at the first parallelogram net (the lesson's frame disposed, its voice stopped)
   the end     after level 8 (jumped to, as its dev panel's Finish), a real tap on Play Again: the circle closes and
               opens on the banner from its start, a fresh lesson loads behind it, and Play works again
 
-`start`: ?start=fishing plays the warm-up and the nets in a row from Play (no lesson), ?start=lesson brings the lesson
+`start`: ?start=fishing plays the hook and the nets in a row from Play (no lesson), ?start=lesson brings the lesson
 first and then the wave, the welcome and the nets, and a part opened on its own goes to the journey. `veil`: the lesson
 still loading when its turn comes shows
 the frosted "Getting ready…" veil; a lesson that can't load says so, and a real tap on Try again loads it afresh and the
@@ -70,7 +72,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            again: !$('btn-again').hidden, dialogue: g.dialogue ? g.dialogue.who : null, ending: !!g.ending, title: g.title.visible,
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
            lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
-           away: Math.abs(g.popo.travelShift) > 1600, warm: g.warmCatches, handle: !$('handle').hidden,
+           away: Math.abs(g.popo.travelShift) > 1600, handle: !$('handle').hidden,
            action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), tangle: +g.net.tangle.toFixed(2),
            inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length,
            goal: !$('goal').hidden, goalLine: $('goal-line').textContent, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
@@ -79,10 +81,18 @@ LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
            shared: !e.actx || e.actx === parent.FishingFrenzy.audio.ctx }; }'''
 
-# how many fish swim right under the net (well inside its footprint)
-UNDER = '''() => { const g = window.popoDebug.game, s = window.popoDebug.state, span = g.net.innerSpan();
-  const l = g.netRest.x + span.left + 40, r = g.netRest.x + span.right - 40;
-  return s.fish.filter((f) => !f.leaving && !f.waiting && !f.caught && !f.gone && f.x > l && f.x < r).length; }'''
+# the hook as it plays: the line said, the net (a parallelogram? tangled? valid?), anything pressable, the scripted
+# school (its own lane, which stands still), the hand-over's outline, the camera and the HUD
+HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net, p = n.points, $ = (id) => document.getElementById(id);
+  const v = (i, j) => ({ x: p[j].x - p[i].x, y: p[j].y - p[i].y }), level = (a, b) => Math.abs(a.x * b.y - a.y * b.x) / (Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y)) < 0.002;
+  const school = s.fish.filter((f) => f.lane && f.lane.speed === 0);
+  return { line: g.dialogue ? g.dialogue.who + ':' + g.dialogue.words.map((w) => w.text).join(' ') : '', tangle: n.tangle,
+           par: level(v(0, 1), v(3, 2)) && level(v(0, 3), v(1, 2)), valid: PopoGame.geo.isValidQuad(p), under: n.drop > 0 && n.pouch === 0,
+           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('btn-next').hidden || !$('handle').hidden,
+           school: school.length, schoolCaught: school.filter((f) => f.caught).length, fx: !!g.hookFx, cam: [g.camera.zoom, g.camera.pan],
+           hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
+# the hook's lines as levels.js has them (speaker and words, no emphasis marks)
+HOOK_LINES = '''() => Object.values(PopoGame.STORY.hook).map((l) => l.who + ':' + l.text.replace(/\\*/g, ''))'''
 
 # the corner and its place (or the stop n stops from it), as client points, through the view's zoom on the net (a drag
 # zooms it in: Game.applyFocus); the game's frame fills the window, so they are the page's too
@@ -327,24 +337,6 @@ def catch_when_under(r, before, what):
     return st
 
 
-def drop_when_under(r, before, what):
-    """Drop Net as fish swim under the net (again if they swam out before it landed), until something is caught."""
-    ff = part(r.page, 'fishing')
-    for attempt in range(6):
-        end = time.time() + 60
-        while ff.evaluate(UNDER) < 2:
-            if time.time() > end:
-                raise SystemExit('FAIL no fish swam under the net')
-            r.page.wait_for_timeout(60)
-        r.tap_el(ff, '#btn-drop')
-        until(r.fish, lambda s: s['phase'] != 'puzzleReady', 5, 'the net goes down')
-        st = until(r.fish, lambda s: s['caught'] > before or s['phase'] == 'puzzleReady', 30, what)
-        if st['caught'] > before:
-            return st
-        print(f'     {r.tag}: the fish swam out before the net landed; dropping again', flush=True)
-    return st
-
-
 def end_lesson(r):
     """The lesson's last screen (jumped to): once Swiftee's goodbye is said, Next comes up under her; a real tap on it
     takes the journey on."""
@@ -356,15 +348,56 @@ def end_lesson(r):
     r.tap_el(L, '[data-qa=end-next]')
 
 
-def warm_up(r):
-    """The warm-up: Popo's plain net (nothing to set), Drop Net as fish swim under it, three catches."""
-    st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 0, 90, 'the warm-up net is ready')
-    check(st['ok'] and not st['handle'], f'{r.tag}: the warm-up net comes down with nothing to set (no corner to drag), only Drop Net')
-    for n in range(3):
-        st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 0 and s['warm'] == n, 60, f'warm-up net {n + 1}')
-        st = drop_when_under(r, st['caught'], f'warm-up catch {n + 1}')
-        check(st['caught'] > 0, f'{r.tag}: warm-up drop {n + 1}: a catch, and Popo cheers', f"{st['caught']} fish so far")
-    r.shot('3-warm-up')
+def hook(r):
+    """The hook, from Play to the lesson: its ten lines in order, the wrong nets tangling, the parallelogram that stays
+    open, the scripted school all caught, Swiftee naming the shape, then the hand-over - all without a tap."""
+    ff = part(r.page, 'fishing')
+    want = ff.evaluate(HOOK_LINES)
+    lines, seen, shots = [], {'tangles': 0, 'wrongTangled': False, 'open': False, 'pressable': False, 'invalid': False, 'school': 0,
+                              'caught': 0, 'swiftee': False, 'fx': False, 'hudAway': False, 'duck': False}, set()
+    tangled = False
+    end = time.time() + 150
+    while r.shell()['current'] != 'lesson':
+        if time.time() > end:
+            raise SystemExit(f'FAIL the hook never reached the lesson (lines so far: {lines})')
+        h = ff.evaluate(HOOK)
+        if h['line'] and (not lines or lines[-1] != h['line']):
+            lines.append(h['line'])
+        if h['tangle'] > 0.9 and not tangled:
+            tangled = True
+            seen['tangles'] += 1
+            seen['wrongTangled'] = seen['wrongTangled'] or not h['par']
+            if 'tangle' not in shots:
+                shots.add('tangle'); r.shot('3a-hook-tangled')
+        if h['tangle'] < 0.1:
+            tangled = False
+        if h['par'] and h['under'] and h['tangle'] == 0 and not seen['open']:
+            seen['open'] = True
+        seen['pressable'] |= h['pressable']
+        seen['invalid'] |= not h['valid']
+        seen['school'] = max(seen['school'], h['school'])
+        seen['caught'] = max(seen['caught'], h['schoolCaught'])
+        seen['duck'] |= h['duck']
+        if h['swiftee'] and 'swiftee' not in shots and h['line'].startswith('swiftee:'):
+            seen['swiftee'] = True
+            shots.add('swiftee'); r.page.wait_for_timeout(600); r.shot('3b-hook-swiftee')
+        if h['fx']:
+            seen['fx'] = True
+            seen['hudAway'] |= h['hudAway']
+            if 'fx' not in shots:
+                shots.add('fx'); r.page.wait_for_timeout(500); r.shot('3c-hook-outline')
+        r.page.wait_for_timeout(80)
+    h = ff.evaluate(HOOK)
+    check(lines == want, f'{r.tag}: the hook says its ten lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
+    check(seen['tangles'] == 3 and seen['wrongTangled'] and not seen['invalid'],
+          f'{r.tag}: the wrong nets (not parallelograms) tangle in the water, three times', f"{seen['tangles']} tangles")
+    check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')
+    check(seen['school'] == 12 and seen['caught'] == 12, f'{r.tag}: the scripted school swims into the open net and all of it is caught',
+          f"{seen['caught']} of {seen['school']}")
+    check(seen['swiftee'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; nothing could be pressed all through the hook')
+    check(seen['duck'] and not h['duck'], f'{r.tag}: the hook\'s sound effects stepped down under its lines, and the usual mix is back after it')
+    check(seen['fx'] and seen['hudAway'] and h['cam'] == [1.85, 0] and h['alpha'] == 0 and not h['swiftee'],
+          f'{r.tag}: "Let\'s find out!": the scene dims, the HUD steps away, the mesh fades and the camera dives to the lesson\'s view (1.85, 0)', str(h['cam']))
 
 
 def journey(p, engine, size, url):
@@ -397,25 +430,15 @@ def journey(p, engine, size, url):
     page.wait_for_timeout(1200)
     r.shot('2-story')
     check(True, f'{r.tag}: the narrator\'s lines begin, as after Play on the game\'s own')
-    warm_up(r)
+    hook(r)
 
-    # ---------- the warm-up's problem: the giant fish, Swiftee's "Let's find out!" and Next ----------
-    fs = until(r.fish, lambda s: s['next'], 60, 'the problem: Swiftee and Next')
-    check(fs['swiftee'] and fs['dialogue'] == 'swiftee' and r.shell()['current'] == 'fishing',
-          f'{r.tag}: after three catches a giant fish pulls the net out of square, Swiftee swoops in and Next comes up')
-    page.wait_for_timeout(300)
-    r.shot('3h-hook')
-    r.tap_el(part(page, 'fishing'), '#btn-next')
-    fs = until(r.fish, lambda s: s['wave'], 5, 'the giant wave')
-    check(not fs['next'], f'{r.tag}: Next: Swiftee flies off and the giant wave rises')
-    page.wait_for_timeout(1600)
-    r.shot('3w-wave')
-
-    # ---------- the lake empty: the lesson dissolves in over it ----------
-    st = until(r.shell, lambda s: s['current'] == 'lesson', 20, 'the lesson comes in after the wave')
+    # ---------- the net's outline becomes the lesson's first shape: the lesson dissolves in over it ----------
+    st = r.shell()
     fs = r.fish()
-    check(not st['veil'] and fs['level'] == 0 and fs['phase'] == 'transitioning' and fs['caught'] > 0 and fs['away'] and not fs['wave'],
-          f'{r.tag}: the wave gone with Popo, the lake is empty and the lesson dissolves in over it')
+    check(not st['veil'] and fs['caught'] > 0 and not fs['wave'] and not fs['next'],
+          f'{r.tag}: the lesson dissolves in over the net\'s outline, the catch kept', f"{fs['caught']} fish")
+    ls = until(r.lesson, lambda s: s['started'], 3, 'the lesson starts on its first shape at once')
+    check(True, f'{r.tag}: the lesson starts on its first shape at once (no seashell opening)')
     page.wait_for_timeout(120)
     r.shot('4a-lesson-comes-in')
     st = until(r.shell, lambda s: 'lesson+live' in s['frames'], 2, 'the dissolve ends')
@@ -424,9 +447,9 @@ def journey(p, engine, size, url):
     fs = until(r.fish, silent, 3, 'the game goes quiet')
     page.wait_for_timeout(400)
     fs2 = r.fish()
-    check(silent(fs2) and fs2['running'] and not fs2['hud'], f'{r.tag}: under the lesson the game goes on drawing its lake (the lesson plays over it), silent (no music, effects or voice; context {fs2["ctx"]}), its buttons away')
+    check(silent(fs2) and fs2['running'] and not fs2['hud'] and fs2['away'], f'{r.tag}: under the lesson the game goes on drawing its lake (the lesson plays over it), silent (no music, effects or voice; context {fs2["ctx"]}), its buttons away, Popo away')
     ls = until(r.lesson, lambda s: s['started'], 40, 'the lesson starts its screens')
-    check(ls['shared'] and ls['of'] > 50, f'{r.tag}: the lesson begins (its opening, then screen 1), through the shell\'s sound', f"{ls['of']} screens")
+    check(ls['shared'] and ls['of'] > 50, f'{r.tag}: the lesson plays its screens through the shell\'s sound', f"{ls['of']} screens")
     if engine == 'chromium':
         st = until(r.shell, lambda s: '/parts/lesson/' in s['voice'], 20, 'the voice-over plays')
         check(True, f'{r.tag}: the lesson\'s voice plays in the shell\'s unlocked <audio>', st['voice'].split('/')[-1])
@@ -480,7 +503,7 @@ def journey(p, engine, size, url):
     play_tap(r)
     st = until(r.shell, lambda s: s['phase'] == 'intro', 3, 'Play again: the story')
     fs = until(r.fish, lambda s: s['phase'] == 'intro' and s['running'] and s['music'], 3, 'the story again')
-    check(r.fish()['lessonAfter'], f'{r.tag}: Play again: the story starts again, the lesson to follow its warm-up')
+    check(r.fish()['lessonAfter'], f'{r.tag}: Play again: the story starts again, the lesson to follow its hook')
 
     if r.touch:
         # a tablet held upright: the journey's one rotate hint (out of the full screen Play asked for first, where the
@@ -524,8 +547,8 @@ def start_fishing(p, engine, url):
     r.shot('1-story')
     st = r.shell()
     check(st['frames'] == ['fishing+live'], f'{r.tag}: no lesson frame anywhere', ', '.join(st['frames']))
-    until(r.fish, lambda s: s['phase'] == 'puzzleReady', 90, 'the first net')
-    check(True, f'{r.tag}: the first net comes down')
+    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady', 150, 'the first net')
+    check(fs['level'] == 1, f'{r.tag}: the hook plays, then the first parallelogram net comes down', f"level {fs['level']}")
     # ?start=lesson: the lesson first, over the game holding where its banner cleared away; then the story
     page.goto(url + '?start=lesson&debug')
     until(r.shell, lambda s: s['fishing'] == 'ready' and s['lesson'] == 'ready', 60, 'the game, then the lesson, load')
@@ -559,7 +582,7 @@ def veil(p, engine, url):
     until(r.shell, lambda s: s['fishing'] == 'ready' and s['lesson'] == 'loading' and held, 60, 'the game loads; the lesson is held back')
     play_tap(r)
     until(r.fish, lambda s: s['phase'] == 'intro' and s['lessonAfter'], 5, 'the story')
-    # (the warm-up and its hook are played for real in the journey; here the game goes straight to the lesson's turn)
+    # (the hook is played for real in the journey; here the game goes straight to the lesson's turn)
     part(page, 'fishing').evaluate('() => { popoDebug.game.lessonTime(PopoGame.newToken()); }')
     st = until(r.shell, lambda s: s['veil'], 5, 'the veil')
     page.wait_for_timeout(500)
