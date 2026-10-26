@@ -63,8 +63,10 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   in gold. The whole line sits on one line, each word popping in as the voice reaches it (as the game's own plate); the
   plate fits its line, measured on a hidden copy in its own type (`plateFit`, `CONFIG.plateMaxW`), and a line too long
   for the card is set smaller. A question comes back, shown not said, after a tip.
-- **A lit side.** A side a line lights (a cue's `glow`) glows gold in its own colour with a soft light running along
-  it, end to end, while it is talked about (css `.hl`); the other sides step back.
+- **A lit side.** A side a line lights (a cue's `glow`) glows gold in its own colour; a soft light runs along it once,
+  end to end, as it is named, and it then simply stays lit while it is talked about (css `.hl`); the other sides step
+  back. A side is lit where it is new to the story (the trapezium named, the parallel pairs found, the definition, the
+  side lengths asked about), not again on every screen that mentions it.
 - **Dual coding.** As Swiftee says a part's name the part itself grows for a moment (`partCues` / `emphasize`): a
   side (AB, "A B", legs, bases, sides), an angle (∠A, angles: the wedges, or the corners before the angles are drawn),
   a length, a diagonal (AC, diagonals), point O, a half (AO, segments); a line's own `cues` add a glow, a name card, a
@@ -72,13 +74,21 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
   explained. Focus: while a part is named, the others of its kind step back too (sides, a lone diagonal, the halves,
   the lengths, the angles), so the eye goes to what is being said. A line's cards come in as its voice starts, and
-  cards that arrive together come in one after another (`CHIP_GAP`, 320 ms), never all at once. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
+  cards that arrive together come in one after another (`CHIP_GAP`, 480 ms), never all at once. Words appear as the clip's playhead reaches them (`vo_lines.js`), so every cue lands on its word.
 - **One place for the shape.** Every screen keeps the same lane under the shape (two rows of name tags), so the shape
   has one centre and one size from screen to screen whatever comes and goes under it (`sceneFit`); only a block
-  taller than the lane pulls it up, and the measuring screens and the first put it right of Swiftee.
+  taller than the lane pulls it up, and the measuring screens and the first put it right of Swiftee. What sits under
+  the shape - its name cards, the answers, the answer boxes and their choices - starts right under it (under its
+  corner letters), so the shape and what it says read as one group.
+- **Measures on the shape.** A side's length sits inside the shape beside the middle of its side, upright; a
+  diagonal's halves carry their lengths written along them, as on a ruler, each in its half's colour; an angle's size
+  sits inside its angle. No measure is on a card away from the part it measures.
 - **The maths in motion** (`js/motion.js` fx, on an overlay over the board; a line's `cues`): equal sides slide onto
-  each other (`match`), equal angles fly to the opposite corner turning a half-turn and fit (`matchAng`), the diagonals'
-  halves fold about O onto each other (`fold`), parallel sides run out as dashed rails that never meet (`rails`); a
+  each other by a slide (`match`), an angle turns a half-turn about the shape's centre O and lands on the opposite one
+  - the reason they are equal (`matchAng`), the diagonals' halves turn about O onto each other (`fold`), parallel
+  sides run out as dashed rails that never meet (`rails`), and for adjacent angles a copy of one slides down the side
+  and turns beside the other, the two filling a large half-disc on the straight line with its 180° (`supp`); each runs
+  slowly enough to follow, one pair after another, and the screen stays until the last has been seen through; a
   checkpoint answered right pops a star over the shape. Screen 1's shape is drawn once by the pen and stays: no
   screen rebuilds it. The yellow marker pen redraws a side only when a cue lights it; a side a word names just grows.
 - **The voice** (`docs/VOICEOVER.md`): every line is a recorded clip in Swiftee's studio voice; words appear as the
@@ -87,7 +97,11 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
 - **The named side**: a sunflower-yellow marker redraws it, a glowing pen tip running along it, while the other sides
   step back; named angles and corners grow. Parallel arrows, equal ticks and name tags arrive on their words.
 - **Checks**: answers rise in, one after another, as Swiftee says the question's last word (`askedNow`); a wrong answer shakes with a tip and can be tried again;
-  a right one turns green with the correct sound and confetti. A checkpoint counts if it was right first time.
+  a right one turns green with the correct sound and confetti. A checkpoint counts if it was right first time. A
+  number answer is a box with its choices as tiles under it, always in view (no menu over the shape): tap a tile to
+  fill the waiting box (tap a box to choose which), or drag a tile onto a box.
+- **What to touch pulses**: the corner to drag beats from its own dot, the angles to tap from their own wedges, the
+  corners to draw a diagonal from from their own dots - never a ring or a disc round them.
 - **Idle**: the hand shows what to tap or drag after 8 s with no touch; an instruction is said once, never again (as in Fishing Frenzy)
   (at most 3 times).
 
