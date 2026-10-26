@@ -117,7 +117,7 @@
 <div class="board {{boardCls}}" style="position: absolute; left: 640px; top: 104px; width: 520px; height: 420px; pointer-events: none; transform: {{boardTf}}; --bz: {{boardZ}}">
 <div class="pop-g" style="position: absolute; left: 0px; top: 0px; width: 520px; height: 420px; transform-origin: {{popO}}">
 <sc-for list="{{tags}}" as="tg" hint-placeholder-count="4">
-<div class="tag {{tg.cls}}" onClick="{{tg.click}}" style="left: {{tg.x}}px; top: {{tg.y}}px">{{tg.t}}</div>
+<div class="tag {{tg.cls}}" onClick="{{tg.click}}" style="left: {{tg.x}}px; top: {{tg.y}}px; --rot: {{tg.r}}">{{tg.t}}</div>
 </sc-for>
 </div>
 </div>

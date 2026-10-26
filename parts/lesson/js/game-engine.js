@@ -1918,13 +1918,22 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     tags.push(s180 || { t: '180°', x: 0, y: 0, cls: 'alab s180 off' }); // (a fixed slot, so the tags after it keep their elements)
     // O: the diagonals' meeting point, its letter just above it (between the two diagonals)
     tags.push({ t: 'O', x: r1((A.x + C.x) / 2), y: r1((A.y + C.y) / 2 - 26), cls: 'vlab' + (f.O ? '' : ' off') });
-    // a checkpoint's half-diagonal labels (e.g. AO = 6 cm): each beside the middle of its own half (clear of its tick),
-    // out into a triangle of its own (AO toward AD, BO toward AB, ...), so two never line up under one side
-    if (fig && fig.halves) {
+    // a half-diagonal's length (a checkpoint's given AO = 6 cm, or the measured halves of screens 44-46): each beside
+    // the middle of its own half (clear of its tick), out into a triangle of its own (AO toward AD, BO toward AB, ...),
+    // so two never line up under one side - the length on the part it measures, not on a card away from it
+    const measured = !fig && f.halves && (f.split || f.halfPairs);
+    if ((fig && fig.halves) || measured) {
       const Om = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 };
-      const found = this.figHalves(this.cur()), H = Object.assign({}, fig.halves, found);
-      Object.keys(H).forEach((k) => {
-        const into = P[{ A: 'D', B: 'A', C: 'B', D: 'C' }[k]], mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2, L = this.dist(P[k], Om) || 1;
+      const found = fig ? this.figHalves(this.cur()) : {};
+      const H = fig ? Object.assign({}, fig.halves, found) : { A: this.cm(this.dist(Om, A)), B: this.cm(this.dist(Om, B)), C: this.cm(this.dist(Om, C)), D: this.cm(this.dist(Om, D)) };
+      const hueOf = (k) => (f.halfPairs ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k); // (its half's colour: equal halves share one)
+      Object.keys(H).forEach((k, i) => {
+        // (the measured halves, all four at once: AO's and BO's lengths in the triangle under AB, OC's and OD's in the one
+        // over CD - the roomy ones - each slid from its half's middle towards O, where its triangle is taller, until it
+        // fits; a checkpoint's one or two: into a triangle of its own)
+        const into = P[(measured ? { A: 'B', B: 'A', C: 'D', D: 'C' } : { A: 'D', B: 'A', C: 'B', D: 'C' })[k]];
+        let mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2;
+        const L = this.dist(P[k], Om) || 1;
         let nx = -(Om.y - P[k].y) / L, ny = (Om.x - P[k].x) / L;
         if (nx * (into.x - mx) + ny * (into.y - my) < 0) { nx = -nx; ny = -ny; }
         // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it).
@@ -1935,8 +1944,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const inside = (x, y) => Q.every((p, i) => { const q = Q[(i + 1) % 4], L2 = this.dist(p, q) || 1;
           return area * ((q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x)) / L2 >= 2.5 + 6; }); // past the side's stroke, and a gap
         const fits = (sg) => { const cx = mx + sg * nx * off, cy = my + sg * ny * off; return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every((c) => inside(cx + c[0] * hw, cy + c[1] * hh)); };
+        if (measured) {
+          // written along its half, as on a ruler: turned to the half's slope (never upside down), just beside its middle
+          let deg = Math.atan2(Om.y - P[k].y, Om.x - P[k].x) * 180 / Math.PI;
+          if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
+          const gap = hh + 7;
+          tags.push({ t: H[k], x: r1(mx + nx * gap), y: r1(my + ny * gap), r: deg.toFixed(1) + 'deg', cls: 'mtag hv h' + hueOf(k) + ' hd' + i });
+          return;
+        }
         const sg = fits(1) || !fits(-1) ? 1 : -1;
-        tags.push({ t: H[k], x: r1(mx + sg * nx * off), y: r1(my + sg * ny * off), cls: 'mtag fig' + (found[k] ? ' solved' : '') });
+        tags.push({ t: H[k], x: r1(mx + sg * nx * off), y: r1(my + sg * ny * off), cls: fig ? 'mtag fig' + (found[k] ? ' solved' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line
@@ -1947,22 +1964,24 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const key = { AB: 'AB', BC: 'BC', CD: 'CD', AD: 'DA' }[k]; return !!(key && (nArrows[key] || nTicks[key])); };
     const lNamed = ['lAB', 'lBC', 'lCD', 'lDA'].filter((k) => s.emph && s.emph[k]).length;
     const emL = (k) => (s.emph && s.emph['l' + k] ? ' emph' : lNamed && lNamed < 4 ? ' dim' : ''); // (the lengths grow when the line names them; the others step back)
-    const side = (p, q, text, cls, show) => {
+    // A side's length sits INSIDE the shape, beside the middle of its side (on the part it measures, upright, as far in
+    // as its own box and the side's marks need); out = outside instead (screen 2's side numbers)
+    const side = (p, q, text, cls, show, out) => {
       const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
-      if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }
+      if ((nx * (mx - cx) + ny * (my - cy) < 0) === !!out) { nx = -nx; ny = -ny; }
       // the label's own box (css: plain 21px Nunito 900, no padding): half width / half height in board px
       const hw = this.textW(text, '900 21px Nunito') / 2, hh = 13;
       const off = hw * Math.abs(nx) + hh * Math.abs(ny) + CONFIG.marks.labelGap + Math.max(12 * Math.abs(ny), marked(p, q) ? CONFIG.marks.markGap : 0);
       return { t: text, x: r1(mx + nx * off), y: r1(my + ny * off), cls: cls + (show ? '' : ' off') };
     };
-    // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, outside the shape)
+    // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, inside the shape)
     const isM = st.task === 'measure';
     // lengths wear their sides' colours, as in Fishing Frenzy: AB, CD blue; AD, BC teal (mleg)
     tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), isM && !!s.tap.DA)); // values only, no side names
     tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), isM && !!s.tap.BC));
     tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), isM && !!s.tap.AB));
-    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four outside their sides
+    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four inside, by their sides
     const lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
     tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), !!f.legLen && lon('DA')));
     tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), !!f.legLen && lon('BC')));
@@ -1977,12 +1996,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // own side's direction, one after another (CSS .snum: ease-out, slight overshoot, 90% -> 100% scale)
     {
       const on = !!st.sideNums;
-      tags.push(side(D, A, '1', 'snum n1', on));
-      tags.push(side(A, B, '2', 'snum n2', on));
-      tags.push(side(B, C, '3', 'snum n3', on));
-      tags.push(side(D, C, '4', 'snum n4', on));
+      tags.push(side(D, A, '1', 'snum n1', on, true));
+      tags.push(side(A, B, '2', 'snum n2', on, true));
+      tags.push(side(B, C, '3', 'snum n3', on, true));
+      tags.push(side(D, C, '4', 'snum n4', on, true));
     }
-    tags.forEach((t) => { if (!t.click) t.click = noop; });
+    tags.forEach((t) => { if (!t.click) t.click = noop; if (!t.r) t.r = '0deg'; });
     return { g: g, tags: tags, V: V };
   }
 
@@ -2012,7 +2031,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     let x0 = Math.min(P0.A.x, P0.D.x), x1 = Math.max(P0.B.x, P0.C.x);
     const y0 = Math.min(P0.A.y, P0.B.y), y1 = Math.max(P0.C.y, P0.D.y);
     if (st.task === 'dragB') x1 = Math.max(x1, P0.C.x + (P0.A.x - P0.D.x)); // B slides out until BC is parallel to AD
-    const f = st.f || {}, lengths = !!(f.sideLen || f.legLen || st.task === 'measure' || (st.fig && st.fig.sides) || st.sideNums); // (labels round the sides: room for them)
+    const f = st.f || {}, lengths = !!st.sideNums; // (labels round the outside of the sides - screen 2's numbers - need room; lengths sit inside)
     const padX = C.padX + (lengths ? C.lenPadX : 0), padT = C.padTop + (lengths ? C.lenPadY : 0), padB = C.padBottom + (lengths ? C.lenPadY : 0) + (f.sums ? 34 : 0);
     const w = x1 - x0 + 2 * padX, h = y1 - y0 + padT + padB;
     const above = (st.chipTop && st.chipTop < 200 && !st.practice) || (st.practice && st.okChips); // name tags above the shape
@@ -2043,7 +2062,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // whether a screen shows cards under its shape at any point (so their row is kept free from the start)
   hasChips(st) {
     const f = st.f || {};
-    return !!(st.enterChips || st.okChips || f.eq || f.halves || (st.lines || []).concat(st.after || []).some((L) => L.chips || (L.cues || []).some((c) => c.chip)));
+    return !!(st.enterChips || st.okChips || f.eq || (st.lines || []).concat(st.after || []).some((L) => L.chips || (L.cues || []).some((c) => c.chip)));
   }
   zoomTf(st) {
     const Z = this.sceneFit(st), B = CONFIG.board || { x: 640, y: 104 };
@@ -2098,11 +2117,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const f = this.fl();
     if (isLesson && f.eq === 'AD') chips = [{ t: '∠A + ∠D = ' + G.V.A + '° + ' + G.V.D + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
     if (isLesson && f.eq === 'BC') chips = [{ t: G.V.B + '° + ' + G.V.C + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
-    // halves: the four measured half-diagonals, live, until a line brings its own cards
-    if (isLesson && f.halves && !chips.length) {
-      const P = s.P, O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 };
-      chips = ['A', 'B', 'C', 'D'].map((k) => ({ t: 'O' + k + ' = ' + this.cm(this.dist(O, P[k])), k: 'white sm' }));
-    }
+    // (the measured half-diagonals are on the halves themselves: tags, above - no cards for them)
     // cfu options
     const optPulse = s.hand && s.hand.kind === 'opts';
     // soloOk: once answered, the other answers fold away and the right one settles alone in the centre

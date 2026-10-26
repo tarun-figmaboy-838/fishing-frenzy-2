@@ -181,7 +181,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .diag{transition:stroke-width .3s cubic-bezier(.3,0,.3,1)}.diag.emph{stroke-width:7px}
 .hseg.emph{stroke-width:8px;filter:drop-shadow(0 0 4px rgba(255,196,0,.9))}
 .odot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke-width .3s}.odot.emph{r:10px;stroke-width:4px}
-.tag.mtag{transition:transform .3s cubic-bezier(.3,0,.3,1)}.tag.mtag.emph{transform:translate(-50%,-50%) scale(1.25)}
+.tag.mtag{transition:transform .3s cubic-bezier(.3,0,.3,1)}.tag.mtag.emph{transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.25)}
 /* while one name card is lifted (the pair being said), the others step back */
 .stage.in-card .chip.lo{opacity:.55;transform:scale(.96);transition:opacity .3s ease,transform .3s ease}
 /* screen 4 leg trace: a soft pink glow drawn on along the leg (D->A, C->B); at the corner it fades off the side while
@@ -639,6 +639,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card .tag.alab.q{font-size:calc(29px / var(--bz, 1))}
 .stage.in-card .tag.alab.lA{color:#e65100}.stage.in-card .tag.alab.lB{color:#00963f}.stage.in-card .tag.alab.lC{color:#6a35b8}.stage.in-card .tag.alab.lD{color:#b86e00}
 .stage.in-card .tag.mtag.mleg{color:#00806d}
+/* a half-diagonal's measured length, in its half's own colour (equal halves share one), each coming in after the last */
+.stage.in-card .tag.mtag.hA{color:#e65100}.stage.in-card .tag.mtag.hB{color:#00963f}.stage.in-card .tag.mtag.hC{color:#6a35b8}.stage.in-card .tag.mtag.hD{color:#b86e00}
+.stage.in-card .tag.mtag.hv{animation:fade .45s ease-out backwards}
+.stage.in-card .tag.mtag.hv.hd1{animation-delay:.4s}.stage.in-card .tag.mtag.hv.hd2{animation-delay:.8s}.stage.in-card .tag.mtag.hv.hd3{animation-delay:1.2s}
 .stage.in-card .tag.vlab{color:#123b63;font-size:21px}
 /* angle values keep one size on screen at any zoom, like their wedges (--bz: the board's zoom, from the engine), with the
    white outline in em so it scales with them (Fishing Frenzy's lesson) */
