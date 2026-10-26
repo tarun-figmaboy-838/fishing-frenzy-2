@@ -789,3 +789,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .chip.cd2{animation-delay:.96s!important}
 .stage .chip.cd3{animation-delay:1.44s!important}
 @media (prefers-reduced-motion: reduce){.diag,.hseg,.tag.mtag{transition:none}}
+/* the pentagon picked as a parallelogram: its five sides are numbered, one after another, as the tip says it has five */
+.gridopt .pent-n{opacity:0;font:900 14px Nunito,system-ui,sans-serif;fill:#8a4a00;stroke:#fff;stroke-width:3px;paint-order:stroke;text-anchor:middle;dominant-baseline:central;transition:opacity .3s ease}
+.gridopt.bad .pent-n{opacity:1}
+.gridopt.bad .pent-n.n2{transition-delay:.35s}.gridopt.bad .pent-n.n3{transition-delay:.7s}.gridopt.bad .pent-n.n4{transition-delay:1.05s}.gridopt.bad .pent-n.n5{transition-delay:1.4s}

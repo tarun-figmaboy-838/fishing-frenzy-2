@@ -71,7 +71,7 @@ const CONFIG = {
   // from her spot; the rest are move timings
   angleWalk: { scale: 1.6, homeK: 1.52, carryPx: 28, hop: 60, stepPx: 45, bob: 5, tiltMax: 33, leadMs: 900,
     firstMs: 950, moveMs: 600, placeMs: 400, alignMs: 420, measureMs: 300, holdMs: 900, liftMs: 350, fadeMs: 250 },
-  hand: { idleMs: 8000, showMs: 4400, maxShows: 4, // hand nudge: wait with no touch, time on screen, showings per step
+  hand: { idleMs: 8000, showMs: 4400, maxShows: 1, // hand nudge: wait with no touch, time on screen, showings per step (one hint is enough)
     onceDelayMs: 500, onceMs: 2300 },                 // handOnce screens: a single demo gesture this long after the line ends
   stars: [[8, 3], [5, 2], [0, 1]],   // [checkpoint challenges right on the first try >=, stars] (9 challenges)
   // Swiftee's expressions (states in js/swiftee-manifest.js). A narration line's own m wins; these cover reactions and
