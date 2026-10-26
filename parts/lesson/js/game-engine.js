@@ -2049,8 +2049,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const kHome = Math.min(C.scale, maxW / w, room / h), k = Math.min(kHome, (C.bottom - top - below) / h);
     const home = top + Math.max(0, (room - h * k) / 2); // its one place: centred in that room
     const y = Math.max(top, Math.min(home, C.bottom - below - h * k)); // (pulled up only as far as a taller block needs)
-    // the block under the shape (name cards, answers) sits on the sand, at one height on every screen, never on the shape
-    return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: below ? Math.max(y + h * k, C.bottom - below) : y + h * k };
+    // the block under the shape (name cards, answers) starts right under it - under its corner letters - so a shape and
+    // what it says read as one group (not the shape up top and its cards down on the sand); the shape has one place on
+    // every screen, so its block does too
+    return { k: k, cx: (x0 + x1) / 2, cy: (y0 - padT + y1 + padB) / 2, F: { cx: cxS, cy: y + h * k / 2 }, bottom: y + h * k };
   }
   // the height of what sits under the shape (stage px, with its gap): the answer row(s), the answer boxes (and their
   // tiles), or the name-tag lane - reserved on every explanation screen so the shape keeps one place from screen to screen
