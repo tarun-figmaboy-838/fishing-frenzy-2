@@ -232,18 +232,39 @@
         .to(g, { opacity: 0, duration: 0.45 }, 2.75));
       return 3200;
     },
-    // parallel sides: dashed rails shoot out past both ends of each side and run side by side - they never meet
+    // A mask that keeps a drawing off every word on the stage - the corner letters, the lengths and angle sizes, the
+    // name cards and the instruction plate - with a little air round each (stage px), so a line passes behind them
+    // with a gap instead of through them
+    wordMask() {
+      const svg = this.fx(), stage = document.querySelector('.stage');
+      if (!svg || !stage) return null;
+      const sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1, PAD = 7;
+      const id = 'fx-words-' + Math.random().toString(36).slice(2, 8);
+      let defs = svg.querySelector('defs');
+      if (!defs) defs = this.mk('defs', {});
+      const mask = this.mk('mask', { id: id, maskUnits: 'userSpaceOnUse', x: -400, y: -400, width: 2080, height: 1520 }, defs);
+      this.mk('rect', { x: -400, y: -400, width: 2080, height: 1520, fill: '#fff' }, mask);
+      stage.querySelectorAll('.tag:not(.off), .chip, .bubble, .opt, .blank, .tile').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height || getComputedStyle(el).visibility === 'hidden' || +getComputedStyle(el).opacity === 0) return;
+        this.mk('rect', { x: ((r.left - sr.left) / k - PAD).toFixed(1), y: ((r.top - sr.top) / k - PAD).toFixed(1), width: (r.width / k + 2 * PAD).toFixed(1), height: (r.height / k + 2 * PAD).toFixed(1), rx: 8, fill: '#000' }, mask);
+      });
+      return { url: 'url(#' + id + ')', remove: () => mask.remove() };
+    },
+    // parallel sides: dashed rails shoot out past both ends of each side and run side by side - they never meet (kept
+    // off the words: wordMask)
     rails(segs) {
       if (!G || reduced || !this.fx()) return 0;
-      const EXT = 150;
+      const EXT = 150, words = this.wordMask();
       segs.forEach((sg, i) => {
         const dx = sg.x2 - sg.x1, dy = sg.y2 - sg.y1, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
         const p = { x: sg.x1 - ux * EXT, y: sg.y1 - uy * EXT }, q = { x: sg.x2 + ux * EXT, y: sg.y2 + uy * EXT }, len = L + 2 * EXT;
         const ln = this.mk('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1), stroke: sg.col || '#1e7bff', 'stroke-width': 4, 'stroke-dasharray': '12 10', 'stroke-linecap': 'round', opacity: 0 });
         // drawn from the middle out: a second dash pattern masks the length
         ln.style.strokeDasharray = '12 10'; ln.style.opacity = '0';
+        if (words) ln.setAttribute('mask', words.url);
         const cover = this.mk('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1), stroke: '#fff', 'stroke-width': 0, opacity: 0 });
-        add(() => G.timeline({ onComplete: () => { ln.remove(); cover.remove(); } })
+        add(() => G.timeline({ onComplete: () => { ln.remove(); cover.remove(); if (words && i === segs.length - 1) words.remove(); } })
           .set(ln, { opacity: 0.9, 'stroke-dashoffset': 0 })
           .fromTo(ln, { attr: { x1: (sg.x1 + sg.x2) / 2, y1: (sg.y1 + sg.y2) / 2, x2: (sg.x1 + sg.x2) / 2, y2: (sg.y1 + sg.y2) / 2 } }, { attr: { x1: p.x, y1: p.y, x2: q.x, y2: q.y }, duration: 0.7, ease: 'power2.out' }, i * 0.12)
           .to(ln, { 'stroke-dashoffset': -44, duration: 1.4, ease: 'none' }, 0.7 + i * 0.12)

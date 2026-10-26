@@ -1798,9 +1798,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     {
       const pair = f.supp && s.supp != null ? f.supp[s.supp] : null;
       if (pair) {
-        // (drawn large - 62 px on screen, past the corner's own small wedge - so the two angles filling the straight line
-        // read at a glance)
-        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 62 / zs;
+        // (drawn large - 52 px on screen, past the corner's own small wedge - so the two angles filling the straight line
+        // read at a glance; the corner's own size moves out past it meanwhile: suppAt, below)
+        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 52 / zs;
+        this.suppAt = { k: Y, R: Rr };
         const un = (p, q) => { const L = this.dist(p, q) || 1; return { x: (q.x - p.x) / L, y: (q.y - p.y) / L }; };
         const toX = un(Py, P[X]), toZ = un(Py, P[Z]), ext = { x: -toZ.x, y: -toZ.y };
         const wedge = (a, b) => { const cr = a.x * b.y - a.y * b.x;
@@ -1816,7 +1817,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // its "180°": beyond the half-disc, between the line and side YX, outside the shape (21 px on screen)
         let bx = ext.x + toX.x, by = ext.y + toX.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
         s180 = { t: '180°', x: r1(Py.x + bx * (Rr + 30 / zs)), y: r1(Py.y + by * (Rr + 30 / zs)), cls: 'alab s180 ' + sk };
-      } else g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', rim: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, o: '0px 0px', lcls: 'supp-line', ocls: 'supp-own', cls: 'supp-copy', rcls: 'supp-rim', dx: '0px', dy: '0px' };
+      } else { this.suppAt = null; g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', rim: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, o: '0px 0px', lcls: 'supp-line', ocls: 'supp-own', cls: 'supp-copy', rcls: 'supp-rim', dx: '0px', dy: '0px' }; }
     }
     g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O), cls: s.emph && s.emph.vO ? 'emph' : '' };
     // hticks: equal halves marked like equal sides (one tick on OA and OC, two on OB and OD)
@@ -1862,7 +1863,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         return sideGap(u) >= sg && sideGap(v) >= sg && near >= RW + 8 / zs;
       };
       let bx = u.x + v.x, by = u.y + v.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
-      let dl = RW + 6 / zs; while (dl < 160 && !clearOf(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
+      // (while the 180° demo is at this corner its half-disc is larger: the size steps out past it)
+      const RD = this.suppAt && this.suppAt.k === k ? Math.max(RW, this.suppAt.R + 4 / zs) : RW;
+      const clearOfD = (x, y) => clearOf(x, y) && Math.hypot(Math.max(0, Math.abs(x - Vk.x) - hw), Math.max(0, Math.abs(y - Vk.y) - hh)) >= RD + 6 / zs;
+      let dl = RW + 6 / zs; while (dl < 160 && !clearOfD(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
       (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
       aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
     });
@@ -1895,8 +1899,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (conn && s.conn && s.conn.from === k) g['v' + k].r = 11;
     });
     if (dk) {
-      // over a top-side length label the arrow sits left of the corner so both stay readable
-      const Vk = P[dk], y0 = r1(Vk.y + (Vk.y < 280 ? -40 : 42)), x = r1(Vk.x - (dk === 'A' && f.sideLen ? 44 : 0));
+      // the arrow lies on the corner's own track, just past it (B slides along the line of AB), clear of its letter
+      const Vk = P[dk], y0 = r1(Vk.y), x = r1(Vk.x + 82);
       g.halo = { x: r1(Vk.x), y: r1(Vk.y), d: 'none' }; // (no ring round it: the corner itself pulses, .drag-cue)
       g.arw = {
         p: 'M' + (x - 26) + ',' + y0 + ' L' + (x + 26) + ',' + y0,
