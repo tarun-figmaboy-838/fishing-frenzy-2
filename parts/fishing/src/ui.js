@@ -280,9 +280,12 @@ class UI {
   // The caption lays its words out hidden, so its plate never changes size. The bubble lays the
   // whole line out once, balanced over its lines, and pins each break there; then it starts
   // small and grows word by word into exactly that shape, with no empty space ahead.
-  showLine(who, words) {
+  // maxW (px, optional): the bubble's widest, so it wraps its line onto more rows to fit a gap (Popo's, beside the
+  // crane's mast); 0 keeps its usual width.
+  showLine(who, words, maxW = 0) {
     this.hideLines();
     const el = who === 'narrator' ? this.el.caption : this.el.speech;
+    if (el === this.el.speech) el.style.maxWidth = maxW ? `${maxW.toFixed(0)}px` : '';
     const line = el.querySelector('.line');
     line.innerHTML = '';
     this.wordEls = words.map((w, i) => {
@@ -335,17 +338,22 @@ class UI {
   // (the counter, sound and pause: on a small screen their type never shrinks, so a bubble reached them): it slides
   // away from them sideways, or goes below them if there's no room. Its tail keeps pointing at (x, y) wherever the
   // bubble has had to move (--tail).
-  placeSpeech(x, y) {
+  // `avoid`: more boxes to keep clear of, in stage pixels ({ x0, y0, x1, y1 }): Popo's bubble keeps off the crane's
+  // mast when it fits beside it (soft: it is never pushed below it).
+  placeSpeech(x, y, avoid = []) {
     const b = this.speechBox || { w: 0, h: 0, em: 0 };
     const width = this.el.hits.clientWidth;
     const ax = x * this.scale, inset = 0.6 * b.em;
     let left = Math.min(ax, width - b.w + inset - 4);
     let top = Math.max(y * this.scale, b.h + 14); // clear of the top edge, even as it pops
-    for (const r of this.hudBoxes()) {
+    const k = this.scale;
+    const extra = avoid.map((a) => ({ l: a.x0 * k, t: a.y0 * k, r: a.x1 * k, b: a.y1 * k, soft: true }));
+    for (const r of [...extra, ...this.hudBoxes()]) {
       const l0 = left - inset;
       if (l0 + b.w <= r.l - 6 || l0 >= r.r + 6 || top <= r.t - 6 || top - b.h >= r.b + 6) continue;
       const toLeft = r.l - 6 - b.w + inset, toRight = r.r + 6 + inset;
       if ((r.l + r.r) / 2 > l0 + b.w / 2 && toLeft - inset >= 4) left = Math.min(left, toLeft);
+      else if (r.soft) continue;
       else if ((r.l + r.r) / 2 <= l0 + b.w / 2 && toRight - inset + b.w <= width - 4) left = Math.max(left, toRight);
       else top = Math.max(top, r.b + 6 + b.h);
     }

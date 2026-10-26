@@ -68,6 +68,14 @@ class Winch {
     return AXLE;
   }
 
+  // The corners of a part of the machine in raft coordinates (image pixels measured on the painting): 'mast' (the
+  // upright, its collars and the arch over it) or 'top' (the arch and boom, the machine's highest part, out to the end
+  // pulley).
+  box(part) {
+    const [x0, y0, x1, y1] = part === 'mast' ? [196, 69, 400, 1190] : [196, 60, 1240, 210];
+    return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(at).map((p) => [p.x, p.y]);
+  }
+
   // The drum turns exactly as much as the rope it pays out or takes in.
   setRopeOut(length) {
     this.angle += (length - this.ropeOut) / DRUM_R;

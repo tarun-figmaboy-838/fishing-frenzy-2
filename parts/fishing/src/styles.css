@@ -676,3 +676,7 @@ html, body {
 /* The End's catch card on a narrow stage (a phone): its type never shrinks below a readable size, so at its full size
    it reached into the circle round Popo; a little more compact, it keeps clear of it */
 @container (max-width: 720px) { .goal { font-size: 1.55em; width: 16.5em; } }
+
+/* Popo's and Swiftee's bubbles on a narrow stage (a phone): a little smaller, so a comic line fits beside the crane's
+   mast and clear of the HUD (UI.placeSpeech), and still bold and easy to read */
+@container (max-width: 720px) { .speech { font-size: 2.75em; } }

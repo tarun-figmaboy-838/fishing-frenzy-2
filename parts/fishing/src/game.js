@@ -328,15 +328,20 @@ class Game {
     const net = this.net, f = this.focus, PAD = 40 + 30 * net.textScale;
     const pts = [...net.points, net.stop(net.track.min), net.stop(net.track.max), { x: 0, y: 0 }].map((q) => net.toStage(q));
     const x0 = Math.min(...pts.map((q) => q.x)) - PAD, x1 = Math.max(...pts.map((q) => q.x)) + PAD;
-    const y0 = Math.min(...pts.map((q) => q.y)) - PAD, y1 = Math.max(...pts.map((q) => q.y)) + PAD;
+    // ...and the crane's boom, which runs across the top of the view: kept below the HUD too, so the counter and the
+    // plate sit on open sky, not on the copper pipe
+    const y0 = Math.min(Math.min(...pts.map((q) => q.y)) - PAD, this.craneBox('top').y0 - 16), y1 = Math.max(...pts.map((q) => q.y)) + PAD;
     // the zoomed net keeps below the HUD's top row (the plate, the counter, sound and pause), which is bigger on a
     // small screen (its type never shrinks below a readable size), so nothing on the net goes under the plate
     const em = parseFloat(getComputedStyle(this.stage.root).fontSize) / this.stage.scale || 10, top = Math.min(STAGE_H * 0.3, 9.4 * em);
-    const z = Math.max(1.05, Math.min(FOCUS.zoom, STAGE_W / (x1 - x0), (STAGE_H - top) / (y1 - y0)));
-    const place = (lo, hi, from, to) => { // the origin that keeps [lo, hi] inside [from, to] at zoom z: between its two bounds, nearest its middle
+    // (fitted once, as the net comes down, while the raft bobs a few pixels on the waves: 3% to spare for that)
+    const z = Math.max(1.05, Math.min(FOCUS.zoom, (0.97 * STAGE_W) / (x1 - x0), (0.97 * (STAGE_H - top)) / (y1 - y0)));
+    // the origin that keeps [lo, hi] inside [from, to] at zoom z: between its two bounds, nearest its middle; where it
+    // can't (a box too big to fit), it keeps the box's top (or left) inside, so nothing goes under the HUD
+    const place = (lo, hi, from, to) => {
       const c = (lo + hi) / 2;
       const min = (hi * z - to) / (z - 1), max = (lo * z - from) / (z - 1);
-      return min > max ? c : Math.max(min, Math.min(max, c));
+      return min > max ? max : Math.max(min, Math.min(max, c));
     };
     f.ox = place(x0, x1, 0, STAGE_W);
     f.oy = place(y0, y1, top, STAGE_H);
@@ -1015,7 +1020,7 @@ class Game {
         pace: narrator ? 0.21 : 0.17,
         hold: (narrator ? 1000 : 700) + line.text.length * (narrator ? 26 : 22),
       };
-      this.ui.showLine(line.who, words);
+      this.ui.showLine(line.who, words, line.who === 'popo' ? this.popoBubbleWidth() : 0);
       this.placeSpeech();
       const voiced = this.audio.speak(line.who, line.text);
       if (voiced) { this.paceToVoice(this.dialogue, voiced); this.dialogue.src = this.audio.voiceSource; }
@@ -1041,7 +1046,24 @@ class Game {
       return;
     }
     const head = this.popo.headTop();
-    this.ui.placeSpeech(head.x + 36, head.y + 16);
+    this.ui.placeSpeech(head.x + 36, head.y + 16, [this.craneBox('mast')]);
+  }
+
+  // Popo's bubble fits between the stage's left edge and the crane's mast (UI.placeSpeech keeps it off the mast), so
+  // a longer line wraps onto two rows there rather than running across the machine; where even that is too narrow (under
+  // 7 of its letters' em), it keeps its usual width.
+  popoBubbleWidth() {
+    const em = parseFloat(getComputedStyle(this.ui.el.speech).fontSize) || 20;
+    const room = this.craneBox('mast').x0 * this.stage.scale - 14;
+    return room >= 7 * em ? Math.min(room, 15 * em) : 0;
+  }
+
+  // The crane on the raft, on the stage (it rides the waves with the raft): its mast, or its whole height (from the top
+  // of its arch to the deck) for the zoom to keep below the HUD.
+  craneBox(part) {
+    const { popo, winch } = this;
+    const pts = winch.box(part).map(([x, y]) => popo.transformPoint(x, y));
+    return { x0: Math.min(...pts.map((p) => p.x)), y0: Math.min(...pts.map((p) => p.y)), x1: Math.max(...pts.map((p) => p.x)), y1: Math.max(...pts.map((p) => p.y)) };
   }
 
   endLine(cancelled = true) {
