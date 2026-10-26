@@ -137,13 +137,14 @@ class Game {
     // banner until the shell says
     this.embedded = !!(window.Journey && window.Journey.embedded);
     this.holding = false;
-    this.lessonAfter = false; // the lesson follows the warm-up (sequences.js mystery, Game.lessonTime)
+    this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
     this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
+    this.hookFx = null;       // the hook's way into the lesson, over the scene (sequences.js netToLesson, drawHookFx)
     this.camera = { zoom: 1, pan: 1 }; // the lesson's camera over this lake (setCamera)
     this.cameraAt = 0;        // when it last moved (performance.now)
     this.backdropOn = false;  // the lesson is over this lake (backdrop): drawn every other frame while its camera holds
@@ -227,6 +228,8 @@ class Game {
     this.wave = null;
     this.awaitingNext = null;
     this.warmCatches = 0;
+    this.hookFx = null;
+    this.ui.fadeHud(false);
     const muted = state.muted;
     resetProgress();
     state.muted = muted;
@@ -288,6 +291,7 @@ class Game {
   // already, after the warm-up; with ?start=lesson or a dev jump he goes now), and the lesson's camera moves its view.
   backdrop() {
     this.backdropOn = true;
+    this.hookFx = null; // (the hook's outline: the lesson draws its shape now)
     this.audio.hold(true);
     this.ui.el.hud.hidden = true;
     this.ui.showHandle(false);
@@ -405,6 +409,7 @@ class Game {
 
   // Shown again without the story (a ?dev=1 jump): drawing again, with the music if it was playing.
   wake() {
+    this.ui.fadeHud(false);
     this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.setCamera({ zoom: 1, pan: 1 }); // (the lesson's camera may have left the view down in the water)
     this.ui.el.hud.hidden = false;
@@ -417,6 +422,7 @@ class Game {
   // (?start=lesson, args.afterLesson: the wave brings Popo back and the parallelogram nets begin). args.lesson: the
   // lesson follows the warm-up.
   story(args) {
+    this.ui.fadeHud(false);
     this.backdropOn = false; // (the lake is the game again: drawn every frame)
     const held = this.holding;
     this.holding = false;
@@ -430,16 +436,24 @@ class Game {
     this.start();
   }
 
-  // In the journey the lesson comes once the giant wave has carried Popo off (sequences.js, mystery): the game tells
-  // the shell, which plays the lesson over its empty lake. Resolves (true) when the shell says `resume` (goOn), or at
+  // In the journey the lesson comes after the hook (sequences.js afterHook): the game tells the shell, which plays the
+  // lesson over its lake (Popo sent away under it: backdrop). Resolves (true) when the shell says `resume` (goOn), or at
   // once (false) off the journey.
-  lessonTime(token) {
+  // opts.fromNet: the hook's net has become the lesson's first shape (sequences.js netToLesson), so the lesson starts on
+  // it, without its seashell opening.
+  lessonTime(token, opts = {}) {
     if (!this.embedded || !this.lessonAfter) return Promise.resolve(false);
     this.lessonAfter = false;
     return new Promise((resolve) => {
       this.breakEnds = () => { if (isCurrent(token)) resolve(true); };
-      window.Journey.finish({ intro: true, warmup: true, fish: state.caught });
+      window.Journey.finish({ intro: true, warmup: true, fish: state.caught, fromNet: !!opts.fromNet });
     });
+  }
+
+  // The lesson is dissolving in over the game (the shell's `quiet`): the hook's outline and dim fade with the game's
+  // sound, as the lesson's own shape and lake take over.
+  quiet() {
+    if (this.hookFx) this.hookFx.fading = true;
   }
 
   // Next is up beside Swiftee: resolves on its tap (next)
@@ -464,6 +478,7 @@ class Game {
 
   // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
   goOn() {
+    this.ui.fadeHud(false);
     this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.setCamera({ zoom: 1, pan: 1 });
     this.ui.el.hud.hidden = false;
@@ -1021,6 +1036,7 @@ class Game {
         hold: (narrator ? 1000 : 700) + line.text.length * (narrator ? 26 : 22),
       };
       this.ui.showLine(line.who, words, line.who === 'popo' ? this.popoBubbleWidth() : 0);
+      this.dialogue.tail = line.tail;
       this.placeSpeech();
       const voiced = this.audio.speak(line.who, line.text);
       if (voiced) { this.paceToVoice(this.dialogue, voiced); this.dialogue.src = this.audio.voiceSource; }
@@ -1034,8 +1050,9 @@ class Game {
     d.times = spokenTimes(d.words, seconds);
     d.elapsed = 0;
     d.voiced = true;
-    // after the voice ends, the line stays long enough for a young reader to finish it
-    d.hold = (seconds - d.times[d.times.length - 1]) * 1000 + Math.max(1200, d.words.length * 170);
+    // after the voice ends, the line stays long enough for a young reader to finish it (or a line's own `tail`, ms:
+    // the hook's lines keep the story moving)
+    d.hold = (seconds - d.times[d.times.length - 1]) * 1000 + (d.tail != null ? d.tail : Math.max(1200, d.words.length * 170));
   }
 
   placeSpeech() {
@@ -1154,6 +1171,9 @@ class Game {
       if (!this.fx.reduced) this.swiftee.twirl();
       this.fx.sparkle(this.swiftee.x, this.swiftee.y - 40, 8);
       this.audio.play('boing');
+    } else if (name === 'trace') {
+      this.net.traceOutline(1.1, 1.4, 0.6);
+      this.audio.play('shimmer');
     } else if (name === 'hop' && this.swiftee && this.dialogue && this.dialogue.who === 'swiftee') {
       this.swiftee.hop();
     }
@@ -1330,6 +1350,7 @@ class Game {
     this.updateDialogue(dt);
     this.updateDelivery(dt);
     if (this.ending) this.updateEnding(dt);
+    if (this.hookFx && this.hookFx.fading) this.hookFx.alpha = Math.max(0, this.hookFx.alpha - dt / 0.45);
     this.updateFliers(dt);
     this.updateConfetti(dt);
     this.updateStoryFx(dt);
@@ -1516,6 +1537,7 @@ class Game {
     this.drawFliers(ctx);
     ctx.restore();
     if (this.title.visible) this.title.draw(ctx);
+    this.drawHookFx();
     this.drawCurtain();
   }
 
@@ -1659,6 +1681,56 @@ class Game {
         this.audio.play('giggle');
       }
     }
+  }
+
+  // The hook's way into the lesson (sequences.js netToLesson), on the curtain over the scene: the scene dimmed, and the
+  // net's outline traced over it in the lesson's blue, its corners becoming the lesson's white dots, as it glides into
+  // the lesson's first shape.
+  drawHookFx() {
+    const H = this.hookFx;
+    if (!H && !this.hookFxDrawn) return;
+    const ctx = this.stage.beginCurtain();
+    ctx.clearRect(0, 0, STAGE_W, STAGE_H);
+    this.hookFxDrawn = !!H;
+    if (!H || H.alpha <= 0) return;
+    const S = PopoGame.LESSON_SHAPE, p = H.pts;
+    ctx.save();
+    ctx.globalAlpha = H.alpha;
+    if (H.dim > 0) {
+      ctx.fillStyle = `rgba(4, 14, 40, ${H.dim.toFixed(3)})`;
+      ctx.fillRect(0, 0, STAGE_W, STAGE_H);
+    }
+    // the four edges, traced from A round to A
+    const lens = p.map((q, i) => Math.hypot(p[(i + 1) % 4].x - q.x, p[(i + 1) % 4].y - q.y));
+    let left = lens.reduce((t, l) => t + l, 0) * H.trace;
+    ctx.beginPath();
+    ctx.moveTo(p[0].x, p[0].y);
+    for (let i = 0; i < 4 && left > 0; i += 1) {
+      const a = p[i], b = p[(i + 1) % 4], k = Math.min(1, left / lens[i]);
+      ctx.lineTo(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k);
+      left -= lens[i];
+    }
+    if (H.trace >= 1) ctx.closePath();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+    ctx.lineWidth = H.line + 5;
+    ctx.stroke();
+    ctx.strokeStyle = '#1e7bff';
+    ctx.lineWidth = H.line;
+    ctx.stroke();
+    if (H.dots > 0) {
+      for (const q of p) {
+        ctx.beginPath();
+        ctx.arc(q.x, q.y, S.dot * H.dots, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.lineWidth = S.ring;
+        ctx.strokeStyle = '#1e7bff';
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
 
   // The curtain over the scene: a warm sunburst everywhere but the circle, slowly turning rays, a

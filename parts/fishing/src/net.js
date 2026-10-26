@@ -97,6 +97,7 @@ class Net {
     this.textureRes = 0;
     this.tear = 0;        // 0 whole, 1 torn open by a catch a wrong net couldn't hold
     this.burst = null;    // bits of mesh flying off as it tears: { t } seconds
+    this.outline = null;  // a soft light traced round the frame (traceOutline): { at, trace, hold, fade } seconds
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
@@ -531,6 +532,7 @@ class Net {
     if (showing) this.drawMeasurements(ctx, corners);
     if (this.glow) this.drawGlow(ctx, corners);
     if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]); // (over the marks, under the knob)
+    if (this.outline) this.drawOutline(ctx, corners);
     if (this.furl < 1) {
       // the eyelets fold away into the bundle as the net winds up
       ctx.save();
@@ -592,6 +594,43 @@ class Net {
       ctx.lineWidth = 1.2;
       ctx.stroke();
     }
+    ctx.restore();
+  }
+
+  // An outline is drawn round the frame from A, takes `trace` seconds to go round, stays `hold` seconds (breathing
+  // once) and fades over `fade`: only the net's own outline, never a label (the hook: the net that stays open, and its
+  // shape as Swiftee names it).
+  traceOutline(trace = 1, hold = 1, fade = 0.5) {
+    this.outline = { at: this.time, trace: this.reduced ? 0.01 : trace, hold, fade };
+  }
+
+  drawOutline(ctx, c) {
+    const o = this.outline, t = this.time - o.at;
+    if (t > o.trace + o.hold + o.fade) { this.outline = null; return; }
+    const k = Math.min(1, t / o.trace);
+    const a = t < o.trace + o.hold ? 1 : 1 - (t - o.trace - o.hold) / o.fade;
+    const breathe = t > o.trace && t < o.trace + o.hold && !this.reduced ? Math.sin(((t - o.trace) / o.hold) * Math.PI) : 0;
+    const lens = c.map((q, i) => distance(q, c[(i + 1) % 4]));
+    let left = lens.reduce((sum, l) => sum + l, 0) * k;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(c[0].x, c[0].y);
+    for (let i = 0; i < 4 && left > 0; i += 1) {
+      const p = lerp(c[i], c[(i + 1) % 4], Math.min(1, left / lens[i]));
+      ctx.lineTo(p.x, p.y);
+      left -= lens[i];
+    }
+    if (k >= 1) ctx.closePath();
+    // (the lesson's blue on a white edge, as the outline that carries the net into the lesson is drawn: it reads on the
+    // golden rope, sky and water alike)
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = `rgba(255, 255, 255, ${(0.75 + 0.2 * breathe) * a})`;
+    ctx.lineWidth = 13 + 3 * breathe;
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(30, 123, 255, ${a})`;
+    ctx.lineWidth = 7;
+    ctx.stroke();
     ctx.restore();
   }
 

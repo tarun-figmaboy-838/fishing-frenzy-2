@@ -425,6 +425,11 @@ class UI {
     this.hudCache = null;
   }
 
+  // The HUD fades away (the hook's net becoming the lesson's shape), or back.
+  fadeHud(away) {
+    this.el.hud.classList.toggle('away', !!away);
+  }
+
   // --- delivered text ------------------------------------------------------------
   // Lays a line out in `el` as hidden words for the game to show one at a time (Game.deliver).
   // Laid out whole first, the plate is its final size from the start and never changes as the

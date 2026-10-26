@@ -5,7 +5,7 @@
 if (new URLSearchParams(location.search).get('dev') !== '1') return;
 if (window.Journey && window.Journey.leaving) return; // opened on its own: on the way to the journey
 
-const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken, mystery, waveIn, welcome, AWAY } = PopoGame;
+const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken, hook, afterHook, waveIn, welcome, AWAY } = PopoGame;
 
 function game() {
   return window.popoDebug && window.popoDebug.game;
@@ -47,23 +47,15 @@ const JUMPS = [
     g.title.replay();
   }],
   ['Intro', () => { const g = game(); begin(g); g.restart(); }],
-  // the warm-up net, then each parallelogram net (L1 to L8)
-  ...LEVELS.map((lv, i) => [lv.warmup ? 'Warm-up' : `L${i}`, () => level(i)]),
-  // the warm-up's end: the big fish, Swiftee's "Let's find out!", Next and the giant wave (and, off the journey, the
-  // wave straight back and her welcome)
+  // each parallelogram net (L1 to L8)
+  ...LEVELS.map((lv, i) => [`L${i}`, () => level(i)]).filter((j, i) => !LEVELS[i].warmup),
+  // the hook before the lesson (H1-H10: the tangling nets, the fish that makes a parallelogram of one, the catch,
+  // Swiftee's "Let's find out!"), and on (in the journey the lesson, the wave back and the welcome; here the first net)
   ['Hook', () => {
     const g = game();
-    level(0);
-    g.net.toStop(0);
-    g.ui.showHandle(false);
-    g.ui.setDrop('hidden');
+    begin(g);
     const token = newToken();
-    // ...and on to the first parallelogram net, as the game goes on after it (in the journey: after the lesson)
-    const first = LEVELS.findIndex((l) => !l.warmup);
-    mystery(g, token)
-      .then(() => { state.fish = state.fish.filter((f) => !f.gone && !f.caught); const before = g.prepareLevel(first); g.spawnSchool(); return letNetDown(g, token, before); })
-      .then(() => g.beginPuzzle())
-      .catch(() => {});
+    hook(g, token).then(() => afterHook(g, token)).catch(() => {});
   }],
   ['Wave in', () => {
     const g = game();

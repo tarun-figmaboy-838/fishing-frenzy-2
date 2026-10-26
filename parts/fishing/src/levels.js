@@ -22,10 +22,9 @@ const LOCATIONS = [
 // `metres` gives a side's length in centimetres (the lesson's unit, so the nets ask what Swiftee asks there), which
 // sets the scale of every measurement shown; with two, both show as given.
 // Each level teaches one property; `type` picks the check (see Net.check).
-// The first net is the warm-up, before the lesson (as Fishing Frenzy's shape fishing is): just fun, nothing to set -
-// Popo's usual net, a rectangle, and the child taps Drop Net when fish swim under it (`type: 'free'`), `drops` times,
-// Popo cheering each catch. Then the journey's problem (sequences.js, mystery): a giant fish grabs the net and pulls it
-// out of square before it breaks free; Popo has never seen that shape, and Swiftee flies in with "Let's find out!". The eight nets after the lesson teach the parallelogram.
+// The first net is the warm-up's (`type: 'free'`: nothing to set, Drop Net, `drops` catches). The story no longer
+// plays it as a level: its 420 x 200 frame is the one the hook's nets hang from (HOOK_NETS, sequences.js hook), and the
+// hook goes straight on to the first parallelogram net. The eight nets after the lesson teach the parallelogram.
 // Every line on the plate (prompt, praise, hint) is one Swiftee has recorded - the lesson's own, or Fishing Frenzy's -
 // so the whole game is heard in her voice and Popo's only (voice-data.js). `both`: both pairs of sides light up.
 const LEVELS = [
@@ -142,11 +141,6 @@ function bunchesFor(level) {
 // Story lines, delivered word by word. *Stressed* words land bigger with a boing, and a cue
 // fires a moment in the scene when its word appears (see Game.storyCue).
 const STORY = {
-  intro: [
-    { who: 'narrator', text: 'Popo *loves* fishing.', cue: { word: 1, do: 'hop' } },
-    { who: 'narrator', text: 'And today…' },
-    { who: 'narrator', text: 'he wants to catch *all* kinds of fish!', cue: { word: 4, do: 'fishIn' } },
-  ],
   // Popo only reacts, as he does in Fishing Frenzy (his lines are his recordings from there):
   // a catch, a wrong net, a right net that came up empty, the golden school, and the end
   oops: { who: 'popo', text: 'Whoopsie Doopsie!' },
@@ -159,15 +153,21 @@ const STORY = {
     { who: 'popo', text: '*Wow!*' },
     { who: 'popo', text: 'Ha ha *ha!*' },
   ],
-  // the warm-up's end, the journey's problem (as Fishing Frenzy's mystery fish): a giant fish grabs the net, Popo heaves,
-  // and it breaks free, leaving the net pulled out of square into a shape Popo has never seen
-  mystery: {
-    whoa: { who: 'popo', text: 'Whoa! A *giant* fish!', cue: { word: 0, do: 'exclaim' } },
-    heave: { who: 'popo', text: 'Come *on*, big fish!' },
-    huh: { who: 'popo', text: 'Huh?!', cue: { word: 0, do: 'wonder' } },
-    after: { who: 'popo', text: "I haven't seen *that* one before!" },
-    // stays up beside Swiftee until Next is pressed
-    swiftee: { who: 'swiftee', text: "Let's find *out!*", cue: { word: 2, do: 'twirl' }, stay: true },
+  // the hook before the lesson (sequences.js hook): Popo's net keeps tangling until a leaping fish knocks its corner into
+  // a parallelogram, which stays open and makes the catch; Swiftee names the shape and the lesson finds out why. These
+  // ten lines only, in this order (h1 ... h10); `tail`: how long a line stays up after its voice (ms), short, so the
+  // story keeps moving
+  hook: {
+    h1: { who: 'narrator', text: 'Popo was out fishing today.', tail: 500 },
+    h2: { who: 'popo', text: "Let's catch lots of *fish!*", cue: { word: 0, do: 'hop' }, tail: 300 },
+    h3: { who: 'popo', text: 'Oh no! This net got *tangled.*', tail: 500 },
+    h4: { who: 'narrator', text: 'Popo tried different net shapes, but they kept getting *tangled.*', tail: 300 },
+    h5: { who: 'popo', text: 'I need a net that stays *open* in the water!', tail: 400 },
+    h6: { who: 'popo', text: 'Hey! This one stayed *open!*', tail: 400 },
+    h7: { who: 'popo', text: 'It worked! What *shape* is this?', tail: 400 },
+    h8: { who: 'swiftee', text: 'This shape is called a *parallelogram.*', cue: { word: 5, do: 'trace' }, tail: 500 },
+    h9: { who: 'popo', text: 'Parallelogram? What *shape* is that?', tail: 400 },
+    h10: { who: 'swiftee', text: "Let's find *out!*", cue: { word: 2, do: 'twirl' }, tail: 300 },
   },
   // after the lesson: the giant wave has brought Popo back, and Swiftee swoops in from it
   welcome: [
@@ -175,8 +175,33 @@ const STORY = {
   ],
 };
 
+// The hook's nets, on the warm-up's net (its 420 x 200 frame): A top-left, B top-right, C bottom-right, D bottom-left,
+// each [x, dy] - x from the ring, dy from the frame's top (A, B) or bottom (C, D) edge (never below it: the net hangs
+// clear of the water). Three wrong ones, simple and convex but with no sides parallel, which tangle in the water; then
+// the leaping fish knocks the third one's corner C onto B + D - A, and the net is a parallelogram (AB and DC level and
+// equal, AD and BC both leaning 60), which stays open.
+const HOOK_NETS = {
+  wrong: [
+    [[-140, 16], [160, -10], [250, 0], [-270, -12]], // (narrow at the top, flaring out)
+    [[-230, 30], [200, -36], [240, -4], [-262, -14]], // (lopsided: short on the left, tall on the right)
+    [[-200, 0], [220, 0], [300, -24], [-260, 0]], // (the parallelogram but for corner C, flared out to the right)
+  ],
+  right: [[-200, 0], [220, 0], [160, 0], [-260, 0]],
+  // each tangle's uneven pull on the corners (px) and its twist (radians)
+  pulls: [
+    { twist: 0.2, by: [[16, 10], [-12, 26], [-36, -14], [30, -24]] },
+    { twist: -0.24, by: [[24, 18], [10, -12], [-30, -20], [-6, -30]] },
+    { twist: 0.26, by: [[-10, 26], [-26, 8], [-16, -34], [34, -10]] },
+  ],
+};
+// The shape the lesson's first screen draws (its trapezium), in this stage's pixels: the hook's net turns into it as the
+// lesson comes in (both parts fill the window at 16:9, so a point here is the same point on the lesson's card; measured
+// from the lesson's screen 1, js/game-engine.js sceneFit, at its zoom 1.5455: its sides 5 and its corner dots 7 of its
+// board's pixels)
+const LESSON_SHAPE = { points: [{ x: 873, y: 299.3 }, { x: 1239, y: 299.3 }, { x: 1334.1, y: 560.6 }, { x: 777.9, y: 560.6 }], line: 7.7, dot: 10.8, ring: 4.6 };
+
 // the parallelogram nets (the warm-up is not one of them)
 const NETS = LEVELS.filter((l) => !l.warmup).length;
 
-Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, shuffle, bunchesFor });
+Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, HOOK_NETS, LESSON_SHAPE, shuffle, bunchesFor });
 })(window.PopoGame = window.PopoGame || {});

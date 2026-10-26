@@ -680,3 +680,8 @@ html, body {
 /* Popo's and Swiftee's bubbles on a narrow stage (a phone): a little smaller, so a comic line fits beside the crane's
    mast and clear of the HUD (UI.placeSpeech), and still bold and easy to read */
 @container (max-width: 720px) { .speech { font-size: 2.75em; } }
+
+/* the HUD steps away as the hook's net becomes the lesson's shape (UI.fadeHud), and comes back with the game */
+.hud { transition: opacity 0.45s ease; }
+.hud.away { opacity: 0; }
+.hud.away * { pointer-events: none !important; }

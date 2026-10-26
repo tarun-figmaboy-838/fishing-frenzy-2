@@ -281,8 +281,9 @@
     await wait(reduced ? 0 : T.playOut);
     if (J.seq === seq) bringLesson();
   }
-  // The lesson's turn: it dissolves in once it is ready (until then the frosted veil says "Getting ready…").
-  async function bringLesson() {
+  // The lesson's turn: it dissolves in once it is ready (until then the frosted veil says "Getting ready…"). opts go to
+  // its begin (fromNet: the game's hook has turned its net into the lesson's first shape, so it starts on it).
+  async function bringLesson(opts) {
     const seq = ++J.seq;
     J.phase = 'starting';
     let L = load('lesson');
@@ -292,12 +293,13 @@
       L = await new Promise((r) => when(L, r));
       if (J.seq !== seq) return;
     }
-    showLesson(L);
+    showLesson(L, opts);
   }
   // The lesson's frame dissolves in over the game and the lesson begins. As in Fishing Frenzy, the lesson plays over the
   // game's own lake: its frame is see-through round its card, and the game goes on drawing under it, silent, its
   // buttons away (`backdrop`), its view moved by the lesson's camera (`camera`, from the lesson through bridge.js).
-  // opts.jump: begun for a ?dev=1 jump, which then starts it at its screen.
+  // opts.jump: begun for a ?dev=1 jump, which then starts it at its screen; opts.fromNet: begun on the hook's net, the
+  // lesson's first shape already in place (no seashell opening).
   function showLesson(L, opts) {
     const F = fishing();
     const seq = J.seq;
@@ -374,7 +376,7 @@
       J.results.intro = detail;
       announce('finished', { part: 'intro', detail });
       J.after = 'resume';
-      bringLesson();
+      bringLesson(detail.fromNet ? { fromNet: true } : undefined);
       return;
     }
     // the game's Play Again: the banner again, and a fresh lesson behind it for the next Play

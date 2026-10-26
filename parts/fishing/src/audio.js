@@ -49,6 +49,7 @@ class AudioEngine {
     this.voiceBuffers = new Map();
     this.laterVoices = []; // the lesson's clips, fetched on Play (fetchLaterVoices)
     this.voiceSource = null;
+    this.duckSfx = false; // (the hook: setDuckSfx)
   }
 
   // Recorded voice lines (voice-data.js), decoded with an offline context so they are ready before they are needed.
@@ -127,10 +128,11 @@ class AudioEngine {
     const now = this.ctx.currentTime;
     this.music.gain.cancelScheduledValues(now);
     this.music.gain.setTargetAtTime(0.18, now, 0.05);
+    if (this.duckSfx) { this.sfx.gain.cancelScheduledValues(now); this.sfx.gain.setTargetAtTime(0.45, now, 0.05); }
     src.onended = () => {
       if (this.voiceSource !== src) return;
       this.voiceSource = null;
-      this.music.gain.setTargetAtTime(0.5, this.ctx.currentTime, 0.25);
+      this.unduck();
     };
     src.start(now, v.lead);
     this.voiceSource = src;
@@ -143,7 +145,22 @@ class AudioEngine {
     if (!src) return;
     this.voiceSource = null;
     try { src.stop(); } catch (e) { /* already stopped */ }
-    this.music.gain.setTargetAtTime(0.5, this.ctx.currentTime, 0.25);
+    this.unduck();
+  }
+
+  // the music (and, in the hook, the sound effects: duckSfx) come back up once the voice stops
+  unduck() {
+    const now = this.ctx.currentTime;
+    this.music.gain.setTargetAtTime(0.5, now, 0.25);
+    this.sfx.gain.cancelScheduledValues(now);
+    this.sfx.gain.setTargetAtTime(0.9, now, 0.2);
+  }
+
+  // The hook's story is told over its own action: while it plays, its sound effects step down under each line too, so
+  // no splash or tangle covers a word (`on` false: the game's usual mix, sound effects at full under the voice).
+  setDuckSfx(on) {
+    this.duckSfx = on;
+    if (!on && this.ctx && !this.voiceSource) this.unduck();
   }
 
   init() {
@@ -433,6 +450,12 @@ class AudioEngine {
       case 'catch': seq([523.25, 659.25, 783.99, 1046.5], 0.07, { type: 'triangle', dur: 0.2, gain: 0.08 }); this.noise({ dur: 0.3, type: 'lowpass', freq: 900, to: 300, gain: 0.12 }); break;
       // a wrong net: its catch thrashing about, then the mesh tearing
       case 'struggle': [0, 0.14, 0.3, 0.42, 0.58, 0.7, 0.84].forEach((d) => { this.tone({ freq: 150, to: 80, t: now + d, dur: 0.09, gain: 0.12 }); this.noise({ t: now + d, dur: 0.06, type: 'lowpass', freq: 700, gain: 0.12 }); }); break;
+      // the hook: a net twisting into a tangle (a rope's quick wind-up), a playful "wah-wah" when it fails, a fish's
+      // soft cartoon tap on the net's corner, and a small shimmer as the net that stays open settles
+      case 'tangle': [0, 0.06, 0.12, 0.18, 0.24].forEach((d, i) => this.tone({ freq: 560 - i * 60, to: 400 - i * 50, type: 'triangle', t: now + d, dur: 0.07, gain: 0.05 })); this.noise({ dur: 0.36, type: 'bandpass', freq: 900, to: 380, q: 2, gain: 0.07 }); break;
+      case 'fail': this.tone({ freq: 392, to: 370, type: 'triangle', dur: 0.2, gain: 0.08 }); this.tone({ freq: 349, to: 300, type: 'triangle', t: now + 0.22, dur: 0.4, gain: 0.08 }); break;
+      case 'bump': this.tone({ freq: 300, to: 540, type: 'sine', dur: 0.08, gain: 0.12 }); this.noise({ dur: 0.05, type: 'lowpass', freq: 900, gain: 0.08 }); break;
+      case 'shimmer': this.bell(1046.5, now, 0.045); this.bell(1318.5, now + 0.08, 0.035); this.bell(1568, now + 0.16, 0.03); break;
       case 'rip': this.noise({ dur: 0.38, type: 'bandpass', freq: 3400, to: 700, q: 3, gain: 0.32 }); [0, 0.05, 0.11, 0.2].forEach((d) => this.noise({ t: now + d, dur: 0.03, type: 'highpass', freq: 2800, gain: 0.16 })); this.tone({ freq: 240, to: 90, type: 'sawtooth', dur: 0.2, gain: 0.05 }); break;
       default: break;
     }
