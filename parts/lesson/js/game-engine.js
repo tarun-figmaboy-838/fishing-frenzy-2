@@ -367,13 +367,24 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // the plain words: all four sides; the angles (their wedges where shown, else their corners); the lengths; the
       // diagonals; the halves of the diagonals (dual coding: the part named grows as it is said)
       else if (/^sides?$/i.test(w)) parts = SIDES;
-      else if (/^angles$/i.test(w)) parts = f.arcs ? ['aA', 'aB', 'aC', 'aD'] : ['vA', 'vB', 'vC', 'vD'];
+      else if (/^angles$/i.test(w)) parts = ['aA', 'aB', 'aC', 'aD']; // (the angles themselves - their wedges peek in where not yet drawn)
       else if (/^lengths?$/i.test(w)) parts = ['lAB', 'lCD', 'lDA', 'lBC'];
       else if (/^diagonals?$/i.test(w)) parts = ['dAC', 'dBD'];
       else if (/^segments?$/i.test(w)) parts = HALVES;
-      if (parts) cues.push({ i: i, parts: parts, done: false });
+      if (parts) cues.push({ i: i, parts: parts, done: false, seq: parts.length === 4 && /^a/.test(parts[0]) });
     });
     return cues;
+  }
+  // The four angles named together are shown one at a time - A, B, C, D - each growing while the others step back a
+  // moment, then all four together again (then: what follows)
+  angleSeq(parts, then) {
+    const tok = this.stepTok, GAP = 520;
+    parts.forEach((p, j) => this.tm(() => {
+      if (tok !== this.stepTok) return;
+      this.emphasize([p]);
+      this.setState({ aFocus: { [p[1]]: 1 } });
+    }, j * GAP));
+    this.tm(() => { if (tok !== this.stepTok) return; this.setState({ aFocus: null }); if (then) then(); }, parts.length * GAP + 300);
   }
   // grow -> brief hold -> back (CSS transitions do the easing; same timing everywhere)
   emphasize(parts) {
@@ -446,7 +457,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (atIdx >= 0 && n >= atIdx + 1) highlight();
       if (pAt >= 0 && n >= pAt + 1) firePulse();
       if (gAt >= 0 && n >= gAt + 1) fireGrow();
-      emphCues.forEach((c) => { if (!c.done && n >= c.i + 1) { c.done = true; if (tok === this.narrTok) { this.emphasize(c.parts); focusAngles(c.parts); } } });
+      emphCues.forEach((c) => {
+        if (c.done || n < c.i + 1) return;
+        c.done = true;
+        if (tok !== this.narrTok) return;
+        if (c.seq) this.angleSeq(c.parts, () => focusAngles(c.parts)); // (all four angles: one at a time)
+        else { this.emphasize(c.parts); focusAngles(c.parts); }
+      });
       cues.forEach((q) => { if (n >= q.i + 1) fireCue(q); });
     };
     // cues: board moments tied to a spoken word (exact match, punctuation ignored) - see runCue; any the voice never
@@ -731,7 +748,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   runCue(c) {
     const tok = this.stepTok, P = this.state.P;
     if (typeof c.fn === 'function') c.fn(); // (the summary's own highlights)
-    if (c.emph) this.emphasize(c.emph); // parts that grow on the word (as the ones a line names do by itself)
+    if (c.emph) { // parts that grow on the word (as the ones a line names do by itself); all four angles one at a time
+      if (c.emph.length === 4 && /^a/.test(c.emph[0])) this.angleSeq(c.emph); else this.emphasize(c.emph);
+    }
     if (c.focus) { // the named angles stay vivid, the others step back for a moment
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
@@ -1039,7 +1058,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   cheer() {
     this.sfx('good');
     if (window.Confetti && !this.cur().calmOk) window.Confetti.burst(); // calmOk: sound and praise only
-    if (window.Motion && Motion.starPop && this.cur().cpTitle) Motion.starPop(640, 440); // a checkpoint right: a star for it
     this.react(CONFIG.swiftee.praise);
   }
   // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoNext) after the last line ends.
@@ -1144,7 +1162,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const sp = (st.f || {}).supp;
     if (sp) {
       const ms = CONFIG.supp.stepMs;
-      sp.forEach((pair, i) => this.tm(() => { this.setState({ supp: i }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop'); }, 500 + i * ms));
+      // (each pair's equation card, where the screen has them, lifts while its own pair is shown: one equation at a time)
+      const eqs = ((st.lines || [])[0] || {}).chips || [];
+      sp.forEach((pair, i) => this.tm(() => { this.setState({ supp: i, chipHi: eqs.length === sp.length ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop'); }, 500 + i * ms));
+      if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
       this.seqEnd = Date.now() + 500 + sp.length * ms;
     }
     if (st.build && this.fromNet) {
@@ -1861,11 +1882,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const R = CONFIG.angleR(this.angle(P, k)) / zs;
       const RW = R + 3.5 / zs, ws = { x: Vk.x + u.x * RW, y: Vk.y + u.y * RW }, we = { x: Vk.x + v.x * RW, y: Vk.y + v.y * RW };
       (this.arcR = this.arcR || {})[k] = RW; // (screen 24's protractor traces each angle out to its wedge's edge)
-      const show = arcSet.indexOf(k) >= 0;
+      const show = arcSet.indexOf(k) >= 0, peek = !show && !!em['a' + k] && vOn(k); // (named before it is drawn: it peeks in)
       // when several angles come in together they sweep open one after another (Motion.sweepWedges, by .d0-.d3)
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
       g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + r1(RW) + ',' + r1(RW) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
-        d: dsp(show), cls: 'wedge k' + k + stag + pairCls(k) + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
+        d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
       // its size wears the darker shade of the wedge's colour (lA..lD; equal opposite angles share A's or B's)
       const lk = /\bpa\b/.test(pairCls(k)) ? 'A' : /\bpb\b/.test(pairCls(k)) ? 'B' : k;
       const at = fig ? this.figVal(this.cur(), k, (fig.angles || {})[k] || '') : V[k] + '°';
@@ -1907,8 +1928,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (tapV && g['a' + k]) g['a' + k].cls += ' try';
         if (conn) g['v' + k].cls += ' drag-cue';
       }
+      // (an angle to tap is tapped in the angle - its target sits between its wedge and its size, inside the shape -
+      // not on the corner point, so a tap near a corner never lands on the neighbouring angle)
+      const inAngle = tapV && this.alabAt && this.alabAt[k] ? { x: Vk.x + (this.alabAt[k].x - Vk.x) * 0.55, y: Vk.y + (this.alabAt[k].y - Vk.y) * 0.55 } : Vk;
       g['k' + k] = {
-        x: r1(Vk.x), y: r1(Vk.y), d: dsp(tapV || drag || conn), cls: '',
+        x: r1(inAngle.x), y: r1(inAngle.y), d: dsp(tapV || drag || conn), cls: '',
         cur: drag ? (s.dragging ? 'grabbing' : 'grab') : 'pointer',
         click: tapV ? () => this.tapVertex(k) : noop,
         down: drag || conn ? (e) => this.down(k, e) : noop
