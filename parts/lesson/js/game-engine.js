@@ -1348,7 +1348,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (!svg) return;
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
     if (e.preventDefault) e.preventDefault();
-    this.drag = { k: k, svg: svg, x0: this.state.P[k].x };
+    // (B keeps its offset from the finger, so it never jumps under it as the drag starts)
+    const at = this.toSvg(svg, e);
+    this.drag = { k: k, svg: svg, x0: this.state.P[k].x, dx: at ? this.state.P[k].x - at.x : 0 };
     this.touched = true; // the learner has started: no more demo hand
     this.watchPointer();
     if (this.handId) { clearTimeout(this.handId); this.T.delete(this.handId); this.handId = null; }
@@ -1372,7 +1374,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const p = this.toSvg(this.drag.svg, e);
     if (!p) return;
     const P = this.clone(this.state.P), Lm = CONFIG.limits;
-    P.B.x = Math.max(P.A.x + Lm.minTop, P.C.x - Lm.maxLegRun, Math.min(Lm.maxTopX, P.C.x + Lm.maxLegRun, p.x));
+    P.B.x = Math.max(P.A.x + Lm.minTop, P.C.x - Lm.maxLegRun, Math.min(Lm.maxTopX, P.C.x + Lm.maxLegRun, p.x + (this.drag.dx || 0)));
     const tx = P.C.x + (P.A.x - P.D.x); // near the parallel place B holds there while still held
     const snapped = Math.abs(P.B.x - tx) < CONFIG.snap.parallelPx;
     if (snapped) P.B.x = tx;
