@@ -2092,7 +2092,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const walk = st.task === 'measure' || st.task === 'measureAngles'; // Swiftee measures: the shape sits right of her
     const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
     const maxW = st.id === 'intro' ? C.introW : walk ? C.measureW : C.maxW;
-    const lane = C.chipGap + C.rowsH, room = C.bottom - top - lane; // the shape's room on every screen
+    // (the lane under the shape: the answer row, the tallest thing most screens put there - one row of cards fits in it -
+    // so the shape is as big as that leaves room for, and the same size from screen to screen)
+    const lane = C.optGap + C.optH, room = C.bottom - top - lane; // the shape's room on every screen
     const kHome = Math.min(C.scale, maxW / w, room / h), k = Math.min(kHome, (C.bottom - top - below) / h);
     const home = top + Math.max(0, (room - h * k) / 2); // its one place: centred in that room
     const y = Math.max(top, Math.min(home, C.bottom - below - h * k)); // (pulled up only as far as a taller block needs)
