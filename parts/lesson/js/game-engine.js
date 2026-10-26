@@ -656,7 +656,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   toWords(t) { return t.replace(/(\d) (cm)\b/g, '$1\u00a0$2').replace(/ ([=+\u2212]) /g, '\u00a0$1\u00a0').split(/[ \t\n]+/).filter(Boolean); }
   // the shape's corners and O on the stage (stage px), for the maths in motion
   fxPts() {
-    const P = this.state.P, out = {};
+    const P = this.shapeP(), out = {};
     for (const k of ['A', 'B', 'C', 'D']) { const q = this.boardToStage(P[k]); if (!q) return null; out[k] = q; }
     out.O = { x: (out.A.x + out.C.x) / 2, y: (out.A.y + out.C.y) / 2 };
     return out;
@@ -734,7 +734,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const seg = (k) => { const a = S[k[0]], b = S[k[1]]; return { x1: a.x, y1: a.y, x2: b.x, y2: b.y, col: k === 'AB' || k === 'CD' || k === 'BA' || k === 'DC' ? PAL.line : PAL.pair2 }; };
         const pairs = (v) => (Array.isArray(v[0]) ? v : [v]);
         let at = 0;
-        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.slideMatch(seg(pr[0]), seg(pr[1])); }, at); at += 1300; });
+        // equal sides: the copy of one slides onto the other by a translation (A->D, B->C for AB onto DC), never through O
+        const onto = (a, b) => (Math.hypot(a.x1 - b.x1, a.y1 - b.y1) + Math.hypot(a.x2 - b.x2, a.y2 - b.y2) <= Math.hypot(a.x1 - b.x2, a.y1 - b.y2) + Math.hypot(a.x2 - b.x1, a.y2 - b.y1)
+          ? b : Object.assign({}, b, { x1: b.x2, y1: b.y2, x2: b.x1, y2: b.y1 }));
+        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); Motion.slideMatch(a, onto(a, seg(pr[1]))); } }, at); at += 1300; });
         if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1])); }, at); at += 1350; });
         if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 1300; });
         if (c.rails) this.tm(() => { if (tok === this.stepTok) Motion.rails(c.rails.map(seg)); }, at);
@@ -1338,6 +1341,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur(), s = this.state;
     if (s.done || s.picks[o.id] || this.busy()) return;
     const picks = Object.assign({}, s.picks);
+    if (o.ok && o.emph) this.emphasize(o.emph); // (the part a right answer is about grows as it is picked)
     if (st.multi && o.ok) {
       picks[o.id] = 'good';
       const need = st.opts.filter((x) => x.ok && x.req !== false), all = need.every((x) => picks[x.id]);
@@ -1352,14 +1356,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ done: true, results: results, chips: st.okChips || s.chips });
       this.cheer();
-      this.interject({ m: CONFIG.swiftee.correct, t: st.ok });
+      this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
     } else if (o.ok) {
       picks[o.id] = 'good';
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ picks: picks, done: true, results: results, chips: st.okChips || s.chips });
       this.cheer();
-      this.interject({ m: CONFIG.swiftee.correct, t: st.ok });
+      this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       this.okGlow(st);
     } else {
       picks[o.id] = 'bad';
@@ -1498,7 +1502,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
         this.setState({ done: true, results: results, chips: st.okChips || s.chips });
         this.cheer();
-        this.interject({ m: CONFIG.swiftee.correct, t: st.ok });
+        this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       } else { this.sfx('snap'); this.poke(); }
       return;
     }
@@ -1559,7 +1563,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
       this.setState({ fill: Object.assign({}, F, { locked: locked, checking: false }), done: true, results: results, chips: st.okChips || s.chips });
       this.cheer();
-      this.interject({ m: CONFIG.swiftee.correct, t: st.ok });
+      this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       return;
     }
     // wrong blanks wobble orange, then empty again for another try
@@ -1589,7 +1593,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // ---------- render ----------
   geo() {
     const s = this.state, st = this.cur(), fig = st.fig || null, P = this.shapeP(), task = st.task;
-    const f = fig ? { diag: fig.diag, O: fig.diag, ticks: fig.ticks, hticks: fig.hticks, arcs: Object.keys(fig.angles || {}).join('') } : this.fl();
+    const f = fig ? Object.assign({ diag: fig.diag, O: fig.diag, ticks: fig.ticks, hticks: fig.hticks, arcs: Object.keys(fig.angles || {}).join('') }, s.done && st.okF ? st.okF : {}) : this.fl();
     const A = P.A, B = P.B, C = P.C, D = P.D;
     const dsp = (b) => (b ? 'inline' : 'none');
     const r1 = (v) => Math.round(v * 10) / 10;

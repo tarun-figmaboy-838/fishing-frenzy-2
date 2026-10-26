@@ -17,7 +17,8 @@
 //          handOnce: 1 = one demo gesture of the hand once the instruction ends
 //          connect = draw both diagonals: drag (or tap, tap) from a corner to the opposite corner
 //   opts:  answer buttons (ok = right; fb = tip for a wrong one; soloOk: 1 = once right, only the right answer stays,
-//          centred; okGlow: [[sides], ...] = side pairs pulse in turn after it; calmOk: 1 = no confetti). multi: 1 = select every right answer
+//          centred; okGlow: [[sides], ...] = side pairs pulse in turn after it; calmOk: 1 = no confetti; okCues = word cues on
+//          the feedback line; an option's emph = the parts that grow as it is picked right). multi: 1 = select every right answer
 //          (req: false = right but not needed to finish). grid: 1 = the four-shape picture grid
 //   fill:  blanks to fill with number tiles: blanks [{ id, pre, post, ans }], tiles [...] (drag a tile onto a blank,
 //          or tap a tile to fill the highlighted blank). match: 1 = each tile once, blanks checked as pairs (pairs)
@@ -241,17 +242,20 @@ const LESSON = {
       fig: { P: FIG_HALVES, diag: 1, halves: { A: '5 cm', B: '3 cm' }, hticks: 1 },
       fill: { blanks: [{ id: 'OC', pre: 'OC =', post: 'cm', ans: '5' }, { id: 'OD', pre: 'OD =', post: 'cm', ans: '3' }], tiles: ['3', '5', '6', '10'],
         fb: { any: 'OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.' } } }, CP),
+    // the two true statements are the whole idea: AO = OC and BO = OD is what "the diagonals bisect each other" means,
+    // so it is not a fifth answer to pick - it is what the right answer shows. Each right pick lights its diagonal; once
+    // both are found the equal halves take their pair colours and, as Swiftee says "bisect", fold onto each other about O
     Object.assign({ pdf: 50, id: 'cp3c', multi: 1, cpTitle: 'Checkpoint 3 · Choose the Correct Statements',
       lines: [{ m: 'curious', t: 'Which of the following are\ntrue for this parallelogram?\nSelect all that apply.' }],
       ok: 'Perfect! AO = OC, BO = OD,\nso the diagonals bisect\neach other.',
+      okF: { halfPairs: 1 }, okCues: [{ at: 'bisect', fold: [['A', 'C'], ['B', 'D']] }],
       fig: { P: FIG_SIDES, diag: 1, hticks: 1 },
       opts: [
-        { id: 'aooc', t: 'AO = OC', ok: true },
-        { id: 'bood', t: 'BO = OD', ok: true },
+        { id: 'aooc', t: 'AO = OC', ok: true, emph: ['dAC', 'vO'] },
+        { id: 'bood', t: 'BO = OD', ok: true, emph: ['dBD', 'vO'] },
         { id: 'aobo', t: 'AO = BO', fb: 'AO and BO are parts of different diagonals, so they need not be equal.' },
-        { id: 'acbd', t: 'AC = BD', fb: 'The two diagonals of this parallelogram have different lengths.' },
-        { id: 'bis', t: 'The diagonals bisect each other.', ok: true, wide: 1 }
-      ] }, CP, { optWrap: 1 }),
+        { id: 'acbd', t: 'AC = BD', fb: 'The two diagonals of this parallelogram have different lengths.' }
+      ] }, CP),
 
     // ---------- Part 9 · recall (pages 51-52): the summary, as Fishing Frenzy's (js/summary.js): one glassy bubble per
     // idea in the middle of the card, Swiftee peeking over it to say its line (the recap clips), the bubbles gathering
