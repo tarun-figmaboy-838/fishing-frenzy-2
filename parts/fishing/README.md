@@ -173,14 +173,21 @@ The game is deployed as part of the journey: the repository's root is the static
   last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and a trail of two
   yellow chevrons tight against the knob on each open side runs the way it can still slide, as a game shows a swipe
   (a tap on a trail moves it a stop; the track itself isn't drawn; the trails reach out with the readings on a small
-  screen, so their tap targets never overlap the knob). The labels are laid out together so none covers another
+  screen, so their tap targets never overlap the knob). The measures are plain text with a dark edge (no panel behind them); O is a letter,
+  as A to D are. The labels are laid out together so none covers another
   (`Net.placeLabels`): each starts clear of its own line by its own measured size (a side's length square off its
   side, an angle's value past its arc, a half's beside its diagonal), keeps clear of the lifting ring, the weights,
   the corner letters, the knob and its arrows, the crane, the raft and Popo (`Net.labelObstacles`), never sits across
   a drawn line - the frame's sides, the sling's legs, the lifting rope, the diagonals (`Net.labelLines`) - and stays
-  inside what the view shows. One that can't be freed by nudging takes the nearest free spot (just inside its side,
-  the next triangle, a size smaller), and O stays by the crossing. The layout is kept until the net's shape, its words
-  or the view change, and the words are drawn last, over the whole scene (`Net.drawWords`), never dimmed under the
+  inside what the view shows. The rules are the same on every net: a side's length sits at the middle of its side, just outside (AB, whose outside
+  the sling always takes, just inside under its rope; any other just inside where the crane or the view's edge takes
+  the outside); an angle's value inside its angle past the arc; each diagonal half's label in its own triangle beside
+  the half - or, on a crowded net, just outside by its own corner; O right by the crossing (placed last, so a half
+  that needs the room there has it). A label is never further from its part than its gap, nor across another line
+  from it; only where nothing near is free does it take a size smaller, then the nearest free spot. The words have a
+  size of their own (`Game.wordScale`): they are read through the zoom, so on a phone they grow less than the knob's
+  arrows and marks do. The layout is kept until the net's shape, its words
+  or the view change (and the last few dozen are remembered, so dragging back over a stop costs nothing), and the words are drawn last, over the whole scene (`Net.drawWords`), never dimmed under the
   water. The zoom keeps the net below the HUD's top row. The answer lies further from the start level by level (5 to 9
   stops). While the view is in on the net the lights go down on the scene behind it, evenly, and the net stays lit, so
   it is plainly the thing to look at.

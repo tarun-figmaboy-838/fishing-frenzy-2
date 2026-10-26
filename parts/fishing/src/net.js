@@ -1,7 +1,7 @@
 (function (PopoGame) {
 'use strict';
 const { geo, drawRope, drawPulleyWrap, drawRing, ROPE_WIDTH, RING_KNOT, RING_BAR } = PopoGame;
-const { sub, add, times, dot, length, distance, midpoint, lerp, normalize, parallel, angleAt, intersection, isValidQuad, insideConvex, rotate } = geo;
+const { sub, add, times, dot, cross, length, distance, midpoint, lerp, normalize, parallel, angleAt, intersection, isValidQuad, insideConvex, rotate } = geo;
 
 // The fishing net: a rope frame of four corners A, B, C, D (top-left, clockwise) hung from one
 // lifting ring, with a mesh inside. Three corners are fixed and the child drags the fourth
@@ -43,7 +43,6 @@ const GATHER = { x: 0.9, y: 0.55 };
 const KNOT = RING_KNOT;
 // the outline of a torn hole, as shares of its full size, all the way round
 const RAGGED = [1, 0.62, 0.9, 0.7, 1, 0.58, 0.86, 0.66, 0.97, 0.6, 0.92, 0.72, 1, 0.64, 0.84, 0.7];
-const INK = 'rgba(12, 40, 70, 0.9)';
 // the lesson's colours: one per angle (its wedge, and its value), and its orange parallel arrows and navy ticks
 const ANG = { A: '#ff7a00', B: '#00c853', C: '#9d4dff', D: '#ffab00' };
 const ANG_TXT = { A: '#ff9a3c', B: '#3ddc73', C: '#c08bff', D: '#ffc44d' };
@@ -51,7 +50,7 @@ const CHEV = '#ff7a00';
 const ARROW_REACH = 44;  // how far from the knob's middle its two slide arrows sit (tight against it)
 const FONT = (px) => `700 ${px}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
 // A label's half width and height on the stage, as Net.text draws it: its words measured in the font (kept once the
-// font has loaded), its dark edge and a hair to spare, at the net's textScale.
+// font has loaded), its dark edge and a hair to spare, at the net's wordScale.
 const measurer = document.createElement('canvas').getContext('2d');
 const measured = new Map();
 function labelHalf(string, px, k) {
@@ -64,6 +63,7 @@ function labelHalf(string, px, k) {
   }
   return { w: ((w + 5) / 2 + 3) * k, h: (px * 0.5 + 4) * k };
 }
+const INK = 'rgba(12, 40, 70, 0.9)'; // (the labels' dark edge)
 // how far a label's box reaches from its middle along the unit direction n
 const reach = (half, n) => Math.abs(n.x) * half.w + Math.abs(n.y) * half.h;
 // does the segment a-b cross the box (x0, y0, x1, y1)? (Liang-Barsky)
@@ -113,7 +113,8 @@ class Net {
     this.glow = null;     // the property highlight: steps played one after another
     this.hintPulse = 0;   // the measurements swell for a moment as a hint
     this.touched = false; // the child has moved the corner this level
-    this.textScale = 1;   // labels grow on small screens so they stay readable (see Game.resize)
+    this.textScale = 1;   // the knob's arrows, the marks and arcs grow on small screens (see Game.labelScale)
+    this.wordScale = 1;   // ...and the words (measures, letters), as seen through the zoom on the net (Game.wordScale)
     this.ropePhase = 0;   // rope twists slide as rope pays out
     this.furl = 0;        // 0 open, 1 wound up into a bundle under the ring (between nets)
     this.tangle = 0;      // continuous crumpling of the same mesh, from open to tangled
@@ -519,7 +520,7 @@ class Net {
     if (!this.visible || (!this.readyLabels && !this.letterCorners)) return;
     ctx.save();
     ctx.globalAlpha = this.alpha;
-    for (const l of this.readyLabels || []) this.text(ctx, l.string, l.x, l.y, l.px, l.colour, l.live);
+    for (const l of this.readyLabels || []) this.text(ctx, l.string, l.x, l.y, l.px, l.colour, l.live, { letter: l.letter });
     if (this.letterCorners) this.drawLabels(ctx, this.letterCorners);
     ctx.restore();
   }
@@ -941,7 +942,7 @@ class Net {
     // the net, the view - as seen from corner A, so the raft's bob alone never relays it out: within 4 px on the net
     // and 8 px round it, which the crane's and Popo's boxes have to spare, labelObstacles; otherwise as last time)
     const c0 = c[0], v = this.viewBox;
-    const words = [this.textScale.toFixed(3), this.locked, ...labels.map((l) => `${l.string}|${l.px}`),
+    const words = [this.textScale.toFixed(3), this.wordScale.toFixed(3), this.locked, ...labels.map((l) => `${l.string}|${l.px}`),
       v ? [v.x0, v.y0, v.x1, v.y1].map((e) => Math.round(e / 8)).join(',') : ''].join(';');
     const nums = [], tol = [];
     const put = (q, by) => { nums.push(q.x - c0.x, q.y - c0.y); tol.push(by, by); };
@@ -949,12 +950,21 @@ class Net {
     labels.forEach((l) => put(l, 4));
     for (const b of this.sceneBoxes || []) { put({ x: b.x0, y: b.y0 }, 8); put({ x: b.x1, y: b.y1 }, 8); }
     if (this.ropeTop) put(this.ropeTop, 8);
-    const last = this.labelCache;
+    // (and the last few dozen layouts by their rounded shape, so dragging back over stops already seen costs nothing)
+    const last = this.labelCache, recent = this.labelLayouts || (this.labelLayouts = new Map());
+    const id = `${words}#${nums.map((n, i) => Math.round(n / tol[i])).join(',')}`;
+    const use = (out) => labels.forEach((l, i) => { const m = out[i]; l.x = c0.x + m.x; l.y = c0.y + m.y; l.px = m.px; });
     if (last && last.words === words && last.nums.length === nums.length && nums.every((n, i) => Math.abs(n - last.nums[i]) <= tol[i])) {
-      labels.forEach((l, i) => { const m = last.out[i]; l.x = c0.x + m.x; l.y = c0.y + m.y; l.px = m.px; });
+      use(last.out);
+    } else if (recent.has(id)) {
+      use(recent.get(id));
+      this.labelCache = { words, nums, out: recent.get(id) };
     } else {
       this.placeLabels(labels, this.labelObstacles(c), this.labelLines(c));
-      this.labelCache = { words, nums, out: labels.map((l) => ({ x: l.x - c0.x, y: l.y - c0.y, px: l.px })) };
+      const out = labels.map((l) => ({ x: l.x - c0.x, y: l.y - c0.y, px: l.px }));
+      this.labelCache = { words, nums, out };
+      recent.set(id, out);
+      if (recent.size > 48) recent.delete(recent.keys().next().value);
     }
     this.readyLabels = labels; // (drawn once both passes are done: draw)
   }
@@ -964,7 +974,7 @@ class Net {
   // side's length never ends up inside the frame or the sling), the diagonals when they're up and the lifting rope.
   labelLines(c) {
     const r = this.ring(), knot = { x: r.x, y: r.y + KNOT };
-    const k = this.textScale;
+    const k = this.wordScale;
     const lines = [[c[0], c[1], 12], [c[1], c[2], 4], [c[2], c[3], 4], [c[3], c[0], 4], [knot, c[0], 3], [knot, c[1], 3]]
       .map(([a, b, pad]) => ({ a, b, pad: pad * k, edge: true })); // (the top rope's floats stand out from it)
     lines.push({ a: this.ropeTop || { x: r.x, y: r.y - 600 }, b: r, pad: 3 * k });
@@ -987,7 +997,8 @@ class Net {
       const p = lerp(d, cc, (i + 0.5) / steps), half = distance(d, cc) / steps / 2 + 2;
       out.push({ x0: p.x - half, y0: p.y - 4, x1: p.x + half, y1: p.y + hang, axis: 'y' });
     }
-    this.letterPoints(c).forEach((p) => out.push({ x0: p.x - 13 * k, y0: p.y - 15 * k, x1: p.x + 13 * k, y1: p.y + 15 * k }));
+    const w = this.wordScale;
+    this.letterPoints(c).forEach((p) => out.push({ x0: p.x - 13 * w, y0: p.y - 15 * w, x1: p.x + 13 * w, y1: p.y + 15 * w }));
     if (!this.locked && !this.furl) { // the knob, and its two pairs of arrows out along the track
       const q = c[this.movable], dir = normalize(sub(this.toStage(this.stop(this.track.max)), this.toStage(this.stop(this.track.min))));
       out.push({ x0: q.x - 26 * k, y0: q.y - 26 * k, x1: q.x + 26 * k, y1: q.y + 26 * k });
@@ -1009,7 +1020,7 @@ class Net {
   // that sits across one of the net's lines off it, square to the line, on the side its middle is (so a side's length
   // stays outside the frame and a half's beside its diagonal).
   placeLabels(labels, obstacles = [], lines = []) {
-    const k = this.textScale;
+    const k = this.wordScale;
     const half = (l) => labelHalf(l.string, l.px, k);
     const boxAt = (x, y, hl, pad = 0) => ({ x0: x - hl.w - pad, y0: y - hl.h - pad, x1: x + hl.w + pad, y1: y + hl.h + pad });
     const overlap = (a, b) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > 0 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > 0;
@@ -1094,20 +1105,65 @@ class Net {
     // ones are placed nearest-first, each against the labels already settled, so one that has room close by gets it.
     const frame = lines.frame;
     const view = this.viewBox;
+    // (how far a spot's box is from the part its label names: the gap from the middle less the box's own reach; to its
+    // body, not its ends, so a label by O - where all four halves meet - is near none of them; and never across another
+    // line, so a half's label shares its triangle - or the open water - with its own half)
+    const across = (p, q, a, b) => {
+      const d1 = cross(sub(b, a), sub(p, a)), d2 = cross(sub(b, a), sub(q, a));
+      const d3 = cross(sub(q, p), sub(a, p)), d4 = cross(sub(q, p), sub(b, p));
+      return d1 * d2 < 0 && d3 * d4 < 0;
+    };
+    const farFrom = (l, x, y, hl) => {
+      const { a, b } = l.near, ab = sub(b, a), len2 = dot(ab, ab);
+      const t = len2 ? Math.max(0.15, Math.min(0.85, dot(sub({ x, y }, a), ab) / len2)) : 0;
+      const q = add(a, times(ab, t)), d = distance({ x, y }, q), here = { x, y };
+      if (len2) {
+        for (const line of lines) {
+          const along = sub(line.b, line.a);
+          if (Math.abs(cross(along, ab)) < 1e-6 * Math.sqrt(dot(along, along) * len2)) continue; // (its own line)
+          if (across(here, q, line.a, line.b)) return Infinity;
+        }
+      }
+      return d - (d ? reach(hl, normalize(sub(q, here))) : 0);
+    };
+    let strict = 1; // (how close it must be to its part: 1 its own gap; 2.5 a looser one, crowded; -1 by its `last`
+    // spot - a half's corner - and close to it; 0 anywhere with no line between it and its part; -2 anywhere at all)
+    // (the cheap tests first: the view, nearness, the side of the frame; then the boxes; the lines last)
     const isFree = (l, x, y, hl, inside, others) => {
       if (view && (x - hl.w < view.x0 || x + hl.w > view.x1 || y - hl.h < view.y0 || y + hl.h > view.y1)) return false;
-      for (const { a, b, pad } of lines) if (crosses(boxAt(x, y, hl, pad), a, b)) return false;
+      if (strict > 0 && l.near && farFrom(l, x, y, hl) > l.near.gap * strict) return false;
+      if (strict === -1 && (!l.last || distance({ x, y }, l.last) > 40 * k)) return false;
+      if (strict === 0 && l.near && farFrom(l, x, y, hl) === Infinity) return false;
+      if (frame && insideConvex({ x, y }, frame) !== inside) return false;
       const box = boxAt(x, y, hl);
       for (const o of obstacles) if (overlap(box, o)) return false;
       for (const m of others) if (m !== l && overlap(box, boxAt(m.x, m.y, half(m)))) return false;
-      return !frame || insideConvex({ x, y }, frame) === inside;
+      for (const { a, b, pad } of lines) if (crosses(boxAt(x, y, hl, pad), a, b)) return false;
+      return true;
     };
     // the cheapest spot: how far it moves, plus a little for a size smaller and more for the other side of the frame
     // (a side's length just inside its side beats one far off; an angle's value just outside its corner beats none)
     // (searched round where it wanted to be, and round its alternative - a side's length just inside its side, a
     // half's beside the other side of it, an angle's value just outside its corner - which costs a little more)
     const nearest = (l, others) => {
-      const own = { x: l.want.x, y: l.want.y, inside: l.inside }, alt = l.alt;
+      if (strict === -1 && !l.last) return null;
+      const own = strict === -1 ? l.last : { x: l.want.x, y: l.want.y, inside: l.inside }, alt = strict === -1 ? null : l.alt;
+      if (strict === -1) { // (by its corner: as it is, or a size or two smaller, inside or out)
+        const tries = [[own, 1, 0], [own, 0.88, 30 * k], [own, 0.78, 60 * k], [{ ...own, inside: true }, 0.88, 80 * k]];
+        let best = null;
+        for (const [from, shrink, penalty] of tries) {
+          if (best && penalty >= best.cost) continue;
+          const hl = labelHalf(l.string, l.px * shrink, k);
+          for (let r = 0; r <= 40 * k && !best; r += 5 * k) {
+            const steps = r ? 12 : 1;
+            for (let i = 0; i < steps; i += 1) {
+              const t = (i / steps) * TAU, x = from.x + Math.cos(t) * r, y = from.y + Math.sin(t) * r;
+              if (isFree(l, x, y, hl, from.inside, others)) { best = { x, y, shrink, cost: penalty + r }; break; }
+            }
+          }
+        }
+        return best;
+      }
       const tries = [[own, 1, 0], [own, 0.88, 50 * k]]
         .concat(alt ? [[alt, 1, 30 * k], [alt, 0.88, 80 * k]] : [])
         .concat([[{ ...own, inside: !l.inside }, 1, 90 * k], [own, 0.78, 100 * k], [{ ...own, inside: !l.inside }, 0.88, 130 * k]]);
@@ -1116,8 +1172,8 @@ class Net {
         if (best && penalty >= best.cost) continue;
         const hl = labelHalf(l.string, l.px * shrink, k), inside = from.inside;
         let found = false;
-        for (let r = 0; r <= 180 * k && !found && (!best || penalty + r < best.cost); r += 6 * k) {
-          const steps = r ? 16 : 1;
+        for (let r = 0; r <= 150 * k && !found && (!best || penalty + r < best.cost); r += 7 * k) {
+          const steps = r ? 12 : 1;
           for (let i = 0; i < steps; i += 1) {
             const t = (i / steps) * TAU, x = from.x + Math.cos(t) * r, y = from.y + Math.sin(t) * r;
             if (isFree(l, x, y, hl, inside, others)) { best = { x, y, shrink, cost: penalty + r }; found = true; break; }
@@ -1126,10 +1182,19 @@ class Net {
       }
       return best;
     };
-    const settled = labels.filter((l) => l.pinned || isFree(l, l.x, l.y, half(l), l.inside, labels));
-    let blocked = labels.filter((l) => !settled.includes(l));
-    // (each one's best spot is searched once, and again only if a label settling since has taken it)
-    const spots = new Map(blocked.map((l) => [l, nearest(l, settled)]));
+    // (a label that yields - O, which only needs to be by the crossing, any side of it - is placed after the others)
+    const firm = labels.filter((l) => !l.yields);
+    const settled = firm.filter((l) => l.pinned || isFree(l, l.x, l.y, half(l), l.inside, firm));
+    let blocked = firm.filter((l) => !settled.includes(l));
+    // (each one's best spot is searched once - near its part, a little further from it on a crowded net, or failing
+    // that anywhere - and again only if a label settling since has taken it)
+    const search = (l) => {
+      let sp = null;
+      for (const level of [1, 2.5, -1, 0, -2]) { strict = level; sp = nearest(l, settled); if (sp) break; }
+      strict = 1;
+      return sp;
+    };
+    const spots = new Map(blocked.map((l) => [l, search(l)]));
     while (blocked.length) {
       let pick = null;
       for (const l of blocked) {
@@ -1147,8 +1212,15 @@ class Net {
       const taken = boxAt(l.x, l.y, half(l));
       for (const m of blocked) {
         const sp = spots.get(m);
-        if (!sp || overlap(boxAt(sp.x, sp.y, labelHalf(m.string, m.px * sp.shrink, k)), taken)) spots.set(m, nearest(m, settled));
+        if (!sp || overlap(boxAt(sp.x, sp.y, labelHalf(m.string, m.px * sp.shrink, k)), taken)) spots.set(m, search(m));
       }
+    }
+    for (const l of labels.filter((m) => m.yields)) {
+      if (!isFree(l, l.x, l.y, half(l), l.inside, settled)) {
+        const spot = search(l);
+        if (spot) { l.x = spot.x; l.y = spot.y; l.px *= spot.shrink; }
+      }
+      settled.push(l);
     }
   }
 
@@ -1196,7 +1268,9 @@ class Net {
   // A side's label sits just outside its midpoint (as the lesson's lengths do), clear of the mesh; on a side the
   // moving corner pulls, it sits a little toward the fixed end, clear of the knob.
   // (square off the side, out of the frame, as far as the label's own size needs: a long label beside a steep side
-  // stands off further than one along a level side)
+  // stands off further than one along a level side. Where something takes that spot - the sling above AB always does,
+  // the crane often does beside AD - it sits just inside the side at the same place instead: alt, and never further
+  // from its side than `near` allows)
   drawLength(ctx, c, name, value, live = false) {
     const [i, j] = side(name);
     const mid = lerp(c[i], c[j], this.clearOfKnob(i, j));
@@ -1204,10 +1278,11 @@ class Net {
     const u = normalize(sub(c[j], c[i]));
     let n = { x: -u.y, y: u.x };
     if (dot(n, sub(mid, centre)) < 0) n = times(n, -1);
-    const string = `${name} ${value}`, px = live ? 26 : 22, k = this.textScale;
+    const string = `${name} ${value}`, px = live ? 26 : 22, k = this.wordScale;
     const off = 12 * k + reach(labelHalf(string, px, k), n), at = add(mid, times(n, off));
     // (where there's no room outside its side, just inside it beats far away: alt)
-    this.text(ctx, string, at.x, at.y, px, live ? '#ffd84a' : '#fff', live, { alt: { ...sub(mid, times(n, off)), inside: true } });
+    this.text(ctx, string, at.x, at.y, px, live ? '#ffd84a' : '#fff', live,
+      { alt: { ...sub(mid, times(n, off)), inside: true }, near: { a: c[i], b: c[j], gap: 24 * k } });
   }
 
   // Parallel marks as the lesson draws them: orange chevrons on a white halo at the middle of each side of the pair
@@ -1271,9 +1346,9 @@ class Net {
     ctx.restore();
     // the value just past the arc, on its bisector, as far out as its own size needs
     const mid = a1 + sweep / 2, dir = { x: Math.cos(mid), y: Math.sin(mid) }, px = live ? 28 : 24;
-    const out = radius + 10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir);
+    const w = this.wordScale, out = radius + 10 * w + reach(labelHalf(value, px, w), dir);
     this.text(ctx, value, v.x + dir.x * out, v.y + dir.y * out, px, live ? '#ffd84a' : ANG_TXT[letter], live,
-      { inside: true, alt: { x: v.x - dir.x * (10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir)), y: v.y - dir.y * (10 * this.textScale + reach(labelHalf(value, px, this.textScale), dir)), inside: false } });
+      { inside: true, near: { a: v, b: v, gap: radius + 34 * w }, alt: { x: v.x - dir.x * (10 * w + reach(labelHalf(value, px, w), dir)), y: v.y - dir.y * (10 * w + reach(labelHalf(value, px, w), dir)), inside: false } });
   }
 
   // The diagonals as thin ropes, the point O where they cross, and the four halves measured.
@@ -1300,7 +1375,7 @@ class Net {
     ctx.strokeStyle = '#4a2c0f';
     ctx.stroke();
     ctx.restore();
-    const k = this.textScale;
+    const k = this.wordScale;
     // O sits right by the crossing, in the widest of the four angles the diagonals make there (the roomiest), just
     // clear of both diagonals and the dot, and stays put there while the halves' labels find their places
     const hO = labelHalf('O', 22, k), rays = [a, b, cc, d].map((q) => normalize(sub(q, o))), obstacles = this.labelObstacles(c);
@@ -1317,12 +1392,17 @@ class Net {
       while (t < stop && blocked(add(o, times(bis, t)))) t += 2 * k;
       if (t < stop && insideConvex(add(o, times(bis, t)), c)) wedges.push({ i, t, at: add(o, times(bis, t)) });
     }
-    let best = wedges.reduce((m, w) => (!m || w.t < m.t ? w : m), null);
+    wedges.sort((p, q) => p.t - q.t);
+    let best = wedges[0];
     const kept = wedges.find((w) => w.i === this.oWedge);
     if (kept && best && kept.t <= best.t * 1.25) best = kept;
     if (best) this.oWedge = best.i;
+    const next = wedges.find((w) => w !== best);
     const atO = best ? best.at : { x: o.x, y: o.y + 24 * k };
-    this.text(ctx, 'O', atO.x, atO.y, 22, '#fff', false, { inside: true, pinned: true });
+    // (it starts in that angle, the next roomiest its alternative, and keeps right by the crossing: a half's label that
+    // needs the room there - in a thin triangle - may have it, and O moves round to another angle)
+    this.text(ctx, 'O', atO.x, atO.y, 22, '#123b63', false,
+      { inside: true, letter: true, yields: true, near: { a: o, b: o, gap: 16 * k }, alt: next ? { ...next.at, inside: true } : undefined });
     if (!labels) return;
     const h = this.halvesShown();
     // each half's label sits beside its middle (toward O on the moving corner's half, clear of the knob), each in a
@@ -1333,7 +1413,9 @@ class Net {
       const u = normalize(sub(to, from)), n = { x: -u.y * sign, y: u.x * sign };
       const string = `${name} ${cm(value)} cm`, off = 8 * k + reach(labelHalf(string, 20, k), n);
       // (the half's other side, in the next triangle, if its own has no room: alt)
-      this.text(ctx, string, mid.x + n.x * off, mid.y + n.y * off, 20, '#ffd84a', true, { inside: true, alt: { x: mid.x - n.x * off, y: mid.y - n.y * off, inside: true } });
+      const end = from === o ? to : from, out = normalize(sub(end, o)), last = add(end, times(out, 34 * k + reach(labelHalf(string, 20, k), out)));
+      this.text(ctx, string, mid.x + n.x * off, mid.y + n.y * off, 20, '#ffd84a', true,
+        { inside: true, alt: { x: mid.x - n.x * off, y: mid.y - n.y * off, inside: true }, near: { a: from, b: to, gap: 26 * k }, last: { ...last, inside: false } });
     };
     const toward = (end) => (end === this.movable && !this.locked ? 0.38 : 0.5);
     put(a, o, 'AO', h.AO, -1, 1 - toward(0));
@@ -1445,21 +1527,21 @@ class Net {
   // ones below their weights, the knob's across its track, off the arrows' way.
   letterPoints(c) {
     const centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
-    const k = this.textScale;
+    const k = this.wordScale;
     return c.map((p, i) => {
       const out = normalize(sub(p, centre));
       let dir = normalize({ x: out.x * 0.45, y: i >= 2 ? 1 : -1 }), gap = 30 * k;
       if (i === this.movable && !this.locked && this.along) { // across the track, away from the net
         const t = this.along.dir, side = { x: -t.y, y: t.x };
         dir = side.x * out.x + side.y * out.y >= 0 ? side : { x: -side.x, y: -side.y };
-        gap = 50 * k;
+        gap = 50 * Math.max(k, this.textScale); // (clear of the knob, which keeps its own size)
       }
       return add(p, times(dir, gap));
     });
   }
 
   drawLabels(ctx, c) {
-    const k = this.textScale;
+    const k = this.wordScale;
     const points = this.letterPoints(c);
     ctx.save();
     ctx.font = FONT(26 * k);
@@ -1480,13 +1562,17 @@ class Net {
   // Readable on any background: white (or coloured) text with a dark edge. Live values swell
   // a little while a hint is on.
   // opts.inside: a label that belongs on the net (an angle's value, a diagonal's half, O), kept inside its frame where
-  // there's room; opts.pinned: one that stays just where it is put (O by the crossing), the others making way.
+  // there's room; opts.pinned: one that stays just where it is put (O by the crossing), the others making way;
+  // opts.letter: a point's name (O), drawn as the corner letters are; opts.near: { a, b, gap } - the part it names (a
+  // side, a half, a corner), which it keeps within `gap` of; opts.last: where it goes when no spot near that part is
+  // free (a half's: just outside the net by its own corner). Readable on any background: white (or coloured) text
+  // with a dark edge, no panel behind it; live values swell a little while a hint is on.
   text(ctx, string, x, y, px, colour, live = false, opts = {}) {
     if (this.labelQueue) {
-      this.labelQueue.push({ string, x, y, px, colour, live, inside: !!opts.inside, pinned: !!opts.pinned, alt: opts.alt });
+      this.labelQueue.push({ string, x, y, px, colour, live, inside: !!opts.inside, pinned: !!opts.pinned, alt: opts.alt, letter: !!opts.letter, near: opts.near, last: opts.last, yields: !!opts.yields });
       return;
     }
-    const swell = (live && this.hintPulse > 0 && !this.reduced ? 1 + 0.15 * Math.abs(Math.sin(this.time * 8)) : 1) * this.textScale;
+    const swell = (live && this.hintPulse > 0 && !this.reduced ? 1 + 0.15 * Math.abs(Math.sin(this.time * 8)) : 1) * this.wordScale;
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(swell, swell);
@@ -1494,11 +1580,19 @@ class Net {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = INK;
-    ctx.strokeText(string, 0, 0);
-    ctx.fillStyle = colour;
-    ctx.fillText(string, 0, 0);
+    if (opts.letter) {
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.strokeText(string, 0, 1);
+      ctx.fillStyle = '#123b63';
+      ctx.fillText(string, 0, 1);
+    } else {
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = INK;
+      ctx.strokeText(string, 0, 0);
+      ctx.fillStyle = colour;
+      ctx.fillText(string, 0, 0);
+    }
     ctx.restore();
   }
 }

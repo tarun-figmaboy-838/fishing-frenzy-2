@@ -238,6 +238,7 @@ class Game {
     this.winch = new Winch();
     this.net = new Net();
     this.net.textScale = this.labelScale();
+    this.net.wordScale = this.wordScale();
     this.net.sharpRes = this.textureRes();
     // until Popo lets it down, the net hangs wound up in a bundle under the boom's pulley
     this.net.visible = true;
@@ -863,6 +864,7 @@ class Game {
     this.stage.resize();
     this.ui.setScale(this.stage.scale);
     this.net.textScale = this.labelScale();
+    this.net.wordScale = this.wordScale();
     this.net.sharpRes = this.textureRes();
     // keep the bubble, the corner and the hint on their marks even while paused
     if (this.dialogue && this.dialogue.who !== 'narrator') this.placeSpeech();
@@ -881,6 +883,12 @@ class Game {
   // grow to stay about 14 CSS pixels or more.
   labelScale() {
     return Math.max(1, 0.64 / this.stage.scale);
+  }
+
+  // The net's words (its measures and letters) are read while the view is in on it (the zoom is never under about
+  // 1.45x), so they grow less: a measure stays about 16 CSS pixels or more, and they fit beside the parts they name.
+  wordScale() {
+    return Math.max(1, 0.75 / (this.stage.scale * 1.45));
   }
 
   // The painting is STAGE_W pixels wide, so the water pass never renders more pixels than
