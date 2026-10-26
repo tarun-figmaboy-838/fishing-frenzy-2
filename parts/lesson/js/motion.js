@@ -174,34 +174,49 @@
       (parent || this.fx()).appendChild(el);
       return el;
     },
-    // equal sides: a glowing copy of side a lifts off, glides onto its opposite b and fits it exactly, beats once and fades
+    // equal sides: a glowing copy of side a lifts off, glides onto its opposite b (a slide: every point moves the same
+    // way, the same distance) and fits it exactly, beats once, rests there so the fit can be seen, and fades. Paced to
+    // be followed: the lift, a slow glide, the beat, the rest
     slideMatch(a, b, col) {
       if (!G || reduced || !this.fx()) return 0;
       const ln = this.mk('line', { x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: col || a.col || '#1e7bff', 'stroke-width': 8, 'stroke-linecap': 'round', opacity: 0, 'class': 'math-copy' });
       add(() => G.timeline({ onComplete: () => ln.remove() })
-        .to(ln, { opacity: 1, duration: 0.2 })
-        .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 0.9, ease: 'power2.inOut' }, 0.2)
-        .to(ln, { 'stroke-width': 13, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.15)
-        .to(ln, { opacity: 0, duration: 0.35 }, 1.75));
-      return 2100;
+        .to(ln, { opacity: 1, 'stroke-width': 11, duration: 0.35 })
+        .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 1.4, ease: 'power2.inOut' }, 0.45)
+        .to(ln, { 'stroke-width': 14, duration: 0.22, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.9)
+        .to(ln, { opacity: 0, duration: 0.45 }, 2.75));
+      return 3200;
     },
-    // equal angles: a copy of the wedge at one corner flies to the opposite corner, turning a half-turn on the way (a
-    // parallelogram's opposite angles are each other's half-turn about O), fits it, beats and fades
-    spinMatch(src, dst) {
+    // equal angles: a copy of the wedge at one corner turns a half-turn about the shape's centre O and lands exactly on
+    // the opposite corner's wedge - the reason they are equal: a parallelogram turned half-way round its centre fits
+    // itself, carrying each angle onto the one opposite. O shows as a dot while the copy turns round it. (Without O: the
+    // copy travels across, turning on the way.)
+    spinMatch(src, dst, O) {
       if (!G || reduced || !this.fx()) return 0;
       const g = this.mk('g', { 'class': 'math-glow' });
       const R = src.R, v = src.v, a1 = Math.atan2(src.u1.y, src.u1.x), a2 = Math.atan2(src.u2.y, src.u2.x), f = src.f, r1 = (n) => n.toFixed(1);
       this.mk('path', { d: 'M' + r1(v.x) + ',' + r1(v.y) + ' L' + r1(v.x + R * Math.cos(a1)) + ',' + r1(v.y + R * Math.sin(a1)) + ' A' + R + ',' + R + ' 0 0 ' + f + ' ' + r1(v.x + R * Math.cos(a2)) + ',' + r1(v.y + R * Math.sin(a2)) + ' Z',
         fill: src.col, 'fill-opacity': 0.95, stroke: '#fff', 'stroke-width': 2 }, g);
+      if (O) {
+        const origin = r1(O.x) + ' ' + r1(O.y);
+        const dot = this.mk('circle', { cx: r1(O.x), cy: r1(O.y), r: 6, fill: '#fff', stroke: '#123b63', 'stroke-width': 3, opacity: 0 });
+        add(() => G.timeline({ onComplete: () => { g.remove(); dot.remove(); } })
+          .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
+          .to([g, dot], { opacity: 1, duration: 0.35 })
+          .to(g, { rotation: 180, duration: 1.7, ease: 'power2.inOut', svgOrigin: origin }, 0.5)
+          .to(g, { opacity: 0.55, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.25)
+          .to([g, dot], { opacity: 0, duration: 0.45 }, 2.9));
+        return 3400;
+      }
       // (svgOrigin: the corner itself, in the svg's coordinates - a px transformOrigin would be the group's box corner)
       const origin = r1(v.x) + ' ' + r1(v.y);
       add(() => G.timeline({ onComplete: () => g.remove() })
         .set(g, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, scale: 1.25, duration: 0.25, svgOrigin: origin })
-        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.0, ease: 'power2.inOut', svgOrigin: origin }, 0.25)
-        .to(g, { scale: 1, duration: 0.25, ease: 'back.out(2)', svgOrigin: origin }, 1.15)
-        .to(g, { opacity: 0, duration: 0.35 }, 1.8));
-      return 2150;
+        .to(g, { opacity: 1, scale: 1.2, duration: 0.35, svgOrigin: origin })
+        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.6, ease: 'power2.inOut', svgOrigin: origin }, 0.4)
+        .to(g, { scale: 1, duration: 0.3, ease: 'back.out(2)', svgOrigin: origin }, 2.0)
+        .to(g, { opacity: 0, duration: 0.45 }, 2.8));
+      return 3300;
     },
     // the diagonals bisect each other: half OA folds about O by a half-turn and lands exactly on OC
     foldHalf(O, A, col) {
@@ -211,10 +226,11 @@
       this.mk('circle', { cx: r1(O.x), cy: r1(O.y), r: 7, fill: '#fff', stroke: '#123b63', 'stroke-width': 3 }, g);
       add(() => G.timeline({ onComplete: () => g.remove() })
         .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, duration: 0.2 })
-        .to(g, { rotation: 180, duration: 1.0, ease: 'power2.inOut', svgOrigin: origin }, 0.2)
-        .to(g, { opacity: 0, duration: 0.35 }, 1.7));
-      return 2050;
+        .to(g, { opacity: 1, duration: 0.35 })
+        .to(g, { rotation: 180, duration: 1.6, ease: 'power2.inOut', svgOrigin: origin }, 0.45)
+        .to(g, { opacity: 0.55, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.1)
+        .to(g, { opacity: 0, duration: 0.45 }, 2.75));
+      return 3200;
     },
     // parallel sides: dashed rails shoot out past both ends of each side and run side by side - they never meet
     rails(segs) {

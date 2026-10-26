@@ -219,7 +219,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes suppLineA{from{transform:scale(0)}to{transform:none}}@keyframes suppLineB{from{transform:scale(0)}to{transform:none}}
 .supp-own.sA{animation:suppOwnA .35s ease .25s both}.supp-own.sB{animation:suppOwnB .35s ease .25s both}
 @keyframes suppOwnA{from{opacity:0}to{opacity:1}}@keyframes suppOwnB{from{opacity:0}to{opacity:1}}
-.supp-copy.sA{animation:suppA 1.9s .3s both}.supp-copy.sB{animation:suppB 1.9s .3s both}
+.supp-copy.sA{animation:suppA 2.8s .4s both}.supp-copy.sB{animation:suppB 2.8s .4s both}
 @keyframes suppA{0%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:linear}
   8%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}
   56%{transform:translate(0px,0px) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}100%{opacity:1;transform:translate(0px,0px) rotate(0deg)}}
@@ -227,10 +227,10 @@ a{color:#123b63}a:hover{color:#0b2742}
   8%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}
   56%{transform:translate(0px,0px) rotate(180deg);animation-timing-function:cubic-bezier(.45,0,.55,1)}100%{opacity:1;transform:translate(0px,0px) rotate(0deg)}}
 .supp-rim{stroke-dasharray:100 100}
-.supp-rim.sA{animation:suppRimA .5s ease-out 2.2s both}.supp-rim.sB{animation:suppRimB .5s ease-out 2.2s both}
+.supp-rim.sA{animation:suppRimA .6s ease-out 3.2s both}.supp-rim.sB{animation:suppRimB .6s ease-out 3.2s both}
 @keyframes suppRimA{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}@keyframes suppRimB{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
-.tag.alab.s180{color:#123b63}
-.tag.alab.s180.sA{animation:fadeA .4s ease-out 2.45s both}.tag.alab.s180.sB{animation:fadeB .4s ease-out 2.45s both}
+.tag.alab.s180{color:#123b63;font-size:calc(27px / var(--bz, 1))!important}
+.tag.alab.s180.sA{animation:fadeA .45s ease-out 3.5s both}.tag.alab.s180.sB{animation:fadeB .45s ease-out 3.5s both}
 @media (prefers-reduced-motion: reduce){.supp-line,.supp-own,.supp-copy,.supp-rim,.tag.alab.s180{animation:none!important}}
 
 /* checkpoint picture grid (screen 19): four equal, quiet cards - the shape is the focus. State is shown only by the
@@ -780,7 +780,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .hseg.dim{stroke-opacity:.3;filter:none}
 .tag.mtag{transition:transform .3s cubic-bezier(.3,0,.3,1),opacity .3s ease}
 .stage.in-card .tag.mtag.dim{opacity:.4}
-.stage .chip.cd1{animation-delay:.32s!important}
-.stage .chip.cd2{animation-delay:.64s!important}
-.stage .chip.cd3{animation-delay:.96s!important}
+.stage .chip.cd1{animation-delay:.48s!important}
+.stage .chip.cd2{animation-delay:.96s!important}
+.stage .chip.cd3{animation-delay:1.44s!important}
 @media (prefers-reduced-motion: reduce){.diag,.hseg,.tag.mtag{transition:none}}

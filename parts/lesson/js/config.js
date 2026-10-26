@@ -34,7 +34,7 @@ const CONFIG = {
   sounds: { good: 'assets/audio/correct.mp3', bad: 'assets/audio/incorrect.mp3' },
   soundVolume: 0.9,
   // a part named in the voice-over grows (CSS .emph, ~0.3 s in / 0.3 s out) and holds this long before easing back
-  emph: { holdMs: 650 },
+  emph: { holdMs: 1000 },
   // screen 1 build: the pen starts with the voice and takes ofLine of the spoken line (minMs..maxMs), so the outline
   // closes as Swiftee finishes and the fill fades in on her last word; delayMs + 2.5 s = start anyway if no voice
   // begins; rushMs = how fast it closes if the voice ends early; settleMs = the outline's glow
@@ -44,10 +44,10 @@ const CONFIG = {
   // question or task waits for the learner, then moves on after its feedback). A question's answers, or a task's corner,
   // come in as Swiftee says the question's last word (at the latest answersMaxMs after the screen starts, should her
   // voice stall). In the journey, the lesson's last screen hands over to the fishing on its Next.
-  flow: { advanceMs: 1600, answersMaxMs: 15000 },
+  flow: { advanceMs: 2600, answersMaxMs: 15000 },
   plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
-  supp: { stepMs: 2600 },
+  supp: { stepMs: 5000 },
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
   card: {
     scale: 2,                        // the shape's largest size (board px -> stage px): each screen draws it as big as fits

@@ -10,7 +10,7 @@
 const JOURNEY = typeof window !== 'undefined' && window.Journey && window.Journey.embedded ? window.Journey : null;
 // the lesson's key words (reference KEY_WORDS, with the parallelogram's own terms)
 // cards that arrive together come in this far apart (ms; css .chip.cd1-.cd3 delays match)
-const CHIP_GAP = 320;
+const CHIP_GAP = 480;
 const KEY_WORDS = /^(polygon|quadrilaterals?|trapeziums?|parallelograms?|parallel|bases?|legs?|sides?|opposite|adjacent|angles?|supplementary|vertex|vertices|equal|diagonals?|bisect|segments?|180°)$/;
 window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   constructor(props) {
@@ -747,10 +747,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // equal sides: the copy of one slides onto the other by a translation (A->D, B->C for AB onto DC), never through O
         const onto = (a, b) => (Math.hypot(a.x1 - b.x1, a.y1 - b.y1) + Math.hypot(a.x2 - b.x2, a.y2 - b.y2) <= Math.hypot(a.x1 - b.x2, a.y1 - b.y2) + Math.hypot(a.x2 - b.x1, a.y2 - b.y1)
           ? b : Object.assign({}, b, { x1: b.x2, y1: b.y2, x2: b.x1, y2: b.y1 }));
-        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); Motion.slideMatch(a, onto(a, seg(pr[1]))); } }, at); at += 1300; });
-        if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1])); }, at); at += 1350; });
-        if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 1300; });
+        // (one pair at a time, each given the time to be seen through before the next begins)
+        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); Motion.slideMatch(a, onto(a, seg(pr[1]))); } }, at); at += 2400; });
+        if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); at += 2600; });
+        if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 2400; });
         if (c.rails) this.tm(() => { if (tok === this.stepTok) Motion.rails(c.rails.map(seg)); }, at);
+        // the screen stays until the last of them has been seen through (flow: seqEnd)
+        const ends = (c.rails ? at + 2700 : 0) || (at ? at + 1000 : 0);
+        if (ends) this.seqEnd = Math.max(this.seqEnd || 0, Date.now() + ends);
       }
     }
     if (c.chip) this.addChips([c.chip]);
@@ -1794,13 +1798,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     {
       const pair = f.supp && s.supp != null ? f.supp[s.supp] : null;
       if (pair) {
-        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 38 / zs;
+        // (drawn large - 62 px on screen, past the corner's own small wedge - so the two angles filling the straight line
+        // read at a glance)
+        const X = pair[0], Y = pair[1], Z = this.nb(Y).find((k) => k !== X), Py = P[Y], Rr = 62 / zs;
         const un = (p, q) => { const L = this.dist(p, q) || 1; return { x: (q.x - p.x) / L, y: (q.y - p.y) / L }; };
         const toX = un(Py, P[X]), toZ = un(Py, P[Z]), ext = { x: -toZ.x, y: -toZ.y };
         const wedge = (a, b) => { const cr = a.x * b.y - a.y * b.x;
           return 'M' + r1(Py.x) + ',' + r1(Py.y) + ' L' + r1(Py.x + a.x * Rr) + ',' + r1(Py.y + a.y * Rr) + ' A' + r1(Rr) + ',' + r1(Rr) + ' 0 0 ' + (cr > 0 ? 1 : 0) + ' ' + r1(Py.x + b.x * Rr) + ',' + r1(Py.y + b.y * Rr) + ' Z'; };
         const col = (k) => PAL['v' + (f.pairCol ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k)]; // the wedges' own colours
-        const L = Math.abs(ext.y) < 0.5 ? 80 : Rr + 22 / zs, side = ext.x * toX.y - ext.y * toX.x, sk = s.supp % 2 ? 'sB' : 'sA';
+        const L = Math.abs(ext.y) < 0.5 ? Math.max(80, Rr + 40 / zs) : Rr + 26 / zs, side = ext.x * toX.y - ext.y * toX.x, sk = s.supp % 2 ? 'sB' : 'sA';
         const a0 = { x: Py.x + ext.x * Rr, y: Py.y + ext.y * Rr }, a1 = { x: Py.x + toZ.x * Rr, y: Py.y + toZ.y * Rr };
         g.sp = { d: 'inline', line: 'M' + r1(Py.x) + ',' + r1(Py.y) + ' L' + r1(Py.x + ext.x * L) + ',' + r1(Py.y + ext.y * L),
           own: wedge(toX, toZ), cOwn: col(Y), copy: wedge(toX, ext), cCopy: col(X), o: r1(Py.x) + 'px ' + r1(Py.y) + 'px',
@@ -1809,7 +1815,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           dx: r1(P[X].x - Py.x) + 'px', dy: r1(P[X].y - Py.y) + 'px' };
         // its "180°": beyond the half-disc, between the line and side YX, outside the shape (21 px on screen)
         let bx = ext.x + toX.x, by = ext.y + toX.y; const bl = Math.hypot(bx, by) || 1; bx /= bl; by /= bl;
-        s180 = { t: '180°', x: r1(Py.x + bx * (Rr + 26 / zs)), y: r1(Py.y + by * (Rr + 26 / zs)), cls: 'alab s180 ' + sk };
+        s180 = { t: '180°', x: r1(Py.x + bx * (Rr + 30 / zs)), y: r1(Py.y + by * (Rr + 30 / zs)), cls: 'alab s180 ' + sk };
       } else g.sp = { d: 'none', line: 'M0,0', own: 'M0,0', copy: 'M0,0', rim: 'M0,0', cOwn: PAL.vB, cCopy: PAL.vA, o: '0px 0px', lcls: 'supp-line', ocls: 'supp-own', cls: 'supp-copy', rcls: 'supp-rim', dx: '0px', dy: '0px' };
     }
     g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O), cls: s.emph && s.emph.vO ? 'emph' : '' };
