@@ -53,6 +53,7 @@
   };
   const params = new URLSearchParams(location.search);
   const DEV = params.get('dev') === '1';
+  const NAV = !params.has('nonav'); // TEMPORARY: the Back / Next pair through every screen (nav, below); ?nonav hides it
   const START = params.get('start');
   const reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const $ = (id) => document.getElementById(id);
@@ -137,6 +138,7 @@
     const u = new URL(p.src, location.href);
     u.searchParams.set('embed', '1');
     ['dev', 'debug'].forEach((k) => { if (params.has(k)) u.searchParams.set(k, params.get(k) || '1'); });
+    if (NAV && !params.has('dev')) u.searchParams.set('dev', '1'); // (TEMPORARY: the parts list their screens for nav)
     return u.href;
   }
   // start loading a part (once): the game shows at once, the lesson behind it, unseen
@@ -429,8 +431,9 @@
     el: null,
     register(id, list, win) {
       const f = frames.get(id);
-      if (!DEV || !f || (win && win !== f.el.contentWindow)) return;
+      if (!(DEV || NAV) || !f || (win && win !== f.el.contentWindow)) return;
       this.lists.set(id, { f, list: list || [] });
+      nav.known.set(id, (list || []).map((x) => x.label));
       this.renderPart(id);
     },
     forget(f) { const e = this.lists.get(f.id); if (e && e.f === f) { this.lists.delete(f.id); this.renderPart(f.id); } this.update(); },
@@ -552,6 +555,87 @@
     },
   };
 
+  // ---------- TEMPORARY: Back / Next through every screen of the journey, for reviewing it (?nonav hides it) ----------
+  // In the journey's order: the front page, the hook, each lesson screen, the eight nets, the end. Each goes by the dev
+  // panel's jumps; where the journey is now is read from the part on top, so it follows the child's own play too.
+  const nav = {
+    el: null,
+    known: new Map(), // part id -> its screens' labels (kept when its frame goes, so the lesson stays in the order)
+    want: -1, // the screen a tap went to, until the part on top shows it
+    until: 0,
+    last: 0,
+    order() {
+      const fish = this.known.get('fishing') || [], lesson = this.known.get('lesson') || [];
+      const out = [{ name: 'Front page', home: true }];
+      if (fish.includes('Hook')) out.push({ part: 'fishing', i: fish.indexOf('Hook'), name: 'Hook' });
+      lesson.forEach((label, i) => out.push({ part: 'lesson', i, name: 'Lesson ' + (i + 1) + '/' + lesson.length }));
+      fish.forEach((label, i) => { const m = /^L(\d+)$/.exec(label); if (m) out.push({ part: 'fishing', i, name: 'Net ' + m[1], level: +m[1] }); });
+      if (fish.includes('Finish')) out.push({ part: 'fishing', i: fish.indexOf('Finish'), name: 'The end', end: true });
+      return out;
+    },
+    live(order) {
+      if (J.phase === 'front') return 0;
+      try {
+        const w = frames.get(J.current).el.contentWindow;
+        if (J.current === 'lesson') return order.findIndex((o) => o.part === 'lesson' && o.i === w.lessonDebug.state.step);
+        const st = w.popoDebug.state, lv = w.PopoGame.LEVELS[st.level];
+        if (st.phase === 'gameComplete') return order.findIndex((o) => o.end);
+        if (J.phase === 'intro' || (lv && lv.warmup)) return order.findIndex((o) => o.name === 'Hook');
+        return order.findIndex((o) => o.level === st.level);
+      } catch (e) { return -1; } // (loading, or from disk)
+    },
+    at(order) {
+      const live = this.live(order);
+      if (this.want >= 0) {
+        if (live === this.want || Date.now() > this.until) this.want = -1;
+        else return this.want;
+      }
+      if (live >= 0) this.last = live;
+      return this.last;
+    },
+    go(step) {
+      const order = this.order(), to = this.at(order) + step, o = order[to];
+      if (!o) return;
+      this.want = to;
+      this.until = Date.now() + 6000;
+      if (o.home) dev.frontPage(); else if (o.part === 'lesson') dev.jumpLesson(o.i); else dev.jumpFishing(o.i);
+      this.update();
+    },
+    build() {
+      if (!NAV) return;
+      const css = document.createElement('style');
+      css.textContent = `
+.nav{position:fixed;left:50%;bottom:max(6px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:89;display:flex;align-items:center;gap:4px;
+  padding:3px;border-radius:999px;background:rgba(8,36,84,.62);font:600 13px/1 'Fredoka','Arial Rounded MT Bold',system-ui,sans-serif;color:#fff8ec;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.8;transition:opacity .2s}
+.nav:hover{opacity:1}
+.nav button{font:inherit;min-width:64px;height:30px;padding:0 10px;border:0;border-radius:999px;background:rgba(255,248,236,.16);color:inherit;cursor:pointer;touch-action:manipulation}
+.nav button:hover{background:rgba(255,248,236,.3)}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav-at{min-width:84px;text-align:center;white-space:nowrap;color:#ffe8bd}
+@media (max-height:500px){.nav{bottom:max(2px,env(safe-area-inset-bottom));font-size:11px}.nav button{height:22px;min-width:52px;padding:0 8px}.nav-at{min-width:66px}}`;
+      document.head.appendChild(css);
+      const el = this.el = document.createElement('div');
+      el.className = 'nav';
+      el.setAttribute('aria-label', 'Screens (temporary)');
+      el.innerHTML = '<button type="button">\u2039 Back</button><span class="nav-at"></span><button type="button">Next \u203a</button>';
+      [this.back, this.next] = el.querySelectorAll('button');
+      this.back.addEventListener('click', (e) => { e.stopPropagation(); this.go(-1); });
+      this.next.addEventListener('click', (e) => { e.stopPropagation(); this.go(1); });
+      document.body.appendChild(el);
+      setInterval(() => this.update(), 400);
+      this.update();
+    },
+    update() {
+      if (!this.el) return;
+      const order = this.order(), at = this.at(order), name = (order[at] || order[0]).name;
+      const label = this.el.querySelector('.nav-at');
+      if (label.textContent !== name) label.textContent = name;
+      this.back.disabled = at <= 0;
+      this.next.disabled = at >= order.length - 1;
+    },
+  };
+
   // what the parts reach (bridge.js), and what tests and a hosting page may read
   window.FishingFrenzy = {
     parts: PARTS.map((p) => p.id),
@@ -568,6 +652,7 @@
   // the game's banner first (the lesson follows once it is ready: ready()); with ?dev=1 both at once, so both lists
   // are in the panel from the start
   dev.build();
+  nav.build();
   load('fishing');
   if (DEV) load('lesson');
 })();
