@@ -2,8 +2,8 @@
 //
 //   node tools/vo_build.js [voiceovers_batch.zip ...]
 //
-// 1. Every voiceovers/<id>.mp3 in the zips whose id is in tools/vo_script.json becomes assets/vo/<id>.ogg
-//    (Ogg Opus, 32 kbps, mono, 48 kHz): Chromium decodes the MP3 and encodes Opus (WebCodecs); the Ogg pages are
+// 1. Every voiceovers/<id>.mp3 (or .wav) in the zips whose id is in tools/vo_script.json becomes assets/vo/<id>.ogg
+//    (Ogg Opus, 32 kbps, mono, 48 kHz, matched to LUFS): Chromium decodes the MP3 and encodes Opus (WebCodecs); the Ogg pages are
 //    written here (RFC 7845). No ffmpeg needed. Needs Playwright: `npm i --no-save playwright` (or NODE_PATH).
 // 2. js/vo_lines.js is regenerated from tools/vo_script.json and the clips' real lengths.
 // 3. Clips no line uses are deleted. Lines with no clip, and lesson lines missing from the script, are listed.
@@ -12,6 +12,9 @@ const fs = require('fs'), path = require('path'), zlib = require('zlib');
 const ROOT = path.join(__dirname, '..');
 const SCRIPT = path.join(__dirname, 'vo_script.json'), VO = path.join(ROOT, 'assets', 'vo'), MAP = path.join(ROOT, 'js', 'vo_lines.js');
 const RATE = 48000, BITRATE = 32000;
+// every clip is matched to one loudness as it is encoded (BS.1770 integrated, LUFS): the level the lesson's lines and
+// the game's sit at, so no line is louder or quieter than the one before it
+const LUFS = -16.4;
 
 // ---------- zip (read) ----------
 function readZip(file) {
@@ -71,12 +74,28 @@ async function encodeAll(mp3s) {
   await page.goto('https://vo.build/'); // a secure context, for WebCodecs
   const out = {};
   for (const [id, data] of mp3s) {
-    const r = await page.evaluate(async ([b64, RATE, BITRATE]) => {
+    const r = await page.evaluate(async ([b64, RATE, BITRATE, TARGET]) => {
       const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
       const src = await new OfflineAudioContext(1, 1, RATE).decodeAudioData(bytes.buffer);
       const len = Math.round(src.duration * RATE), off = new OfflineAudioContext(1, len, RATE);
       const node = off.createBufferSource(); node.buffer = src; node.connect(off.destination); node.start();
       const pcm = (await off.startRendering()).getChannelData(0);
+      // matched to LUFS: K-weighted (48 kHz: a high shelf, then a high pass), 400 ms blocks every 100 ms, gated at -70 LUFS
+      // and 10 LU under; the rare peak the gain pushes past 0.8 goes through a soft knee (never past 0.97)
+      const biquad = (b, a, x) => { const y = new Float32Array(x.length); let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+        for (let i = 0; i < x.length; i++) { const v = b[0] * x[i] + b[1] * x1 + b[2] * x2 - a[1] * y1 - a[2] * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v; }
+        return y; };
+      const kw = biquad([1, -2, 1], [1, -1.99004745483398, 0.99007225036621],
+        biquad([1.53512485958697, -2.69169618940638, 1.19839281085285], [1, -1.69065929318241, 0.73248077421585], pcm));
+      const blk = Math.min(kw.length, Math.round(0.4 * RATE)), hop = Math.round(0.1 * RATE), z = [];
+      for (let i = 0; i + blk <= kw.length; i += hop) { let e = 0; for (let j = i; j < i + blk; j++) e += kw[j] * kw[j]; z.push(e / blk); }
+      const lu = (v) => -0.691 + 10 * Math.log10(v), mean = (a) => a.reduce((t, v) => t + v, 0) / a.length;
+      const loud = z.filter((v) => lu(v) > -70), gated = loud.filter((v) => lu(v) > lu(mean(loud)) - 10);
+      const level = gated.length ? lu(mean(gated)) : null;
+      if (level !== null) {
+        const g = Math.pow(10, (TARGET - level) / 20);
+        for (let i = 0; i < pcm.length; i++) { let v = pcm[i] * g; const m = Math.abs(v); if (m > 0.8) v = Math.sign(v) * (0.8 + 0.17 * Math.tanh((m - 0.8) / 0.17)); pcm[i] = v; }
+      }
       const packets = []; let desc = null, err = null;
       const enc = new AudioEncoder({
         output: (chunk, meta) => {
@@ -89,14 +108,15 @@ async function encodeAll(mp3s) {
       enc.configure({ codec: 'opus', sampleRate: RATE, numberOfChannels: 1, bitrate: BITRATE, opus: { frameDuration: 20000 } });
       enc.encode(new AudioData({ format: 'f32-planar', sampleRate: RATE, numberOfFrames: pcm.length, numberOfChannels: 1, timestamp: 0, data: pcm }));
       await enc.flush();
-      return { n: pcm.length, srcRate: src.sampleRate, packets: packets, desc: desc, err: err };
-    }, [data.toString('base64'), RATE, BITRATE]);
+      return { n: pcm.length, srcRate: src.sampleRate, packets: packets, desc: desc, err: err, level: level };
+    }, [data.toString('base64'), RATE, BITRATE, LUFS]);
     if (r.err) throw new Error(id + ': ' + r.err);
     const desc = r.desc ? Buffer.from(r.desc, 'base64') : null;
     const preSkip = desc && desc.toString('latin1', 0, 8) === 'OpusHead' ? desc.readUInt16LE(10) : 312;
     const packets = r.packets.map((p) => Buffer.from(p, 'base64'));
     if (packets.length * 960 < preSkip + r.n) throw new Error(id + ': encoder returned too few packets');
     out[id] = oggOpus(packets, r.n, preSkip, r.srcRate);
+    out[id].level = r.level;
   }
   // every new clip must decode back to its own length
   for (const id of Object.keys(out)) {
@@ -217,7 +237,7 @@ function lessonLines() {
   fs.mkdirSync(VO, { recursive: true });
   const mp3s = new Map();
   process.argv.slice(2).forEach((z) => readZip(z).forEach((f) => {
-    const m = /(?:^|\/)(vo\d{3})\.mp3$/.exec(f.name);
+    const m = /(?:^|\/)(vo\d{3})\.(?:mp3|wav)$/.exec(f.name);
     if (m && ids.has(m[1])) mp3s.set(m[1], f.data); else if (m) console.log('skipped ' + f.name + ' (not in vo_script.json)');
   }));
   if (mp3s.size) {
@@ -227,7 +247,8 @@ function lessonLines() {
       const sec = oggSeconds(path.join(VO, id + '.ogg'));
       if (Math.abs(sec - enc[id].decoded) > 0.05) console.log('WARNING ' + id + ': granule length ' + sec.toFixed(2) + ' s, decodes to ' + enc[id].decoded.toFixed(2) + ' s');
     });
-    console.log('encoded ' + mp3s.size + ' clip(s)');
+    const lv = Object.values(enc).map((e) => e.level).filter((v) => v != null);
+    console.log('encoded ' + mp3s.size + ' clip(s), matched to ' + LUFS + ' LUFS' + (lv.length ? ' (they came in at ' + Math.min(...lv).toFixed(1) + ' .. ' + Math.max(...lv).toFixed(1) + ')' : ''));
   }
   // clips no line uses (and anything else) leave assets/vo/
   fs.readdirSync(VO).forEach((f) => { const m = /^(vo\d{3})\.ogg$/.exec(f); if (!m || !ids.has(m[1])) { fs.unlinkSync(path.join(VO, f)); console.log('removed assets/vo/' + f); } });

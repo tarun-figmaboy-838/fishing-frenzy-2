@@ -344,6 +344,12 @@ once loading is done (`AudioEngine.fetchLaterVoices`). They were recorded in the
 Popo as its Male Child (Energetic) voice pitched down a touch to sit near his Fishing Frenzy clips, the narrator and
 Swiftee as its Female Teacher (Standard) voice. Each line is worded exactly as on screen.
 
+Every narrator and Swiftee line - the hook's, the nets' prompts and hints, and her welcome back ("Great job!", "Now,
+let's help Popo catch some fish!", `assets/voice/ff-*.mp3`) - is recorded the way the lesson's are (its
+`docs/VOICEOVER.md`): given to the studio in Devanagari with each word spelled as the lesson's lines spell it, so a word
+sounds the same in the game as in the lesson, the take closest to the lesson's voice kept, and matched to the lesson's
+loudness (-16.4 LUFS), so no line is louder or quieter than the next.
+
 ## Tests
 
 Headless Chromium through Python Playwright (`pip install playwright pillow`):
