@@ -171,8 +171,10 @@ The game is deployed as part of the journey: the repository's root is the static
   pixel per screen pixel (`Stage.dprCap`), then the water at 42%. The water pass works out each effect only where it
   moves anything, and under the lesson the lake is drawn every other frame while the lesson's camera holds still.
 - **Teaching the shape.** The net carries only what its level is about, drawn as the lesson draws it, nothing that
-  clutters it or gives the answer away: on the parallel levels the pair's orange parallel chevrons (whether they are
-  parallel is for the eye, zoomed in, and Check); on the length levels the side given and the one being set, in
+  clutters it: on the parallel levels the pair's orange parallel chevrons, and the other pair's lengths as the corner
+  moves (AB and CD on net 1, BC and AD on net 2: that pair is parallel already, the corner sliding along one of them,
+  so the two read the same at exactly the stop where the marked pair is parallel too - tests checked every stop of
+  every net over many runs); on the length levels the side given and the one being set, in
   centimetres, each just outside its side; on the angle levels the angle given and the one being set, as wedges filled
   in the corners' own colours with their degrees; on the diagonals level the diagonals, O and their four halves; on the
   last net the four sides. The corner letters A–D (bold navy on a white halo) are always there, and a trail of two

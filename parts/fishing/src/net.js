@@ -1241,17 +1241,23 @@ class Net {
     const m = (name) => `${cm(this.metresShown(name))} cm`; // (7 cm, 5.5 cm: as the lesson writes lengths)
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     // Only what the task is about is on the net - the value given and the one the child sets - so nothing clutters
-    // it or gives the answer away: the net is checked by pressing Check, not by reading it
+    // it: the net is checked by pressing Check, not by reading it
     // (the side nets are parallelograms in the making: both pairs carry their parallel marks - one chevron on AB and
     // CD, two on BC and AD - with the lengths, so opposite sides equal and parallel are seen together)
     const bothPairs = () => { this.drawTicks(ctx, c, ['AB', 'CD'], false, 1); this.drawTicks(ctx, c, ['BC', 'DA'], false, 2); };
     this.markedSides = { sides: 1, parallelogram: 1 }[L.type] ? { AB: 1, CD: 1, BC: 2, DA: 2 } : L.type === 'parallel' ? Object.fromEntries(L.sides.map((k) => [k === 'AD' ? 'DA' : k, L.sides[0] === 'AB' ? 1 : 2])) : null;
     switch (L.type) {
       case 'free': break; // (the warm-up: Popo's plain net)
-      case 'parallel':
-        // the parallel marks say which pair of sides; whether they are parallel is for the eye (zoomed in) and Check
+      case 'parallel': {
+        // the parallel marks say which pair of sides; the other pair (already parallel: the corner slides along one of
+        // them) carries its lengths as the corner moves - the side the corner pulls live, its opposite fixed - and
+        // they read the same exactly when the marked pair is parallel too (one pair parallel and equal makes a
+        // parallelogram), so the child sees what the drag is doing; whether it is right is still Check's
         this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2);
+        const other = L.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD'];
+        for (const name of other) this.drawLength(ctx, c, name, m(name), name.includes(L.corner));
         break;
+      }
       case 'length':
         this.drawLength(ctx, c, L.reference, `${L.metres[L.reference]} cm`);
         this.drawLength(ctx, c, L.side, m(L.side), true);
