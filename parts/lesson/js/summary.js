@@ -534,12 +534,12 @@
         return this.hold(this.reveal(g) + 60).then((ok2) => { if (!ok2) return false; this.pop(g._tag, 0); return this.hold(260); });
       });
     },
-    // a collected bubble's slot: the first three on the left, the rest on the right, each three a triangle (one in the
-    // top row, over the middle of the two below it), the right one the left's mirror image
+    // a collected bubble's slot: the first three on the left, the rest on the right, each three a triangle (two in the
+    // top row, one below the middle of them), the right one the left's mirror image
     slot(id) {
       const order = IDEAS.map((k) => k.id), i = Math.max(0, order.indexOf(id)), half = Math.ceil(order.length / 2) || 3;
       const col = i < half ? 0 : 1, k = col ? i - half : i, xs = BUB.miniX[col];
-      return { x: k ? xs[(k - 1) % 2] : (xs[0] + xs[1]) / 2, y: SUM.mini.y[k ? 1 : 0], col: col };
+      return { x: k < 2 ? xs[k] : (xs[0] + xs[1]) / 2, y: SUM.mini.y[k < 2 ? 0 : 1], col: col };
     },
     // CARD_COLLECT: the bubble shrinks along a small arc into its slot (now = jump straight there)
     collect(id, now) {
