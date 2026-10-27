@@ -243,10 +243,10 @@
     // A mask that keeps a drawing off every word on the stage - the corner letters, the lengths and angle sizes, the
     // name cards and the instruction plate - with a little air round each (stage px), so a line passes behind them
     // with a gap instead of through them
-    wordMask() {
+    wordMask(pad) {
       const svg = this.fx(), stage = document.querySelector('.stage');
       if (!svg || !stage) return null;
-      const sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1, PAD = 7;
+      const sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1, PAD = pad == null ? 7 : pad;
       const id = 'fx-words-' + Math.random().toString(36).slice(2, 8);
       let defs = svg.querySelector('defs');
       if (!defs) defs = this.mk('defs', {});
@@ -259,32 +259,44 @@
       });
       return { url: 'url(#' + id + ')', remove: () => mask.remove() };
     },
-    // two sides that are not parallel, carried on: each dashed line grows from its side's end until the two meet, and a
-    // dot marks where (stage px; kept off the words: wordMask). unmeet() fades them away.
-    meet(lines, at) {
+    // two sides that are not parallel, carried on: each dashed line grows from its side's corner, in the side's own colour
+    // and weight, steadily for dur s until the two meet; there the meeting point pops and pings twice (stage px; kept
+    // off the words with a hair of air: wordMask). meetPulse() beats them once; unmeet() fades them away.
+    meet(lines, at, dur) {
       if (!this.fx()) return 0;
       this.unmeet(true);
-      const words = this.wordMask(), g = this.mk('g', { 'class': 'math-meet' });
+      dur = dur || 1.3;
+      const words = this.wordMask(3), g = this.mk('g', { 'class': 'math-meet' });
       if (words) g.setAttribute('mask', words.url);
       this.meetEls = { g: g, words: words };
-      const lns = lines.map((l) => this.mk('line', { x1: l.x1.toFixed(1), y1: l.y1.toFixed(1), x2: l.x1.toFixed(1), y2: l.y1.toFixed(1), stroke: l.col || '#00b8a9', 'stroke-width': 4, 'stroke-dasharray': '10 8', 'stroke-linecap': 'round' }, g));
-      const dot = this.mk('circle', { cx: at.x.toFixed(1), cy: at.y.toFixed(1), r: 0, fill: '#fff', stroke: '#ff7a00', 'stroke-width': 3.5 });
-      this.meetEls.dot = dot;
-      if (!G || reduced) { lns.forEach((ln, i) => { ln.setAttribute('x2', lines[i].x2); ln.setAttribute('y2', lines[i].y2); }); dot.setAttribute('r', 7); return 0; }
+      const lns = lines.map((l) => this.mk('line', { x1: l.x1.toFixed(1), y1: l.y1.toFixed(1), x2: l.x1.toFixed(1), y2: l.y1.toFixed(1), stroke: l.col || '#1e7bff', 'stroke-width': (l.w || 4).toFixed(1),
+        'stroke-dasharray': (2.4 * (l.w || 4)).toFixed(1) + ' ' + (1.8 * (l.w || 4)).toFixed(1), 'stroke-linecap': 'round' }, g));
+      const ring = this.mk('circle', { cx: at.x.toFixed(1), cy: at.y.toFixed(1), r: 8, fill: 'none', stroke: '#ff7a00', 'stroke-width': 3, opacity: 0 });
+      const dot = this.mk('circle', { cx: at.x.toFixed(1), cy: at.y.toFixed(1), r: 0, fill: '#ff7a00', stroke: '#fff', 'stroke-width': 3 });
+      Object.assign(this.meetEls, { dot: dot, ring: ring, lines: lns, w: lines.map((l) => l.w || 4) });
+      if (!G || reduced) { lns.forEach((ln, i) => { ln.setAttribute('x2', lines[i].x2); ln.setAttribute('y2', lines[i].y2); }); dot.setAttribute('r', 8); return 0; }
       add(() => {
         const tl = G.timeline();
-        lns.forEach((ln, i) => tl.to(ln, { attr: { x2: lines[i].x2, y2: lines[i].y2 }, duration: 1.3, ease: 'power1.inOut' }, 0));
-        tl.to(dot, { attr: { r: 9 }, duration: 0.25, ease: 'back.out(2.5)' }, 1.3).to(dot, { attr: { r: 7 }, duration: 0.2 }, 1.55);
+        lns.forEach((ln, i) => tl.to(ln, { attr: { x2: lines[i].x2, y2: lines[i].y2 }, duration: dur, ease: 'sine.inOut' }, 0));
+        tl.to(dot, { attr: { r: 11 }, duration: 0.22, ease: 'back.out(2.5)' }, dur).to(dot, { attr: { r: 8 }, duration: 0.2 }, dur + 0.22)
+          .fromTo(ring, { attr: { r: 8 }, opacity: 0.95 }, { attr: { r: 34 }, opacity: 0, duration: 0.7, ease: 'sine.out', repeat: 1, repeatDelay: 0.1, immediateRender: false }, dur);
         return tl;
       });
-      return 1750;
+      return Math.round((dur + 0.45) * 1000);
+    },
+    meetPulse() {
+      const m = this.meetEls;
+      if (!m || !G || reduced) return;
+      add(() => G.timeline()
+        .to(m.lines, { attr: { 'stroke-width': (i) => (m.w[i] * 1.7).toFixed(1) }, duration: 0.25, ease: 'sine.out', yoyo: true, repeat: 1 }, 0)
+        .to(m.dot, { attr: { r: 11 }, duration: 0.25, ease: 'sine.out', yoyo: true, repeat: 1 }, 0));
     },
     unmeet(now) {
       const m = this.meetEls; this.meetEls = null;
       if (!m) return;
-      const gone = () => { m.g.remove(); m.dot.remove(); if (m.words) m.words.remove(); };
+      const gone = () => { m.g.remove(); m.dot.remove(); m.ring.remove(); if (m.words) m.words.remove(); };
       if (now || !G || reduced) { gone(); return; }
-      add(() => G.to([m.g, m.dot], { opacity: 0, duration: 0.35, onComplete: gone }));
+      add(() => G.to([m.g, m.dot, m.ring], { opacity: 0, duration: 0.35, onComplete: gone }));
     },
     // a right answer: a star and "+1" pop up over the shape and float away (the fishing game's "+3" over a catch)
     starPop(x, y) {

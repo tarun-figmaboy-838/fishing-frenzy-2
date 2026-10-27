@@ -8,6 +8,7 @@
 //          pulse: 1 + pulseAt = the shape zooms once on that word; growAt = the shape comes forward on that word;
 //          cues = board moments on a spoken word: [{ at: 'word', glow: [sides] | null, hi: card text, chip, pulse, ms }];
 //          a cue's mark: [sides] = those sides' parallel arrows wait for the cue and pop on as its glow's light passes them;
+//          meet: [two sides] = carried on until they meet (until: 'word' = they meet as that word is said); meetPulse = they beat;
 //          chips = cards shown with the line; m = Swiftee's expression (default talking; reactions in CONFIG.swiftee)
 //          holdM: 1 = Swiftee keeps the m pose while she speaks (e.g. waves hello) instead of the talking loop
 //   skin:  'intro' = the opening look (storyboard pages 1-8): white bubble, light-blue shape with a thin blue outline
@@ -62,14 +63,14 @@ const LESSON = {
       lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.' }], f: { noLetters: 1 } },
     Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?' }],
       // right answer: AD ∥ BC folds away and AB ∥ CD settles alone in the centre, green (storyboard page 6)
-      // right: AB is traced as it is said, its parallel marks popping on as the light passes them, then CD; wrong: AD and BC light and are carried on until they meet
-      // (the card zooming out just enough to show where) as the tip says so
+      // right: AB is traced as it is said, its parallel marks popping on as the light passes them, then CD; wrong: AD, then BC, light as
+      // they are said; on "lean" the card zooms out just enough, and they are carried on until they meet as "meet" is said
       ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 },
       okCues: [{ at: 'ab', glow: ['AB'], mark: ['AB'] }, { at: 'cd', glow: ['AB', 'CD'], mark: ['CD'], ms: 1800 }],
       opts: [
         { id: 'AB', t: 'AB ∥ CD', ok: true },
         { id: 'AD', t: 'AD ∥ BC', fb: 'Look again. AD and BC lean towards each other, so they would meet if we made them longer.',
-          fbCues: [{ at: 'lean', meet: ['DA', 'BC'] }] }
+          fbCues: [{ at: 'ad', glow: ['DA'] }, { at: 'bc', glow: ['DA', 'BC'] }, { at: 'lean', meet: ['DA', 'BC'], until: 'meet' }, { at: 'longer', meetPulse: 1 }] }
       ] }, PRACTICE),
     { pdf: 7, id: 'whatIf', skin: 'intro', lines: [{ m: 'thinking', t: 'What if we made the other pair\nof opposite sides parallel too?', glow: ['DA', 'BC'] }], f: { par: 1 } },
     // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram, and BC

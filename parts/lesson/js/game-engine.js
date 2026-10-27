@@ -485,8 +485,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // reached all fire as the line ends
     // a cue's word is matched as the words are shown ("180°." is 180): one the voice never reaches fires as the line ends
     const key = (w) => String(w).toLowerCase().replace(/[^a-z0-9-]/g, '');
-    const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), done: false }));
-    const fireCue = (q) => { if (q.done || tok !== this.narrTok) return; q.done = true; this.runCue(q.c); };
+    // until: the cue lasts until that word is said (span, s: from the clip's own word times; else about 0.3 s a word)
+    const cueKey = keep ? L.s : text.replace(/\s*\n\s*/g, ' ').trim();
+    const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), j: c.until ? words.map(key).indexOf(key(c.until)) : -1, done: false }));
+    const fireCue = (q) => {
+      if (q.done || tok !== this.narrTok) return;
+      q.done = true;
+      let c = q.c;
+      if (q.i >= 0 && q.j > q.i) {
+        const tw = window.VO && VO.has(cueKey) ? VO.times(cueKey) : null;
+        c = Object.assign({}, c, { span: tw && tw[q.j] != null && tw[q.i] != null ? (tw[q.j] - tw[q.i]) / (VO.rate || 1) : (q.j - q.i) * 0.3 });
+      }
+      this.runCue(c);
+    };
     // a part of the shape named in the line (∠A, AB, "A B", vertex A, legs, bases) grows briefly as the voice says it
     const emphCues = this.partCues(words);
     // angles named in the line join the focus as the voice says them; the rest fade back until shortly after the line
@@ -770,7 +781,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
-    if (c.meet) this.showMeet(c.meet);
+    if (c.meet) this.showMeet(c.meet, c.span);
+    if (c.meetPulse && window.Motion) Motion.meetPulse(); // ("...if we made them longer": the lines carried on beat once)
     // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
     // passes them, 0.43 s into its run (their tick: markSounds)
     if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); }
@@ -2174,22 +2186,27 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     return { x: a.x + r.x * t, y: a.y + r.y * t };
   }
   // A wrong "these are parallel": the two sides light and are carried on, past their ends, until they meet - the
-  // card zooming out just enough to show where (zoomTf) - while the tip is said; then they go and the card comes back
-  showMeet(pair) {
-    const tok = this.stepTok, X = this.meetPoint(pair);
+  // card zooming out just enough to show where (zoomTf) - while the tip is said; then they go and the card comes back.
+  // span (s): from the cue's word to its until word - the lines meet as that word is said. They are drawn in the sides'
+  // own colour and weight, from the corners, so they read as the same sides carried on.
+  showMeet(pair, span) {
+    const tok = this.stepTok, X = this.meetPoint(pair), settle = Motion.reduced ? 0 : 800;
     if (!X || !window.Motion) return;
     this.setState({ meet: pair, glow: pair });
     this.tm(() => { // (once the zoom has settled: the lines are drawn on the stage, where the zoomed shape now is)
       if (tok !== this.stepTok || !this.state.meet) return;
-      const P = this.shapeP(), PAL = CONFIG.palette, toStage = (p) => this.boardToStage(p);
+      const P = this.shapeP(), toStage = (p) => this.boardToStage(p);
+      const edge = (k) => document.querySelector('.stage svg .edge.e' + k);
       const lines = pair.map((k) => {
         const a = P[k[0]], b = P[k[1]], near = Math.hypot(a.x - X.x, a.y - X.y) < Math.hypot(b.x - X.x, b.y - X.y) ? a : b;
-        const from = toStage(near), to = toStage(X);
-        return from && to ? { x1: from.x, y1: from.y, x2: to.x, y2: to.y, col: k === 'AB' || k === 'CD' ? PAL.line : PAL.pair2 } : null;
+        const from = toStage(near), to = toStage(X), far = toStage(near === a ? b : a), el = edge(k);
+        if (!from || !to || !far) return null;
+        const zoom = Math.hypot(from.x - far.x, from.y - far.y) / (Math.hypot(a.x - b.x, a.y - b.y) || 1); // (board px -> stage px)
+        return { x1: from.x, y1: from.y, x2: to.x, y2: to.y, col: (el && getComputedStyle(el).stroke) || CONFIG.palette.line, w: Math.max(3, 5 * zoom) };
       }).filter(Boolean);
       const at = toStage(X);
-      if (lines.length === 2 && at) Motion.meet(lines, at);
-    }, Motion.reduced ? 0 : 800);
+      if (lines.length === 2 && at) Motion.meet(lines, at, span ? Math.max(0.9, span - settle / 1000) : 1.3);
+    }, settle);
   }
   hideMeet() {
     if (!this.state.meet) return;
