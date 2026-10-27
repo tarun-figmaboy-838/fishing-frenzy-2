@@ -53,6 +53,7 @@
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
       const fx = document.querySelector('.stage svg.math-fx'); if (fx) fx.innerHTML = ''; // (the maths in motion: gone with the screen)
+      document.querySelectorAll('.stage .fly-val').forEach((e) => e.remove()); // (an answer still in the air)
       this.meetEls = null;
       if (ctx) ctx.revert();
       sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
@@ -283,6 +284,23 @@
       const gone = () => { m.g.remove(); m.dot.remove(); m.ring.remove(); if (m.words) m.words.remove(); };
       if (now || !G || reduced) { gone(); return; }
       add(() => G.to([m.g, m.dot, m.ring], { opacity: 0, duration: 0.35, onComplete: gone }));
+    },
+    // a right answer's value rises from where it was given, arcs over and lands on its "?" on the figure (stage px);
+    // onLand: the figure takes it there (its own label pops in as this one goes)
+    flyValue(text, from, to, onLand) {
+      const stage = document.querySelector('.stage');
+      if (!G || reduced || !stage) { if (onLand) onLand(); return 0; }
+      const el = document.createElement('div'); el.className = 'fly-val'; el.textContent = text; stage.appendChild(el);
+      const top = Math.min(from.y, to.y) - 70;
+      add(() => G.timeline({ onComplete: () => el.remove() })
+        .set(el, { left: from.x, top: from.y, xPercent: -50, yPercent: -50, scale: 0.7, opacity: 0 })
+        .to(el, { opacity: 1, scale: 1.15, duration: 0.22, ease: 'back.out(2)' })
+        .to(el, { left: to.x, duration: 0.9, ease: 'power1.inOut' }, 0.18)
+        .to(el, { top: top, duration: 0.45, ease: 'sine.out' }, 0.18)
+        .to(el, { top: to.y, scale: 1, duration: 0.45, ease: 'sine.in' }, 0.63)
+        .call(() => { if (onLand) onLand(); }, null, 1.08)
+        .to(el, { opacity: 0, duration: 0.18 }, 1.1));
+      return 1300;
     },
     pop(cx, cy) {
       if (!G || reduced) return;

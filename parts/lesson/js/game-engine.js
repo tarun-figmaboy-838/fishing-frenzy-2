@@ -235,8 +235,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (!m) return text.length * (parseFloat(font.split(' ')[1]) || 22) * 0.56;
     m.font = font + ', system-ui, sans-serif'; return m.measureText(text).width;
   }
+  // a checkpoint's unknown (a "?" on its figure) shows its value once that value has landed there (flyAnswer)
   figVal(st, key, raw) {
-    if (!raw || raw.indexOf('?') < 0 || !this.state.done) return raw;
+    if (!raw || raw.indexOf('?') < 0 || !(this.state.landed || {})[key]) return raw;
+    return this.figAns(st, key, raw);
+  }
+  // the value an unknown takes: its answer box's (by the figure's key, or its side named the other way round), or the
+  // right answer button's
+  figAns(st, key, raw) {
     const flip = { DA: 'AD', AD: 'DA', BC: 'CB', CD: 'DC' };
     const b = st.fill && (st.fill.blanks || []).find((x) => x.id === key || x.id === flip[key]);
     let v = b ? b.ans : null, unit = b ? (b.post || '').trim() : '';
@@ -248,14 +254,41 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (raw.trim() === '?') return v + (unit === '°' ? '°' : unit ? ' ' + unit : '');
     return raw.replace('?', v);
   }
+  // the halves a checkpoint asks for (a "?" until found): its answer boxes named OC / OD, or (one answer button) the
+  // half opposite the given one through O
+  askedHalves(st) {
+    const fig = st.fig || {}, out = [], opp = { A: 'C', C: 'A', B: 'D', D: 'B' };
+    if (!fig.halves) return out;
+    ((st.fill && st.fill.blanks) || []).forEach((b) => { if (/^O[A-D]$/.test(b.id) && !fig.halves[b.id[1]]) out.push(b.id[1]); });
+    if (!out.length && st.opts) Object.keys(fig.halves).forEach((k) => { if (!fig.halves[opp[k]]) out.push(opp[k]); });
+    return out;
+  }
+  // the figure's unknowns, by the key their value lands under: a side ('CD'), an angle ('C'), a half ('OC')
+  figUnknowns(st) {
+    const fig = st.fig || {}, q = (o) => Object.keys(o || {}).filter((k) => String(o[k]).indexOf('?') >= 0);
+    return q(fig.sides).concat(q(fig.angles), this.askedHalves(st).map((k) => 'O' + k));
+  }
+  // a right answer's value jumps from where it was given (its box, or its button) to its "?" on the figure, which takes
+  // it as it lands (a soft pop); without motion it is there at once
+  flyAnswer(keys, fromEl) {
+    const st = this.cur(), tok = this.stepTok, raw = (k) => (st.fig.sides || {})[k] || (st.fig.angles || {})[k] || '?';
+    const land = (k) => { if (tok !== this.stepTok) return; this.setState({ landed: Object.assign({}, this.state.landed, { [k]: 1 }) }); this.sfx('pop'); };
+    const sr = typeof document !== 'undefined' && document.querySelector('.stage'), r = fromEl && fromEl.getBoundingClientRect();
+    const box = sr && sr.getBoundingClientRect(), z = box ? box.width / 1280 || 1 : 1;
+    const from = r && box ? { x: (r.left - box.left + r.width / 2) / z, y: (r.top - box.top + r.height / 2) / z } : null;
+    keys.forEach((k, i) => {
+      const at = this.figPos && this.figPos[k] && this.boardToStage(this.figPos[k]);
+      const text = /^O[A-D]$/.test(k) ? this.figAns(st, k, '?') : this.figAns(st, k, raw(k));
+      if (!window.Motion || !from || !at) { land(k); return; }
+      this.tm(() => { if (tok === this.stepTok) Motion.flyValue(text, from, at, () => land(k)); }, i * 260);
+    });
+    this.busyFor && this.busyFor(keys.length * 260 + 1100);
+  }
   // the half-diagonals a solved checkpoint found: from answer boxes named OC / OD, or (one answer button) the half
   // opposite the given one through O
   figHalves(st) {
-    const fig = st.fig || {}, out = {};
-    if (!fig.halves || !this.state.done) return out;
-    ((st.fill && st.fill.blanks) || []).forEach((b) => { if (/^O[A-D]$/.test(b.id) && !fig.halves[b.id[1]]) out[b.id[1]] = b.ans + ' ' + ((b.post || 'cm').trim()); });
-    const o = st.opts && st.opts.find((x) => x.ok), opp = { A: 'C', C: 'A', B: 'D', D: 'B' };
-    if (o) Object.keys(fig.halves).forEach((k) => { if (!fig.halves[opp[k]] && !out[opp[k]]) out[opp[k]] = o.t; });
+    const out = {}, landed = this.state.landed || {};
+    this.askedHalves(st).forEach((k) => { if (landed['O' + k]) out[k] = this.figAns(st, 'O' + k, '?'); });
     return out;
   }
   fitBubble() {
@@ -1022,7 +1055,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, boxHi: null, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1454,6 +1487,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ picks: picks, done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
       this.cheer();
+      if (st.fig) this.flyAnswer(this.figUnknowns(st), typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null);
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       this.okGlow(st);
     } else {
@@ -1615,6 +1649,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (t === b.ans) {
       const locked = Object.assign({}, F.locked, { [id]: true });
       this.setState({ fill: Object.assign({}, F, { at: at, locked: locked, bad: {}, open: null, closing: false }) });
+      if (st.fig) { // (its value jumps to its "?" on the figure: the figure's key for the box)
+        const flip = { AD: 'DA', CB: 'BC', DC: 'CD' }, key = (st.fig.sides || {})[id] ? id : (st.fig.sides || {})[flip[id]] ? flip[id] : id;
+        this.flyAnswer([key], typeof document !== 'undefined' ? document.querySelector('[data-blank="' + id + '"]') : null);
+      }
       if (D.blanks.every((x) => locked[x.id])) {
         const s = this.state, results = Object.assign({}, s.results);
         if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
@@ -1819,7 +1857,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // a side (or a half of a diagonal) showing its measurement carries no marks: the number says it
     const isM = st.task === 'measure', lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
     const lenOn = (k) => (isM && !!s.tap[k]) || (((k === 'AB' || k === 'CD') ? !!f.sideLen : !!f.legLen) && lon(k)) || !!(fig && fig.sides && fig.sides[k]);
-    const fHalves = fig ? Object.assign({}, fig.halves || {}, this.figHalves(st)) : {};
+    const fHalves = {};
+    if (fig) { Object.assign(fHalves, fig.halves || {}); this.askedHalves(st).forEach((k) => { fHalves[k] = '?'; }); }
+    this.figPos = {}; // (where each of a checkpoint's labels sits, board px: the answers jump there, flyAnswer)
     const halfOn = (k) => (fig ? !!fHalves[k] : !!(f.halves && (f.split || f.halfPairs)));
     const SIDES = cw ? { AB: [A, B], BC: [B, C], CD: [C, D], DA: [D, A] } : { AB: [B, A], BC: [C, B], CD: [D, C], DA: [A, D] };
     const nArrows = { AB: showPar1 && !lenOn('AB') ? 2 : 0, CD: showPar1 && !lenOn('CD') ? 2 : 0, DA: showPar2 && !lenOn('DA') ? 1 : 0, BC: showPar2 && !lenOn('BC') ? 1 : 0 };
@@ -1959,6 +1999,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const clearOfD = (x, y) => clearOf(x, y) && Math.hypot(Math.max(0, Math.abs(x - Vk.x) - hw), Math.max(0, Math.abs(y - Vk.y) - hh)) >= RD + 6 / zs;
       let dl = RW + 6 / zs; while (dl < 160 && !clearOfD(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
       (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
+      if (fig) this.figPos[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl };
       aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
     });
     // vertices
@@ -2027,8 +2068,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const measured = !fig && f.halves && (f.split || f.halfPairs);
     if ((fig && fig.halves) || measured) {
       const Om = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 };
-      const found = fig ? this.figHalves(this.cur()) : {};
-      const H = fig ? Object.assign({}, fig.halves, found) : { A: this.cm(this.dist(Om, A)), B: this.cm(this.dist(Om, B)), C: this.cm(this.dist(Om, C)), D: this.cm(this.dist(Om, D)) };
+      const found = fig ? this.figHalves(this.cur()) : {}, asked = {};
+      if (fig) this.askedHalves(this.cur()).forEach((k) => { asked[k] = '?'; });
+      const H = fig ? Object.assign({}, fig.halves, asked, found) : { A: this.cm(this.dist(Om, A)), B: this.cm(this.dist(Om, B)), C: this.cm(this.dist(Om, C)), D: this.cm(this.dist(Om, D)) };
       const hueOf = (k) => (f.halfPairs ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k); // (its half's colour: equal halves share one)
       Object.keys(H).forEach((k, i) => {
         // written along its half, as on a ruler (turned to the half's slope, never upside down), beside it in the triangle
@@ -2055,7 +2097,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         let c = null;
         for (const into of [first, other]) { for (let t = 0.5; t >= 0.24 && !c; t -= 0.04) c = at(t, into); if (c) break; }
         if (!c) c = at(0.5, first) || { x: (P[k].x + Om.x) / 2 - uy * gap, y: (P[k].y + Om.y) / 2 + ux * gap };
-        tags.push({ t: H[k], x: r1(c.x), y: r1(c.y), r: deg.toFixed(1) + 'deg', cls: fig ? 'mtag fig' + (found[k] ? ' solved' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
+        if (fig) this.figPos['O' + k] = { x: c.x, y: c.y };
+        tags.push({ t: H[k], x: r1(c.x), y: r1(c.y), r: H[k] === '?' ? '0deg' : deg.toFixed(1) + 'deg', cls: fig ? 'mtag fig' + (found[k] ? ' solved' : H[k] === '?' ? ' q' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line
@@ -2091,7 +2134,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     if (fig && fig.sides) {
       const E = { AB: [A, B], BC: [B, C], CD: [D, C], DA: [D, A] };
-      Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); tags.push(side(E[k][0], E[k][1], t, 'mtag fig' + (k === 'BC' || k === 'DA' ? ' mleg' : '') + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true)); });
+      Object.keys(fig.sides).forEach((k) => { const t = this.figVal(this.cur(), k, fig.sides[k]); const tg = side(E[k][0], E[k][1], t, 'mtag fig' + (k === 'BC' || k === 'DA' ? ' mleg' : '') + (t.indexOf('?') >= 0 ? ' q' : fig.sides[k].indexOf('?') >= 0 ? ' solved' : ''), true);
+        this.figPos[k] = { x: tg.x, y: tg.y }; tags.push(tg); });
     }
     // sideNums (screen 2): the four sides numbered clockwise from the left (storyboard page 2): 1 left, 2 top, 3 right,
     // 4 bottom - each number flies in from its

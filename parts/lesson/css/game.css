@@ -554,6 +554,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd.good .dd-val{color:#1d6b35}
 /* a right answer's pair of boxes, as the line names what they show on the shape: two gentle beats with a gold ring */
 .stage .blank.seg.hot{animation:segHot .8s ease-in-out 2}
+/* a right answer's value on its way from its box to its "?" on the figure (Motion.flyValue) */
+.stage .fly-val{position:absolute;z-index:30;pointer-events:none;white-space:nowrap;padding:4px 12px;border-radius:12px;background:#effbe9;border:2px solid #6cc35a;
+  color:#13824a;font:900 26px/1.1 'Nunito','Noto Sans Math',system-ui,sans-serif;box-shadow:0 6px 16px rgba(18,59,99,.22)}
 @keyframes segHot{50%{transform:scale(1.1);box-shadow:0 0 0 6px rgba(255,210,63,.6)}}
 @keyframes ddGood{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(80,200,60,.55),0 3px 0 rgba(47,150,23,.25)}45%{transform:scale(1.06)}
   100%{transform:scale(1);box-shadow:0 0 0 12px rgba(80,200,60,0),0 3px 0 rgba(47,150,23,.25)}}
