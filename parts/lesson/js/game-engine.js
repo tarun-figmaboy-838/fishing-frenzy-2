@@ -37,7 +37,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       line: '', reveal: 0, talking: false, bub: 'bubA',
       muted: this.state ? this.state.muted : false, done: true,
       opened: !!(this.state && this.state.opened), opening: !!(this.state && this.state.opening), // the card (js/opening.js)
-      tap: {}, ang: {}, diag: {}, chips: [],
+      tap: {}, ang: {}, diag: {}, chips: [], marked: {}, wrongs: 0,
       moved: false, dragging: null, picks: {}, cfuFirst: true, results: {},
       hand: null, bubOff: false, glow: null, emph: {}
     };
@@ -176,15 +176,28 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (!s.started || !st || st.grid || st.end) { this.marks = null; return; }
     const f = st.fig ? { arcs: Object.keys(st.fig.angles || {}).join(''), ticks: st.fig.ticks || st.fig.hticks } : this.fl();
     const pg = this.isPg(this.shapeP());
-    const m = { step: s.step, par: !!f.par, par2: !!(f.par2 || (st.task === 'dragB' && pg)), ticks: !!(f.ticks || f.hticks), arcs: (f.arcs || '').length };
+    // the sides showing parallel arrows (one a cue traces on shows from its cue): each side's tick as its arrows pop on,
+    // 0.43 s after they show (css .par-ch)
+    const due = this.markCues(st), par2 = !!(f.par2 || (st.task === 'dragB' && pg));
+    const arrows = ['AB', 'CD', 'DA', 'BC'].filter((k) => (k === 'AB' || k === 'CD' ? !!f.par : par2) && (!due[k] || !!(s.marked && s.marked[k]))).join(' ');
+    const m = { step: s.step, arrows: arrows, ticks: !!(f.ticks || f.hticks), arcs: (f.arcs || '').length };
     const p = this.marks;
     this.marks = m;
     if (!p) return;
-    if ((m.par && !p.par) || (m.par2 && !p.par2) || (m.ticks && !p.ticks)) this.sfx('tick', { v: 0.9 });
+    if (m.arrows.split(' ').some((k) => k && p.arrows.indexOf(k) < 0)) this.sfx('tick', { v: 0.9, delay: Motion.reduced ? 0 : 0.43 });
+    if (m.ticks && !p.ticks) this.sfx('tick', { v: 0.9 });
     if (m.arcs > p.arcs) { // arcs that stay on screen from one screen to the next do not draw in again
       const N = window.Sfx ? Sfx.notes : [523.25, 659.25, 783.99, 1046.5];
       for (let i = 0; i < Math.min(4, m.arcs); i++) this.sfx('pluck', { f: N[i], v: 0.7, delay: 0.15 * i });
     }
+  }
+  // the sides whose parallel arrows a word cue traces on (a cue's mark: [...]) anywhere on screen st: until that cue
+  // they wait, then come in with the side's light
+  markCues(st) {
+    const out = {}, scan = (cs) => (cs || []).forEach((c) => (c.mark || []).forEach((k) => { out[k] = 1; }));
+    (st.lines || []).concat(st.after || [], st.revealAfter || []).forEach((L) => scan(L.cues));
+    scan(st.okCues); (st.opts || []).forEach((o) => scan(o.fbCues));
+    return out;
   }
   // the shape a screen leaves behind once its task is done (for jumping straight to a later screen)
   taskResult(st, P) {
@@ -758,10 +771,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
     if (c.meet) this.showMeet(c.meet);
+    // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
+    // passes them, 0.43 s into its run (their tick: markSounds)
+    if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); }
     if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
-    // diagonals' halves fold onto each other, parallel sides run out as rails - one pair after another
-    if (window.Motion && (c.match || c.matchAng || c.fold || c.rails)) {
+    // diagonals' halves fold onto each other - one pair after another
+    if (window.Motion && (c.match || c.matchAng || c.fold)) {
       const S = this.fxPts(), PAL = CONFIG.palette;
       if (S) {
         const seg = (k) => { const a = S[k[0]], b = S[k[1]]; return { x1: a.x, y1: a.y, x2: b.x, y2: b.y, col: k === 'AB' || k === 'CD' || k === 'BA' || k === 'DC' ? PAL.line : PAL.pair2 }; };
@@ -779,9 +795,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
         if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); at += 2600; });
         if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 2400; });
-        if (c.rails) this.tm(() => { if (tok === this.stepTok) Motion.rails(c.rails.map(seg)); }, at);
         // the screen stays until the last of them has been seen through (flow: seqEnd)
-        const ends = (c.rails ? at + 2700 : 0) || (at ? at + 1000 : 0);
+        const ends = at ? at + 1000 : 0;
         if (ends) this.seqEnd = Math.max(this.seqEnd || 0, Date.now() + ends);
       }
     }
@@ -1000,7 +1015,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1814,10 +1829,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const tkPath = ticks('AB') + ticks('CD') + ticks('DA') + ticks('BC');
     g.tk = { p: tkPath || 'M0,0', d: dsp(!!tkPath) };
-    // (gx, gy: the arrows glide onto their sides the way they point, as Fishing Frenzy's do: css .par-ch)
-    const glide = (k) => { const F = frame(k); return { gx: r1(-F.ux * 40) + 'px', gy: r1(-F.uy * 40) + 'px' }; };
-    g.ch = Object.assign({ p: (arrows('AB') + arrows('CD')) || 'M0,0', d: dsp(showPar1) }, glide('AB'));
-    g.ch2 = Object.assign({ p: (arrows('DA') + arrows('BC')) || 'M0,0', d: dsp(showPar2) }, glide('DA'));
+    // each side's arrows on their own (css .par-ch pops them on as the side's light passes them); a side whose arrows a
+    // word cue traces on (markCues) keeps its slot but shows them only from that cue
+    const due = this.markCues(st);
+    ['AB', 'CD', 'DA', 'BC'].forEach((k) => {
+      const on = !!nArrows[k] && !(due[k] && !(s.marked && s.marked[k]));
+      g['ch' + k] = { p: on ? arrows(k) : 'M0,0', d: dsp(on) };
+    });
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;
     // (a diagonal named alone: the other steps back while it is said)

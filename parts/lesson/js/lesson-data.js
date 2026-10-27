@@ -7,6 +7,7 @@
 //          glow = sides drawn bolder while the line is spoken, e.g. ['AB', 'CD']; glowAt: 'word' = wait for that word;
 //          pulse: 1 + pulseAt = the shape zooms once on that word; growAt = the shape comes forward on that word;
 //          cues = board moments on a spoken word: [{ at: 'word', glow: [sides] | null, hi: card text, chip, pulse, ms }];
+//          a cue's mark: [sides] = those sides' parallel arrows wait for the cue and pop on as its glow's light passes them;
 //          chips = cards shown with the line; m = Swiftee's expression (default talking; reactions in CONFIG.swiftee)
 //          holdM: 1 = Swiftee keeps the m pose while she speaks (e.g. waves hello) instead of the talking loop
 //   skin:  'intro' = the opening look (storyboard pages 1-8): white bubble, light-blue shape with a thin blue outline
@@ -61,21 +62,23 @@ const LESSON = {
       lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.' }], f: { noLetters: 1 } },
     Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?' }],
       // right answer: AD ∥ BC folds away and AB ∥ CD settles alone in the centre, green (storyboard page 6)
-      // right: AB and CD light as their parallel marks arrive; wrong: AD and BC light and are carried on until they meet
+      // right: AB is traced as it is said, its parallel marks popping on as the light passes them, then CD; wrong: AD and BC light and are carried on until they meet
       // (the card zooming out just enough to show where) as the tip says so
-      ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 }, okCues: [{ at: 'ab', glow: ['AB', 'CD'], ms: 2400 }],
+      ok: "That's correct! AB ∥ CD.", soloOk: 1, okF: { par: 1 },
+      okCues: [{ at: 'ab', glow: ['AB'], mark: ['AB'] }, { at: 'cd', glow: ['AB', 'CD'], mark: ['CD'], ms: 1800 }],
       opts: [
         { id: 'AB', t: 'AB ∥ CD', ok: true },
         { id: 'AD', t: 'AD ∥ BC', fb: 'Look again. AD and BC lean towards each other, so they would meet if we made them longer.',
           fbCues: [{ at: 'lean', meet: ['DA', 'BC'] }] }
       ] }, PRACTICE),
     { pdf: 7, id: 'whatIf', skin: 'intro', lines: [{ m: 'thinking', t: 'What if we made the other pair\nof opposite sides parallel too?', glow: ['DA', 'BC'] }], f: { par: 1 } },
-    // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram
+    // one demo hand once the instruction ends, then the learner drags B; BC ∥ AD snaps it into a parallelogram, and BC
+    // then AD are traced as they are said, their parallel marks popping on with the light
     { pdf: 8, id: 'dragPar', skin: 'intro', lines: [{ m: 'curious', t: 'Drag vertex B to make\nBC parallel to AD.' }],
       task: 'dragB', handOnce: 1,
-      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.', cues: [{ at: 'parallel', rails: ['BC', 'DA'] }] }], f: { par: 1 } },
+      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }], f: { par: 1 } },
     { pdf: 9, id: 'bothPar', lines: [
-      { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', cues: [{ at: 'parallel', rails: ['AB', 'CD', 'BC', 'DA'] }], glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
+      { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
       { keep: 1, s: 'A D is parallel to B C.', glow: ['DA', 'BC'], chips: [{ t: 'AD ∥ BC', k: 'white' }] }], f: PG },
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
