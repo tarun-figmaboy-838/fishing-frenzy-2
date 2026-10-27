@@ -1489,12 +1489,30 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const o = this.shapeP()[c.from];
     if (!c.moved && o && Math.hypot(p.x - o.x, p.y - o.y) < 14) return;
     c.moved = true;
-    this.setState({ conn: { from: c.from, x: p.x, y: p.y } });
+    const end = this.connEnd(c.from, p);
+    this.setState({ conn: { from: c.from, x: end.x, y: end.y, near: end.near } });
+  }
+  // where the line being drawn from corner `from` ends for a pointer at p: within reach of another corner, on it (that
+  // corner lights: the line would go there); otherwise at p, but never past the shape's edge - a diagonal runs inside
+  // the shape, so a pointer outside it holds the line where it would leave (at its corner, if it heads away)
+  connEnd(from, p) {
+    const P = this.shapeP(), o = P[from];
+    const near = ['A', 'B', 'C', 'D'].find((k) => k !== from && Math.hypot(P[k].x - p.x, P[k].y - p.y) < CONFIG.connect.reach);
+    if (near) return { x: P[near].x, y: P[near].y, near: near };
+    const Q = [P.A, P.B, P.C, P.D], area = Q.reduce((t, q, i) => t + q.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * q.y, 0) > 0 ? 1 : -1;
+    const inside = (x, y) => Q.every((q, i) => { const r = Q[(i + 1) % 4]; return area * ((r.x - q.x) * (y - q.y) - (r.y - q.y) * (x - q.x)) >= -0.5; });
+    if (inside(p.x, p.y)) return { x: p.x, y: p.y, near: null };
+    let lo = 0, hi = 1; // (the last point of o -> p still inside: bisection - the shape is convex)
+    for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (inside(o.x + (p.x - o.x) * m, o.y + (p.y - o.y) * m)) lo = m; else hi = m; }
+    const e = { x: o.x + (p.x - o.x) * lo, y: o.y + (p.y - o.y) * lo };
+    const at = ['A', 'B', 'C', 'D'].find((k) => k !== from && Math.hypot(P[k].x - e.x, P[k].y - e.y) < CONFIG.connect.reach / 2); // (held at a corner: on it)
+    return at ? { x: P[at].x, y: P[at].y, near: at } : { x: e.x, y: e.y, near: null };
   }
   connUp(e) {
     const c = this.conn, P = this.shapeP();
     const p = (c.svg && e && e.clientX != null ? this.toSvg(c.svg, e) : null) || (this.state.conn && { x: this.state.conn.x, y: this.state.conn.y });
-    const hit = ['A', 'B', 'C', 'D'].find((k) => k !== c.from && p && Math.hypot(P[k].x - p.x, P[k].y - p.y) < 40);
+    // (the corner the line is on, where it was let go - or, without a move, the corner under the pointer)
+    const hit = (c.moved && this.state.conn && this.state.conn.near) || ['A', 'B', 'C', 'D'].find((k) => k !== c.from && p && Math.hypot(P[k].x - p.x, P[k].y - p.y) < CONFIG.connect.reach);
     if (hit) { this.conn = null; this.setState({ conn: null }); this.connTo(c.from, hit); return; }
     // released on its own corner (a tap): keep it picked until the next corner is tapped
     this.conn = c.moved ? null : { from: c.from, live: false };
@@ -1973,6 +1991,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         down: drag || conn ? (e) => this.down(k, e) : noop
       };
       if (conn && s.conn && s.conn.from === k) g['v' + k].r = 11;
+      if (conn && s.conn && s.conn.near === k) { g['v' + k].r = 11; g['v' + k].c = '#ffab00'; g['v' + k].cls = 'on'; } // (the corner the line is on)
     });
     if (dk) {
       // the arrow lies on the corner's own track, just past it (B slides along the line of AB), clear of its letter
