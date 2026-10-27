@@ -711,7 +711,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .ticks{stroke:#123b63;filter:none}
 /* a solved checkpoint's found values settle onto the figure in the answer's green, so the finished figure reads complete */
 .stage.in-card .tag.mtag.solved,.stage.in-card .tag.alab.solved{color:#13824a!important;animation:solvedIn .45s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes solvedIn{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes solvedIn{from{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1)}} /* (a half's value keeps its half's slope) */
 @media (prefers-reduced-motion: reduce){.stage.in-card .tag.solved{animation:none}}
 /* answer box value: a chosen number is the focus - larger (30px), even-width digits, optically centred in its box;
    once locked the arrow leaves and the value sits dead centre (same box size, so nothing around it shifts). The green
