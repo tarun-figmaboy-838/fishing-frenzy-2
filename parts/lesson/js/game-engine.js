@@ -785,10 +785,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
     // passes them, 0.43 s into its run (their tick: markSounds)
     if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); }
+    if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
     if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
-    // diagonals' halves fold onto each other - one pair after another
-    if (window.Motion && (c.match || c.matchAng || c.fold)) {
+    // diagonals' halves slide onto each other - one pair after another
+    if (window.Motion && (c.match || c.matchAng || c.halfSlide)) {
       const S = this.fxPts(), PAL = CONFIG.palette;
       if (S) {
         const seg = (k) => { const a = S[k[0]], b = S[k[1]]; return { x1: a.x, y1: a.y, x2: b.x, y2: b.y, col: k === 'AB' || k === 'CD' || k === 'BA' || k === 'DC' ? PAL.line : PAL.pair2 }; };
@@ -805,7 +806,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); at += 2400; });
         if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
         if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); at += 2600; });
-        if (c.fold) pairs(c.fold).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.foldHalf(S.O, S[pr[0]], PAL['v' + pr[0]]); }, at); at += 2400; });
+        // a diagonal's halves: a copy of one slides along the diagonal onto the other (A->O onto O->C: no turn, it stays
+        // on its line) and fits it exactly, in their colour, the two halves standing out while it does
+        const halfCol = (k) => PAL[(this.fl().halfPairs ? { A: 'vA', C: 'vA', B: 'vB', D: 'vB' } : { A: 'vA', B: 'vB', C: 'vC', D: 'vD' })[k]];
+        if (c.halfSlide) pairs(c.halfSlide).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
+          Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); at += 3400; });
         // the screen stays until the last of them has been seen through (flow: seqEnd)
         const ends = at ? at + 1000 : 0;
         if (ends) this.seqEnd = Math.max(this.seqEnd || 0, Date.now() + ends);
@@ -1017,7 +1022,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, boxHi: null, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2270,7 +2275,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const blanks = FD ? FD.blanks.map((b, i) => ({ id: b.id, pre: b.pre || '', post: b.post || '', eq: FD.match && i % 2 === 0 ? '=' : '',
       ph: dd && !F.at[b.id] ? 'ph' : '', exp: 'false',
       gap: FD.match && i % 2 === 1 && i < FD.blanks.length - 1 ? 'gap' : '',
-      t: F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : '') + (dd && F.open === b.id ? ' open' : ''),
+      t: F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : '') + (dd && F.open === b.id ? ' open' : '') + (b.pair && s.boxHi === b.pair ? ' hot' : ''),
       tap: () => this.blankTap(b.id) })) : [];
     // the choices: for a number box, in its own menu (ddOpen); for the segment pairs, tiles under the boxes, tapped
     // (into the picked box) or dragged onto a box

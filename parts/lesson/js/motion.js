@@ -226,20 +226,6 @@
         .to(g, { opacity: 0, duration: 0.45 }, 2.8));
       return 3300;
     },
-    // the diagonals bisect each other: half OA folds about O by a half-turn and lands exactly on OC
-    foldHalf(O, A, col) {
-      if (!G || reduced || !this.fx()) return 0;
-      const g = this.mk('g', { 'class': 'math-glow' }), r1 = (n) => n.toFixed(1), origin = r1(O.x) + ' ' + r1(O.y);
-      this.mk('line', { x1: r1(O.x), y1: r1(O.y), x2: r1(A.x), y2: r1(A.y), stroke: col || '#ffd000', 'stroke-width': 8, 'stroke-linecap': 'round' }, g);
-      this.mk('circle', { cx: r1(O.x), cy: r1(O.y), r: 7, fill: '#fff', stroke: '#123b63', 'stroke-width': 3 }, g);
-      add(() => G.timeline({ onComplete: () => g.remove() })
-        .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, duration: 0.35 })
-        .to(g, { rotation: 180, duration: 1.6, ease: 'power2.inOut', svgOrigin: origin }, 0.45)
-        .to(g, { opacity: 0.55, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.1)
-        .to(g, { opacity: 0, duration: 0.45 }, 2.75));
-      return 3200;
-    },
     // A mask that keeps a drawing off every word on the stage - the corner letters, the lengths and angle sizes, the
     // name cards and the instruction plate - with a little air round each (stage px), so a line passes behind them
     // with a gap instead of through them

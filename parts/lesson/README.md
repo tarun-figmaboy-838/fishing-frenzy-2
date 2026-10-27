@@ -87,7 +87,7 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   side or half showing its measurement carries no marks (no arrows, no ticks): the number says it.
 - **The maths in motion** (`js/motion.js` fx, on an overlay over the board; a line's `cues`): equal sides slide onto
   each other by a slide (`match`), an angle turns a half-turn about the shape's centre O and lands on the opposite one
-  - the reason they are equal (`matchAng`), the diagonals' halves turn about O onto each other (`fold`), parallel
+  - the reason they are equal (`matchAng`), a copy of a diagonal's half slides along the diagonal onto its other half and fits (`halfSlide`), parallel
   marks come in with their side's light (`mark`: the side is traced clockwise as it is said, its arrows popping on as
   the light passes them - screens 5 and 7), and for adjacent angles a copy of one slides down the side
   and turns beside the other, the two filling a large half-disc on the straight line with its 180° (`supp`); each runs

@@ -223,11 +223,14 @@ const LESSON = {
     { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's measure each segment." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     { pdf: 45, id: 'compare', lines: [{ m: 'thinking', t: "Let's compare the lengths\nof these segments." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     Object.assign({ pdf: '46-47', id: 'matchSeg', lines: [{ m: 'curious', t: 'Drag the segments to\ntheir correct place.' }],
-      ok: "That's correct! The segments\nof the same diagonal\nare equal.", okChips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }], okF: { halfPairs: 1, hticks: 1 },
+      // right: no cards repeating the boxes - as the line says it, the halves the learner paired light on the shape while
+      // their boxes pulse: OA and OC on "same", OB and OD on "equal"
+      ok: "That's correct! The segments\nof the same diagonal\nare equal.", okF: { halfPairs: 1, hticks: 1 },
+      okCues: [{ at: 'same', emph: ['hA', 'hC'], pair: 1 }, { at: 'equal', emph: ['hB', 'hD'], pair: 2 }],
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
-      f: Object.assign({ split: 1, halves: 1 }, DIAG) }, { chipTop: 105 }),
-    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', fold: [['A', 'C'], ['B', 'D']] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.', chips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }],
+      f: Object.assign({ split: 1, halves: 1 }, DIAG) }),
+    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', halfSlide: [['A', 'C'], ['B', 'D']] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.', chips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
     { pdf: 49, id: 'bisect', lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect', chips: [{ t: 'Diagonals bisect each other.', k: 'name' }] }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
