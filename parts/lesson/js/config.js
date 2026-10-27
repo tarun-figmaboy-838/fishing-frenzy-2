@@ -26,7 +26,7 @@ const CONFIG = {
   marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 28, labelGap: 10, markGap: 14 },
   // dropdown answers: one option's height, the menu's narrowest width, the lowest it may reach (stage px), close and
   // wrong-answer display times (ms)
-  dropdown: { itemH: 52, minW: 130, maxBottom: 706, closeMs: 180, wrongMs: 1000 },
+  dropdown: { itemH: 46, minItemW: 64, gap: 8, left: 112, right: 1168, maxBottom: 692, closeMs: 180, wrongMs: 1000 }, // the choices' row: where the tiles were, under the boxes, inside the card (stage px)
   // B this close to its place (board px) snaps into the parallelogram - held or let go - and held there this long is
   // taken as placed (so a finger that never lifts cleanly still finishes the task)
   snap: { parallelPx: 40, holdMs: 600 },

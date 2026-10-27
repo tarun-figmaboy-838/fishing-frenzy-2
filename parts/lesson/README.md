@@ -101,8 +101,9 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   step back; named angles and corners grow. Parallel arrows, equal ticks and name tags arrive on their words.
 - **Checks**: answers rise in, one after another, as Swiftee says the question's last word (`askedNow`); a wrong answer shakes with a tip and can be tried again;
   a right one turns green with the correct sound and confetti. A checkpoint counts if it was right first time. A
-  number answer is a box with its choices as tiles under it, always in view (no menu over the shape): tap a tile to
-  fill the waiting box (tap a box to choose which), or drag a tile onto a box.
+  number answer is a "?" box: a tap opens its choices in one row right under it (never over the shape, kept inside
+  the card, a notch pointing at the box), and a tap on one fills the box; a tap outside, on the box again, or Escape
+  closes it. The segment pairs (screen 46) are tiles dragged (or tapped) into their boxes.
 - **What to touch pulses**: the corner to drag beats from its own dot, the angles to tap from their own wedges, the
   corners to draw a diagonal from from their own dots - never a ring or a disc round them.
 - **Idle**: the hand shows what to tap or drag after 8 s with no touch; an instruction is said once, never again (as in Fishing Frenzy)

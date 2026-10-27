@@ -560,19 +560,25 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd.bad .dd-val{color:#9a4a08}
 @keyframes ddShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}45%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
 
-/* the menu: one per screen, at the stage level, so nothing can clip it */
-.stage .dd-menu{position:absolute;z-index:22;box-sizing:border-box;padding:6px;border-radius:16px;background:#fff;
+/* the menu: one per screen, at the stage level, so nothing can clip it - the choices in one row under their box, a notch
+   pointing up at it (--nx: the box's middle) */
+.stage .dd-menu{position:absolute;z-index:22;box-sizing:border-box;display:flex;gap:8px;padding:7px;border-radius:18px;background:#fff;
   border:2px solid #bcd6fb;box-shadow:0 14px 28px rgba(18,59,99,.22),0 2px 6px rgba(18,59,99,.10);
   transform-origin:50% 0;animation:ddIn .2s cubic-bezier(.2,.8,.3,1) both}
 .stage .dd-menu.up{transform-origin:50% 100%}
+.stage .dd-menu::before{content:'';position:absolute;left:calc(var(--nx,50%) - 9px);top:-10px;border:9px solid transparent;border-top:0;border-bottom:10px solid #bcd6fb}
+.stage .dd-menu::after{content:'';position:absolute;left:calc(var(--nx,50%) - 7px);top:-7px;border:7px solid transparent;border-top:0;border-bottom:8px solid #fff}
+.stage .dd-menu.up::before{top:auto;bottom:-10px;border-bottom:0;border-top:10px solid #bcd6fb}.stage .dd-menu.up::after{top:auto;bottom:-7px;border-bottom:0;border-top:8px solid #fff}
 .stage .dd-menu.closing{animation:ddOut .18s ease-in both;pointer-events:none}
 @keyframes ddIn{from{opacity:0;transform:translateY(-6px) scaleY(.92)}to{opacity:1;transform:none}}
 @keyframes ddOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px) scaleY(.95)}}
-.stage .dd-item{display:block;width:100%;height:46px;border:0;border-radius:11px;background:transparent;cursor:pointer;
-  font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;color:#123b63;text-align:center;
-  transition:background .12s ease,color .12s ease}
-.stage .dd-item:hover,.stage .dd-item:focus-visible{outline:none;background:#e3f4ff;color:#0b4fb8}
-.stage .dd-item:active{background:#cdeafe}
+/* each choice the answer tiles' own look (cream and gold), a full tap target */
+.stage .dd-item{flex:1 0 auto;min-width:64px;height:46px;padding:0 16px;border:2px solid #efcb6e;border-radius:14px;cursor:pointer;
+  background:linear-gradient(180deg,#fff7da 0%,#fdeec0 100%);box-shadow:0 3px 0 #d9b04c;color:#6e4210;
+  font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:800;font-size:24px;line-height:1;text-align:center;
+  transition:transform .12s ease,background .12s ease}
+.stage .dd-item:hover,.stage .dd-item:focus-visible{outline:none;transform:translateY(-2px);background:linear-gradient(180deg,#fffbe9 0%,#ffe9a8 100%)}
+.stage .dd-item:active{transform:translateY(1px);box-shadow:0 1px 0 #d9b04c}
 @media (prefers-reduced-motion: reduce){.stage .dd-menu,.stage .dd-menu.closing,.stage .blank.dd.good,.stage .blank.dd.bad,.stage .blank.dd.act{animation:none}}
 
 /* ===== the answers appear only once the question has been asked =====

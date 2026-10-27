@@ -22,8 +22,8 @@
 //          centred; okGlow: [[sides], ...] = side pairs pulse in turn after it; calmOk: 1 = no confetti; okCues = word cues on
 //          the feedback line; an option's emph = the parts that grow as it is picked right). multi: 1 = select every right answer
 //          (req: false = right but not needed to finish). grid: 1 = the four-shape picture grid
-//   fill:  blanks to fill with number tiles: blanks [{ id, pre, post, ans }], tiles [...] (drag a tile onto a blank,
-//          or tap a tile to fill the highlighted blank). match: 1 = each tile once, blanks checked as pairs (pairs)
+//   fill:  answer boxes: blanks [{ id, pre, post, ans }], tiles [...] (the choices: a tap on a box opens them in a row
+//          under it). match: 1 = segment tiles dragged (or tapped) into the boxes, each once, checked as pairs (pairs)
 //   cp:    checkpoint challenge (scored: right on the first try), cpTitle = its name (in the ?dev=1 panel)
 //   fig:   the checkpoint's own drawing on the board: P (corners), sides / angles / halves labels ('?' = unknown),
 //          diag = draw the diagonals
