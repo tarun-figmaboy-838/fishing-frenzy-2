@@ -492,13 +492,19 @@
 .dev-btns{display:flex;flex-wrap:wrap;gap:4px}
 .dev button.j{font:inherit;padding:5px 7px;border:0;border-radius:6px;background:#2f4f7f;color:#fff;cursor:pointer;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 .dev button.j:hover{background:#3f6aa8}
-.dev button.j.home{background:#7a4f10}`;
+.dev button.j.home{background:#7a4f10}
+.dev.above-nav{left:50%;bottom:46px;transform:translateX(-50%)}.dev.above-nav.folded{display:none}
+.nav .dev-tag{min-width:0;padding:0 10px;color:#ffd23f;font-weight:800}
+@media (max-height:500px){.dev.above-nav{bottom:30px;max-height:calc(100vh - 40px)}}`;
       document.head.appendChild(css);
       const el = this.el = document.createElement('div');
       el.className = 'dev folded';
       el.setAttribute('aria-label', 'Developer screen jumps');
-      el.innerHTML = '<button class="dev-tag" type="button" title="Fold or unfold (`)">DEV · screens</button><div class="dev-body"></div>';
-      el.querySelector('.dev-tag').addEventListener('click', () => el.classList.toggle('folded'));
+      // its tab is a small DEV button (where the journey is, the Back / Next bar says): on that bar's left end while the
+      // bar is up - the panel opening above it - else bottom left, folding the panel down to it
+      el.innerHTML = '<button class="dev-tag" type="button" title="Screens (`)">DEV</button><div class="dev-body"></div>';
+      this.tag = el.querySelector('.dev-tag');
+      this.tag.addEventListener('click', (e) => { e.stopPropagation(); el.classList.toggle('folded'); });
       document.body.appendChild(el);
       document.addEventListener('keydown', devKey);
       this.render();
@@ -510,7 +516,7 @@
       const front = document.createElement('div');
       front.className = 'dev-part';
       front.innerHTML = '<div class="dev-btns"><button class="j home" type="button">Front page</button></div>';
-      front.querySelector('button').addEventListener('click', () => { this.fold('Front page'); this.frontPage(); });
+      front.querySelector('button').addEventListener('click', () => { this.fold(); this.frontPage(); });
       body.appendChild(front);
       PARTS.forEach((p, index) => {
         const sec = document.createElement('div');
@@ -527,11 +533,8 @@
       });
       this.update();
     },
-    // a jump folds the panel away (it never covers the screen it went to); its tab names that screen
-    fold(label) {
-      this.el.classList.add('folded');
-      this.el.querySelector('.dev-tag').textContent = 'DEV · ' + label;
-    },
+    // a jump folds the panel away (it never covers the screen it went to)
+    fold() { this.el.classList.add('folded'); },
     renderPart(id) {
       const btns = this.el && this.el.querySelector('.dev-part[data-part="' + id + '"] .dev-btns');
       if (!btns) return;
@@ -541,7 +544,7 @@
       list.forEach((s, i) => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'j'; b.textContent = s.label; b.title = s.label;
-        b.addEventListener('click', (ev) => { ev.stopPropagation(); this.fold(s.label); if (id === 'lesson') this.jumpLesson(i); else this.jumpFishing(i); });
+        b.addEventListener('click', (ev) => { ev.stopPropagation(); this.fold(); if (id === 'lesson') this.jumpLesson(i); else this.jumpFishing(i); });
         btns.appendChild(b);
       });
     },
@@ -628,6 +631,7 @@
       el.setAttribute('aria-label', 'Screens (temporary)');
       el.innerHTML = '<button type="button">\u2039 Back</button><span class="nav-at"></span><button type="button">Next \u203a</button>';
       [this.back, this.next] = el.querySelectorAll('button');
+      if (dev.tag) { el.prepend(dev.tag); dev.el.classList.add('above-nav'); } // (?dev=1: its DEV button on this bar)
       this.back.addEventListener('click', (e) => { e.stopPropagation(); this.go(-1); });
       this.next.addEventListener('click', (e) => { e.stopPropagation(); this.go(1); });
       document.body.appendChild(el);

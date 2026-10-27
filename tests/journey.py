@@ -658,7 +658,7 @@ def dev_panel(p, engine, url):
     page.wait_for_timeout(2500)
     check(r.lesson()['step'] == 9, f'{r.tag}: a lesson screen shows the lesson over the game at that screen (and it stays there); the game goes quiet')
     tag = page.evaluate('() => document.querySelector(".dev-tag").textContent')
-    check(is_folded() and tag.startswith('DEV · 10 '), f'{r.tag}: the jump folds the panel away, its tab naming the screen', tag)
+    check(is_folded() and tag == 'DEV', f'{r.tag}: the jump folds the panel away to its DEV button (no screen title over the game)', tag)
     r.shot('2-lesson-screen-10')
     jump(game_btn('L3'))
     st = until(r.shell, lambda s: s['current'] == 'fishing' and s['lesson'] != 'ready' or s['frames'][-1:] == ['lesson+leaving'], 5, 'a game level takes the lesson away')
