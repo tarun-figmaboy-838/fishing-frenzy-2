@@ -1751,10 +1751,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
     g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });
     g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA'), hl: hlCls('DA') });
-    // the marker draws one way for every side: up a leg, left to right along a base
+    // the light runs round the shape clockwise on screen, whichever side it lights: A->B, B->C, C->D, D->A (the
+    // sides are drawn in that order; a shape lettered the other way round runs each side backwards)
+    const cw = [A, B, C, D].reduce((sum, p, i, Q) => sum + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) >= 0;
     ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
-      const e = g['e' + k], steep = Math.abs(e.y2 - e.y1) > Math.abs(e.x2 - e.x1), flip = steep ? e.y1 < e.y2 : e.x1 > e.x2;
-      Object.assign(e, flip ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
+      const e = g['e' + k];
+      Object.assign(e, cw ? { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 } : { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 });
     });
     // a tick mark across the middle of p->q (one, or two side by side), for the diagonals' equal halves: the sides'
     // own ticks (CONFIG.marks)
