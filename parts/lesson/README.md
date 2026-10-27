@@ -44,7 +44,7 @@ are one screen (the feedback is that screen's finished state); each checkpoint p
 | 46 | 46–47 | drag the segments into equal pairs (OA = OC, OB = OD) |
 | 47–48 | 48–49 | equal halves share a colour and tick marks → diagonals bisect each other |
 | 49–51 | 50 | **Checkpoint 3**: AO = 6 → OC · AO = 5, BO = 3 → OC, OD · choose the true statements |
-| 52 | 51–52 | the summary, as Fishing Frenzy's (`js/summary.js`): one glassy bubble per idea (definition, parallel, equal sides, equal angles, supplementary, bisect) in the middle of the card, Swiftee peeking over it to say its line, the bubbles gathering into albums at the sides; then Next (in the journey, the hand-over) |
+| 52 | 51–52 | the summary, as Fishing Frenzy's (`js/summary.js`): one glassy bubble per idea (definition, parallel, equal sides, equal angles, supplementary, bisect) in the middle of the card, Swiftee peeking over it to say its line, the bubbles gathering into albums at the sides, three a side in mirrored triangles (one over the middle of two); then Next (in the journey, the hand-over) |
 | 53 | — | Swiftee's goodbye; on the lesson's own page, the stars (first-try score over the 9 checkpoint challenges) and Play again |
 
 Geometry: 1 cm = 60 board px. The opening trapezium (CD 6 cm, AD 3 cm, ∠D 70°) becomes, when B is dragged, the
