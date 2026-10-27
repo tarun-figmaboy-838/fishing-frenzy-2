@@ -1091,8 +1091,6 @@ class Game {
   // The speaker's bubble sits by their head where the view shows it: through the zoom on the net, which Popo stays in
   // (fitFocus), as the bubble itself is not zoomed.
   placeSpeech() {
-  // The speaker's bubble sits by their head where the view shows it: through the zoom on the net, which Popo stays in
-  // (fitFocus), as the bubble itself is not zoomed.
     const bird = this.dialogue && this.dialogue.who === 'swiftee' && this.swiftee;
     if (bird) {
       const h = bird.head(), p = this.inView(h.x, h.y);

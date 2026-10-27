@@ -335,27 +335,28 @@ class UI {
 
   // (x, y) is where the tail points. The bubble sits above and to the right of it, so it's
   // nudged down or left when it would run off the top or right of the stage, and kept clear of the HUD's top row
-  // (the counter, sound and pause: on a small screen their type never shrinks, so a bubble reached them): it slides
-  // away from them sideways, or goes below them if there's no room. Its tail keeps pointing at (x, y) wherever the
-  // bubble has had to move (--tail).
-  // `avoid`: more boxes to keep clear of, in stage pixels ({ x0, y0, x1, y1 }): Popo's bubble keeps off the crane's
-  // mast when it fits beside it (soft: it is never pushed below it).
+  // (the counter, sound and pause: on a small screen their type never shrinks, so a bubble reached them). Its tail
+  // keeps pointing at (x, y) wherever the bubble has had to move (--tail).
+  // `avoid`: boxes the speaker's bubble keeps to its own side of, in stage pixels ({ x0, y0, x1, y1 }): Popo's keeps
+  // left of the crane's mast, its width fitted to the room there (Game.popoBubbleWidth). The side is the speaker's, not
+  // the bubble's middle, so it never flips across as the raft bobs. Each piece of the HUD it would touch it clears by
+  // the smallest move: sideways within that room, or down below it.
   placeSpeech(x, y, avoid = []) {
     const b = this.speechBox || { w: 0, h: 0, em: 0 };
     const width = this.el.hits.clientWidth;
-    const ax = x * this.scale, inset = 0.6 * b.em;
-    let left = Math.min(ax, width - b.w + inset - 4);
+    const ax = x * this.scale, inset = 0.6 * b.em, k = this.scale;
+    let lo = 6, hi = width - 4; // (the room: never past the stage's edges)
+    for (const a of avoid) if (ax < ((a.x0 + a.x1) / 2) * k) hi = Math.min(hi, a.x0 * k - 6);
+    const fits = (l) => l - inset >= lo && l - inset + b.w <= hi;
+    let left = Math.max(lo + inset, Math.min(ax, hi - b.w + inset));
     let top = Math.max(y * this.scale, b.h + 14); // clear of the top edge, even as it pops
-    const k = this.scale;
-    const extra = avoid.map((a) => ({ l: a.x0 * k, t: a.y0 * k, r: a.x1 * k, b: a.y1 * k, soft: true }));
-    for (const r of [...extra, ...this.hudBoxes()]) {
+    for (const r of this.hudBoxes()) {
       const l0 = left - inset;
       if (l0 + b.w <= r.l - 6 || l0 >= r.r + 6 || top <= r.t - 6 || top - b.h >= r.b + 6) continue;
-      const toLeft = r.l - 6 - b.w + inset, toRight = r.r + 6 + inset;
-      if ((r.l + r.r) / 2 > l0 + b.w / 2 && toLeft - inset >= 4) left = Math.min(left, toLeft);
-      else if (r.soft) continue;
-      else if ((r.l + r.r) / 2 <= l0 + b.w / 2 && toRight - inset + b.w <= width - 4) left = Math.max(left, toRight);
-      else top = Math.max(top, r.b + 6 + b.h);
+      const moves = [r.l - 6 - b.w + inset, r.r + 6 + inset].filter(fits).map((l) => ({ left: l, d: Math.abs(l - left) }));
+      moves.push({ top: r.b + 6 + b.h, d: r.b + 6 + b.h - top });
+      const m = moves.reduce((p, q) => (q.d < p.d ? q : p));
+      if (m.left !== undefined) left = m.left; else top = m.top;
     }
     const tail = Math.max(0, Math.min(b.w - 2.4 * b.em, ax - left));
     const st = this.el.speech.style;
