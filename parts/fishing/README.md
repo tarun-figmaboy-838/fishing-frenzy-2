@@ -4,8 +4,8 @@ Popo's parallelogram net: a browser game for Grade 8 about parallelograms. Popo 
 from a winch on his raft. Before he lowers it, the child fixes its shape: three of its corners A, B, C, D are fixed,
 and the fourth slides along a track, stop by stop, until the net has the property the level asks for - as the drag
 net comes down the view zooms in on it, so the corner is set on a big net, and once it is set Check comes up (a pill,
-bottom right). Check sends the net slowly down while the view opens out again: a right net locks with its praise and
-lights its property on the way, and sits open in the water with Catch for the child; a wrong one crumples into a
+bottom right). Check sends the net slowly down while the view opens out again: a right net locks with no words - it
+flashes, lights its property and its outline runs round it, every corner sparkling - and sits open in the water with Catch for the child; a wrong one crumples into a
 tangle ("Whoopsie Doopsie!", the hint) and Try again winds it up, untangles it and brings it down in its starting
 shape. Meanwhile three bunches of fish - three kinds, each its own count and size, each swimming its own way in its own
 lane, never into each other - roam the sea, so the child presses Catch when the bunch they want swims into the net: it
@@ -148,7 +148,7 @@ The game is deployed as part of the journey: the repository's root is the static
   angle at A), the corner that moves, the side or diagonal its track runs along (`along`; a
   diagonal runs toward the opposite corner) and how many stops from its place it starts, the
   side whose length in centimetres sets the measurement scale, its fish (3, 3, 4, 4, 5, 5, 6, 7, 9;
-  the sea holds three times as many, at most 22), the prompt, the praise and the hint a wrong
+  the sea holds three times as many, at most 22), the prompt and the hint a wrong
   net gives. The final level's school is rare: golden, quicker, trailing glints.
 - **Geometry** (`src/geometry.js`, `src/net.js`): plain vector helpers (parallel by the
   normalised cross product, so vertical sides are no trouble; interior angles; the diagonals'
@@ -204,8 +204,8 @@ The game is deployed as part of the journey: the repository's root is the static
   crane and Popo at his wheel, whole (`Popo.box`), so he stays in view beside his net: about 1.45x to 1.7x by net
   and screen; the corner moved, Check comes up as a pill bottom
   right (`UI.setAction`). Check
-  (`checkNet` in `src/sequences.js`) tests the frame: a right one locks with a click, holds a moment glowing as its
-  praise begins, and either way the net goes slowly down while the view opens out again with it. A wrong net
+  (`checkNet` in `src/sequences.js`) tests the frame: a right one locks with a click and no words (the plate clears),
+  flashes, lights its property and traces its outline with every corner sparkling, and either way the net goes slowly down while the view opens out again with it. A wrong net
   crumples into a tangle in the water (`Net.tangle`: its corners pull in and twist, so the mesh itself crumples; the
   fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
@@ -232,12 +232,12 @@ The game is deployed as part of the journey: the repository's root is the static
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
-  other line (the narrator's, every prompt, praise and hint) is Swiftee's studio voice - Fishing
+  other line (the narrator's, every prompt and hint) is Swiftee's studio voice - Fishing
   Frenzy's own clips, and the lesson's (`../lesson/assets/vo/`, loaded by path and played from
   their first word). Each net's lines are worded exactly as she recorded them. For the lesson's clips the plate's
   words come at the lesson's own measure of when each word is said (`../lesson/js/vo_lines.js`, `AudioEngine.wordTimes`),
   and every voiced line's words follow the voice's playhead (`AudioEngine.voiceTime`), so they never drift from it.
-- **HUD.** Narration follows the Fishing Frenzy games: the instruction (prompt, praise, hint)
+- **HUD.** Narration follows the Fishing Frenzy games: the instruction (a prompt or hint)
   and the narrator's lines sit on one translucent navy plate with a faint gold rim, white
   text and the key word in gold, fitted to the words. The instruction is always one line (a
   long one shrinks to fit) and comes word by word in time with its voice: each word pops in, a
@@ -317,7 +317,7 @@ for the golden school, "*Wow!*" "What a *catch!*" at the end). His clips are his
 studio recordings (Gemini's Puck, Indian-English accent, a little deeper), copied by key out of
 Fishing Frenzy's voice data by `tools/build-popo-voice.py`, which `tools/build-voice.py` runs
 after writing the file. Each clip is keyed by speaker and on-screen text (see
-`voiceKey` in `src/audio.js`), so the prompt, praise, hint and story lines in `src/levels.js`
+`voiceKey` in `src/audio.js`), so the prompt, hint and story lines in `src/levels.js`
 find their recordings (lines with symbols, like ∠A = 70°, carry a spoken form in the script); the words of a line appear as they are spoken, the music ducks under
 the voice, and a line without a clip falls back to the synthesised blips. The narrator's
 clips were recorded locally with Kokoro-82M:
@@ -346,7 +346,7 @@ Headless Chromium through Python Playwright (`pip install playwright pillow`):
   word by word, a wrong net dropped as fish swim under it loses its catch and comes back
   mended with a hint, the corner stays on the stop it's dragged to (also through a mid-drag
   resize) with nothing giving the answer away, a right net dropped over no fish comes up empty
-  and can go again, Drop Net locks the answer with its praise, a drop timed for fish under the
+  and can go again, Drop Net locks the answer, glowing, a drop timed for fish under the
   net catches some, waters change, pause freezes the game, the end screen closes in with The
   End, and Play Again closes and reopens it on the first net.
 - `python3 tests/geometry.py` – every level's property holds exactly at the solved position and

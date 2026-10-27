@@ -478,7 +478,7 @@ class UI {
     span.classList.add('beat');
   }
 
-  // The instruction plate: a prompt, praise or hint, its words hidden until the game shows them.
+  // The instruction plate: a prompt or hint, its words hidden until the game shows them.
   // Screen readers get the whole line at once. The plate gives a little boing on every change.
   setInstruction(text) {
     const plate = this.el.instruction;

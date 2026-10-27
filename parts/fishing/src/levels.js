@@ -25,60 +25,52 @@ const LOCATIONS = [
 // The first net is the warm-up's (`type: 'free'`: nothing to set, Drop Net, `drops` catches). The story no longer
 // plays it as a level: its 420 x 200 frame is the one the hook's nets hang from (HOOK_NETS, sequences.js hook), and the
 // hook goes straight on to the first parallelogram net. The eight nets after the lesson teach the parallelogram.
-// Every line on the plate (prompt, praise, hint) is one Swiftee has recorded - the lesson's own, or Fishing Frenzy's -
+// Every line on the plate (a prompt, a hint) is one Swiftee has recorded - the lesson's own, or Fishing Frenzy's -
 // so the whole game is heard in her voice and Popo's only (voice-data.js). `both`: both pairs of sides light up.
 const LEVELS = [
   { title: 'Warm-up', warmup: true, type: 'free', drops: 3, corner: 'C', along: 'DC',
     width: 420, height: 200, angleA: 90, start: 0, // Popo's net as it is: a rectangle, nothing to set
     location: 0, fish: 4, hintDelay: 4,
-    prompt: "Now, let's help Popo catch some *fish!*", praise: '', hint: '' },
+    prompt: "Now, let's help Popo catch some *fish!*", hint: '' },
   { title: 'Make it Parallel', type: 'parallel', sides: ['BC', 'AD'], corner: 'B', along: 'AB',
     width: 440, height: 200, lean: 60, start: -5, // slides along AB (so AB stays parallel to CD), from the left of its place
     location: 0, fish: 3, hintDelay: 3.5,
     prompt: 'Drag vertex B to make BC *parallel* to AD.',
-    praise: 'Well done! Now BC is parallel to AD.',
     hint: 'Drag B to the right until BC leans the same way as AD.' },
   { title: 'Complete the Parallelogram', type: 'parallel', sides: ['AB', 'CD'], both: true, corner: 'C', along: 'BC',
     width: 440, height: 210, lean: -60, start: -6, // slides along BC (so BC stays parallel to AD), from B's side
     location: 0, fish: 4, hintDelay: 5,
     prompt: 'What if we made the other pair of opposite sides *parallel* too?',
-    praise: 'Now both pairs of opposite sides are parallel.',
     hint: 'Look for *parallel* sides!' },
   { title: 'Match the Opposite Side', type: 'length', side: 'CD', reference: 'AB', metres: { AB: 7 }, corner: 'C', along: 'DC',
     width: 420, height: 200, lean: 50, start: -6, // CD starts at about 5 cm
     location: 1, fish: 4, hintDelay: 5,
     prompt: 'In this parallelogram, AB = *7 cm*. What is the length of CD?',
-    praise: "That's right! Opposite sides are equal, so CD = 7 cm.",
     hint: 'CD is opposite AB. Opposite sides of a parallelogram are equal.' },
   { title: 'Use Both Side Properties', type: 'sides', metres: { AB: 8, BC: 5 }, corner: 'D', along: 'BD',
     width: 380, height: 230, lean: 60, start: -7, // slides along the diagonal, toward B (AB and BC stay as they are)
     location: 1, fish: 5, hintDelay: 6,
     prompt: 'In this parallelogram, AB = *8 cm* and BC = *5 cm*. Find the lengths of CD and AD.',
-    praise: 'Brilliant! CD = AB = 8 cm and AD = BC = 5 cm.',
     hint: 'CD is opposite AB, and AD is opposite BC.' },
   { title: 'Match the Opposite Angle', type: 'angle', vertex: 'C', reference: 'A', degrees: 68, corner: 'C', along: 'DC',
     width: 420, height: 210, angleA: 68, start: -7, // angle C starts near 100 degrees
     location: 2, fish: 5, hintDelay: 6,
     prompt: 'In this parallelogram, ∠A = *68°*. What is the measure of ∠C?',
-    praise: "That's right! Opposite angles are equal, so ∠C = 68°.",
     hint: '∠C is opposite ∠A. What do you know about opposite angles?' },
   { title: 'Make the Adjacent Angle', type: 'supplementary', vertex: 'B', reference: 'A', degrees: 72, corner: 'B', along: 'AB',
     width: 420, height: 210, angleA: 72, start: 8, // angle B starts near 85 degrees
     location: 2, fish: 6, hintDelay: 6,
     prompt: 'In this parallelogram, ∠A = *72°*. What is the measure of ∠B?',
-    praise: 'Correct! 72° + 108° = 180°.',
     hint: '∠B is next to ∠A. Adjacent angles add up to 180°.' },
   { title: 'Balance the Diagonals', type: 'diagonals', metres: { AB: 6 }, corner: 'C', along: 'DC',
     width: 440, height: 210, lean: 50, start: -8, // along DC, so both diagonals' halves change as it slides
     location: 3, fish: 7, hintDelay: 7,
     prompt: 'Each diagonal is divided into two equal parts by the *other*.',
-    praise: 'Perfect! AO = OC, BO = OD, so the diagonals bisect each other.',
     hint: 'OC is the other half of AC, and OD is the other half of BD.' },
   { title: 'Final Catch', type: 'parallelogram', metres: { AB: 6 }, corner: 'D', along: 'BD',
     width: 400, height: 210, lean: 30, rotate: -7, start: -9, // slides along the diagonal, toward B
     location: 3, fish: 9, rare: true, hintDelay: 9,
     prompt: 'A *parallelogram* is a quadrilateral with two pairs of opposite sides parallel.',
-    praise: 'You *did* it!',
     hint: 'So, in any parallelogram, opposite sides are parallel and equal.' },
 ];
 

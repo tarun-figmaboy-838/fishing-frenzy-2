@@ -633,7 +633,7 @@ class Game {
   }
 
   // --- text delivery ------------------------------------------------------------
-  // The instruction plate (a prompt, praise or hint) comes word by word, in time with the voice
+  // The instruction plate (a prompt or hint) comes word by word, in time with the voice
   // when the line is read aloud, or at a reading pace when it isn't. Words pop in, stressed ones
   // boing, and the plate bounces as each new sentence starts. Returns how long that takes, in
   // seconds.
@@ -652,7 +652,7 @@ class Game {
   }
 
   // When each word of a voiced line is said: measured from its recording where the lesson measured it (the nets'
-  // prompts, praise and hints are its clips), else shared out over the recording by the words' lengths.
+  // prompts and hints are its clips), else shared out over the recording by the words' lengths.
   voicedTimes(words, text, seconds) {
     return this.audio.wordTimes('narrator', text, words) || spokenTimes(words, seconds);
   }
@@ -744,7 +744,7 @@ class Game {
     this.cornerSet();
   }
 
-  // The corner set right, the shape is the answer: the net locks with its praise and goes down by itself (checkNet), no
+  // The corner set right, the shape is the answer: the net locks, glowing, and goes down by itself (checkNet), no
   // button to press. Set anywhere else, Check is the child's - a checked wrong net goes down and tangles.
   cornerSet() {
     if (!this.net.touched) return;

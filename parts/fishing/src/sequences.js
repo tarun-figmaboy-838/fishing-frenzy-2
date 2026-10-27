@@ -287,8 +287,10 @@ async function letNetDown(game, token, from = null) {
 
 // --- the puzzle -------------------------------------------------------------------
 // A right frame: the corner (already on its exact place, the one stop that has the property)
-// locks with a click, the property lights up step by step and the praise is said, all while the
-// net goes down: the child dropped it now, for the fish under it, so nothing holds it back.
+// locks with a click, and no words say so - the shape does: the frame flashes, the property lights
+// up step by step, the outline runs round it (as the hook's open net's did) and every corner
+// sparkles, all while the net goes down: the child dropped it now, for the fish under it, so nothing
+// holds it back. The plate clears (its question is answered).
 function lockAnswer(game, result) {
   const { net, popo, fx, audio } = game;
   const level = LEVELS[state.level];
@@ -298,8 +300,11 @@ function lockAnswer(game, result) {
   fx.sparkle(snapped.x, snapped.y, 14);
   popo.react('happy', 1.2);
   net.showGlow(net.glowFor(level), level.type === 'parallelogram' ? 0.5 : 0.8);
+  net.traceOutline(0.55, 0.35, 0.6);
+  for (const p of net.points) { const at = net.toStage(p); fx.sparkle(at.x, at.y, 5); }
   audio.play('success');
-  game.instruct(level.praise);
+  audio.play('shimmer');
+  game.instruct('');
 }
 
 // After the hint the prompt returns, and the child carries on from the frame as they left it;
@@ -387,7 +392,7 @@ async function raiseNet(game, token, caught, ms) {
   winch.working = 0;
 }
 
-// Check: the frame is tested for the level's property. A right one locks with its praise and glows; either way the
+// Check: the frame is tested for the level's property. A right one locks and glows; either way the
 // net goes slowly down while the view, zoomed in for the drag, opens out again with it. Right, it sits open in the
 // water with Catch for the child; wrong, it tangles (tangled).
 async function checkNet(game) {
@@ -539,7 +544,7 @@ async function catchNow(game) {
 // closes into clears the water.
 const HAUL = 42;
 
-// Drop Net tests the frame for the level's property. A right one locks with its praise and goes
+// Drop Net tests the frame for the level's property. A right one locks and goes
 // down; a wrong one goes down all the same. In the water it nets whichever fish are under it as
 // it lands, so the child drops it as fish swim beneath. Hauled up, it closes into a bag around
 // its catch. A wrong net's catch breaks out; a right net that caught nothing comes up empty,
@@ -565,7 +570,7 @@ async function dropNet(game) {
     state.phase = PHASE.NET_LOWERING;
     net.locked = true;
     popo.squash = 0.07; // Popo takes hold of the wheel
-    // a right frame holds a moment, clicked into place and glowing as its praise begins, so the
+    // a right frame holds a moment, clicked into place and glowing, so the
     // child sees what was right before the net goes down
     await clock.wait(justLocked ? (reduced ? 300 : 650) : 200, token);
 
@@ -648,7 +653,7 @@ async function dropNet(game) {
     });
     winch.setRopeOut(-lift);
     winch.working = 0;
-    if (right) game.instruct(''); // the praise has been said; the catch speaks for itself
+    if (right) game.instruct(''); // (the catch speaks for itself)
 
     if (!right) {
       await netBreaks(game, caught, token);
@@ -669,7 +674,7 @@ async function dropNet(game) {
     game.confettiFrom(ring.x, ring.y + net.bottom() * 0.6);
     audio.play('combo3');
     game.storyCue('hop');
-    // the warm-up: Popo cheers each catch (the nets after the lesson have their praise instead)
+    // the warm-up: Popo cheers each catch (on the nets after the lesson the shape's own glow has said it: no words)
     const cheer = LEVELS[state.level].type === 'free' ? game.say(STORY.cheers[game.warmCatches % STORY.cheers.length], token) : null;
     if (cheer) cheer.catch(() => {});
     await clock.wait(fx.reduced ? 300 : 800, token);
