@@ -1043,7 +1043,7 @@ class Net {
     // the parallel marks at the middles of the marked sides
     // (each chevron's own points, as drawTicks draws them, and a little air)
     for (const [name, n] of Object.entries(this.markedSides || {})) {
-      const [i, j] = side(name), m = midpoint(c[i], c[j]), u = normalize(sub(c[j], c[i])), pts = [];
+      const [i, j] = side(name), [a, b] = (i + 1) % 4 === j ? [i, j] : [j, i], m = midpoint(c[i], c[j]), u = normalize(sub(c[b], c[a])), pts = [];
       for (let q = 0; q < n; q += 1) {
         const o = (q - (n - 1) / 2) * 13 * k, px = m.x + u.x * o, py = m.y + u.y * o;
         pts.push({ x: px - u.x * 9 * k - u.y * 9 * k, y: py - u.y * 9 * k + u.x * 9 * k }, { x: px + u.x * 6 * k, y: py + u.y * 6 * k }, { x: px - u.x * 9 * k + u.y * 9 * k, y: py - u.y * 9 * k - u.x * 9 * k });
@@ -1344,14 +1344,12 @@ class Net {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const k = this.textScale;
-    // (the marks on a pair point the same way, as parallel marks do: each side's direction is turned to agree with the
-    // first side's, whichever way round its letters are named)
-    let first = null;
+    // (every mark points clockwise round the net, A->B, B->C, C->D, D->A, the way its outline is traced, as the lesson
+    // marks them - whichever way round a side's letters are named)
     for (const name of sides) {
       const [i, j] = side(name);
-      let u = normalize(sub(c[j], c[i]));
-      if (!first) first = u;
-      else if (dot(u, first) < 0) u = times(u, -1);
+      const [p, q] = (i + 1) % 4 === j ? [i, j] : [j, i];
+      const u = normalize(sub(c[q], c[p]));
       const mid = midpoint(c[i], c[j]);
       for (let pass = 0; pass < 2; pass += 1) {
         ctx.lineWidth = (pass ? 3.4 : 7.5) * k;

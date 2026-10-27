@@ -1800,15 +1800,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     // ---- side markings: Fishing Frenzy's lesson's own marks (CONFIG.marks), from the vertices ----
     // For every side: the true midpoint m, the unit vector u along the side and n across it. Parallel arrows are open
-    // orange chevrons on a white halo (index.html), 11 deep and 22 tall, pointing along u - the same way on both sides of
-    // a pair (A->B and D->C, D->A and C->B): two back to back on AB, CD and one on AD, BC. Equal-length ticks are navy
+    // orange chevrons on a white halo (index.html), 11 deep and 22 tall, pointing along u - clockwise round the shape, the
+    // way the side's light runs (A->B, B->C, C->D, D->A): two back to back on AB, CD and one on AD, BC. Equal-length ticks are navy
     // strokes 24 long across the side: one on AB, CD and two on AD, BC. A side carrying both has its arrows MK.gap before
     // the midpoint and its ticks MK.gap after it; a side carrying one kind has it centred on the midpoint. Rebuilt every
     // frame from the vertices, so the marks stay on their sides through drags and moves.
     const pgNow = this.isPg(P);
     const showPar1 = !!f.par, showPar2 = !!(f.par2 || (task === 'dragB' && pgNow));
     const showTk = !!f.ticks;
-    const SIDES = { AB: [A, B], CD: [D, C], DA: [D, A], BC: [C, B] };
+    const SIDES = cw ? { AB: [A, B], BC: [B, C], CD: [C, D], DA: [D, A] } : { AB: [B, A], BC: [C, B], CD: [D, C], DA: [A, D] };
     const nArrows = { AB: showPar1 ? 2 : 0, CD: showPar1 ? 2 : 0, DA: showPar2 ? 1 : 0, BC: showPar2 ? 1 : 0 };
     // a parallelogram's top and bottom are equal too (one tick); a trapezium's equal legs get theirs alone (two)
     const nTicks = { AB: showTk && pgNow ? 1 : 0, CD: showTk && pgNow ? 1 : 0, DA: showTk ? 2 : 0, BC: showTk ? 2 : 0 };

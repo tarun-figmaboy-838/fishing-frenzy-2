@@ -324,9 +324,10 @@
         requestAnimationFrame(step);
       });
     },
-    // a double (bases) or single (the other pair) chevron at the middle of a side, pointing the way the side runs
+    // a double (bases) or single (the other pair) chevron at the middle of a side, pointing clockwise round the shape
+    // (A->B, B->C, C->D, D->A), the way its outline draws, as the lesson's board marks them
     chevPath(s, double) {
-      const a = P[SIDES[s][0]], b = P[SIDES[s][1]], u = unit(a, b), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, n = { x: -u.y, y: u.x };
+      const cw = { AB: 'AB', BC: 'BC', DC: 'CD', DA: 'DA' }[s], a = P[cw[0]], b = P[cw[1]], u = unit(a, b), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, n = { x: -u.y, y: u.x };
       const one = (c) => { const tip = { x: mx + u.x * (c + 5.5), y: my + u.y * (c + 5.5) }, back = { x: mx + u.x * c, y: my + u.y * c };
         return 'M' + f1(back.x - n.x * 5.5) + ',' + f1(back.y - n.y * 5.5) + ' L' + f1(tip.x) + ',' + f1(tip.y) + ' L' + f1(back.x + n.x * 5.5) + ',' + f1(back.y + n.y * 5.5); };
       return double ? one(-7) + ' ' + one(0.5) : one(-3);
