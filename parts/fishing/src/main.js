@@ -76,6 +76,7 @@ if (journey) {
     else if (name === 'resume') game.goOn();
     else if (name === 'title') game.backToTitle();
     else if (name === 'wake') game.wake();
+    else if (name === 'review') game.review = !!args; // (the journey's Back / Next bar used: each screen holds, sequences.js onward)
   });
   journey.onDispose(() => { game.dispose(); audio.hold(true); });
 }

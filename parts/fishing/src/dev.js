@@ -5,7 +5,7 @@
 if (new URLSearchParams(location.search).get('dev') !== '1') return;
 if (window.Journey && window.Journey.leaving) return; // opened on its own: on the way to the journey
 
-const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken, hook, afterHook, waveIn, welcome, AWAY } = PopoGame;
+const { state, PHASE, LEVELS, rowTo, celebrate, letNetDown, newToken, hook, afterHook, onward, waveIn, welcome, AWAY } = PopoGame;
 
 function game() {
   return window.popoDebug && window.popoDebug.game;
@@ -55,7 +55,7 @@ const JUMPS = [
     const g = game();
     begin(g);
     const token = newToken();
-    hook(g, token).then(() => afterHook(g, token)).catch(() => {});
+    hook(g, token).then(() => onward(g, token, () => afterHook(g, token))).catch(() => {});
   }],
   ['Wave in', () => {
     const g = game();

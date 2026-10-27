@@ -168,6 +168,7 @@
     if (f.status === 'ready') return;
     f.status = 'ready'; f.progress = 1;
     clearInterval(f.watch);
+    if (nav.holding) command(f, 'review', true); // (TEMPORARY: a part loaded after the Back / Next bar was used holds too)
     if (status.f === f) { status.hide(); veil.close(); } // (after Try again)
     f.waiters.splice(0).forEach((fn) => fn(f));
     // the game is up: the lesson loads behind it (not for ?start=fishing's first Play, unless the dev panel lists it)
@@ -558,8 +559,11 @@
   // ---------- TEMPORARY: Back / Next through every screen of the journey, for reviewing it (?nonav hides it) ----------
   // In the journey's order: the front page, the hook, each lesson screen, the eight nets, the end. Each goes by the dev
   // panel's jumps; where the journey is now is read from the part on top, so it follows the child's own play too.
+  // Once the bar has been used, every screen holds where it ends (`review`, told to both parts): a lesson screen no
+  // longer moves on by itself, the hook stays on its last line, a net stays caught - only Back / Next move on.
   const nav = {
     el: null,
+    holding: false,
     known: new Map(), // part id -> its screens' labels (kept when its frame goes, so the lesson stays in the order)
     want: -1, // the screen a tap went to, until the part on top shows it
     until: 0,
@@ -596,6 +600,10 @@
     go(step) {
       const order = this.order(), to = this.at(order) + step, o = order[to];
       if (!o) return;
+      if (!this.holding) {
+        this.holding = true;
+        frames.forEach((f) => { if (f.status === 'ready') command(f, 'review', true); });
+      }
       this.want = to;
       this.until = Date.now() + 6000;
       if (o.home) dev.frontPage(); else if (o.part === 'lesson') dev.jumpLesson(o.i); else dev.jumpFishing(o.i);

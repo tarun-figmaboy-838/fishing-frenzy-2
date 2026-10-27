@@ -205,10 +205,17 @@ async function opening(game, { arrived = false } = {}) {
     if (arrived) await clock.wait(game.fx.reduced ? 150 : 450, token);
     else await popoArrives(game, token);
     await hook(game, token);
-    await afterHook(game, token);
+    await onward(game, token, () => afterHook(game, token));
   } catch (e) {
     swallow(e);
   }
+}
+
+// On from a finished screen (the hook, a caught net) - unless the journey's Back / Next bar has been used (review):
+// then the screen holds where it ended, and only the bar moves on.
+async function onward(game, token, next) {
+  if (game.review) { if (state.phase !== PHASE.INTRO) state.phase = PHASE.LEVEL_COMPLETE; return; }
+  await next();
 }
 
 // Straight to the first parallelogram net, without the story (Play Again on the game's own page): its waters, its
@@ -546,7 +553,7 @@ async function catchNow(game) {
     game.storyCue('hop');
     await clock.wait(reduced ? 300 : 800, token);
     await collectFish(game, caught, token);
-    await nextLevel(game, token);
+    await onward(game, token, () => nextLevel(game, token));
   } catch (e) {
     swallow(e);
   }
@@ -693,7 +700,7 @@ async function dropNet(game) {
     await clock.wait(fx.reduced ? 300 : 800, token);
     await collectFish(game, caught, token);
     if (cheer) await cheer;
-    await nextLevel(game, token);
+    await onward(game, token, () => nextLevel(game, token));
   } catch (e) {
     swallow(e);
   }
@@ -1566,5 +1573,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
+Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
 })(window.PopoGame = window.PopoGame || {});

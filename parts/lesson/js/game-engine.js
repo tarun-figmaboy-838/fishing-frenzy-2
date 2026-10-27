@@ -85,6 +85,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.wantVoice(0);
     if (JOURNEY) {
       if (JOURNEY.params.has('debug') || JOURNEY.params.get('dev') === '1') window.lessonDebug = this; // for tests (as the fishing game's popoDebug), and the journey's Back / Next
+      // review: the journey's (temporary) Back / Next bar has been used, so a finished screen holds for it (maybeAdvance)
+      JOURNEY.onCommand((name, args) => { if (name === 'review') this.review = !!args; });
       if (JOURNEY.params.get('dev') === '1') JOURNEY.devScreens(this.steps().map((x, i) => ({ label: (i + 1) + ' ' + this.screenName(x), run: () => this.jumpTo(i) })));
       // the journey's Play has been tapped by the time the shell begins the lesson; begun for a ?dev=1 jump
       // (opts.jump), it leaves the opening out and the jump starts it
@@ -1061,11 +1063,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.react(CONFIG.swiftee.praise);
   }
   // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoNext) after the last line ends.
-  // Called whenever narration goes quiet; does nothing until the screen's task/check is done. Lesson complete stays.
+  // Called whenever narration goes quiet; does nothing until the screen's task/check is done. Lesson complete stays,
+  // and in review (the journey's Back / Next bar used) every screen stays.
   maybeAdvance(afterLine) {
     if (this.advId) { clearTimeout(this.advId); this.T.delete(this.advId); this.advId = null; }
     const st = this.cur(), i = this.state.step, tok = this.stepTok;
-    if (!this.state.done || st.end || i >= this.steps().length - 1) return;
+    if (this.review || !this.state.done || st.end || i >= this.steps().length - 1) return;
     // a running sequence (lengths pair by pair, supplementary pairs) finishes before the screen moves on
     const wait = Math.max(st.autoNext != null ? st.autoNext : CONFIG.flow.advanceMs, (this.seqEnd || 0) - Date.now());
     this.advId = this.tm(() => {
