@@ -27,6 +27,10 @@ const LOCATIONS = [
 // hook goes straight on to the first parallelogram net. The eight nets after the lesson teach the parallelogram.
 // Every line on the plate (a prompt, a hint) is one Swiftee has recorded - the lesson's own, or Fishing Frenzy's -
 // so the whole game is heard in her voice and Popo's only (voice-data.js). `both`: both pairs of sides light up.
+// Every prompt is what to do (drag this to make that: short, so its one-line plate stays readable on a phone, the
+// values given being on the net itself); `hints` are a wrong net's two lines, said after it tangles:
+// what is off and which way to go, [the part set is under, over] what it should be (Net.missFor reads which from the
+// frame itself, so a hint is always true there).
 const LEVELS = [
   { title: 'Warm-up', warmup: true, type: 'free', drops: 3, corner: 'C', along: 'DC',
     width: 420, height: 200, angleA: 90, start: 0, // Popo's net as it is: a rectangle, nothing to set
@@ -36,42 +40,42 @@ const LEVELS = [
     width: 440, height: 200, lean: 60, start: -5, // slides along AB (so AB stays parallel to CD), from the left of its place
     location: 0, fish: 3, hintDelay: 3.5,
     prompt: 'Drag vertex B to make BC *parallel* to AD.',
-    hint: 'Drag B to the right until BC leans the same way as AD.' },
+    hints: ['AB is shorter than CD. Make AB *longer*.', 'AB is longer than CD. Make AB *shorter*.'] },
   { title: 'Complete the Parallelogram', type: 'parallel', sides: ['AB', 'CD'], both: true, corner: 'C', along: 'BC',
     width: 440, height: 210, lean: -60, start: -6, // slides along BC (so BC stays parallel to AD), from B's side
     location: 0, fish: 4, hintDelay: 5,
-    prompt: 'What if we made the other pair of opposite sides *parallel* too?',
-    hint: 'Look for *parallel* sides!' },
+    prompt: 'Drag vertex C to make AB *parallel* to CD.',
+    hints: ['BC is shorter than AD. Make BC *longer*.', 'BC is longer than AD. Make BC *shorter*.'] },
   { title: 'Match the Opposite Side', type: 'length', side: 'CD', reference: 'AB', metres: { AB: 7 }, corner: 'C', along: 'DC',
     width: 420, height: 200, lean: 50, start: -6, // CD starts at about 5 cm
     location: 1, fish: 4, hintDelay: 5,
-    prompt: 'In this parallelogram, AB = *7 cm*. What is the length of CD?',
-    hint: 'CD is opposite AB. Opposite sides of a parallelogram are equal.' },
+    prompt: 'Drag vertex C to make CD *equal* to AB.',
+    hints: ['Opposite sides are equal. Make CD *longer*.', 'Opposite sides are equal. Make CD *shorter*.'] },
   { title: 'Use Both Side Properties', type: 'sides', metres: { AB: 8, BC: 5 }, corner: 'D', along: 'BD',
     width: 380, height: 230, lean: 60, start: -7, // slides along the diagonal, toward B (AB and BC stay as they are)
     location: 1, fish: 5, hintDelay: 6,
-    prompt: 'In this parallelogram, AB = *8 cm* and BC = *5 cm*. Find the lengths of CD and AD.',
-    hint: 'CD is opposite AB, and AD is opposite BC.' },
+    prompt: 'Drag vertex D so opposite sides are *equal*.',
+    hints: ['Opposite sides are equal. Make CD and AD *longer*.', 'Opposite sides are equal. Make CD and AD *shorter*.'] },
   { title: 'Match the Opposite Angle', type: 'angle', vertex: 'C', reference: 'A', degrees: 68, corner: 'C', along: 'DC',
     width: 420, height: 210, angleA: 68, start: -7, // angle C starts near 100 degrees
     location: 2, fish: 5, hintDelay: 6,
-    prompt: 'In this parallelogram, ∠A = *68°*. What is the measure of ∠C?',
-    hint: '∠C is opposite ∠A. What do you know about opposite angles?' },
+    prompt: 'Drag vertex C to make ∠C *equal* to ∠A.',
+    hints: ['Opposite angles are equal. Make ∠C *bigger*.', 'Opposite angles are equal. Make ∠C *smaller*.'] },
   { title: 'Make the Adjacent Angle', type: 'supplementary', vertex: 'B', reference: 'A', degrees: 72, corner: 'B', along: 'AB',
     width: 420, height: 210, angleA: 72, start: 8, // angle B starts near 85 degrees
     location: 2, fish: 6, hintDelay: 6,
-    prompt: 'In this parallelogram, ∠A = *72°*. What is the measure of ∠B?',
-    hint: '∠B is next to ∠A. Adjacent angles add up to 180°.' },
+    prompt: 'Drag vertex B so ∠A and ∠B add up to *180°*.',
+    hints: ['Adjacent angles add up to 180°. Make ∠B *bigger*.', 'Adjacent angles add up to 180°. Make ∠B *smaller*.'] },
   { title: 'Balance the Diagonals', type: 'diagonals', metres: { AB: 6 }, corner: 'C', along: 'DC',
     width: 440, height: 210, lean: 50, start: -8, // along DC, so both diagonals' halves change as it slides
     location: 3, fish: 7, hintDelay: 7,
-    prompt: 'Each diagonal is divided into two equal parts by the *other*.',
-    hint: 'OC is the other half of AC, and OD is the other half of BD.' },
+    prompt: 'Drag vertex C so the diagonals *bisect* each other.',
+    hints: ['Diagonals bisect each other. Make OC *longer*.', 'Diagonals bisect each other. Make OC *shorter*.'] },
   { title: 'Final Catch', type: 'parallelogram', metres: { AB: 6 }, corner: 'D', along: 'BD',
     width: 400, height: 210, lean: 30, rotate: -7, start: -9, // slides along the diagonal, toward B
     location: 3, fish: 9, rare: true, hintDelay: 9,
-    prompt: 'A *parallelogram* is a quadrilateral with two pairs of opposite sides parallel.',
-    hint: 'So, in any parallelogram, opposite sides are parallel and equal.' },
+    prompt: 'Drag vertex D to make a *parallelogram*.',
+    hints: ['Opposite sides are equal. Make CD *longer*.', 'Opposite sides are equal. Make CD *shorter*.'] },
 ];
 
 // The catch to go for over the eight nets, the Master Catch: the most a run can net is about 95 (the biggest bunch
@@ -88,9 +92,18 @@ function freshLevels(run) {
   LEVELS.splice(0, LEVELS.length, ...BASE_LEVELS.map((b) => {
     const l = { ...b };
     if (!run || b.warmup) return l;
-    l.width = Math.round(vary(b.width, 0.92, 1.08));
-    l.height = Math.round(vary(b.height, 0.92, 1.08));
-    if (b.lean !== undefined) l.lean = Math.round(vary(b.lean, 0.7, 1.3));
+    if (Object.keys(b.metres || {}).length > 1) {
+      // a net that gives more than one side's length (AB = 8 cm and BC = 5 cm) keeps its shape, only its size changes,
+      // so every length it gives stays true of it (AB sets the scale; reshaped, BC came out 4.8 to 5.4 cm)
+      const k = vary(1, 0.92, 1.08);
+      l.width = Math.round(b.width * k);
+      l.height = Math.round(b.height * k);
+      if (b.lean !== undefined) l.lean = Math.round(b.lean * k);
+    } else {
+      l.width = Math.round(vary(b.width, 0.92, 1.08));
+      l.height = Math.round(vary(b.height, 0.92, 1.08));
+      if (b.lean !== undefined) l.lean = Math.round(vary(b.lean, 0.7, 1.3));
+    }
     if (b.rotate !== undefined) l.rotate = b.rotate + Math.round((Math.random() - 0.5) * 6);
     l.start = Math.sign(b.start) * Math.max(4, Math.abs(b.start) + (Math.random() < 0.5 ? -1 : 1));
     l.location = (b.location + run) % LOCATIONS.length;

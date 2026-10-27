@@ -5,8 +5,9 @@ from a winch on his raft. Before he lowers it, the child fixes its shape: three 
 and the fourth slides along a track, stop by stop, until the net has the property the level asks for - as the drag
 net comes down the view zooms in on it, so the corner is set on a big net, and once it is set Check comes up (a pill,
 bottom right). Check sends the net slowly down while the view opens out again: a right net locks with no words - it
-flashes, lights its property and its outline runs round it, every corner sparkling - and sits open in the water with Catch for the child; a wrong one crumples into a
-tangle ("Whoopsie Doopsie!", the hint) and Try again winds it up, untangles it and brings it down in its starting
+flashes, lights its property and its outline runs round it, every corner sparkling - and sits open in the water with Catch for the child; a wrong one first shows what is off
+(the parts it compares pulse red, the corner shakes), then crumples into a tangle ("Whoopsie Doopsie!", and the hint:
+what is off and which way to go, e.g. "Opposite sides are equal. Make CD longer.") and Try again winds it up, untangles it and brings it down in its starting
 shape. Meanwhile three bunches of fish - three kinds, each its own count and size, each swimming its own way in its own
 lane, never into each other - roam the sea, so the child presses Catch when the bunch they want swims into the net: it
 closes into a bag (a potli) round them as it is hauled up, and the fish hop into the bucket; a net that closed on
@@ -140,16 +141,20 @@ The game is deployed as part of the journey: the repository's root is the static
   intro, puzzleReady, dragging, netLowering, catching, netRaising, netBreaking,
   levelComplete, transitioning, gameComplete. Pause is a flag over the top.
 - **Levels** (`src/levels.js`): the warm-up net (`type: 'free'`: the 420 × 200 frame the hook's
-  nets hang from; it is not played as a level), then eight nets, each teaching one property with its own check (`type`) and asking it as
-  the lesson asks it, in centimetres: 1 drag B to make BC parallel to AD, 2 make the other
-  pair (AB, CD) parallel too, 3 AB = 7 cm: CD, 4 AB = 8 cm and BC = 5 cm: CD and AD, 5 ∠A =
-  68°: ∠C, 6 ∠A = 72°: ∠B, 7 each diagonal halved by the other, 8 the definition of a
-  parallelogram, with no property named. Each level gives the solved net's width, height and lean (or the
+  nets hang from; it is not played as a level), then eight nets, each teaching one property with its own check (`type`), every prompt
+  an action, short (one line, readable on a phone), the values given on the net itself (in centimetres): 1 drag
+  vertex B to make BC parallel to AD, 2 drag C to make AB parallel to CD, 3 drag C to make CD equal to AB (7 cm),
+  4 drag D so opposite sides are equal (AB 8 cm, BC 5 cm), 5 drag C to make ∠C equal to ∠A (68°), 6 drag B so ∠A
+  and ∠B add up to 180° (∠A 72°), 7 drag C so the diagonals bisect each other, 8 drag D to make a parallelogram,
+  with no property named. Each says exactly what the net's check is, and every net's one right stop is a true
+  parallelogram. Each level gives the solved net's width, height and lean (or the
   angle at A), the corner that moves, the side or diagonal its track runs along (`along`; a
   diagonal runs toward the opposite corner) and how many stops from its place it starts, the
   side whose length in centimetres sets the measurement scale, its fish (3, 3, 4, 4, 5, 5, 6, 7, 9;
-  the sea holds three times as many, at most 22), the prompt and the hint a wrong
-  net gives. The final level's school is rare: golden, quicker, trailing glints.
+  the sea holds three times as many, at most 22), the prompt and the two hints a wrong
+  net gives (`hints`: [the part set is under, over] what it should be; `Net.missFor` reads which from the frame, so
+  the hint is always true there - tests checked every wrong stop of every net, its words and its way). A net that
+  gives two lengths (net 4) keeps its shape on Play Again, only its size changing, so both stay true. The final level's school is rare: golden, quicker, trailing glints.
 - **Geometry** (`src/geometry.js`, `src/net.js`): plain vector helpers (parallel by the
   normalised cross product, so vertical sides are no trouble; interior angles; the diagonals'
   intersection; area and self-intersection). Corners A, B, C, D in order make a parallelogram
@@ -204,10 +209,12 @@ The game is deployed as part of the journey: the repository's root is the static
   crane and Popo at his wheel, whole (`Popo.box`), so he stays in view beside his net: about 1.45x to 1.7x by net
   and screen; the corner moved, Check comes up as a pill bottom
   right (`UI.setAction`). Check
-  (`checkNet` in `src/sequences.js`) tests the frame: a right one locks with a click and no words (the plate clears),
+  (`checkNet` in `src/sequences.js`) tests the frame: a wrong one first shows what is off, while the view is still in on it - the
+  parts the level compares pulse red twice (`Net.showMiss`: the sides, or the angles ringed, or the diagonals' halves)
+  and the corner shakes; a right one locks with a click and no words (the plate clears),
   flashes, lights its property and traces its outline with every corner sparkling, and either way the net goes slowly down while the view opens out again with it. A wrong net
   crumples into a tangle in the water (`Net.tangle`: its corners pull in and twist, so the mesh itself crumples; the
-  fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the level's hint shows and Try again comes up:
+  fish under it dart away), Popo is baffled ("Whoopsie Doopsie!"), the hint shows and Try again comes up:
   it winds the net up, untangles it while it's bundled, and lets it down in the shape the level started with.
 - **The catch.** A right net sits open in the water with Catch (`catchNow`). Three bunches of fish (`bunchesFor` in
   `src/levels.js`: never one of fewer than eight: a shoal of 8 to 16 small fish, a school of 8 to 11 middling ones,
@@ -233,8 +240,8 @@ The game is deployed as part of the journey: the repository's root is the static
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every
   other line (the narrator's, every prompt and hint) is Swiftee's studio voice - Fishing
-  Frenzy's own clips, and the lesson's (`../lesson/assets/vo/`, loaded by path and played from
-  their first word). Each net's lines are worded exactly as she recorded them. For the lesson's clips the plate's
+  Frenzy's own clips, the lesson's (`../lesson/assets/vo/`, loaded by path and played from
+  their first word), and the nets' own prompts and hints (`assets/voice/net-*.mp3`, recorded in her studio voice). Each net's lines are worded exactly as she recorded them. For the lesson's clips the plate's
   words come at the lesson's own measure of when each word is said (`../lesson/js/vo_lines.js`, `AudioEngine.wordTimes`),
   and every voiced line's words follow the voice's playhead (`AudioEngine.voiceTime`), so they never drift from it.
 - **HUD.** Narration follows the Fishing Frenzy games: the instruction (a prompt or hint)

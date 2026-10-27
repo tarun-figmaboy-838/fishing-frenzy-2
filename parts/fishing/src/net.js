@@ -37,6 +37,7 @@ function bagRadius(t) {
   return 0.02 + 0.33 * Math.sin(Math.PI * s ** 0.75) ** 0.6;
 }
 const GLOW = '#8ff7a8';
+const MISS = '#ff6b5e'; // (a wrong net's parts that don't match: drawMiss)
 // Wound up, the net gathers under its ring: a tenth as wide and under half as long, hanging
 // from the knot where the sling meets.
 const GATHER = { x: 0.9, y: 0.55 };
@@ -111,6 +112,7 @@ class Net {
     this.wobble = 0;      // a shake of the corner after a wrong check
     this.flash = 0;       // the frame lights up when the shape comes right
     this.glow = null;     // the property highlight: steps played one after another
+    this.miss = null;     // a wrong net: the parts that don't match pulse red, the same way
     this.hintPulse = 0;   // the measurements swell for a moment as a hint
     this.touched = false; // the child has moved the corner this level
     this.textScale = 1;   // the knob's arrows, the marks and arcs grow on small screens (see Game.labelScale)
@@ -149,6 +151,7 @@ class Net {
     this.touched = false;
     this.flash = 0;
     this.glow = null;
+    this.miss = null;
     this.pouch = 0;
     this.drawn = null;
     this.tangle = 0; // a wrong net crumpled into a tangle (framed)
@@ -464,6 +467,30 @@ class Net {
     this.glow = { steps, each, t: 0 };
   }
 
+  // A wrong net, as it is: the parts the level compares (they pulse red at Check, each step twice: drawMiss) and
+  // whether the part the child sets is over what it should be - the longer, wider or bigger side of its place - which
+  // picks the level's hint (levels.js `hints`: [under, over]). Read from the frame itself, so the hint is always true.
+  missFor(level) {
+    const m = (name) => this.metres(name), twice = (steps) => steps.flatMap((s) => [s, s]);
+    switch (level.type) {
+      case 'parallel': { // the other pair (already parallel): the side the corner pulls, against its opposite
+        const pair = level.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD'], set = pair.find((n) => n.includes(level.corner));
+        const opposite = pair.find((n) => n !== set);
+        return { steps: twice([{ sides: pair }]), over: m(set) > m(opposite) };
+      }
+      case 'length': return { steps: twice([{ sides: [level.reference, level.side] }]), over: m(level.side) > level.metres[level.reference] };
+      case 'sides': return { steps: [{ sides: ['AB', 'CD'] }, { sides: ['BC', 'AD'] }], over: m('CD') > level.metres.AB };
+      case 'angle': return { steps: twice([{ angles: [level.reference, level.vertex] }]), over: this.angle(level.vertex) > level.degrees };
+      case 'supplementary': return { steps: twice([{ angles: [level.reference, level.vertex] }]), over: this.angle(level.vertex) > 180 - level.degrees };
+      case 'diagonals': { const h = this.halves(); return { steps: [{ halves: 'AC' }, { halves: 'BD' }], over: h.OC > h.AO }; }
+      default: return { steps: twice([{ sides: ['AB', 'CD'] }]), over: m('CD') > m('AB') };
+    }
+  }
+
+  showMiss(steps, each = 0.6) {
+    this.miss = { steps, each, t: 0 };
+  }
+
   glowLength(level) {
     return this.glowFor(level).length * (level.type === 'parallelogram' ? 0.5 : 0.8);
   }
@@ -474,6 +501,7 @@ class Net {
     if (this.flash > 0) this.flash = Math.max(0, this.flash - dt / 0.7);
     if (this.hintPulse > 0) this.hintPulse = Math.max(0, this.hintPulse - dt);
     if (this.glow && (this.glow.t += dt) >= this.glow.steps.length * this.glow.each) this.glow = null;
+    if (this.miss && (this.miss.t += dt) >= this.miss.steps.length * this.miss.each) this.miss = null;
     if (this.burst && (this.burst.t += dt) > 0.7) this.burst = null;
     // the moving corner glides onto its stop in a few frames: a quick click, not a jump
     if (this.drawn) {
@@ -528,7 +556,7 @@ class Net {
   drawAll(ctx, ring, pulley, wet) {
     const frame = this.framed();
     const corners = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => this.toStage(this.meshPoint(u, v, frame)));
-    const showing = !this.furl && (!this.locked || this.glow);
+    const showing = !this.furl && (!this.locked || this.glow || this.miss);
     ctx.save();
     ctx.globalAlpha = this.alpha * (wet ? 0.9 : 1);
     ctx.lineCap = 'round';
@@ -575,6 +603,7 @@ class Net {
     }
     if (showing) this.drawMeasurements(ctx, corners);
     if (this.glow) this.drawGlow(ctx, corners);
+    if (this.miss) this.drawMiss(ctx, corners);
     if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]); // (over the marks, under the knob)
     if (this.outline) this.drawOutline(ctx, corners);
     if (this.furl < 1) {
@@ -1351,14 +1380,16 @@ class Net {
 
   // An angle as the lesson draws it: a wedge filled in the corner's own colour, rimmed in white, and its degrees just
   // beyond it along the bisector, in that colour (gold while the child sets it).
-  drawAngle(ctx, c, letter, value, live = false, fill = null) {
-    const i = corner(letter);
-    const v = c[i];
+  // An angle's wedge: its corner, where its arc starts and how far it sweeps (the interior angle, never the reflex one).
+  wedge(c, letter) {
+    const i = corner(letter), v = c[i];
     const a1 = Math.atan2(c[(i + 3) % 4].y - v.y, c[(i + 3) % 4].x - v.x);
     const a2 = Math.atan2(c[(i + 1) % 4].y - v.y, c[(i + 1) % 4].x - v.x);
-    let sweep = a2 - a1;
-    sweep = Math.atan2(Math.sin(sweep), Math.cos(sweep)); // the interior angle, never the reflex one
-    const radius = 44 * this.textScale;
+    return { v, a1, sweep: Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1)), radius: 44 * this.textScale };
+  }
+
+  drawAngle(ctx, c, letter, value, live = false, fill = null) {
+    const { v, a1, sweep, radius } = this.wedge(c, letter);
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(v.x, v.y);
@@ -1454,7 +1485,15 @@ class Net {
 
   // The property highlight: sides, angles or diagonal halves light up, one step at a time.
   drawGlow(ctx, c) {
-    const g = this.glow;
+    this.drawLit(ctx, c, this.glow, GLOW);
+  }
+
+  // A wrong net's parts that don't match, pulsing red the same way.
+  drawMiss(ctx, c) {
+    this.drawLit(ctx, c, this.miss, MISS);
+  }
+
+  drawLit(ctx, c, g, colour) {
     const index = Math.min(g.steps.length - 1, Math.floor(g.t / g.each));
     const local = (g.t - index * g.each) / g.each;
     const step = g.steps[index];
@@ -1462,7 +1501,7 @@ class Net {
     ctx.globalAlpha *= Math.sin(local * Math.PI) * 0.9;
     if (step.sides) {
       ctx.lineWidth = 22;
-      ctx.strokeStyle = GLOW;
+      ctx.strokeStyle = colour;
       ctx.beginPath();
       for (const name of step.sides) {
         const [i, j] = side(name);
@@ -1475,13 +1514,22 @@ class Net {
       ctx.stroke();
     }
     if (step.angles) {
-      for (const letter of step.angles) this.drawAngle(ctx, c, letter, `${this.degreesShown(letter)}°`, false, GLOW);
+      for (const letter of step.angles) {
+        this.drawAngle(ctx, c, letter, `${this.degreesShown(letter)}°`, false, colour);
+        // ...ringed in the same colour, so it reads over any wedge's own
+        const { v, a1, sweep, radius } = this.wedge(c, letter);
+        ctx.beginPath();
+        ctx.arc(v.x, v.y, radius + 7, a1, a1 + sweep, sweep < 0);
+        ctx.lineWidth = 9;
+        ctx.strokeStyle = colour;
+        ctx.stroke();
+      }
     }
     if (step.halves || step.diagonals) {
       const [a, b, cc, d] = c;
       const o = intersection(a, cc, b, d) || midpoint(a, cc);
       ctx.lineWidth = 14;
-      ctx.strokeStyle = GLOW;
+      ctx.strokeStyle = colour;
       ctx.beginPath();
       if (step.halves !== 'BD') { ctx.moveTo(a.x, a.y); ctx.lineTo(cc.x, cc.y); }
       if (step.halves !== 'AC') { ctx.moveTo(b.x, b.y); ctx.lineTo(d.x, d.y); }

@@ -392,9 +392,11 @@ async function raiseNet(game, token, caught, ms) {
   winch.working = 0;
 }
 
-// Check: the frame is tested for the level's property. A right one locks and glows; either way the
-// net goes slowly down while the view, zoomed in for the drag, opens out again with it. Right, it sits open in the
-// water with Catch for the child; wrong, it tangles (tangled).
+// Check: the frame is tested for the level's property. A right one locks and glows; a wrong one first shows what is
+// off while the view is still in on it - the parts that don't match pulse red and the corner shakes - and the hint
+// that will follow is read from the frame as it is (Net.missFor). Either way the net goes slowly down while the view,
+// zoomed in for the drag, opens out again with it. Right, it sits open in the water with Catch for the child; wrong,
+// it tangles (tangled) and the hint says which way to go.
 async function checkNet(game) {
   const token = newToken();
   const { net, popo, fx, audio, ui } = game;
@@ -404,17 +406,28 @@ async function checkNet(game) {
     const right = result.ok;
     ui.showHandle(false);
     ui.setAction('hidden');
+    const level = LEVELS[state.level];
+    let hint = level.hint;
     if (right) lockAnswer(game, result);
-    else { game.instruct(''); audio.stopVoice(); }
+    else {
+      game.instruct('');
+      audio.stopVoice();
+      const miss = net.missFor(level);
+      if (level.hints) hint = level.hints[miss.over ? 1 : 0];
+      net.showMiss(miss.steps);
+      net.wobble = 1;
+      audio.play('wobble');
+      popo.react('think', 1.2);
+    }
     game.netRight = right;
     state.phase = PHASE.CHECKING;
     net.locked = true;
     popo.squash = 0.07; // Popo takes hold of the wheel
-    await clock.wait(right ? (reduced ? 200 : 320) : 150, token);
+    await clock.wait(right ? (reduced ? 200 : 320) : (reduced ? 500 : net.miss.steps.length * net.miss.each * 1000), token);
     const down = reduced ? 1100 : 2400;
     game.focusOut(down);
     await lowerNet(game, token, down);
-    if (!right) { await tangled(game, token); return; }
+    if (!right) { await tangled(game, token, hint); return; }
     state.phase = PHASE.FISHING;
     state.idleTime = 0;
     ui.setAction('catch');
@@ -424,10 +437,10 @@ async function checkNet(game) {
 }
 
 // A wrong net can't hold a shape: in the water the mesh crumples into a tangle (the fish under it dart away), Popo
-// is baffled ("Whoopsie Doopsie!"), the hint shows and Try again is the child's.
-async function tangled(game, token) {
+// is baffled ("Whoopsie Doopsie!"), the hint (what is off and which way to go: checkNet) shows and Try again is the
+// child's.
+async function tangled(game, token, hint) {
   const { net, popo, fx, audio, ui } = game;
-  const level = LEVELS[state.level];
   state.phase = PHASE.TANGLED;
   state.misses += 1;
   for (const f of state.fish) if (!f.gone && !f.waiting && !f.caught && net.contains(f)) f.startle();
@@ -448,7 +461,7 @@ async function tangled(game, token) {
   audio.play('wobble');
   await game.say(STORY.oops, token);
   popo.react('think', 1.4);
-  game.instruct(level.hint);
+  game.instruct(hint);
   ui.setAction('again');
 }
 
