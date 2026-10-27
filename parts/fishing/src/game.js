@@ -300,6 +300,7 @@ class Game {
   // already, after the warm-up; with ?start=lesson or a dev jump he goes now), and the lesson's camera moves its view.
   backdrop() {
     this.backdropOn = true;
+    if (state.phase === PHASE.TITLE) this.title.dismiss(); // (a jump from the banner: its sign went on drawing behind the card)
     this.hookFx = null; // (the hook's outline: the lesson draws its shape now)
     this.audio.hold(true);
     this.ui.el.hud.hidden = true;
