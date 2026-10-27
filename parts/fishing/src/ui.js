@@ -551,26 +551,42 @@ class UI {
     return { x: (r.left + r.width / 2 - h.left) / this.scale, y: (r.top + r.height / 2 - h.top) / this.scale };
   }
 
-  // The end screen's one button, springing in at the bottom right once The End is up.
+  // The end screen's one button, springing in at the foot of its card once the count is done.
   showAgain(show) {
     this.el.again.hidden = !show;
     if (show) this.el.again.focus({ preventScroll: true });
   }
 
-  // The End's catch card: `n` fish against the Master Catch `goal`, the bar filling to it, and the line: how many
-  // more it would take, or, done, the Master Catch itself. Returns whether the goal was reached.
-  showGoal(n, goal) {
-    const card = document.getElementById('goal'), won = n >= goal;
-    document.getElementById('goal-n').textContent = n;
-    card.querySelector('.goal-of').textContent = `/ ${goal}`;
-    document.getElementById('goal-line').textContent = won ? `Master Catch! You caught ${n} fish!` : `${goal - n} more for the Master Catch. Play again?`;
-    card.classList.toggle('won', won);
+  // The End's card: the catch against `goal`, coming in at nought (countGoal counts it up, endGoal finishes it).
+  showGoal(goal) {
+    const card = document.getElementById('goal');
+    card.classList.remove('won');
+    document.getElementById('goal-of').textContent = goal;
+    document.getElementById('goal-line').textContent = '';
+    this.countGoal(0, goal);
     card.hidden = false;
-    const fill = document.getElementById('goal-fill');
-    fill.style.width = '0';
-    void fill.offsetWidth;
-    fill.style.width = `${Math.min(100, (100 * n) / goal).toFixed(1)}%`;
+  }
+
+  // the catch so far, and the bar filled to it (full at the goal), its fish riding the tip
+  countGoal(n, goal) {
+    document.getElementById('goal-n').textContent = n;
+    document.getElementById('goal-bar').style.setProperty('--k', `${Math.min(100, (100 * n) / goal).toFixed(1)}%`);
+  }
+
+  // The count is done: reached, the star at the bar's end lights and the line says so; short of it, the line asks
+  // for more. Returns whether the goal was reached.
+  endGoal(n, goal) {
+    const won = n >= goal;
+    this.countGoal(n, goal);
+    document.getElementById('goal').classList.toggle('won', won);
+    document.getElementById('goal-line').textContent = won ? 'You reached the goal!' : 'Think you can catch more next time?';
     return won;
+  }
+
+  // the trophy's middle as a stage point (the curtain's own units: no view zoom), where the card's bubbles rise from
+  goalCup() {
+    const r = document.querySelector('#goal .goal-cup').getBoundingClientRect(), h = this.el.hits.parentElement.getBoundingClientRect();
+    return { x: (r.left + r.width / 2 - h.left) / this.scale, y: (r.top + r.height / 2 - h.top) / this.scale };
   }
 
   hideGoal() {

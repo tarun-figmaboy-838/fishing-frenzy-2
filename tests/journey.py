@@ -75,7 +75,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            away: Math.abs(g.popo.travelShift) > 1600, handle: !$('handle').hidden,
            action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), fit: +(g.focus.zoom || 0).toFixed(2), bearIn: (() => { const b = g.popo.box(), f = g.focus, sx = (x) => f.ox + (x - f.ox) * f.z; return sx(b.x0) >= 0 && sx(b.x1) <= PopoGame.STAGE_W; })(), tangle: +g.net.tangle.toFixed(2),
            inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length,
-           goal: !$('goal').hidden, goalLine: $('goal-line').textContent, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
+           goal: !$('goal').hidden, goalLine: $('goal-line').textContent, goalN: +$('goal-n').textContent, landed: g.landed, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
   return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
@@ -482,7 +482,8 @@ def journey(p, engine, size, url):
     page.wait_for_timeout(400)
     r.shot('7-the-end')
     check(fs['phase'] == 'gameComplete' and r.shell()['lesson'] is None, f'{r.tag}: after level 8, The End and Play Again (no lesson loaded yet)')
-    check(fs['goal'] and 'Master Catch' in fs['goalLine'], f'{r.tag}: The End shows the catch against the Master Catch (75): "{fs["goalLine"]}"')
+    check(fs['goal'] and fs['goalN'] == fs['landed'] and fs['goalLine'] in ('You reached the goal!', 'Think you can catch more next time?'),
+          f'{r.tag}: The End\'s card counts the catch up against the goal (75): {fs["goalN"]} fish, "{fs["goalLine"]}"')
     widths_before = fs['widths']
     r.tap_el(part(page, 'fishing'), '#btn-again')
     fs2 = r.fish()

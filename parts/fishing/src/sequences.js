@@ -1453,9 +1453,10 @@ async function celebrate(game, token) {
   await theEnd(game, token);
 }
 
-// The End, as in Fishing Frenzy: a circle closes in on Popo and his raft over the live scene and
-// glides with them to the middle, everything around it a warm, slowly turning sunburst; "The End"
-// pops in letter by letter while Popo laughs, then Play Again springs in at the bottom right.
+// The End, as in Fishing Frenzy: a circle closes in on Popo and his raft over the live scene,
+// everything around it a warm, slowly turning sunburst; it glides with him to the middle as he laughs,
+// and closes on him, a cartoon's ending. Then the card comes in on the sunburst: the catch counts up against the
+// goal as its bar fills, bubbles rise from its trophy, and Play Again springs in.
 async function theEnd(game, token) {
   const { popo, audio, ui, fx } = game;
   const reduced = fx.reduced;
@@ -1470,26 +1471,50 @@ async function theEnd(game, token) {
   ui.el.pause.style.visibility = 'hidden'; // nothing to pause on the end screen
   audio.play('iris');
   await clock.tween(reduced ? 400 : 950, token, (t) => { ending.r = 1500 + (r - 1500) * ease.inOut(t); });
-  const to = { x: STAGE_W / 2, y: Math.min(STAGE_H - r - 12, Math.max(575, r + 235)) };
+  // it glides with him to the middle (the sunburst's rays then spread from behind the card), and closes on him there
+  const to = { x: STAGE_W / 2, y: STAGE_H / 2 };
   await clock.tween(reduced ? 300 : 750, token, (t) => {
     const k = ease.inOut(t);
     ending.pan = { x: (to.x - centre.x) * k, y: (to.y - centre.y) * k };
   });
+  await clock.wait(reduced ? 200 : 700, token);
+  ending.laugh = false;
+  audio.play('iris');
+  await clock.tween(reduced ? 250 : 450, token, (t) => { ending.r = r * (1 - ease.inOut(t)); });
   game.announceComplete();
-  ending.titleAt = ending.t;
   audio.play('tada');
   ui.setCatch(game.landed, 'cheer');
-  await clock.wait(reduced ? 600 : 1300, token);
-  // the run's catch against the Master Catch: the reason to play again, or the prize
-  const won = ui.showGoal(game.landed, GOAL);
+  await clock.wait(reduced ? 100 : 250, token);
+  // the run's catch against the goal (the Master Catch): it counts up from nought as the bar fills, ticking every few
+  // fish; then a puff of bubbles from the trophy, or, the goal reached, a stream of them and the star lit
+  ui.showGoal(GOAL);
+  audio.play('bloop');
+  await clock.wait(reduced ? 200 : 650, token);
+  const n = game.landed;
+  let shown = 0;
+  if (!reduced && n) {
+    await clock.tween(Math.min(1800, 600 + n * 16), token, (t) => {
+      const k = Math.round(n * ease.out(t));
+      if (k === shown) return;
+      if (Math.floor(k / 3) > Math.floor(shown / 3)) audio.play('count');
+      shown = k;
+      ui.countGoal(k, GOAL);
+    });
+  }
+  const won = ui.endGoal(n, GOAL);
+  const cup = ui.goalCup();
   audio.play(won ? 'tada' : 'bloop');
-  if (won) { game.confettiFrom(STAGE_W * 0.18, STAGE_H * 0.78); audio.play('combo3'); }
-  await clock.wait(reduced ? 300 : 700, token);
+  game.confettiFrom(cup.x, cup.y, won ? 26 : 10);
+  if (won) {
+    audio.play('combo3');
+    for (let i = 1; i <= 2; i += 1) clock.wait(i * 320, token).then(() => game.confettiFrom(cup.x, cup.y, 18)).catch(() => {});
+  }
+  await clock.wait(reduced ? 300 : 600, token);
   ui.showAgain(true);
   audio.play('bloop');
 }
 
-// Play Again: The End fades as the circle closes to nothing, the game is set up afresh out of
+// Play Again: the card goes and the circle (if it's open) closes to nothing, the game is set up afresh out of
 // sight, and the circle opens again on the first net (Game.updateEnding) - or, in the journey
 // (title), on the banner from its start.
 async function closeCurtain(game, { title = false } = {}) {
@@ -1504,7 +1529,6 @@ async function closeCurtain(game, { title = false } = {}) {
   try {
     await clock.tween(game.fx.reduced ? 250 : 500, token, (t) => {
       ending.r = from * (1 - t * t * t);
-      ending.fade = 1 - t;
     });
   } catch (e) {
     swallow(e);

@@ -63,12 +63,24 @@
             <span class="label">Check</span>
           </button>
         </div>
-        <!-- The End: the run's catch against the Master Catch (75), the reason to play again -->
-        <div id="goal" class="goal" hidden role="status">
-          <span class="goal-kicker">YOUR CATCH</span>
-          <span class="goal-count"><span id="goal-n">0</span><span class="goal-of">/ 75</span></span>
-          <span class="goal-bar" aria-hidden="true"><span id="goal-fill" class="goal-fill"></span><span class="goal-star">★</span></span>
-          <span id="goal-line" class="goal-line"></span>
+        <!-- The End: a card on the sunburst once the circle has closed on Popo - a trophy, the run's catch against the goal
+             (GOAL, 75) counting up, a bar filling to it, one line and Play Again -->
+        <div id="goal" class="goal" hidden>
+          <span class="goal-cup" aria-hidden="true"><i class="goal-twinkle">✦</i><i class="goal-twinkle">✦</i><svg viewBox="0 0 64 64"><defs><linearGradient id="cup-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff27a"/><stop offset=".5" stop-color="#ffcb33"/><stop offset="1" stop-color="#f58c12"/></linearGradient></defs><path d="M19 15H10a8.5 8.5 0 0 0 10 13M45 15h9a8.5 8.5 0 0 1-10 13" fill="none" stroke="#3b1d00" stroke-width="4.4" stroke-linecap="round"/><path d="M19 15H10a8.5 8.5 0 0 0 10 13M45 15h9a8.5 8.5 0 0 1-10 13" fill="none" stroke="#ffcb33" stroke-width="2" stroke-linecap="round"/><path d="M17 8h30v14a15 15 0 0 1-30 0z" fill="url(#cup-gold)" stroke="#3b1d00" stroke-width="2.6" stroke-linejoin="round"/><path d="M28 36.5h8l1.5 8.5h-11z" fill="#ffa71f" stroke="#3b1d00" stroke-width="2.6" stroke-linejoin="round"/><rect x="18" y="45" width="28" height="9" rx="2.5" fill="url(#cup-gold)" stroke="#3b1d00" stroke-width="2.6"/><path d="M32 13.5l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.4-4.6 2.4.9-5.1-3.8-3.6 5.2-.8z" fill="#fff8d8"/><path d="M21 11v10a10 10 0 0 0 4 8" fill="none" stroke="#fffbe0" stroke-width="2.2" stroke-linecap="round" opacity=".75"/></svg></span>
+          <span class="goal-title">Great Fishing, Popo!</span>
+          <span class="goal-sub">You helped Popo catch…</span>
+          <span class="goal-stats">
+            <span class="goal-stat mine"><span class="goal-label">Your catch</span><span class="goal-num"><span class="goal-ic" aria-hidden="true"><svg viewBox="0 0 44 28"><path d="M3 14c6-9 19-11 27-4l10-7v22l-10-7c-8 7-21 5-27-4z" fill="#ffd23f" stroke="#3b1d00" stroke-width="2.6" stroke-linejoin="round"/><circle cx="11.5" cy="11.5" r="2.6" fill="#3b1d00"/></svg></span><span id="goal-n">0</span></span><span class="goal-unit">fish</span></span>
+            <span class="goal-stat aim"><span class="goal-label">Goal</span><span class="goal-num"><span class="goal-ic" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fff" stroke="#3b1d00" stroke-width="2.6"/><circle cx="16" cy="16" r="8.5" fill="#2bb3a3" stroke="#3b1d00" stroke-width="2.2"/><circle cx="16" cy="16" r="3.6" fill="#fff" stroke="#3b1d00" stroke-width="2"/></svg></span><span id="goal-of">75</span></span><span class="goal-unit">fish</span></span>
+          </span>
+          <span id="goal-bar" class="goal-bar" aria-hidden="true"><span class="goal-fill"></span><span class="goal-rider"><svg viewBox="0 0 44 28"><path d="M3 14c6-9 19-11 27-4l10-7v22l-10-7c-8 7-21 5-27-4z" fill="#ffd23f" stroke="#3b1d00" stroke-width="2.6" stroke-linejoin="round"/><circle cx="11.5" cy="11.5" r="2.6" fill="#3b1d00"/></svg></span><span class="goal-star">★</span></span>
+          <span id="goal-line" class="goal-line" role="status"></span>
+          <span class="goal-go">
+            <button id="btn-again" class="drop-btn again-btn" type="button" hidden>
+              <span class="badge" aria-hidden="true"><svg viewBox="0 0 44 40"><path d="M31.5 25a11 11 0 1 1-1.6-11.4" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/><path d="M32.5 6.5v8.6h-8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span>Play Again</span>
+            </button>
+          </span>
         </div>
         <div class="actions">
           <button id="btn-drop" class="drop-btn" type="button" hidden>
@@ -78,10 +90,6 @@
           <button id="btn-next" class="drop-btn next-btn" type="button" hidden>
             <span class="badge" aria-hidden="true"><svg viewBox="0 0 44 40"><path d="M11 20h20M23 11l9 9-9 9" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span>Next</span>
-          </button>
-          <button id="btn-again" class="drop-btn again-btn" type="button" hidden>
-            <span class="badge" aria-hidden="true"><svg viewBox="0 0 44 40"><path d="M31.5 25a11 11 0 1 1-1.6-11.4" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/><path d="M32.5 6.5v8.6h-8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span>Play Again</span>
           </button>
         </div>
       </div>

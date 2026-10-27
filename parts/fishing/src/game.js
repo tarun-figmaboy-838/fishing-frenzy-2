@@ -87,9 +87,6 @@ function drawSunburst(ctx, x, y, r, turn) {
   }
 }
 
-// Twinkles either side of The End on the end screen, from its middle.
-const ENDING_TWINKLES = [[-420, -50], [-370, 40], [-440, 95], [400, -60], [440, 30], [370, 100], [-300, -110]];
-
 // Where a line's words have got to, on the voice's own clock while it moves (so a slow frame never lets them drift from
 // it). A clock that stands still - the audio device not started yet, or interrupted, while the context still says it is
 // running - never holds the words: after half a second the game's clock takes over, and once the voice's clock moves
@@ -126,7 +123,7 @@ class Game {
     this.deep = [];        // far fish in the deep water, scenery only (refreshDeep)
     this.delivery = null;  // the words of the instruction plate still to appear
     this.netRight = false; // the frame has been proven right this level; only the timing is left
-    this.ending = null;    // the end screen: its circle, the scene's pan, The End (see theEnd)
+    this.ending = null;    // the end screen: its circle and the scene's pan (see theEnd)
     this.landed = 0;       // fish counted this game (the counter at the top left)
     this.fliers = [];      // caught fish flying from the bucket up to the counter
     this.confetti = [];    // bubble confetti: a catch's bright bubbles bursting up and popping
@@ -1592,7 +1589,7 @@ class Game {
     this.drawPoof(ctx);
     this.fx.drawFront(ctx);
     this.net.drawWords(ctx); // (the net's measures and letters over all of it: nothing in the scene ever covers them)
-    this.drawConfetti(ctx);
+    if (!this.ending) this.drawConfetti(ctx); // (on the end screen they rise on the curtain: drawCurtain)
     this.drawFliers(ctx);
     ctx.restore();
     if (this.title.visible) this.title.draw(ctx);
@@ -1792,8 +1789,8 @@ class Game {
     ctx.restore();
   }
 
-  // The curtain over the scene: a warm sunburst everywhere but the circle, slowly turning rays, a
-  // dark and cream frame round the circle, and The End above it. The scene itself is moved
+  // The curtain over the scene: a warm sunburst everywhere but the circle, slowly turning rays, and a
+  // dark and cream frame round the circle. The scene itself is moved
   // (panScene) so what's in the circle glides with it.
   drawCurtain() {
     const e = this.ending;
@@ -1807,59 +1804,7 @@ class Game {
     const y = e.y + e.pan.y;
     const r = Math.max(0, e.r);
     drawSunburst(ctx, x, y, r, this.fx.reduced ? 0 : e.t * 0.08);
-    if (e.titleAt !== undefined) this.drawTheEnd(ctx, x, Math.max(120, y - r - 115), e.t - e.titleAt, e.fade ?? 1);
-  }
-
-  // "The End" in big outlined gold letters, each popping in a moment after the last and then
-  // bobbing, with twinkles either side.
-  drawTheEnd(ctx, cx, cy, t, alpha) {
-    const text = 'The End';
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.font = '700 168px Fredoka, "Arial Rounded MT Bold", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineJoin = 'round';
-    const widths = [...text].map((ch) => ctx.measureText(ch).width);
-    let left = cx - widths.reduce((sum, w) => sum + w, 0) / 2;
-    [...text].forEach((ch, i) => {
-      const k = Math.min(1, Math.max(0, (t - i * 0.08) / 0.4));
-      const at = left + widths[i] / 2;
-      left += widths[i];
-      if (!k || ch === ' ') return;
-      const bob = this.fx.reduced ? 0 : Math.sin(this.fx.t * 2.6 + i * 0.8) * 6;
-      ctx.save();
-      ctx.translate(at, cy + bob);
-      const s = ease.outBack(k);
-      ctx.scale(s, s);
-      ctx.lineWidth = 18;
-      ctx.strokeStyle = '#3b1d00';
-      ctx.strokeText(ch, 0, 0);
-      const fill = ctx.createLinearGradient(0, -70, 0, 70);
-      fill.addColorStop(0, '#fffbe9');
-      fill.addColorStop(1, '#ffc94d');
-      ctx.fillStyle = fill;
-      ctx.fillText(ch, 0, 0);
-      ctx.restore();
-    });
-    if (t > 0.6 && !this.fx.reduced) {
-      ENDING_TWINKLES.forEach(([dx, dy], i) => {
-        const k = Math.max(0, Math.sin(t * 1.7 + i * 1.9)) ** 4;
-        if (k < 0.02) return;
-        const x = cx + dx;
-        const y = cy + dy;
-        const r = 6 + k * 12;
-        ctx.fillStyle = `rgba(255, 233, 168, ${k})`;
-        ctx.beginPath();
-        ctx.moveTo(x, y - r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.quadraticCurveTo(x, y, x, y + r);
-        ctx.quadraticCurveTo(x, y, x - r, y);
-        ctx.quadraticCurveTo(x, y, x, y - r);
-        ctx.fill();
-      });
-    }
-    ctx.restore();
+    this.drawConfetti(ctx); // (the card's bubbles, over the sunburst)
   }
 }
 

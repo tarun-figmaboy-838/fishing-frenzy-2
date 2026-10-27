@@ -15,8 +15,8 @@ and the one being set), nothing that clutters it or gives the answer away. It is
 scripted story, nothing to press: Popo's nets tangle until a leaping fish knocks one into a parallelogram, which stays
 open and makes the catch; Swiftee names the shape and "Let's find out!" carries the net's outline into the lesson);
 after the lesson the wave brings Popo back, Swiftee welcomes him, and eight nets teach the parallelogram's properties
-one by one, then the end screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and "The End" pops
-in. Only two voices are heard: Popo's, and Swiftee's for everything else.
+one by one, then the end screen of Fishing Frenzy: a circle closes in on Popo over a warm sunburst and closes on him,
+and the catch card comes in. Only two voices are heard: Popo's, and Swiftee's for everything else.
 
 ## Run
 
@@ -112,9 +112,9 @@ The game is deployed as part of the journey: the repository's root is the static
   saved up). Play pops the logo away, the fish leap back into the lake, and the story begins
   with Popo already in place.
 - **The Master Catch.** 75 fish (`GOAL` in `src/levels.js`); the counter shows only the catch so far. The most a run
-  can net is about 95, so it takes the biggest bunch each time, caught whole. The End shows the run's catch on a
-  card with a bar to the star: short of it, how many more it would take and "Play again?"; reached, "Master Catch!",
-  with confetti. Play Again brings new nets (`freshLevels`): the same eight lessons in the same order, but each net its
+  can net is about 95, so it takes the biggest bunch each time, caught whole. The End's card shows the run's catch
+  against it, counting up as a bar fills to a star: short of it, "Think you can catch more next time?"; reached, the
+  star lights, "You reached the goal!", and a stream of bubbles rises from the trophy. Play Again brings new nets (`freshLevels`): the same eight lessons in the same order, but each net its
   own shape, a little wider or taller, leaning more or less, the corner starting elsewhere on its track, the final net
   turned a little differently, and the tour of the waters starting one lake on, so a second game is never the first
   again (in the journey too: the game's frame stays, so it counts the runs).
@@ -128,7 +128,10 @@ The game is deployed as part of the journey: the repository's root is the static
   catch!" and the end screen (`theEnd` in `src/sequences.js`, drawn on `#curtain` by
   `Game.drawCurtain`), as in Fishing Frenzy: a circle closes in on Popo and his raft over the
   live scene and glides with them to the middle, everything around it a warm, slowly turning
-  sunburst; "The End" pops in letter by letter while Popo laughs, then Play Again springs in.
+  sunburst, and closes on him as he laughs. Then the card pops in (`UI.showGoal`, in the HUD's look: a cream face,
+  dark outline and lip): a gold trophy in turning light over its top edge, "Great Fishing, Popo!" on a ribbon, "You
+  helped Popo catch…", the catch and the goal on two tiles, a jelly bar with a fish riding its tip and a star badge
+  at its end, the line, and Play Again the card's width, springing in once the count is done.
   Play Again closes the circle, sets the game up afresh out of sight and opens it again on
   level 1. The page gets a `popo:complete` event (and a `postMessage` when framed).
 - **Phases** (`src/state.js`): one phase at a time decides what input is allowed: title,
