@@ -889,17 +889,18 @@ async function reshapeNet(game, token, ms, to) {
   net.swing = 0;
 }
 
-// One wrong try: the crank, down into the water, the tangle, a little "wah-wah" and Popo's puzzled tilt, and up it
-// comes, tangled. `pace` under 1 is quicker.
+// One wrong try: the crank, down into the water, the tangle, a little "wah-wah" and Popo's puzzled tilt, a moment
+// tangled in the water, and up it comes, tangled. `pace` under 1 is quicker.
 async function wrongTry(game, token, pull, pace) {
   const { popo, audio, fx } = game;
   const q = fx.reduced ? 0.6 : 1;
-  await readyNet(game, token, 420 * pace * q);
-  await lowerNet(game, token, 1450 * pace * q);
-  await tangleNet(game, token, 1050 * pace * q, pull);
+  await readyNet(game, token, 450 * pace * q);
+  await lowerNet(game, token, 1800 * pace * q);
+  await tangleNet(game, token, 1700 * pace * q, pull);
   audio.play('fail');
   popo.react('think', 1.6);
-  await raiseNet(game, token, [], 1150 * pace * q);
+  await clock.wait(450 * pace * q, token);
+  await raiseNet(game, token, [], 1400 * pace * q);
 }
 
 // H6: a fish swims up under the net, leaps, and its nose bumps corner C: the corner swings over onto `to` (B + D - A,
@@ -908,11 +909,16 @@ async function fishBumpsCorner(game, token, to) {
   const { net, fx, audio } = game;
   const wl = game.waterline, corner = () => net.toStage(net.points[2]), q = fx.reduced;
   const c0 = corner();
-  // (one of the sea's own small fish, the size of the school that follows it into the net)
-  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], c0.x + 300, wl + 130, -1, 0.5);
+  // (a giant of the sea's own fish, four times the school that follows it into the net: its leap is the moment to watch)
+  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], 0, 0, -1, 2);
+  fish.x = c0.x + 300 + fish.w;
+  fish.y = wl + 130 + fish.h / 2;
   game.leapers.push(fish);
+  // its nose, from its middle (the art faces right; dir turns it and pitch tilts it, as Fish.draw does): the leap tops
+  // out with the nose on the corner, however big the fish
+  const nose = (pitch) => { const a = pitch * fish.dir; return { x: fish.dir * 0.45 * fish.w * Math.cos(a), y: fish.dir * 0.45 * fish.w * Math.sin(a) }; };
   try {
-    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + 80, y: wl + 16 };
+    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + fish.w * 0.5 + 30, y: wl + fish.h * 0.15 };
     await clock.tween(q ? 400 : 800, token, (t) => {
       const k = ease.inOut(t);
       fish.x = start.x + (launch.x - start.x) * k;
@@ -921,12 +927,12 @@ async function fishBumpsCorner(game, token, to) {
       if (Math.random() < 0.3) fx.puff(fish.x + fish.w * 0.4, fish.y, 1, 1);
     });
     audio.play('leap');
-    fx.splash(launch.x, wl, false);
-    const from = { x: fish.x, y: fish.y };
-    await clock.tween(q ? 250 : 380, token, (t) => {
+    fx.splash(launch.x, wl, true);
+    const from = { x: fish.x, y: fish.y }, n = nose(-0.55);
+    await clock.tween(q ? 250 : 460, token, (t) => {
       const c = corner(), k = 1 - (1 - t) ** 2;
-      fish.x = from.x + (c.x + fish.w * 0.3 - from.x) * k;
-      fish.y = from.y + (c.y + 8 - from.y) * k;
+      fish.x = from.x + (c.x - n.x - from.x) * k;
+      fish.y = from.y + (c.y - n.y - from.y) * k;
       fish.pitch = -0.85 + 0.3 * t;
     });
     // the bump
@@ -940,7 +946,7 @@ async function fishBumpsCorner(game, token, to) {
       fish.x = fall.x + 80 * t;
       fish.y = fall.y + 440 * t * t;
       fish.pitch = 1.1 * t;
-      if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); audio.play('splashSmall'); }
+      if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); fx.ripple(fish.x, wl + 4, 1.4); audio.play('splashBig'); } // (a big fish, a big splash)
     });
     net.points[2] = { ...to };
     net.swing = 0;
@@ -1053,35 +1059,37 @@ async function hook(game, token) {
     await clock.wait(q ? 100 : 700, token);
     await readyNet(game, token, q ? 300 : 520);
     await h2;
-    // H3: down it goes; its corners pull unevenly, it twists and tangles; up it comes, tangled
-    await lowerNet(game, token, q ? 900 : 1500);
-    await tangleNet(game, token, q ? 500 : 1150, N.pulls[0]);
+    // H3: down it goes; its corners pull unevenly, one after another, it twists and tangles, and it hangs there a
+    // moment, tangled, for the child to see; up it comes, tangled (each step slow enough to follow)
+    await lowerNet(game, token, q ? 900 : 2000);
+    await tangleNet(game, token, q ? 500 : 1900, N.pulls[0]);
     audio.play('fail');
     popo.react('think', 2);
+    await clock.wait(q ? 200 : 600, token);
     const h3 = say(H.h3);
-    await raiseNet(game, token, [], q ? 800 : 1250);
+    await raiseNet(game, token, [], q ? 800 : 1500);
     await h3;
-    // H4: two more shapes, quicker each time, as the narrator says so
+    // H4: two more shapes, each a little quicker, as the narrator says so (but never too quick to see)
     const h4 = say(H.h4);
-    await reshapeNet(game, token, q ? 350 : 560, hookNet(net, N.wrong[1]));
-    await wrongTry(game, token, N.pulls[1], 0.62);
-    await reshapeNet(game, token, q ? 300 : 440, hookNet(net, N.wrong[2]));
-    await wrongTry(game, token, N.pulls[2], 0.48);
+    await reshapeNet(game, token, q ? 350 : 800, hookNet(net, N.wrong[1]));
+    await wrongTry(game, token, N.pulls[1], 0.9);
+    await reshapeNet(game, token, q ? 300 : 700, hookNet(net, N.wrong[2]));
+    await wrongTry(game, token, N.pulls[2], 0.8);
     await h4;
     // H5: Popo looks at his tangled net and wonders; then he shakes it out
     popo.react('think', 2.6);
     audio.play('hmm');
     await say(H.h5);
-    await reshapeNet(game, token, q ? 350 : 620, hookNet(net, N.wrong[2]));
+    await reshapeNet(game, token, q ? 350 : 800, hookNet(net, N.wrong[2]));
     // H6: a fish leaps and knocks corner C onto the parallelogram's place; Popo sees it change
-    await clock.wait(q ? 100 : 350, token);
+    await clock.wait(q ? 100 : 500, token);
     await fishBumpsCorner(game, token, hookNet(net, N.right)[2]);
     popo.react('think', 1.1);
     audio.play('bloop');
-    await clock.wait(q ? 200 : 650, token);
+    await clock.wait(q ? 200 : 900, token);
     // ...and lets it down again: this time it stays open (no twist, no tangle), and its edge is outlined for a moment
-    await readyNet(game, token, q ? 250 : 380);
-    await lowerNet(game, token, q ? 900 : 1600);
+    await readyNet(game, token, q ? 250 : 500);
+    await lowerNet(game, token, q ? 900 : 2000);
     net.traceOutline(0.55, 0.35, 0.6);
     audio.play('shimmer');
     for (const p of net.points) { const st = net.toStage(p); fx.sparkle(st.x, st.y, 4); }
