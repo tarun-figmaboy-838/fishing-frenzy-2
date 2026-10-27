@@ -1942,9 +1942,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const Vk = P[k], drag = dk === k;
       // noDots hides the corner dots, but never the handle of a corner the learner can drag. As in Fishing Frenzy's
       // lesson: white dots ringed in blue; a corner named in the voice-over grows gold with a soft glow (css .vdot.on);
-      // the corner to drag is a little bigger, ringed in teal, and pulses until it has been moved (.drag-cue)
+      // the corner to drag is a touch bigger, ringed in teal, and beats gently until it has been moved (.drag-cue)
       const gold = !!em['v' + k];
-      g['v' + k] = { x: r1(Vk.x), y: r1(Vk.y), r: vOn(k) && (!f.noDots || drag) ? (drag ? 9 : 7) + (gold ? 6 : 0) : 0,
+      g['v' + k] = { x: r1(Vk.x), y: r1(Vk.y), r: vOn(k) && (!f.noDots || drag) ? (drag ? 8 : 7) + (gold ? 3 : 0) : 0,
         c: gold ? '#ffab00' : drag ? PU : PAL.dot, w: gold || drag ? 4 : 3,
         cls: (gold && vOn(k) ? 'on' : '') + (drag && !s.moved && !s.dragging ? ' drag-cue' : '') };
       const tapV = task === 'tapEq' && !s.done;

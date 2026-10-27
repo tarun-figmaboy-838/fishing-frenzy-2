@@ -330,7 +330,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* a named corner: the dot grows gold with a soft gold glow; the corner to drag pulses gently with a gold glow (as there) */
 .vdot.on{filter:drop-shadow(0 0 5px rgba(255,196,0,.95))}
 .vdot.drag-cue{transform-box:fill-box;transform-origin:center;animation:dragCue 1.4s ease-in-out 3}
-@keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.45);filter:drop-shadow(0 0 8px rgba(255,196,0,.95))}}
+@keyframes dragCue{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,196,0,0))}50%{transform:scale(1.22);filter:drop-shadow(0 0 6px rgba(255,196,0,.9))}}
 /* an angle to tap: the wedge itself beats gently out from its corner, brighter at the top of each beat */
 /* an angle named before its mark is drawn: its wedge peeks in, soft, while it is said */
 .wedge.peek{opacity:.6;animation:wedgePeek .3s ease-out both}
