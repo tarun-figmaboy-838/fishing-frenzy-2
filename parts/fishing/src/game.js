@@ -153,7 +153,6 @@ class Game {
     this.breakEnds = null;    // the lesson's break, while it plays
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
-    this.awaitingNext = null; // Next is up (the warm-up's end): its tap moves the story on
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
     this.hookFx = null;       // the hook's way into the lesson, over the scene (sequences.js netToLesson, drawHookFx)
     this.camera = { zoom: 1, pan: 1 }; // the lesson's camera over this lake (setCamera)
@@ -229,7 +228,6 @@ class Game {
     this.ui.showPause(false);
     this.ui.showAgain(false);
     this.ui.hideGoal();
-    this.ui.hideNext();
     this.ui.hideHand();
     this.ui.showHandle(false);
     this.ui.setDrop('hidden');
@@ -237,7 +235,6 @@ class Game {
     this.focusReset();
     this.swiftee = null;
     this.wave = null;
-    this.awaitingNext = null;
     this.warmCatches = 0;
     this.hookFx = null;
     this.ui.fadeHud(false);
@@ -473,26 +470,6 @@ class Game {
     if (this.hookFx) this.hookFx.fading = true;
   }
 
-  // Next is up beside Swiftee: resolves on its tap (next)
-  awaitNext(token) {
-    return new Promise((resolve) => {
-      this.awaitingNext = { resolve, token };
-      this.nextNudge = 3;
-      this.ui.showNext();
-      this.audio.play('bloop');
-    });
-  }
-
-  next() {
-    const w = this.awaitingNext;
-    if (!w || state.paused) return;
-    this.awaitingNext = null;
-    this.ui.hideNext();
-    this.audio.play('ui');
-    this.endLine(false);
-    if (isCurrent(w.token)) w.resolve();
-  }
-
   // The lesson is over: the game wakes, and after the first net goes on to the next (the break's end).
   goOn() {
     this.ui.fadeHud(false);
@@ -514,8 +491,6 @@ class Game {
     this.lessonAfter = false;
     this.afterLesson = false;
     this.breakEnds = null;
-    this.awaitingNext = null;
-    this.ui.hideNext();
     this.swiftee = null;
     this.wave = null;
     this.audio.hold(false);
@@ -657,20 +632,6 @@ class Game {
     return this.audio.wordTimes('narrator', text, words) || spokenTimes(words, seconds);
   }
 
-  // The prompt read again (the first hint): its words stay on the plate and each gives a little
-  // bounce as it is said, so the child can follow along. (A prompt still arriving is delivered
-  // afresh instead.)
-  reread(text) {
-    const shown = this.ui.delivered;
-    if (this.delivery || !shown || shown.plate !== this.ui.el.instruction || !shown.words.length) {
-      this.instruct(text);
-      return;
-    }
-    const seconds = this.speak(text);
-    const times = seconds ? this.voicedTimes(shown.words, text, seconds) : readingTimes(shown.words, READ_PACE);
-    this.delivery = { times, next: 0, t: 0, bounce: true, src: seconds ? this.audio.voiceSource : null };
-  }
-
   // The words follow the voice's own playhead while it plays (so a slow frame never lets them drift from it), and the
   // game's clock otherwise.
   updateDelivery(dt) {
@@ -678,8 +639,7 @@ class Game {
     if (!d) return;
     d.t = voiceClock(d, this.audio.voiceTime(d.src), dt, d.t);
     while (d.next < d.times.length && d.t >= d.times[d.next]) {
-      if (d.bounce) this.ui.bounceWord(d.next);
-      else this.ui.showWord(d.next);
+      this.ui.showWord(d.next);
       d.next += 1;
     }
     if (d.next >= d.times.length) this.delivery = null;
@@ -1384,15 +1344,6 @@ class Game {
     this.rideWaves(dt);
     if (this.poof && (this.poof.t += dt) > 0.6) this.poof = null;
     if (this.swiftee) this.swiftee.update(dt);
-    // waiting for Next, Swiftee gives a little hop and a chirp now and then
-    if (this.awaitingNext && this.swiftee && !state.paused) {
-      this.nextNudge -= dt;
-      if (this.nextNudge <= 0) {
-        this.nextNudge = 3.4;
-        this.swiftee.hop();
-        this.audio.play('chirp');
-      }
-    }
     this.updateDialogue(dt);
     this.updateDelivery(dt);
     if (this.ending) this.updateEnding(dt);

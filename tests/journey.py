@@ -71,7 +71,7 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            clock: PopoGame.clock.time, hud: !$('hud').hidden, start: !$('screen-start').hidden, armed: !$('btn-play').disabled,
            again: !$('btn-again').hidden, dialogue: g.dialogue ? g.dialogue.who : null, ending: !!g.ending, title: g.title.visible,
            ok: g.net.check().ok, stop: g.net.stopAt, rotate: !$('rotate-hint').hidden, ownPanel: !!document.querySelector('.dev-panel'),
-           lessonAfter: g.lessonAfter, next: !$('btn-next').hidden, swiftee: !!g.swiftee, wave: !!g.wave,
+           lessonAfter: g.lessonAfter, swiftee: !!g.swiftee, wave: !!g.wave,
            away: Math.abs(g.popo.travelShift) > 1600, handle: !$('handle').hidden,
            action: $('btn-action').hidden ? null : $('btn-action').dataset.mode, drop: !$('btn-drop').hidden, zoom: +g.focus.z.toFixed(2), fit: +(g.focus.zoom || 0).toFixed(2), bearIn: (() => { const b = g.popo.box(), f = g.focus, sx = (x) => f.ox + (x - f.ox) * f.z; return sx(b.x0) >= 0 && sx(b.x1) <= PopoGame.STAGE_W; })(), tangle: +g.net.tangle.toFixed(2),
            inside: s.fish.filter((f) => !f.gone && !f.waiting && !f.caught && g.net.contains(f)).length,
@@ -88,7 +88,7 @@ HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net
   const school = s.fish.filter((f) => f.lane && f.lane.speed === 0);
   return { line: g.dialogue ? g.dialogue.who + ':' + g.dialogue.words.map((w) => w.text).join(' ') : '', tangle: n.tangle,
            par: level(v(0, 1), v(3, 2)) && level(v(0, 3), v(1, 2)), valid: PopoGame.geo.isValidQuad(p), under: n.drop > 0 && n.pouch === 0,
-           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('btn-next').hidden || !$('handle').hidden,
+           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden,
            school: school.length, schoolCaught: school.filter((f) => f.caught).length, fx: !!g.hookFx, cam: [g.camera.zoom, g.camera.pan],
            hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
 # every line the game says, as it says it (installed before Play, so none is missed however quick)
@@ -437,7 +437,7 @@ def journey(p, engine, size, url):
     # ---------- the net's outline becomes the lesson's first shape: the lesson dissolves in over it ----------
     st = r.shell()
     fs = r.fish()
-    check(not st['veil'] and fs['caught'] > 0 and not fs['wave'] and not fs['next'],
+    check(not st['veil'] and fs['caught'] > 0 and not fs['wave'],
           f'{r.tag}: the lesson dissolves in over the net\'s outline, the catch kept', f"{fs['caught']} fish")
     ls = until(r.lesson, lambda s: s['started'], 3, 'the lesson starts on its first shape at once')
     check(True, f'{r.tag}: the lesson starts on its first shape at once (no seashell opening)')

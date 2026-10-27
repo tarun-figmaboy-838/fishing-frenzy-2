@@ -365,12 +365,6 @@ class Net {
     this.drawn = null;
   }
 
-  // The frame as its solved parallelogram, held still.
-  showSolved() {
-    this.points = this.solved.map((p) => ({ ...p }));
-    this.locked = true;
-  }
-
   solve(at) {
     this.setHandle(at);
     this.locked = true;
@@ -406,16 +400,6 @@ class Net {
 
   degreesShown(letter) {
     return Math.round(this.angle(letter));
-  }
-
-  // A side's slope: how many degrees it rises from level, left to right (falling is negative),
-  // whole degrees from -89 to 90. Two sides are parallel exactly when their slopes match.
-  slopeShown(name) {
-    const v = this.sideOf(name);
-    let a = Math.atan2(-v.y, v.x) * 180 / Math.PI;
-    while (a > 90) a -= 180;
-    while (a <= -90) a += 180;
-    return Math.round(a) || 0;
   }
 
   halvesShown() {
@@ -489,10 +473,6 @@ class Net {
 
   showMiss(steps, each = 0.6) {
     this.miss = { steps, each, t: 0 };
-  }
-
-  glowLength(level) {
-    return this.glowFor(level).length * (level.type === 'parallelogram' ? 0.5 : 0.8);
   }
 
   update(dt) {

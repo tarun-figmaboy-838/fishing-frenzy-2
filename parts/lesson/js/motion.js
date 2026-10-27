@@ -298,19 +298,6 @@
       if (now || !G || reduced) { gone(); return; }
       add(() => G.to([m.g, m.dot, m.ring], { opacity: 0, duration: 0.35, onComplete: gone }));
     },
-    // a right answer: a star and "+1" pop up over the shape and float away (the fishing game's "+3" over a catch)
-    starPop(x, y) {
-      if (!G || reduced || !this.fx()) return 0;
-      const g = this.mk('g', { 'class': 'math-star' }), origin = x + ' ' + (y - 14);
-      this.mk('text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': 44, 'font-weight': 800, 'font-family': "'Baloo 2', Nunito, system-ui, sans-serif", fill: '#ffd23f', stroke: '#8a4a00', 'stroke-width': 3, 'paint-order': 'stroke', text: '★ +1' }, g);
-      add(() => G.timeline({ onComplete: () => g.remove() })
-        .set(g, { scale: 0.4, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, scale: 1.15, duration: 0.3, ease: 'back.out(2.5)', svgOrigin: origin })
-        .to(g, { scale: 1, duration: 0.2, svgOrigin: origin }, 0.3)
-        .to(g, { y: -70, duration: 1.1, ease: 'sine.out' }, 0.3)
-        .to(g, { opacity: 0, duration: 0.4 }, 1.0));
-      return 1400;
-    },
     pop(cx, cy) {
       if (!G || reduced) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];

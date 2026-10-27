@@ -91,8 +91,8 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   marks come in with their side's light (`mark`: the side is traced clockwise as it is said, its arrows popping on as
   the light passes them - screens 5 and 7), and for adjacent angles a copy of one slides down the side
   and turns beside the other, the two filling a large half-disc on the straight line with its 180° (`supp`); each runs
-  slowly enough to follow, one pair after another, and the screen stays until the last has been seen through; a
-  checkpoint answered right pops a star over the shape. Screen 1's shape is drawn once by the pen and stays: no
+  slowly enough to follow, one pair after another, and the screen stays until the last has been seen through.
+  Screen 1's shape is drawn once by the pen and stays: no
   screen rebuilds it. The yellow marker pen redraws a side only when a cue lights it; a side a word names just grows.
 - **The voice** (`docs/VOICEOVER.md`): every line is a recorded clip in Swiftee's studio voice; words appear as the
   clip's own playhead reaches them, and each clip starts just before its first word. One voice: while the recordings are

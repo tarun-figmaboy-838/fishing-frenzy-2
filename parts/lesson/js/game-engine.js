@@ -166,7 +166,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   componentDidUpdate() {
     this.markSounds();
     this.fitBubble();
-    if (window.Motion && Motion.sweepWedges) { Motion.sweepWedges(); Motion.glideMarks(); } // marks just shown sweep open / glide in (as Fishing Frenzy's)
   }
 
   // sounds for marks that appear with the board: parallel chevrons / equal ticks (a tick as they pop on) and angle arcs
@@ -839,17 +838,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.poke();
     this.interject(this.curLine);
   }
-  toggleMute() {
-    const m = !this.state.muted;
-    this.setState({ muted: m });
-    if (m) this.cancelSpeech();
-  }
 
   // ---------- idle hints ----------
-  needsInput() {
-    const st = this.cur();
-    return this.state.started && !this.state.done && this.asks(st);
-  }
   // A quiet spell brings the pointing hand (armHand), never the voice again: an instruction is said once, as its screen
   // opens (as in Fishing Frenzy's lesson)
   armIdle() { this.armHand(); }
@@ -1343,13 +1333,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const v = Math.round((px / this.S) * 10) / 10;
     return (Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1)) + ' cm';
   }
-  inter(A, D, B, C) {
-    const x1 = A.x, y1 = A.y, x2 = D.x, y2 = D.y, x3 = B.x, y3 = B.y, x4 = C.x, y4 = C.y;
-    const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (Math.abs(den) < 1e-6) return null;
-    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
-    return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
-  }
   toSvg(svg, e) {
     try {
       const m = svg.getScreenCTM();
@@ -1772,7 +1755,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     g.ol = { d: dsp(!!(bd && bd.settle) || !!st.assemble) };
     // the named side (as in Fishing Frenzy's lesson): a sunflower-yellow marker redraws it, a glowing pen tip running
-    // ahead of it, while the side is lit or the voice names it (css .hl / .hlp)
+    // ahead of it, while the side is lit or the voice names it (css .hl)
     const hlCls = (k) => 'hl' + (lit[k] && edgeOn(k) ? ' on' : ''); // (a side a word names only grows bolder: .edge.emph)
     g.eAB = seg(A, B, edgeOn('AB'), { c: baseCol('AB'), cls: eCls('AB'), hl: hlCls('AB') });
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
@@ -1928,7 +1911,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const RW = R + 3.5 / zs, ws = { x: Vk.x + u.x * RW, y: Vk.y + u.y * RW }, we = { x: Vk.x + v.x * RW, y: Vk.y + v.y * RW };
       (this.arcR = this.arcR || {})[k] = RW; // (screen 24's protractor traces each angle out to its wedge's edge)
       const show = arcSet.indexOf(k) >= 0, peek = !show && !!em['a' + k] && vOn(k); // (named before it is drawn: it peeks in)
-      // when several angles come in together they sweep open one after another (Motion.sweepWedges, by .d0-.d3)
+      // when several angles come in together their values fade in one after another (css .d0-.d3)
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
       g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + r1(RW) + ',' + r1(RW) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
         d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
@@ -1987,14 +1970,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (dk) {
       // the arrow lies on the corner's own track, just past it (B slides along the line of AB), clear of its letter
       const Vk = P[dk], y0 = r1(Vk.y), x = r1(Vk.x + 82);
-      g.halo = { x: r1(Vk.x), y: r1(Vk.y), d: 'none' }; // (no ring round it: the corner itself pulses, .drag-cue)
       g.arw = {
         p: 'M' + (x - 26) + ',' + y0 + ' L' + (x + 26) + ',' + y0,
         h: 'M' + (x - 40) + ',' + y0 + ' L' + (x - 27) + ',' + (y0 - 7) + ' L' + (x - 27) + ',' + (y0 + 7) + ' Z M' + (x + 40) + ',' + y0 + ' L' + (x + 27) + ',' + (y0 - 7) + ' L' + (x + 27) + ',' + (y0 + 7) + ' Z',
         d: dsp(!s.moved && !s.dragging)
       };
     } else {
-      g.halo = { x: 0, y: 0, d: 'none' };
       g.arw = { p: 'M0,0', h: 'M0,0', d: 'none' };
     }
     // labels: a fixed set of slots (hidden ones get "off") so each tag keeps its element and

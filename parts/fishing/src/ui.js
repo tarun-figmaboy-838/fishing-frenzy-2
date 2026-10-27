@@ -66,7 +66,7 @@ class UI {
       instruction: $('instruction'), instructionText: $('instruction-text'), instructionSay: $('instruction-say'), drop: $('btn-drop'),
       sound: $('btn-sound'), pause: $('btn-pause'),
       pauseOverlay: $('overlay-pause'), resume: $('btn-resume'), restart: $('btn-restart'),
-      again: $('btn-again'), next: $('btn-next'), action: $('btn-action'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
+      again: $('btn-again'), action: $('btn-action'), scene: $('scene'), catch: $('catch'), catchCount: $('catch-count'), catchBadge: $('catch-badge'),
       rotate: $('rotate-hint'), speech: $('speech'), caption: $('caption'),
     };
     this.handlers = {};
@@ -86,7 +86,6 @@ class UI {
     this.unzoom = null; // the game's: a pointer on the zoomed-in view back to stage coordinates (Game.applyFocus)
     this.zoomed = null; // ...and a stage point to where the zoomed-in view shows it
     this.el.again.addEventListener('click', h('again'));
-    this.el.next.addEventListener('click', h('next'));
     this.wireHandle();
   }
 
@@ -258,24 +257,7 @@ class UI {
     el.classList.add('say');
   }
 
-  // The middle of Drop Net, as a stage point, for the hint hand.
-  dropPoint() {
-    const r = this.el.drop.getBoundingClientRect();
-    const h = this.el.hits.getBoundingClientRect();
-    return { x: (r.left + r.width / 2 - h.left) / this.scale, y: (r.top + r.height / 2 - h.top) / this.scale };
-  }
-
   // --- story lines -----------------------------------------------------------
-  // Next (the warm-up's end, as in Fishing Frenzy): it pops in beside Swiftee's "Let's find out!" and moves the story on
-  showNext() {
-    this.el.next.hidden = false;
-    this.el.next.focus({ preventScroll: true });
-  }
-
-  hideNext() {
-    this.el.next.hidden = true;
-  }
-
   // A story line: Popo's or Swiftee's speech bubble, anchored at a stage point, or the narrator's caption.
   // The caption lays its words out hidden, so its plate never changes size. The bubble lays the
   // whole line out once, balanced over its lines, and pins each break there; then it starts
@@ -467,15 +449,6 @@ class UI {
       void d.plate.offsetWidth;
       d.plate.classList.add('bump');
     }
-  }
-
-  // A word already showing bounces as it is read again.
-  bounceWord(i) {
-    const span = this.delivered && this.delivered.spans[i];
-    if (!span) return;
-    span.classList.remove('beat');
-    void span.offsetWidth;
-    span.classList.add('beat');
   }
 
   // The instruction plate: a prompt or hint, its words hidden until the game shows them.

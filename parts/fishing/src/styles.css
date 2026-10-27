@@ -720,9 +720,6 @@ html, body {
 .words .w.em.in { animation: word-boing 0.55s cubic-bezier(0.2, 1.8, 0.4, 1); }
 .instruction.bump, .card.celebrate p.bump { animation: line-bump 0.34s ease-out; }
 @keyframes line-bump { 45% { transform: scale(1.06, 0.95); } }
-/* read again (the first hint): each word bounces in place as it is said */
-.words .w.in.beat, .words .w.em.in.beat { animation: word-beat 0.42s cubic-bezier(0.2, 1.8, 0.4, 1); }
-@keyframes word-beat { 40% { transform: translateY(-0.14em) scale(1.16); } }
 /* ∠ is drawn (Fredoka has no angle sign), the height of a capital, in the text's colour */
 .ang { position: relative; display: inline-block; width: 0.66em; height: 0.66em; margin-right: 0.07em; vertical-align: 0; }
 .ang svg { display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -731,10 +728,8 @@ html, body {
 
 /* Words pop in from their left edge (as a key word already did): the pop overshoots a little, and from the middle it
    spilled over the word before it for a moment ("a quadrilateral" read "aquadrilateral" mid-pop); grown from the left
-   it can only reach into the words not shown yet. Read again (the first hint), a word lifts rather than swells, so its
-   neighbours, all showing, keep their room. */
+   it can only reach into the words not shown yet. */
 .words .w, .line .w { transform-origin: 0 75%; }
-@keyframes word-beat { 40% { transform: translateY(-0.18em) scale(1.05); } }
 
 /* the speech bubble's tail keeps pointing at its speaker when the bubble has had to move aside (UI.placeSpeech: --tail
    is how far right of the bubble's usual place the speaker is) */

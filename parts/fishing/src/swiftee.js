@@ -26,7 +26,7 @@ class Swiftee {
     this.spin = { t: 0 };
   }
 
-  // a little bounce, now and then while waiting for Next
+  // a little bounce (a story line's hop)
   hop() {
     this.bounce = { t: 0 };
   }
