@@ -1808,10 +1808,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const pgNow = this.isPg(P);
     const showPar1 = !!f.par, showPar2 = !!(f.par2 || (task === 'dragB' && pgNow));
     const showTk = !!f.ticks;
+    // a side (or a half of a diagonal) showing its measurement carries no marks: the number says it
+    const isM = st.task === 'measure', lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
+    const lenOn = (k) => (isM && !!s.tap[k]) || (((k === 'AB' || k === 'CD') ? !!f.sideLen : !!f.legLen) && lon(k)) || !!(fig && fig.sides && fig.sides[k]);
+    const fHalves = fig ? Object.assign({}, fig.halves || {}, this.figHalves(st)) : {};
+    const halfOn = (k) => (fig ? !!fHalves[k] : !!(f.halves && (f.split || f.halfPairs)));
     const SIDES = cw ? { AB: [A, B], BC: [B, C], CD: [C, D], DA: [D, A] } : { AB: [B, A], BC: [C, B], CD: [D, C], DA: [A, D] };
-    const nArrows = { AB: showPar1 ? 2 : 0, CD: showPar1 ? 2 : 0, DA: showPar2 ? 1 : 0, BC: showPar2 ? 1 : 0 };
+    const nArrows = { AB: showPar1 && !lenOn('AB') ? 2 : 0, CD: showPar1 && !lenOn('CD') ? 2 : 0, DA: showPar2 && !lenOn('DA') ? 1 : 0, BC: showPar2 && !lenOn('BC') ? 1 : 0 };
     // a parallelogram's top and bottom are equal too (one tick); a trapezium's equal legs get theirs alone (two)
-    const nTicks = { AB: showTk && pgNow ? 1 : 0, CD: showTk && pgNow ? 1 : 0, DA: showTk ? 2 : 0, BC: showTk ? 2 : 0 };
+    const nTicks = { AB: showTk && pgNow && !lenOn('AB') ? 1 : 0, CD: showTk && pgNow && !lenOn('CD') ? 1 : 0, DA: showTk && !lenOn('DA') ? 2 : 0, BC: showTk && !lenOn('BC') ? 2 : 0 };
     const frame = (k) => {
       const p = SIDES[k][0], q = SIDES[k][1], L = this.dist(p, q) || 1, ux = (q.x - p.x) / L, uy = (q.y - p.y) / L;
       return { mx: (p.x + q.x) / 2, my: (p.y + q.y) / 2, ux: ux, uy: uy, nx: -uy, ny: ux };
@@ -1896,7 +1901,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     g.oDot = { x: r1(O.x), y: r1(O.y), d: dsp(f.O), cls: s.emph && s.emph.vO ? 'emph' : '' };
     // hticks: equal halves marked like equal sides (one tick on OA and OC, two on OB and OD)
-    g.htk = { p: tick(O, A, true) + tick(O, C, true) + tick(O, B) + tick(O, D), d: dsp(f.hticks) };
+    {
+      const htk = (halfOn('A') ? '' : tick(O, A, true)) + (halfOn('C') ? '' : tick(O, C, true)) + (halfOn('B') ? '' : tick(O, B)) + (halfOn('D') ? '' : tick(O, D));
+      g.htk = { p: htk || 'M0,0', d: dsp(f.hticks && !!htk) };
+    }
     // angles
     const V = this.vals(P);
     const arcSet = (f.arcs || '') + Object.keys(s.angIn || {}).join(''); // angIn: measured with the protractor (screen 24)
@@ -2016,61 +2024,58 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const H = fig ? Object.assign({}, fig.halves, found) : { A: this.cm(this.dist(Om, A)), B: this.cm(this.dist(Om, B)), C: this.cm(this.dist(Om, C)), D: this.cm(this.dist(Om, D)) };
       const hueOf = (k) => (f.halfPairs ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k); // (its half's colour: equal halves share one)
       Object.keys(H).forEach((k, i) => {
-        // (the measured halves, all four at once: AO's and BO's lengths in the triangle under AB, OC's and OD's in the one
-        // over CD - the roomy ones - each slid from its half's middle towards O, where its triangle is taller, until it
-        // fits; a checkpoint's one or two: into a triangle of its own)
-        const into = P[(measured ? { A: 'B', B: 'A', C: 'D', D: 'C' } : { A: 'D', B: 'A', C: 'B', D: 'C' })[k]];
-        let mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2;
-        const L = this.dist(P[k], Om) || 1;
-        let nx = -(Om.y - P[k].y) / L, ny = (Om.x - P[k].x) / L;
-        if (nx * (into.x - mx) + ny * (into.y - my) < 0) { nx = -nx; ny = -ny; }
-        // (clear of the tick across the half's middle: the tick's reach, a gap, then the label's own reach towards it).
-        // A label whose box would reach a side of the shape (a thin triangle: BO's on a wide, low figure lay on AB) goes
-        // to the half's other side instead, into the next triangle
-        const hw = this.textW(H[k], '900 24px Nunito') / 2, hh = 15, off = MK.tickHalf + 8 + hw * Math.abs(nx) + hh * Math.abs(ny);
-        const Q = [A, B, C, D], area = Q.reduce((t, p, i) => t + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) > 0 ? 1 : -1;
-        const inside = (x, y) => Q.every((p, i) => { const q = Q[(i + 1) % 4], L2 = this.dist(p, q) || 1;
-          return area * ((q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x)) / L2 >= 2.5 + 6; }); // past the side's stroke, and a gap
-        const fits = (sg) => { const cx = mx + sg * nx * off, cy = my + sg * ny * off; return [[-1, -1], [1, -1], [1, 1], [-1, 1]].every((c) => inside(cx + c[0] * hw, cy + c[1] * hh)); };
-        if (measured) {
-          // written along its half, as on a ruler: turned to the half's slope (never upside down), just beside its middle
-          let deg = Math.atan2(Om.y - P[k].y, Om.x - P[k].x) * 180 / Math.PI;
-          if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
-          const gap = hh + 7;
-          tags.push({ t: H[k], x: r1(mx + nx * gap), y: r1(my + ny * gap), r: deg.toFixed(1) + 'deg', cls: 'mtag hv h' + hueOf(k) + ' hd' + i });
-          return;
-        }
-        const sg = fits(1) || !fits(-1) ? 1 : -1;
-        tags.push({ t: H[k], x: r1(mx + sg * nx * off), y: r1(my + sg * ny * off), cls: fig ? 'mtag fig' + (found[k] ? ' solved' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
+        // written along its half, as on a ruler (turned to the half's slope, never upside down), beside it in the triangle
+        // the half shares with its neighbour (AO's and BO's in the one under AB, OC's and OD's in the one over CD): slid
+        // from the half's middle towards O, where the triangle is taller, until its box sits inside that triangle clear of
+        // all three of its lines; failing that, on the half's other side - so a length never touches a side or another
+        // length, and reads with the half it measures
+        const L = this.dist(P[k], Om) || 1, ux = (Om.x - P[k].x) / L, uy = (Om.y - P[k].y) / L;
+        const hw = this.textW(H[k], '900 24px Nunito') / 2, hh = 15, gap = hh + 7;
+        let deg = Math.atan2(uy, ux) * 180 / Math.PI;
+        if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
+        const nb = { A: ['B', 'D'], B: ['A', 'C'], C: ['D', 'B'], D: ['C', 'A'] }[k];
+        const inTri = (T, x, y) => T.every((p, j) => { const q = T[(j + 1) % 3], r = T[(j + 2) % 3], L2 = this.dist(p, q) || 1;
+          const side = (X, Y) => ((q.x - p.x) * (Y - p.y) - (q.y - p.y) * (X - p.x)) / L2;
+          return side(x, y) * Math.sign(side(r.x, r.y)) >= 6; }); // (6 px clear of the line, its stroke and a gap)
+        const at = (t, into) => {
+          const T = [Om, P[k], P[into]], cxh = P[k].x + ux * L * t, cyh = P[k].y + uy * L * t;
+          let nx = -uy, ny = ux; if (nx * (P[into].x - cxh) + ny * (P[into].y - cyh) < 0) { nx = -nx; ny = -ny; }
+          const c = { x: cxh + nx * gap, y: cyh + ny * gap };
+          const ok = [[-1, -1], [1, -1], [1, 1], [-1, 1]].every((e) => inTri(T, c.x + ux * hw * e[0] + nx * hh * e[1] * 0.75, c.y + uy * hw * e[0] + ny * hh * e[1] * 0.75));
+          return ok ? c : null;
+        };
+        const first = measured ? { A: 'B', B: 'A', C: 'D', D: 'C' }[k] : nb[0], other = nb[0] === first ? nb[1] : nb[0];
+        let c = null;
+        for (const into of [first, other]) { for (let t = 0.5; t >= 0.24 && !c; t -= 0.04) c = at(t, into); if (c) break; }
+        if (!c) c = at(0.5, first) || { x: (P[k].x + Om.x) / 2 - uy * gap, y: (P[k].y + Om.y) / 2 + ux * gap };
+        tags.push({ t: H[k], x: r1(c.x), y: r1(c.y), r: deg.toFixed(1) + 'deg', cls: fig ? 'mtag fig' + (found[k] ? ' solved' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line
     // (as in Fishing Frenzy's lesson: the box's reach towards the side plus one small gap, so every label sits the same
-    // distance from its side whatever its slope; a base's label also clears the arrows on its middle (+12), and a side
-    // carrying arrows or ticks keeps them clear (markGap))
+    // distance from its side whatever its slope; a side carrying arrows or ticks keeps them clear (markGap) - a side
+    // showing its length carries none)
     const marked = (p, q) => { const k = [p, q].map((V) => ['A', 'B', 'C', 'D'].find((x) => P[x] === V)).sort().join('');
       const key = { AB: 'AB', BC: 'BC', CD: 'CD', AD: 'DA' }[k]; return !!(key && (nArrows[key] || nTicks[key])); };
     const lNamed = ['lAB', 'lBC', 'lCD', 'lDA'].filter((k) => s.emph && s.emph[k]).length;
     const emL = (k) => (s.emph && s.emph['l' + k] ? ' emph' : lNamed && lNamed < 4 ? ' dim' : ''); // (the lengths grow when the line names them; the others step back)
-    // A side's length sits INSIDE the shape, beside the middle of its side (on the part it measures, upright, as far in
-    // as its own box and the side's marks need); out = outside instead (screen 2's side numbers)
-    const side = (p, q, text, cls, show, out) => {
+    // A side's length sits OUTSIDE the shape, by the middle of its own side, upright, as far out as its own box and
+    // the side's marks need - so each number reads with the side it measures; in = inside instead
+    const side = (p, q, text, cls, show, inn) => {
       const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, L = this.dist(p, q) || 1;
       let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
-      if ((nx * (mx - cx) + ny * (my - cy) < 0) === !!out) { nx = -nx; ny = -ny; }
+      if ((nx * (mx - cx) + ny * (my - cy) < 0) !== !!inn) { nx = -nx; ny = -ny; }
       // the label's own box (css: plain 21px Nunito 900, no padding): half width / half height in board px
       const hw = this.textW(text, '900 24px Nunito') / 2, hh = 15;
-      const off = hw * Math.abs(nx) + hh * Math.abs(ny) + CONFIG.marks.labelGap + Math.max(12 * Math.abs(ny), marked(p, q) ? CONFIG.marks.markGap : 0);
+      const off = hw * Math.abs(nx) + hh * Math.abs(ny) + CONFIG.marks.labelGap + (marked(p, q) ? CONFIG.marks.markGap : 0);
       return { t: text, x: r1(mx + nx * off), y: r1(my + ny * off), cls: cls + (show ? '' : ' off') };
     };
-    // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, inside the shape)
-    const isM = st.task === 'measure';
+    // (the measuring tape carries tick marks only - no numbers; each side's length is shown once, by its side)
     // lengths wear their sides' colours, as in Fishing Frenzy: AB, CD blue; AD, BC teal (mleg)
     tags.push(side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), isM && !!s.tap.DA)); // values only, no side names
     tags.push(side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), isM && !!s.tap.BC));
     tags.push(side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), isM && !!s.tap.AB));
-    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four inside, by their sides
-    const lon = (k) => !f.lenSeq || !!(s.lenOn && s.lenOn[k]);
+    tags.push(side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), isM && !!s.tap.CD)); // all four outside, by their sides
     {
       const L = { DA: side(D, A, this.cm(ad), 'mtag mleg' + emL('DA'), !!f.legLen && lon('DA')), BC: side(B, C, this.cm(bc), 'mtag mleg' + emL('BC'), !!f.legLen && lon('BC')),
         AB: side(A, B, this.cm(this.dist(A, B)), 'mtag' + emL('AB'), !!f.sideLen && lon('AB')), CD: side(D, C, this.cm(this.dist(D, C)), 'mtag' + emL('CD'), !!f.sideLen && lon('CD')) };
@@ -2086,10 +2091,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // own side's direction, one after another (CSS .snum: ease-out, slight overshoot, 90% -> 100% scale)
     {
       const on = !!st.sideNums;
-      tags.push(side(D, A, '1', 'snum n1', on, true));
-      tags.push(side(A, B, '2', 'snum n2', on, true));
-      tags.push(side(B, C, '3', 'snum n3', on, true));
-      tags.push(side(D, C, '4', 'snum n4', on, true));
+      tags.push(side(D, A, '1', 'snum n1', on));
+      tags.push(side(A, B, '2', 'snum n2', on));
+      tags.push(side(B, C, '3', 'snum n3', on));
+      tags.push(side(D, C, '4', 'snum n4', on));
     }
     tags.forEach((t) => { if (!t.click) t.click = noop; if (!t.r) t.r = '0deg'; });
     return { g: g, tags: tags, V: V };

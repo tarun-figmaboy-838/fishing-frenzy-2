@@ -80,9 +80,11 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
   taller than the lane pulls it up, and the measuring screens and the first put it right of Swiftee. What sits under
   the shape - its name cards, the answers, the answer boxes and their choices - starts right under it (under its
   corner letters), so the shape and what it says read as one group.
-- **Measures on the shape.** A side's length sits inside the shape beside the middle of its side, upright; a
-  diagonal's halves carry their lengths written along them, as on a ruler, each in its half's colour; an angle's size
-  sits inside its angle. No measure is on a card away from the part it measures.
+- **Measures on the shape.** A side's length sits outside the shape by the middle of its own side, upright, in the
+  side's colour, so each number reads with the side it measures and never lands on another; a diagonal's halves carry
+  their lengths written along them, as on a ruler, each in its half's colour and inside the triangle beside it (slid
+  towards O, or to the half's other side, until it is clear of every line); an angle's size sits inside its angle. A
+  side or half showing its measurement carries no marks (no arrows, no ticks): the number says it.
 - **The maths in motion** (`js/motion.js` fx, on an overlay over the board; a line's `cues`): equal sides slide onto
   each other by a slide (`match`), an angle turns a half-turn about the shape's centre O and lands on the opposite one
   - the reason they are equal (`matchAng`), the diagonals' halves turn about O onto each other (`fold`), parallel
