@@ -215,14 +215,18 @@
           .to(g, { opacity: 0, duration: 0.4 }, 2.1));
         return 2500;
       }
-      // (svgOrigin: the corner itself, in the svg's coordinates - a px transformOrigin would be the group's box corner)
-      const origin = r1(v.x) + ' ' + r1(v.y);
-      add(() => G.timeline({ onComplete: () => g.remove() })
-        .set(g, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, scale: 1.2, duration: 0.3, svgOrigin: origin })
-        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.2, ease: 'power2.inOut', svgOrigin: origin }, 0.35)
-        .to(g, { scale: 1, duration: 0.3, ease: 'power2.out', svgOrigin: origin }, 1.5) // (it settles onto the angle - no bounce)
-        .to(g, { opacity: 0, duration: 0.4 }, 2.1));
+      // (two layers: the outer one travels, the inner one turns and grows about the corner - its svgOrigin, in the svg's
+      // coordinates, never moves - so it lands exactly on the opposite angle; one layer doing both was pulled back short
+      // of it as its size settled, and seemed to bounce back)
+      const origin = r1(v.x) + ' ' + r1(v.y), wrap = this.mk('g', { 'class': 'math-glow' });
+      wrap.appendChild(g); g.removeAttribute('class');
+      add(() => G.timeline({ onComplete: () => wrap.remove() })
+        .set(wrap, { x: 0, y: 0, opacity: 0 }).set(g, { rotation: 0, scale: 1, svgOrigin: origin })
+        .to(wrap, { opacity: 1, duration: 0.3 }).to(g, { scale: 1.2, duration: 0.3, svgOrigin: origin }, 0)
+        .to(wrap, { x: dst.v.x - v.x, y: dst.v.y - v.y, duration: 1.2, ease: 'power2.inOut' }, 0.35)
+        .to(g, { rotation: 180, duration: 1.2, ease: 'power2.inOut', svgOrigin: origin }, 0.35)
+        .to(g, { scale: 1, duration: 0.3, ease: 'power2.out', svgOrigin: origin }, 1.5) // (it settles onto the angle)
+        .to(wrap, { opacity: 0, duration: 0.4 }, 2.1));
       return 2500;
     },
     // A mask that keeps a drawing off every word on the stage - the corner letters, the lengths and angle sizes, the

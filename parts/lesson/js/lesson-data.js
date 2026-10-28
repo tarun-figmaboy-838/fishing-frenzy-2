@@ -293,7 +293,8 @@ const LESSON = {
       lines: [{ m: 'curious', t: 'Which of the following are\ntrue for this parallelogram?\nSelect all that apply.' }],
       ok: 'Perfect! AO = OC, BO = OD,\nso the diagonals bisect\neach other.',
       // (the halves' equal ticks would be the answer: they come with it, okF)
-      okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'bisect', fold: [['A', 'C'], ['B', 'D']] }],
+      // (as it is said, AO slides onto OC, then BO onto OD - each fits: the diagonals bisect each other)
+      okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'AO = OC,', halfSlide: ['A', 'C'] }, { at: 'BO = OD,', halfSlide: ['B', 'D'] }],
       fig: { P: FIG_SIDES, diag: 1 },
       opts: [
         { id: 'aooc', t: 'AO = OC', ok: true, emph: ['dAC', 'vO'] },
