@@ -171,15 +171,6 @@
     "devanagari": "आर दे इक्वल टू?"
   },
   {
-    "id": "vo020",
-    "line": "Let's measure them.",
-    "spoken": "Let's measure them.",
-    "where": [
-      "screen 13 measure: line"
-    ],
-    "devanagari": "लेट्स मेजर देम।"
-  },
-  {
     "id": "vo021",
     "line": "There is something interesting about the lengths.",
     "spoken": "There is something interesting about the lengths.",
@@ -376,15 +367,6 @@
       "screen 23 angles: line"
     ],
     "devanagari": "बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू?"
-  },
-  {
-    "id": "vo044",
-    "line": "Let's measure the angles and find out.",
-    "spoken": "Let's measure the angles and find out.",
-    "where": [
-      "screen 24 measureAng: line"
-    ],
-    "devanagari": "लेट्स मेजर द एंगल्स एंड फाइंड आउट।"
   },
   {
     "id": "vo045",
@@ -997,5 +979,14 @@
       "screen 7 dragPar: after the answer shown"
     ],
     "devanagari": "नाउ बी सी इज पैरेलल टू ए डी।"
+  },
+  {
+    "id": "vo121",
+    "line": "Let's find out!",
+    "spoken": "Let's find out!",
+    "where": [
+      "screens 13 measure, 24 measureAng: line"
+    ],
+    "devanagari": "लेट्स फाइंड आउट!"
   }
 ]

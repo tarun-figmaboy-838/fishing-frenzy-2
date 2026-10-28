@@ -21,7 +21,6 @@ const VO_LINES = {
   "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.": ["vo017",6.12,[0.29,0.41,1.25,1.61,1.91,2.27,2.45,2.99,3.35,3.59,4.13,4.31,4.73,4.85],5.76],
   "But what about the side lengths?": ["vo018",3.26,[0.32,0.62,0.99,1.44,1.74,2.12],2.8],
   "Are they equal too?": ["vo019",2.18,[0.33,0.62,0.99,1.43],1.81],
-  "Let's measure them.": ["vo020",1.84,[0.29,0.62,1.06],1.4],
   "There is something interesting about the lengths.": ["vo021",3.12,[0.26,0.56,0.71,1.21,1.8,2.1,2.3],2.76],
   "What do you notice about the sides?": ["vo022",2.69,[0.32,0.6,0.76,0.98,1.37,1.7,1.92],2.31],
   "Look at the lengths again. AB is 6 cm, but AD is only 3 cm.": ["vo023",7.04,[0.26,0.5,0.65,0.84,1.23,2.12,2.42,2.65,4.25,4.53,4.8,5.01,5.36],6.68],
@@ -44,7 +43,6 @@ const VO_LINES = {
   "Brilliant! CD = AB = 8 cm and AD = BC = 5 cm.": ["vo041",8.93,[0.32,1.66,4.96,5.29],8.6],
   "We learnt all about the sides of a parallelogram.": ["vo042",3.84,[0.3,0.49,0.93,1.19,1.57,1.82,2.2,2.39,2.52],3.48],
   "But what about its angles? Are they equal too?": ["vo043",3.94,[0.35,0.61,0.93,1.32,1.57,2.51,2.72,2.97,3.28],3.55],
-  "Let's measure the angles and find out.": ["vo044",2.86,[0.33,0.65,1.08,1.29,1.67,1.88,2.15],2.43],
   "There is something interesting here too.": ["vo045",2.8,[0.27,0.59,0.75,1.29,1.93,2.2],2.48],
   "Some angles are equal to one another.": ["vo046",3.02,[0.31,0.62,1.06,1.31,1.68,1.87,2.12],2.69],
   "Tap the angle which is equal to ∠A.": ["vo047",3.92,[0.29,0.6,0.91,1.38,1.85,2.09,2.55,2.79],3.5],
@@ -112,5 +110,6 @@ const VO_LINES = {
   "Diagonals bisect each other.": ["vo117",2.6,[0.31,0.95,1.39,1.71],2.17],
   "Amazing work! You know all about parallelograms now.": ["vo118",4.25,[0.33,0.92,1.67,1.9,2.18,2.41,2.75,3.6],3.89],
   "Watch! BC must lean the same way as AD.": ["vo119",4.92,[0.27,1.31,1.67,2.11,2.55,2.91,3.35,3.71,3.98],4.43],
-  "Now BC is parallel to AD.": ["vo120",3.2,[0.29,0.65,1.01,1.28,2.08,2.35],2.81]
+  "Now BC is parallel to AD.": ["vo120",3.2,[0.29,0.65,1.01,1.28,2.08,2.35],2.81],
+  "Let's find out!": ["vo121",1.64,[0.3,0.65,0.94],1.24]
 };

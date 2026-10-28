@@ -115,7 +115,7 @@ const LESSON = {
     // (the sides light on "lengths" / "equal": the question is about them, and nothing else is on the board yet)
     { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?', cues: [{ at: 'lengths', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
     { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?' }], f: PG },
-    { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's measure them." }], task: 'measure', auto: 1, f: PG },
+    { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
     { pdf: 15, id: 'interesting', lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
       lenSeq: [[700, ['AB', 'CD']], [2300, ['DA', 'BC']]], f: Object.assign({ lenSeq: 1 }, PG, LENS) },
@@ -163,7 +163,7 @@ const LESSON = {
     { pdf: 22, id: 'sidesDone', lines: [{ m: 'happy', t: 'We learnt all about the\nsides of a parallelogram.' }] },
     { pdf: 23, id: 'angles', lines: [{ m: 'thinking', t: 'But what about its angles?\nAre they equal too?' }] },
     // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
-    { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's measure the angles\nand find out." }], task: 'measureAngles', auto: 1 },
+    { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
     { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },

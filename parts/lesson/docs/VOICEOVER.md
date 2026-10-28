@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 111 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 110 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -144,7 +144,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo017 | A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram. | = | ए क्वाड्रिलैटरल व्हेयर बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल इज कॉल्ड ए पैरेललोग्राम। | 6.12 |
 | vo018 | But what about the side lengths? | = | बट वॉट अबाउट द साइड लेंथ्स? | 3.26 |
 | vo019 | Are they equal too? | = | आर दे इक्वल टू? | 2.18 |
-| vo020 | Let's measure them. | = | लेट्स मेजर देम। | 1.84 |
 | vo021 | There is something interesting about the lengths. | = | देयर इज समथिंग इंटरेस्टिंग अबाउट द लेंथ्स। | 3.12 |
 | vo022 | What do you notice about the sides? | = | वॉट डू यू नोटिस अबाउट द साइड्स? | 2.69 |
 | vo023 | Look at the lengths again. AB is 6 cm, but AD is only 3 cm. | Look at the lengths again. A B is six centimetres, but A D is only three centimetres. | लुक एट द लेंथ्स अगेन। ए बी इज सिक्स सेंटीमीटर्स, बट ए डी इज ओनली थ्री सेंटीमीटर्स। | 7.04 |
@@ -167,7 +166,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo041 | Brilliant! CD = AB = 8 cm and AD = BC = 5 cm. | Brilliant! C D equals A B equals eight centimetres and A D equals B C equals five centimetres. | ब्रिलियंट! सी डी इक्वल्स ए बी इक्वल्स एट सेंटीमीटर्स एंड ए डी इक्वल्स बी सी इक्वल्स फाइव सेंटीमीटर्स. | 8.93 |
 | vo042 | We learnt all about the sides of a parallelogram. | = | वी लर्न्ट ऑल अबाउट द साइड्स ऑफ ए पैरेललोग्राम। | 3.84 |
 | vo043 | But what about its angles? Are they equal too? | = | बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू? | 3.94 |
-| vo044 | Let's measure the angles and find out. | = | लेट्स मेजर द एंगल्स एंड फाइंड आउट। | 2.86 |
 | vo045 | There is something interesting here too. | = | देयर इज समथिंग इंटरेस्टिंग हियर टू। | 2.80 |
 | vo046 | Some angles are equal to one another. | = | सम एंगल्स आर इक्वल टू वन अनदर। | 3.02 |
 | vo047 | Tap the angle which is equal to ∠A. | Tap the angle which is equal to angle A. | टैप द एंगल विच इज इक्वल टू एंगल ए। | 3.92 |
@@ -236,3 +234,4 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo118 | Amazing work! You know all about parallelograms now. | = | अमेज़िंग वर्क! यू नो ऑल अबाउट पैरेललोग्राम्स नाउ. | 4.25 |
 | vo119 | Watch! BC must lean the same way as AD. | Watch! B C must lean the same way as A D. | वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी। | 4.92 |
 | vo120 | Now BC is parallel to AD. | Now B C is parallel to A D. | नाउ बी सी इज पैरेलल टू ए डी। | 3.20 |
+| vo121 | Let's find out! | = | लेट्स फाइंड आउट! | 1.64 |
