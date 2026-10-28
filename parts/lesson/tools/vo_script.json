@@ -225,33 +225,6 @@
     "devanagari": "विच ऑफ दीज़ आर पैरेललोग्राम्स? सिलेक्ट ऑल दैट अप्लाई।"
   },
   {
-    "id": "vo029",
-    "line": "Shape B is a trapezium. Only one pair of its sides is parallel.",
-    "spoken": "Shape B is a trapezium. Only one pair of its sides is parallel.",
-    "where": [
-      "screen 19 cp1a: feedback B"
-    ],
-    "devanagari": "शेप बी इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल।"
-  },
-  {
-    "id": "vo030",
-    "line": "Shape D has five sides, so it is not even a quadrilateral.",
-    "spoken": "Shape D has five sides, so it is not even a quadrilateral.",
-    "where": [
-      "screen 19 cp1a: feedback D"
-    ],
-    "devanagari": "शेप डी हैज़ फाइव साइड्स, सो इट इज नॉट इवन ए क्वाड्रिलैटरल।"
-  },
-  {
-    "id": "vo032",
-    "line": "Yes! Shapes A and C both have two pairs of parallel sides.",
-    "spoken": "Yes! Shapes A and C both have two pairs of parallel sides.",
-    "where": [
-      "screen 19 cp1a: right answer"
-    ],
-    "devanagari": "येस! शेप्स ए एंड सी बोथ हैव टू पेयर्स ऑफ पैरेलल साइड्स।"
-  },
-  {
     "id": "vo033",
     "line": "In this parallelogram, AB = 7 cm. What is the length of CD?",
     "spoken": "In this parallelogram, A B equals seven centimetres. What is the length of C D?",
@@ -594,15 +567,6 @@
     "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी फाइव डिग्रीज़। फाइंड द मेज़र्स ऑफ एंगल बी, एंगल सी एंड एंगल डी।"
   },
   {
-    "id": "vo076",
-    "line": "∠C is opposite ∠A, so they are equal. ∠B and ∠D are next to ∠A, so each adds with 65° to make 180°.",
-    "spoken": "Angle C is opposite angle A, so they are equal. Angle B and angle D are next to angle A, so each adds with sixty-five degrees to make one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback any"
-    ],
-    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो दे आर इक्वल। एंगल बी एंड एंगल डी आर नेक्स्ट टू एंगल ए, सो ईच ऐड्स विद सिक्सटी फाइव डिग्रीज़ टू मेक वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
     "id": "vo078",
     "line": "Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°.",
     "spoken": "Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees.",
@@ -745,33 +709,6 @@
       "screen 49 cp3a: line"
     ],
     "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी?"
-  },
-  {
-    "id": "vo097",
-    "line": "OC is not half of AO. The diagonals bisect each other, so OC is the same length as AO.",
-    "spoken": "O C is not half of A O. The diagonals bisect each other, so O C is the same length as A O.",
-    "where": [
-      "screen 49 cp3a: feedback 3"
-    ],
-    "devanagari": "ओ सी इज नॉट हाफ ऑफ ए ओ। द डायगोनल्स बाईसेक्ट ईच अदर, सो ओ सी इज द सेम लेंथ एज़ ए ओ।"
-  },
-  {
-    "id": "vo098",
-    "line": "12 cm would be the whole diagonal AC. OC is only one half of it.",
-    "spoken": "Twelve centimetres would be the whole diagonal A C. O C is only one half of it.",
-    "where": [
-      "screen 49 cp3a: feedback 12"
-    ],
-    "devanagari": "ट्वेल्व सेंटीमीटर्स वुड बी द होल डायगोनल ए सी। ओ सी इज ओनली वन हाफ ऑफ इट।"
-  },
-  {
-    "id": "vo100",
-    "line": "Yes! The diagonals bisect each other, so OC = AO = 6 cm.",
-    "spoken": "Yes! The diagonals bisect each other, so O C equals A O equals six centimetres.",
-    "where": [
-      "screen 49 cp3a: right answer"
-    ],
-    "devanagari": "येस! द डायगोनल्स बाईसेक्ट ईच अदर, सो ओ सी इक्वल्स ए ओ इक्वल्स सिक्स सेंटीमीटर्स."
   },
   {
     "id": "vo101",
@@ -961,5 +898,140 @@
       "screen 35 askAdj: feedback AC"
     ],
     "devanagari": "एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo123",
+    "line": "This shape is a trapezium. Only one pair of its sides is parallel.",
+    "spoken": "This shape is a trapezium. Only one pair of its sides is parallel.",
+    "where": [
+      "screen 19 cp1a: feedback B"
+    ],
+    "devanagari": "दिस शेप इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल।"
+  },
+  {
+    "id": "vo124",
+    "line": "This shape has five sides, so it is not a quadrilateral.",
+    "spoken": "This shape has five sides, so it is not a quadrilateral.",
+    "where": [
+      "screen 19 cp1a: feedback D"
+    ],
+    "devanagari": "दिस शेप हैज़ फाइव साइड्स, सो इट इज नॉट ए क्वाड्रिलैटरल।"
+  },
+  {
+    "id": "vo125",
+    "line": "Yes! Both these shapes have two pairs of parallel sides.",
+    "spoken": "Yes! Both these shapes have two pairs of parallel sides.",
+    "where": [
+      "screen 19 cp1a: right"
+    ],
+    "devanagari": "येस! बोथ दीज़ शेप्स हैव टू पेयर्स ऑफ पैरेलल साइड्स।"
+  },
+  {
+    "id": "vo126",
+    "line": "25° + 65° is only 90°. ∠A and ∠B must add up to 180°.",
+    "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle B must add up to one hundred and eighty degrees.",
+    "where": [
+      "screen 37 cp2c: feedback B 25"
+    ],
+    "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल बी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo127",
+    "line": "∠B is next to ∠A, not opposite it. ∠A + ∠B = 180°.",
+    "spoken": "Angle B is next to angle A, not opposite it. Angle A plus angle B equals one hundred and eighty degrees.",
+    "where": [
+      "screen 37 cp2c: feedback B 65"
+    ],
+    "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo128",
+    "line": "180° is ∠A and ∠B together. Take away the 65° of ∠A.",
+    "spoken": "One hundred and eighty degrees is angle A and angle B together. Take away the sixty-five degrees of angle A.",
+    "where": [
+      "screen 37 cp2c: feedback B 180"
+    ],
+    "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल बी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
+  },
+  {
+    "id": "vo129",
+    "line": "∠C is opposite ∠A, so it is equal to ∠A, not 25°.",
+    "spoken": "Angle C is opposite angle A, so it is equal to angle A, not twenty-five degrees.",
+    "where": [
+      "screen 37 cp2c: feedback C 25"
+    ],
+    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट ट्वेंटी फाइव डिग्रीज़।"
+  },
+  {
+    "id": "vo130",
+    "line": "115° is the size of an angle next to ∠A. ∠C is opposite ∠A, so ∠C = ∠A.",
+    "spoken": "One hundred and fifteen degrees is the size of an angle next to angle A. Angle C is opposite angle A, so angle C equals angle A.",
+    "where": [
+      "screen 37 cp2c: feedback C 115"
+    ],
+    "devanagari": "वन हंड्रेड एंड फिफ्टीन डिग्रीज़ इज द साइज ऑफ एन एंगल नेक्स्ट टू एंगल ए। एंगल सी इज ऑपोजिट एंगल ए, सो एंगल सी इक्वल्स एंगल ए।"
+  },
+  {
+    "id": "vo131",
+    "line": "∠C is opposite ∠A, so it is equal to ∠A, not 180°.",
+    "spoken": "Angle C is opposite angle A, so it is equal to angle A, not one hundred and eighty degrees.",
+    "where": [
+      "screen 37 cp2c: feedback C 180"
+    ],
+    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo132",
+    "line": "25° + 65° is only 90°. ∠A and ∠D must add up to 180°.",
+    "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle D must add up to one hundred and eighty degrees.",
+    "where": [
+      "screen 37 cp2c: feedback D 25"
+    ],
+    "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल डी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo133",
+    "line": "∠D is next to ∠A, not opposite it. ∠A + ∠D = 180°.",
+    "spoken": "Angle D is next to angle A, not opposite it. Angle A plus angle D equals one hundred and eighty degrees.",
+    "where": [
+      "screen 37 cp2c: feedback D 65"
+    ],
+    "devanagari": "एंगल डी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल डी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+  },
+  {
+    "id": "vo134",
+    "line": "180° is ∠A and ∠D together. Take away the 65° of ∠A.",
+    "spoken": "One hundred and eighty degrees is angle A and angle D together. Take away the sixty-five degrees of angle A.",
+    "where": [
+      "screen 37 cp2c: feedback D 180"
+    ],
+    "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल डी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
+  },
+  {
+    "id": "vo135",
+    "line": "OC is not half of AO. OC = AO.",
+    "spoken": "O C is not half of A O. O C equals A O.",
+    "where": [
+      "screen 49 cp3a: feedback 3"
+    ],
+    "devanagari": "ओ सी इज नॉट हाफ ऑफ ए ओ। ओ सी इक्वल्स ए ओ।"
+  },
+  {
+    "id": "vo136",
+    "line": "12 cm is the whole of AC. OC is only half of it.",
+    "spoken": "Twelve centimetres is the whole of A C. O C is only half of it.",
+    "where": [
+      "screen 49 cp3a: feedback 12"
+    ],
+    "devanagari": "ट्वेल्व सेंटीमीटर्स इज द होल ऑफ ए सी। ओ सी इज ओनली हाफ ऑफ इट।"
+  },
+  {
+    "id": "vo137",
+    "line": "Yes! O cuts AC in half, so OC = 6 cm.",
+    "spoken": "Yes! O cuts A C in half, so O C equals six centimetres.",
+    "where": [
+      "screen 49 cp3a: right"
+    ],
+    "devanagari": "येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स।"
   }
 ]

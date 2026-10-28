@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 107 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 115 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -149,9 +149,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo025 | In any parallelogram, opposite sides are of equal lengths. | = | इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर ऑफ इक्वल लेंथ्स। | 4.84 |
 | vo027 | So, in any parallelogram, opposite sides are parallel and equal. | = | सो, इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर पैरेलल एंड इक्वल। | 6.04 |
 | vo028 | Which of these are parallelograms? Select all that apply. | = | विच ऑफ दीज़ आर पैरेललोग्राम्स? सिलेक्ट ऑल दैट अप्लाई। | 4.24 |
-| vo029 | Shape B is a trapezium. Only one pair of its sides is parallel. | = | शेप बी इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल। | 5.84 |
-| vo030 | Shape D has five sides, so it is not even a quadrilateral. | = | शेप डी हैज़ फाइव साइड्स, सो इट इज नॉट इवन ए क्वाड्रिलैटरल। | 5.24 |
-| vo032 | Yes! Shapes A and C both have two pairs of parallel sides. | = | येस! शेप्स ए एंड सी बोथ हैव टू पेयर्स ऑफ पैरेलल साइड्स। | 5.40 |
 | vo033 | In this parallelogram, AB = 7 cm. What is the length of CD? | In this parallelogram, A B equals seven centimetres. What is the length of C D? | इन दिस पैरेललोग्राम, ए बी इक्वल्स सेवन सेंटीमीटर्स। वॉट इज द लेंथ ऑफ सी डी? | 5.56 |
 | vo034 | CD is not double AB. Opposite sides of a parallelogram are equal. | C D is not double A B. Opposite sides of a parallelogram are equal. | सी डी इज नॉट डबल ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.32 |
 | vo035 | CD is not half of AB. Opposite sides of a parallelogram are equal. | C D is not half of A B. Opposite sides of a parallelogram are equal. | सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.00 |
@@ -190,7 +187,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo073 | ∠B is next to ∠A. Adjacent angles add up to 180°. | Angle B is next to angle A. Adjacent angles add up to one hundred and eighty degrees. | एंगल बी इज नेक्स्ट टू एंगल ए। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 7.24 |
 | vo074 | Correct! 72° + 108° = 180°. | Correct! Seventy-two degrees plus one hundred and eight degrees equals one hundred and eighty degrees. | करेक्ट! सेवेंटी-टू डिग्रीज़ प्लस वन हंड्रेड एंड एट डिग्रीज़ इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 6.86 |
 | vo075 | In this parallelogram, ∠A = 65°. Find the measures of ∠B, ∠C and ∠D. | In this parallelogram, angle A equals sixty-five degrees. Find the measures of angle B, angle C and angle D. | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी फाइव डिग्रीज़। फाइंड द मेज़र्स ऑफ एंगल बी, एंगल सी एंड एंगल डी। | 9.24 |
-| vo076 | ∠C is opposite ∠A, so they are equal. ∠B and ∠D are next to ∠A, so each adds with 65° to make 180°. | Angle C is opposite angle A, so they are equal. Angle B and angle D are next to angle A, so each adds with sixty-five degrees to make one hundred and eighty degrees. | एंगल सी इज ऑपोजिट एंगल ए, सो दे आर इक्वल। एंगल बी एंड एंगल डी आर नेक्स्ट टू एंगल ए, सो ईच ऐड्स विद सिक्सटी फाइव डिग्रीज़ टू मेक वन हंड्रेड एंड एटी डिग्रीज़। | 12.36 |
 | vo078 | Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°. | Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees. | अमेजिंग! एंगल बी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़, एंगल सी इक्वल्स सिक्सटी फाइव डिग्रीज़ एंड एंगल डी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़। | 10.08 |
 | vo079 | We have explored all about the sides and angles of a parallelogram. | = | वी हैव एक्सप्लोर्ड ऑल अबाउट द साइड्स एंड एंगल्स ऑफ ए पैरेललोग्राम। | 4.56 |
 | vo080 | Let's learn about its diagonals. | = | लेट्स लर्न अबाउट इट्स डायगोनल्स। | 2.45 |
@@ -207,9 +203,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo094 | Each diagonal is divided into two equal parts by the other. | = | ईच डायगोनल इज डिवाइडेड इनटू टू इक्वल पार्ट्स बाय द अदर। | 5.02 |
 | vo095 | So the diagonals of a parallelogram bisect each other. | = | सो द डायगोनल्स ऑफ ए पैरेललोग्राम बाईसेक्ट ईच अदर। | 3.84 |
 | vo096 | In this parallelogram, AO = 6 cm. What is the length of OC? | In this parallelogram, A O equals six centimetres. What is the length of O C? | इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी? | 6.60 |
-| vo097 | OC is not half of AO. The diagonals bisect each other, so OC is the same length as AO. | O C is not half of A O. The diagonals bisect each other, so O C is the same length as A O. | ओ सी इज नॉट हाफ ऑफ ए ओ। द डायगोनल्स बाईसेक्ट ईच अदर, सो ओ सी इज द सेम लेंथ एज़ ए ओ। | 7.60 |
-| vo098 | 12 cm would be the whole diagonal AC. OC is only one half of it. | Twelve centimetres would be the whole diagonal A C. O C is only one half of it. | ट्वेल्व सेंटीमीटर्स वुड बी द होल डायगोनल ए सी। ओ सी इज ओनली वन हाफ ऑफ इट। | 5.60 |
-| vo100 | Yes! The diagonals bisect each other, so OC = AO = 6 cm. | Yes! The diagonals bisect each other, so O C equals A O equals six centimetres. | येस! द डायगोनल्स बाईसेक्ट ईच अदर, सो ओ सी इक्वल्स ए ओ इक्वल्स सिक्स सेंटीमीटर्स. | 7.80 |
 | vo101 | In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD. | In this parallelogram, A O equals five centimetres and B O equals three centimetres. Find the lengths of O C and O D. | इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी। | 10.08 |
 | vo102 | OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO. | O C is the other half of A C, so it equals A O. O D is the other half of B D, so it equals B O. | ओ सी इज द अदर हाफ ऑफ ए सी, सो इट इक्वल्स ए ओ। ओ डी इज द अदर हाफ ऑफ बी डी, सो इट इक्वल्स बी ओ। | 9.74 |
 | vo103 | OC is the other half of AC, and OD is the other half of BD. | O C is the other half of A C, and O D is the other half of B D. | ओ सी इज द अदर हाफ ऑफ ए सी, एंड ओ डी इज द अदर हाफ ऑफ बी डी। | 5.57 |
@@ -231,3 +224,18 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo120 | Now BC is parallel to AD. | Now B C is parallel to A D. | नाउ बी सी इज पैरेलल टू ए डी। | 3.20 |
 | vo121 | Let's find out! | = | लेट्स फाइंड आउट! | 1.64 |
 | vo122 | ∠A and ∠C are opposite angles. 110° + 110° is not 180°. | Angle A and angle C are opposite angles. One hundred and ten degrees plus one hundred and ten degrees is not one hundred and eighty degrees. | एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़। | 9.72 |
+| vo123 | This shape is a trapezium. Only one pair of its sides is parallel. | = | दिस शेप इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल। | 5.56 |
+| vo124 | This shape has five sides, so it is not a quadrilateral. | = | दिस शेप हैज़ फाइव साइड्स, सो इट इज नॉट ए क्वाड्रिलैटरल। | 4.80 |
+| vo125 | Yes! Both these shapes have two pairs of parallel sides. | = | येस! बोथ दीज़ शेप्स हैव टू पेयर्स ऑफ पैरेलल साइड्स। | 4.60 |
+| vo126 | 25° + 65° is only 90°. ∠A and ∠B must add up to 180°. | Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle B must add up to one hundred and eighty degrees. | ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल बी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 8.88 |
+| vo127 | ∠B is next to ∠A, not opposite it. ∠A + ∠B = 180°. | Angle B is next to angle A, not opposite it. Angle A plus angle B equals one hundred and eighty degrees. | एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 9.04 |
+| vo128 | 180° is ∠A and ∠B together. Take away the 65° of ∠A. | One hundred and eighty degrees is angle A and angle B together. Take away the sixty-five degrees of angle A. | वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल बी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए। | 8.44 |
+| vo129 | ∠C is opposite ∠A, so it is equal to ∠A, not 25°. | Angle C is opposite angle A, so it is equal to angle A, not twenty-five degrees. | एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट ट्वेंटी फाइव डिग्रीज़। | 6.32 |
+| vo130 | 115° is the size of an angle next to ∠A. ∠C is opposite ∠A, so ∠C = ∠A. | One hundred and fifteen degrees is the size of an angle next to angle A. Angle C is opposite angle A, so angle C equals angle A. | वन हंड्रेड एंड फिफ्टीन डिग्रीज़ इज द साइज ऑफ एन एंगल नेक्स्ट टू एंगल ए। एंगल सी इज ऑपोजिट एंगल ए, सो एंगल सी इक्वल्स एंगल ए। | 10.44 |
+| vo131 | ∠C is opposite ∠A, so it is equal to ∠A, not 180°. | Angle C is opposite angle A, so it is equal to angle A, not one hundred and eighty degrees. | एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट वन हंड्रेड एंड एटी डिग्रीज़। | 6.20 |
+| vo132 | 25° + 65° is only 90°. ∠A and ∠D must add up to 180°. | Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle D must add up to one hundred and eighty degrees. | ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल डी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 9.96 |
+| vo133 | ∠D is next to ∠A, not opposite it. ∠A + ∠D = 180°. | Angle D is next to angle A, not opposite it. Angle A plus angle D equals one hundred and eighty degrees. | एंगल डी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल डी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 8.16 |
+| vo134 | 180° is ∠A and ∠D together. Take away the 65° of ∠A. | One hundred and eighty degrees is angle A and angle D together. Take away the sixty-five degrees of angle A. | वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल डी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए। | 7.76 |
+| vo135 | OC is not half of AO. OC = AO. | O C is not half of A O. O C equals A O. | ओ सी इज नॉट हाफ ऑफ ए ओ। ओ सी इक्वल्स ए ओ। | 5.04 |
+| vo136 | 12 cm is the whole of AC. OC is only half of it. | Twelve centimetres is the whole of A C. O C is only half of it. | ट्वेल्व सेंटीमीटर्स इज द होल ऑफ ए सी। ओ सी इज ओनली हाफ ऑफ इट। | 5.32 |
+| vo137 | Yes! O cuts AC in half, so OC = 6 cm. | Yes! O cuts A C in half, so O C equals six centimetres. | येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स। | 6.12 |

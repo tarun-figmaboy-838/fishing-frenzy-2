@@ -139,12 +139,13 @@ const LESSON = {
     // ---------- Checkpoint 1 · Are you ready? (page 21) ----------
     Object.assign({ pdf: 21, id: 'cp1a', grid: 1, multi: 1, cpTitle: 'Checkpoint 1 · Find the Parallelograms',
       lines: [{ m: 'curious', t: 'Which of these are\nparallelograms? Select\nall that apply.' }],
-      ok: 'Yes! Shapes A and C both have\ntwo pairs of parallel sides.',
+      // (the tips speak of the shape just tapped - "this shape" - not of its letter)
+      ok: 'Yes! Both these shapes have\ntwo pairs of parallel sides.',
       opts: [
         { id: 'A', ok: true },
-        { id: 'B', fb: 'Shape B is a trapezium. Only one pair of its sides is parallel.' },
+        { id: 'B', fb: 'This shape is a trapezium. Only one pair of its sides is parallel.' },
         { id: 'C', ok: true },
-        { id: 'D', fb: 'Shape D has five sides, so it is not even a quadrilateral.' }
+        { id: 'D', fb: 'This shape has five sides, so it is not a quadrilateral.' }
       ] }, CP),
     Object.assign({ pdf: 21, id: 'cp1b', handOnce: 1, cpTitle: 'Checkpoint 1 · Find the Missing Side',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 7 cm. What is the\nlength of CD?' }],
@@ -219,7 +220,17 @@ const LESSON = {
       fig: { P: tilt(65), angles: { A: '65°', B: '?', C: '?', D: '?' } },
       fill: { blanks: [{ id: 'B', pre: '∠B =', post: '°', ans: '115' }, { id: 'C', pre: '∠C =', post: '°', ans: '65' }, { id: 'D', pre: '∠D =', post: '°', ans: '115' }],
         tiles: ['25', '65', '115', '180'],
-        fb: { any: '∠C is opposite ∠A, so they are equal. ∠B and ∠D are next to ∠A, so each adds with 65° to make 180°.' } } }, CP),
+        // a tip for each wrong value in each box: what that value would mean, and the one fact that box needs
+        fb: {
+          'B:25': '25° + 65° is only 90°. ∠A and ∠B must add up to 180°.',
+          'B:65': '∠B is next to ∠A, not opposite it. ∠A + ∠B = 180°.',
+          'B:180': '180° is ∠A and ∠B together. Take away the 65° of ∠A.',
+          'C:25': '∠C is opposite ∠A, so it is equal to ∠A, not 25°.',
+          'C:115': '115° is the size of an angle next to ∠A. ∠C is opposite ∠A, so ∠C = ∠A.',
+          'C:180': '∠C is opposite ∠A, so it is equal to ∠A, not 180°.',
+          'D:25': '25° + 65° is only 90°. ∠A and ∠D must add up to 180°.',
+          'D:65': '∠D is next to ∠A, not opposite it. ∠A + ∠D = 180°.',
+          'D:180': '180° is ∠A and ∠D together. Take away the 65° of ∠A.' } } }, CP),
 
     // ---------- Part 7 · diagonals (pages 38-49) ----------
     { pdf: 38, id: 'explored', lines: [{ m: 'happy', t: 'We have explored all about\nthe sides and angles of\na parallelogram.' }] },
@@ -253,12 +264,12 @@ const LESSON = {
     // ---------- Checkpoint 3 · Let's use the diagonals! (page 50) ----------
     Object.assign({ pdf: 50, id: 'cp3a', cpTitle: 'Checkpoint 3 · Find the Other Half',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAO = 6 cm. What is the\nlength of OC?' }],
-      ok: 'Yes! The diagonals bisect each\nother, so OC = AO = 6 cm.',
+      ok: 'Yes! O cuts AC in half,\nso OC = 6 cm.',
       fig: { P: FIG_SIDES, diag: 1, halves: { A: '6 cm' } },
       opts: [
-        { id: '3', t: '3 cm', fb: 'OC is not half of AO. The diagonals bisect each other, so OC is the same length as AO.' },
+        { id: '3', t: '3 cm', fb: 'OC is not half of AO. OC = AO.' },
         { id: '6', t: '6 cm', ok: true },
-        { id: '12', t: '12 cm', fb: '12 cm would be the whole diagonal AC. OC is only one half of it.' }
+        { id: '12', t: '12 cm', fb: '12 cm is the whole of AC. OC is only half of it.' }
       ] }, CP),
     Object.assign({ pdf: 50, id: 'cp3b', cpTitle: 'Checkpoint 3 · Find Both Halves',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAO = 5 cm and BO = 3 cm.\nFind the lengths of\nOC and OD.' }],
