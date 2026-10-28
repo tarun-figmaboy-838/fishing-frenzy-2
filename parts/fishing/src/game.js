@@ -3,6 +3,8 @@
 const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds a right net waits in the water before the hand shows where Catch is (once)
+const HINT_IDLE = 3;      // seconds without a touch before a net's ghost hint (and between one and the next)
+const HINT_MAX = 3;       // ghost hints a net gives at most
 const NET_CLEARANCE = 40; // the net's bottom edge hangs this far above the water
 const SCHOOL_TOP = 46;    // the school keeps this far below the surface
 const FOCUS = { zoom: 1.7, inMs: 900 }; // the view zooms in on the net this much, this fast, as a net comes down (applyFocus)
@@ -139,6 +141,7 @@ class Game {
     this.fishArea = null;
     this.hint = null;
     this.hintShown = false;
+    this.hintCount = 0;
     this.drag = null;
     this.lastTick = { value: null, at: 0 };
     this.lastFrame = 0;
@@ -563,6 +566,7 @@ class Game {
     this.ambient = refreshShadows(this.ambient, 4, this.area);
     this.deep = refreshDeep(this.deep, 6, { top: this.swimArea.bottom + 24, bottom: STAGE_H - 26 });
     this.hintShown = false;
+    this.hintCount = 0;
     this.catchHinted = false;
     this.handShown = false;
     return before;
@@ -897,10 +901,10 @@ class Game {
   }
 
   // --- hints ------------------------------------------------------------------
-  // Left alone for a while: on the first net the hand shows the drag once, along the way to
-  // where the corner belongs; later nets swell their measurements instead, so the child
-  // reasons rather than copies. No hint says whether the net is right: Drop Net does. Any
-  // touch cancels a hint.
+  // Left alone HINT_IDLE seconds: a ghost of the corner - its two sides with it, faint - slides two stops the way the
+  // corner has to go, the hand riding on it, while the real corner stays put; after each further quiet spell it comes
+  // again, at most HINT_MAX times a net. After the first net the measurements swell with it too, so the child reasons
+  // rather than copies. No hint says whether the net is right: Drop Net does. Any touch cancels a hint.
   updateHint(dt) {
     // a right net open in the water: the timing is the child's, but left a while, the hand shows where Catch is
     if (state.phase === PHASE.FISHING) {
@@ -916,10 +920,9 @@ class Game {
       else if ((this.hint.t += dt) > 2.4) { this.stopHint(); state.idleTime = 0; }
       return;
     }
-    // one hint a net, after its quiet spell (never again and again)
-    if (this.hintShown) return;
+    if ((this.hintCount || 0) >= HINT_MAX) return;
     state.idleTime += dt;
-    if (state.idleTime > LEVELS[state.level].hintDelay) this.showHint();
+    if (state.idleTime > HINT_IDLE) this.showHint();
   }
 
   // A quiet spell brings the pointing hand, never the voice again: the instruction is said once, as its net comes
@@ -928,15 +931,12 @@ class Game {
   showHint() {
     if (LEVELS[state.level].type === 'free') { this.pointAt(this.ui.el.drop); return; }
     if (this.ui.actionMode === 'check') { this.pointAt(this.ui.el.action); return; } // the corner set: Check is next
-    const drag = !this.handShown || state.level === 0;
-    this.hint = { t: 0, drag };
+    this.hint = { t: 0, drag: true };
+    this.hintCount = (this.hintCount || 0) + 1;
     this.audio.play('hint');
-    if (drag) {
-      this.handShown = true;
-      this.ui.showHand(true);
-    } else {
-      this.net.hintPulse = 2.4;
-    }
+    this.handShown = true;
+    this.ui.showHand(true);
+    if (state.level > 0) this.net.hintPulse = 2.4;
     this.ui.pulseInstruction();
     this.hintShown = true;
   }
@@ -964,7 +964,9 @@ class Game {
     const from = net.handle();
     const to = net.toStage(net.stop(net.stopAt - Math.sign(net.stopAt) * Math.min(2, Math.abs(net.stopAt))));
     const k = ease.inOut(Math.min(1, Math.max(0, (h.t - 0.5) / 1.2)));
-    this.ui.moveHand(from.x + (to.x - from.x) * k + 6, from.y + (to.y - from.y) * k + 6);
+    const at = { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
+    net.ghost = { x: at.x, y: at.y, alpha: Math.min(1, h.t / 0.3) * (h.t > 2.1 ? Math.max(0, (2.4 - h.t) / 0.3) : 1) };
+    this.ui.moveHand(at.x + 6, at.y + 6);
     if (h.t > 2.1) this.ui.fadeHand();
     if (h.t > 2.4) {
       this.stopHint();
@@ -975,6 +977,7 @@ class Game {
   stopHint() {
     if (!this.hint) return;
     this.hint = null;
+    this.net.ghost = null;
     this.hintAt = null;
     this.net.hintPulse = 0;
     this.ui.hideHand();

@@ -114,6 +114,7 @@ class Net {
     this.glow = null;     // the property highlight: steps played one after another
     this.miss = null;     // a wrong net: the parts that don't match pulse red, the same way
     this.hintPulse = 0;   // the measurements swell for a moment as a hint
+    this.ghost = null;    // a hint's ghost of the corner being moved: { x, y, alpha } on the stage (drawGhost)
     this.touched = false; // the child has moved the corner this level
     this.textScale = 1;   // the knob's arrows, the marks and arcs grow on small screens (see Game.labelScale)
     this.wordScale = 1;   // ...and the words (measures, letters), as seen through the zoom on the net (Game.wordScale)
@@ -583,6 +584,7 @@ class Net {
     }
     if (showing) this.drawMeasurements(ctx, corners);
     if (this.glow) this.drawGlow(ctx, corners);
+    if (this.ghost) this.drawGhost(ctx, corners);
     if (this.miss) this.drawMiss(ctx, corners);
     if (!this.locked && !this.furl) this.drawArrows(ctx, corners[this.movable]); // (over the marks, under the knob)
     if (this.outline) this.drawOutline(ctx, corners);
@@ -1462,6 +1464,35 @@ class Net {
   }
 
   // The property highlight: sides, angles or diagonal halves light up, one step at a time.
+  // A hint's ghost: the corner being moved, a little way along its track - its two sides drawn to it dashed and faint,
+  // and a faint knob - so the child sees the move while the real corner stays where it is
+  drawGhost(ctx, c) {
+    const g = this.ghost, i = this.movable, a = c[(i + 3) % 4], b = c[(i + 1) % 4], k = this.textScale;
+    ctx.save();
+    ctx.globalAlpha *= 0.8 * (g.alpha == null ? 1 : g.alpha);
+    ctx.lineCap = 'round';
+    ctx.setLineDash([12 * k, 9 * k]);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(g.x, g.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.lineWidth = 9 * k;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.stroke();
+    ctx.lineWidth = 4.5 * k;
+    ctx.strokeStyle = '#ffd23f';
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, 16 * k, 0, TAU);
+    ctx.fillStyle = 'rgba(255, 210, 63, 0.5)';
+    ctx.fill();
+    ctx.lineWidth = 3 * k;
+    ctx.strokeStyle = '#fff';
+    ctx.stroke();
+    ctx.restore();
+  }
+
   drawGlow(ctx, c) {
     this.drawLit(ctx, c, this.glow, GLOW);
   }

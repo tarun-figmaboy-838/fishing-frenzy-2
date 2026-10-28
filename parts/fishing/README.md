@@ -234,10 +234,12 @@ The game is deployed as part of the journey: the repository's root is the static
   few; for the golden final school every fish swims off as the golden fish swim in behind them. No fish ever vanishes or pops into view; a whole new school (the
   first, the golden one) rushes in, fast for a moment, so the sea fills at once.
 - **Hints.** An instruction is said once, as its net comes down (as in Fishing Frenzy): left
-  alone, the hand shows how the corner slides, two stops the right way (never all the way to
-  its place), and the plate gives a nudge - never the voice again; later hints nudge the plate and swell the
-  measurements, so the game teaches rather than solves itself; the corner set, the little hand sits on the middle of
-  Check, and on a net left open in the water a while, of Catch. No hint says whether the net is right; Check does.
+  alone 3 seconds, a ghost of the corner - its two sides with it, faint and dashed - slides two stops the right way
+  (never all the way to its place) with the hand riding on it, while the real corner stays where it is, and the plate
+  gives a nudge - never the voice again; it comes again after each further quiet spell, at most three times a net, and
+  after the first net the measurements swell with it, so the game teaches rather than solves itself; the corner set,
+  the little hand sits on the middle of Check, and on a net left open in the water a while, of Catch. No hint says
+  whether the net is right; Check does.
 - **The catch so far.** Top left, on the narration plate's navy and gold: a fish and the number
   caught this game, bouncing as each fish lands in the bucket.
 - **Voices** (`src/voice-data.js`): Popo's lines are his recordings from Fishing Frenzy; every

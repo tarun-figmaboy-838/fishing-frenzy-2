@@ -323,7 +323,7 @@ function backToPuzzle(game, level) {
   net.wobble = 1;
   audio.play('wobble');
   state.phase = PHASE.PUZZLE_READY;
-  state.idleTime = state.misses >= 2 ? level.hintDelay - 1.5 : 0;
+  state.idleTime = state.misses >= 2 ? 1.5 : 0; // (after two misses the ghost hint comes sooner: 1.5 s of its 3)
   ui.showHandle(true);
   if (level.type === 'free') ui.setDrop('on'); else { ui.setAction('hidden'); game.focusOn(); } // (Check comes once the corner is moved)
 }
