@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
+const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, goOnward, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds a right net waits in the water before the hand shows where Catch is (once)
 const HINT_IDLE = 3;      // seconds without a touch before a net's ghost hint (and between one and the next)
@@ -154,6 +154,8 @@ class Game {
     this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
+    this.held = null;         // a finished screen held for the journey's Next (sequences.js onward, goOnward)
+    this.onwardTok = null;    // the journey's Next on its way (goOnward)
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
@@ -474,7 +476,11 @@ class Game {
     const ends = this.breakEnds;
     this.breakEnds = null;
     if (ends) ends();
+    else if (this.review) backFromLesson(this); // (the lesson's end taken on by the journey's Next, no hook waiting: the wave, the welcome, the first net)
   }
+
+  // the journey's Next (its temporary Back / Next bar): on as the journey would go by itself (sequences.js goOnward)
+  onward(args) { goOnward(this, args || {}); }
 
   // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
   // closes and opens again on the banner.

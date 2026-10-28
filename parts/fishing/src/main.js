@@ -64,7 +64,8 @@ if (params.has('debug') || params.get('dev') === '1') {
 // hook, sequences.js hook; args.afterLesson: ?start=lesson's lesson is over), quiet (the lesson is dissolving
 // in over it: its sound fades), backdrop (the lesson plays over the lake: silent, buttons away, still drawing),
 // camera (the lesson's camera over the lake), hide (covered), resume (the lesson is over: the giant wave brings Popo back, and on
-// with the nets), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
+// with the nets), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again), review / onward (the
+// journey's temporary Back / Next bar: each screen holds; its Next goes on as the journey would).
 if (journey) {
   journey.onCommand((name, args) => {
     if (name === 'quiet') audio.fadeOut();
@@ -76,6 +77,7 @@ if (journey) {
     else if (name === 'title') game.backToTitle();
     else if (name === 'wake') game.wake();
     else if (name === 'review') game.review = !!args; // (the journey's Back / Next bar used: each screen holds, sequences.js onward)
+    else if (name === 'onward') game.onward(args); // (the bar's Next: on as the journey would go, sequences.js goOnward)
   });
   journey.onDispose(() => { game.dispose(); audio.hold(true); });
 }

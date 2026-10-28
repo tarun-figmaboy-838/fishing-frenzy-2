@@ -569,6 +569,8 @@
     known: new Map(), // part id -> its screens' labels (kept when its frame goes, so the lesson stays in the order)
     want: -1, // the screen a tap went to, until the part on top shows it
     until: 0,
+    onwardTo: -1, // the screen a Next is on its way to by the journey's own way on (onward), until it is there
+    onwardUntil: 0,
     last: 0,
     order() {
       const fish = this.known.get('fishing') || [], lesson = this.known.get('lesson') || [];
@@ -600,7 +602,10 @@
       return this.last;
     },
     go(step) {
-      const order = this.order(), to = this.at(order) + step, o = order[to];
+      const order = this.order();
+      if (step > 0 && this.waiting(order)) return; // (a way on still playing: Next waits for it)
+      this.onwardTo = -1;
+      const from = this.at(order), to = from + step, o = order[to];
       if (!o) return;
       if (!this.holding) {
         this.holding = true;
@@ -608,8 +613,40 @@
       }
       this.want = to;
       this.until = Date.now() + 6000;
+      if (step > 0 && this.onward(order[from], o)) {
+        this.onwardTo = to;
+        this.onwardUntil = this.until = Date.now() + 30000;
+        this.update();
+        return;
+      }
       if (o.home) dev.frontPage(); else if (o.part === 'lesson') dev.jumpLesson(o.i); else dev.jumpFishing(o.i);
       this.update();
+    },
+    // (a Next on its way: until its screen is reached, or 30 s at most)
+    waiting(order) {
+      if (this.onwardTo >= 0 && (Date.now() >= this.onwardUntil || this.live(order) === this.onwardTo)) this.onwardTo = -1;
+      return this.onwardTo >= 0;
+    },
+    // Next goes on as the journey would by itself, where it can: the banner's Play; from the hook (held at its end, or
+    // still playing) the giant wave and the lesson's seashell opening; from a caught net, what follows it; from the
+    // lesson's last screen, Swiftee's farewell, the wave back and the first net. Otherwise it jumps (within the lesson
+    // a jump plays the screen's own entry anyway).
+    onward(cur, next) {
+      try {
+        if (cur.home) { if (J.phase !== 'front') return false; play(fishing()); return true; }
+        if (cur.part === 'lesson') {
+          const L = frames.get('lesson'), w = lessonUp() && L && L.el.contentWindow, d = w && w.lessonDebug;
+          if (next.part === 'lesson' || !d || !d.state.started || !d.cur().end) return false;
+          command(L, 'onward');
+          return true;
+        }
+        const F = fishing(), w = J.current === 'fishing' && F && F.status === 'ready' && F.el.contentWindow;
+        if (!w || !w.popoDebug) return false;
+        const g = w.popoDebug.game, P = w.PopoGame, held = !!(g.held && P.isCurrent(g.held.token));
+        if (!held && !(cur.name === 'Hook' && w.popoDebug.state.phase === P.PHASE.INTRO)) return false;
+        command(F, 'onward', { toLesson: cur.name === 'Hook' });
+        return true;
+      } catch (e) { return false; } // (a part still loading, or from disk)
     },
     build() {
       if (!NAV) return;
@@ -643,7 +680,7 @@
       const label = this.el.querySelector('.nav-at');
       if (label.textContent !== name) label.textContent = name;
       this.back.disabled = at <= 0;
-      this.next.disabled = at >= order.length - 1;
+      this.next.disabled = at >= order.length - 1 || this.waiting(order);
     },
   };
 

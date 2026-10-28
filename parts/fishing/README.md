@@ -72,6 +72,10 @@ journey` part of `src/game.js`:
     (`Game.lessonTime`: `Journey.finish({ intro: true, warmup: true, fish })`) and the lesson dissolves
     in over the empty lake and opens with its seashell. On the game's own page Swiftee flies off, the
     net winds up and the first parallelogram net follows.
+  - `review` / `onward` — the journey's temporary Back / Next bar has been used: a finished screen (the
+    hook, a caught net) holds where it ended, what follows it kept (`Game.held`); the bar's Next plays
+    it (`goOnward`: the hook's wave and the lesson, a net's next), or, on the hook still playing, hands
+    over to the lesson at once.
   - `quiet` — the lesson is dissolving in: every sound fades away with it (`AudioEngine.fadeOut`).
   - `hide` — the lesson covers the game: it stops drawing (its sequences wait with the clock),
     and every sound stops — music, effects, a voice line — and its own AudioContext sleeps;

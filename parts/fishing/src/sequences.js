@@ -212,10 +212,32 @@ async function opening(game, { arrived = false } = {}) {
 }
 
 // On from a finished screen (the hook, a caught net) - unless the journey's Back / Next bar has been used (review):
-// then the screen holds where it ended, and only the bar moves on.
+// then the screen holds where it ended (what follows it kept for the bar's Next: goOnward), and only the bar moves on.
 async function onward(game, token, next) {
-  if (game.review) { if (state.phase !== PHASE.INTRO) state.phase = PHASE.LEVEL_COMPLETE; return; }
+  if (game.review) { if (state.phase !== PHASE.INTRO) state.phase = PHASE.LEVEL_COMPLETE; game.held = { token, next }; return; }
   await next();
+}
+
+// The journey's Next (its temporary Back / Next bar): the journey goes on as it would by itself. A held screen plays
+// what follows it (the hook: the wave and the lesson; a caught net: the next); the hook still playing hands over to the
+// lesson now. toLesson: the bar is on the hook, so the lesson comes next even after a jump to it. False: nothing to
+// play (the bar jumps instead).
+function goOnward(game, { toLesson = false } = {}) {
+  if (game.onwardTok && isCurrent(game.onwardTok)) return true; // (already on its way: a second Next waits for it)
+  const h = game.held;
+  game.held = null;
+  if (toLesson && game.embedded) game.lessonAfter = true;
+  if (h && isCurrent(h.token)) {
+    game.onwardTok = h.token;
+    h.next().catch(swallow);
+    return true;
+  }
+  if (toLesson && state.phase === PHASE.INTRO) {
+    const token = game.onwardTok = newToken();
+    afterHook(game, token).catch(swallow);
+    return true;
+  }
+  return false;
 }
 
 // Straight to the first parallelogram net, without the story (Play Again on the game's own page): its waters, its
@@ -1339,13 +1361,19 @@ async function welcome(game, token) {
 }
 
 // ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back, Swiftee welcomes him and
-// the parallelogram nets begin (no warm-up after the lesson).
+// the parallelogram nets begin (no warm-up after the lesson). The same when the journey's Back / Next bar takes the
+// lesson's last screen on and no hook is waiting for it (Game.goOn).
 async function backFromLesson(game) {
   const token = newToken();
   try {
     state.phase = PHASE.INTRO;
     game.instruct('');
     game.popo.travelShift = AWAY;
+    // (reached from a later net through the journey's Back / Next bar: the first net's waters, its net wound up)
+    const at = LEVELS[LEVELS.findIndex((l) => !l.warmup)].location;
+    if (at !== state.locationIndex) { state.locationIndex = at; game.applyLocation(); }
+    game.net.furl = 1;
+    game.winch.setRopeOut(-TUCK);
     await clock.wait(game.fx.reduced ? 150 : 500, token);
     await waveIn(game, token);
     await welcome(game, token);
@@ -1564,5 +1592,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
+Object.assign(PopoGame, { banner, opening, onward, goOnward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
 })(window.PopoGame = window.PopoGame || {});

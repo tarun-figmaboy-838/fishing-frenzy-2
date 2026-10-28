@@ -86,7 +86,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (JOURNEY) {
       if (JOURNEY.params.has('debug') || JOURNEY.params.get('dev') === '1') window.lessonDebug = this; // for tests (as the fishing game's popoDebug), and the journey's Back / Next
       // review: the journey's (temporary) Back / Next bar has been used, so a finished screen holds for it (maybeAdvance)
-      JOURNEY.onCommand((name, args) => { if (name === 'review') this.review = !!args; });
+      // onward: the bar's Next on the last screen - Swiftee's farewell and the hand-over, as its own Next does (handOff)
+      JOURNEY.onCommand((name, args) => {
+        if (name === 'review') this.review = !!args;
+        else if (name === 'onward' && this.state.started && this.cur().end) this.handOff();
+      });
       if (JOURNEY.params.get('dev') === '1') JOURNEY.devScreens(this.steps().map((x, i) => ({ label: (i + 1) + ' ' + this.screenName(x), run: () => this.jumpTo(i) })));
       // the journey's Play has been tapped by the time the shell begins the lesson; begun for a ?dev=1 jump
       // (opts.jump), it leaves the opening out and the jump starts it
