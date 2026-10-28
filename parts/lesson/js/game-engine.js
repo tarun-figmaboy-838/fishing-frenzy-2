@@ -1084,8 +1084,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     });
     return 1300 + (num ? (T.sum ? sumAt + 1300 : 1300) : 0);
   }
-  // tags that together make one idea merge into it: each lifts off its place and flies into the new tag's, which comes
-  // in as they arrive (screen 10: AB ∥ CD and AD ∥ BC make the parallelogram)
+  // tags that together make one idea merge into it: they slide together along the row into the new tag's place, which
+  // comes in as they arrive (screen 9: AB ∥ CD and AD ∥ BC make the parallelogram)
   mergeTags(from, into) {
     const tok = this.stepTok, had = this.state.chips.some((c) => c.t === into.t);
     const src = from.map((t) => ({ t: t, p: this.tagCentre(t) })).filter((x) => x.p);
@@ -1097,7 +1097,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const to = this.tagCentre(into.t);
       const land = () => { if (tok !== this.stepTok) return; this.setTag(into.t, { arriving: 0, landed: 1 }); this.sfx(/\bname\b/.test(into.k) ? 'chime' : 'pop', { v: 0.7 }); };
       if (!to) { land(); return; }
-      src.forEach((x, k) => this.tm(() => { if (tok === this.stepTok) Motion.flyValue(x.t, x.p, to, k === src.length - 1 ? land : null, 'src tag'); }, k * 150));
+      // (they slide together along the row into it, side by side at once - a merge, not a leap)
+      src.forEach((x, k) => { if (tok === this.stepTok) Motion.slideValue(x.t, x.p, to, k === src.length - 1 ? land : null, 'src tag merge'); });
     });
     return 1500;
   }

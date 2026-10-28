@@ -569,6 +569,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ...a part's value on its way into a name tag (the tag's own look), and a whole tag on its way into another */
 .stage .fly-val.src{background:var(--pg-panel,#FFF8EC);border-color:var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);font-size:24px}
 .stage .fly-val.src.tag{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;padding:6px 20px;border-radius:14px;border-width:2.5px}
+/* a tag sliding into the one it merges into keeps the tags' own navy look on its way */
+.stage .fly-val.src.tag.merge{background:linear-gradient(180deg,#2a4d86 0%,#14295a 100%);color:#fff;border:3px solid #f2c14e;font-weight:800;font-size:26px;box-shadow:0 4px 10px rgba(10,30,70,.25)}
 /* a tag being built: its place kept until its parts land, then it lands; its text changing as it settles (m1 / m2) */
 .stage .chip.arriving{visibility:hidden;animation:none}
 .stage .chip.landed{animation:chipLand .5s cubic-bezier(.2,1.5,.45,1)}

@@ -300,6 +300,20 @@
         .to(el, { opacity: 0, duration: 0.18 }, 1.1));
       return 1300;
     },
+    // a tag merging into another (stage px): it slides straight along to it - no leap - easing in as it goes, and
+    // melts into it as it arrives; onLand: the one it merges into takes over
+    slideValue(text, from, to, onLand, cls) {
+      const stage = document.querySelector('.stage');
+      if (!G || reduced || !stage) { if (onLand) onLand(); return 0; }
+      const el = document.createElement('div'); el.className = 'fly-val' + (cls ? ' ' + cls : ''); el.textContent = text; stage.appendChild(el);
+      add(() => G.timeline({ onComplete: () => el.remove() })
+        .set(el, { left: from.x, top: from.y, xPercent: -50, yPercent: -50, scale: 1, opacity: 1 })
+        .to(el, { left: to.x, top: to.y, duration: 0.8, ease: 'power2.inOut' }, 0)
+        .to(el, { scale: 0.9, duration: 0.3, ease: 'sine.in' }, 0.5)
+        .call(() => { if (onLand) onLand(); }, null, 0.72)
+        .to(el, { opacity: 0, duration: 0.2 }, 0.72));
+      return 950;
+    },
     // a hint's ghost (stage px): what the hand's drag would move goes with it, faint and dashed - B and its two sides
     // to the corners beside it (anchors), or the line being drawn from the corner (band) - in step with the hand's own
     // drag (css handDrag, 2.1 s: pressed at 22%, there at 66%, gone by 92%), as often as the hand repeats it
