@@ -164,7 +164,7 @@ const LESSON = {
       ok: 'Brilliant! CD = AB = 8 cm\nand AD = BC = 5 cm.',
       fig: { P: FIG_SIDES, sides: { AB: '8 cm', BC: '5 cm', CD: '?', DA: '?' } },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '8' }, { id: 'AD', pre: 'AD =', post: 'cm', ans: '5' }], tiles: ['3', '5', '8', '13'],
-        fb: { any: 'Look at which side is opposite. CD is opposite AB, and AD is opposite BC.' } } }, CP),
+        fb: { CD: 'CD is opposite AB, so CD = AB.', AD: 'AD is opposite BC, so AD = BC.' } } }, CP), // (each box its own tip)
 
     // ---------- Part 4 · opposite angles (pages 22-31) ----------
     { pdf: 22, id: 'sidesDone', lines: [{ m: 'happy', t: 'We learnt all about the\nsides of a parallelogram.' }] },
@@ -282,7 +282,7 @@ const LESSON = {
       ok: 'Well done! OC = AO = 5 cm\nand OD = BO = 3 cm.',
       fig: { P: FIG_HALVES, diag: 1, halves: { A: '5 cm', B: '3 cm' } },
       fill: { blanks: [{ id: 'OC', pre: 'OC =', post: 'cm', ans: '5' }, { id: 'OD', pre: 'OD =', post: 'cm', ans: '3' }], tiles: ['3', '5', '6', '10'],
-        fb: { any: 'OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.' } } }, CP),
+        fb: { OC: 'OC is the other half of AC, so OC = AO.', OD: 'OD is the other half of BD, so OD = BO.' } } }, CP), // (each box its own tip)
     // the two true statements are the whole idea: AO = OC and BO = OD is what "the diagonals bisect each other" means,
     // so it is not a fifth answer to pick - it is what the right answer shows. Each right pick lights its diagonal; once
     // both are found the equal halves take their pair colours and, as Swiftee says "bisect", fold onto each other about O

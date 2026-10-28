@@ -314,6 +314,18 @@
         .to(el, { opacity: 0, duration: 0.2 }, 0.72));
       return 950;
     },
+    // a line named by the voice (a diagonal, a half of one): a glowing light runs along it once, the way its name is
+    // said (stage px: from x1, y1 to x2, y2), as the sides' own light runs along them
+    traceRun(lines) {
+      if (!G || reduced || !this.fx()) return;
+      lines.forEach((l) => {
+        const el = this.mk('line', { x1: l.x1.toFixed(1), y1: l.y1.toFixed(1), x2: l.x2.toFixed(1), y2: l.y2.toFixed(1), pathLength: 100, stroke: '#fff6c2',
+          'stroke-width': 9, 'stroke-linecap': 'round', 'stroke-dasharray': '18 300', 'stroke-dashoffset': 18, 'class': 'math-trace' });
+        add(() => G.timeline({ onComplete: () => el.remove() })
+          .to(el, { attr: { 'stroke-dashoffset': -100 }, duration: 1.0, ease: 'power1.inOut' })
+          .to(el, { opacity: 0, duration: 0.2 }, 0.85));
+      });
+    },
     // a hint's ghost (stage px): what the hand's drag would move goes with it, faint and dashed - B and its two sides
     // to the corners beside it (anchors), or the line being drawn from the corner (band) - in step with the hand's own
     // drag (css handDrag, 2.1 s: pressed at 22%, there at 66%, gone by 92%), as often as the hand repeats it

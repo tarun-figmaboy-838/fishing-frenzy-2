@@ -178,6 +178,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* the diagonals: thin and glowing yellow (a soft gold halo), so they read clearly without weighing on the shape; the
    one being drawn, dashed, the same */
 .diag,.diag-pen{filter:drop-shadow(0 0 2.5px rgba(255,196,0,.9))}
+.stage svg.math-fx .math-trace{filter:blur(1.6px) drop-shadow(0 0 5px #ffd000);pointer-events:none}
 .diag{transition:stroke-width .3s cubic-bezier(.3,0,.3,1)}.diag.emph{stroke-width:4.5px;filter:drop-shadow(0 0 5px rgba(255,196,0,1))}
 .hseg.emph{stroke-width:8px;filter:drop-shadow(0 0 4px rgba(255,196,0,.9))}
 .odot{transition:r .3s cubic-bezier(.3,0,.3,1),stroke-width .3s}.odot.emph{r:10px;stroke-width:4px}

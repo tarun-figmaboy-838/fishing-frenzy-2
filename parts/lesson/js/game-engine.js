@@ -403,11 +403,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const cues = [];
     words.forEach((raw, i) => {
       const w = clean(raw), prev = clean(words[i - 1]).toLowerCase(), next = clean(words[i + 1]);
-      let parts = null, m;
+      let parts = null, m, dirs = null;
       if ((m = /^∠([A-D])$/.exec(w))) parts = ['a' + m[1]];
       else if (/^[A-D]{2}$/.test(w) && side(w[0], w[1])) parts = [side(w[0], w[1])];
       else if (/^[A-D]{2}$/.test(w) && diag(w[0], w[1])) parts = [diag(w[0], w[1])];
-      else if (/^[A-DO]{2}$/.test(w) && half(w[0], w[1])) parts = [half(w[0], w[1])];
+      else if (/^[A-DO]{2}$/.test(w) && half(w[0], w[1])) { parts = [half(w[0], w[1])]; dirs = { [parts[0]]: [w[0], w[1]] }; } // ("AO": A to O)
       else if ((one(w) || w === 'O') && /^(vertex|point|corner)$/.test(prev)) parts = ['v' + w];
       else if (one(w) && one(next) && !one(clean(words[i - 1])) && side(w, next)) parts = [side(w, next)]; // spoken "A B"
       else if (/^legs$/i.test(w)) parts = ['DA', 'BC']; // plural only: "a leg" names one, not both
@@ -419,7 +419,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (/^lengths?$/i.test(w)) parts = ['lAB', 'lCD', 'lDA', 'lBC'];
       else if (/^diagonals?$/i.test(w)) parts = ['dAC', 'dBD'];
       else if (/^segments?$/i.test(w)) parts = HALVES;
-      if (parts) cues.push({ i: i, parts: parts, done: false, seq: parts.length === 4 && /^a/.test(parts[0]) });
+      if (parts) cues.push({ i: i, parts: parts, dirs: dirs, done: false, seq: parts.length === 4 && /^a/.test(parts[0]) });
     });
     return cues;
   }
@@ -438,8 +438,18 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }, (parts.length - 1) * GAP + CONFIG.emph.holdMs);
   }
   // grow -> brief hold -> back (CSS transitions do the easing; same timing everywhere)
-  emphasize(parts) {
+  // a diagonal or a half of one among them, on the board: its light runs along it, the way it is named (dirs: a half's
+  // own order, "AO" A to O; else a diagonal A to C, B to D, and a half from its corner to O)
+  emphasize(parts, dirs) {
     const tok = this.stepTok;
+    if (window.Motion && typeof document !== 'undefined') {
+      const f = this.fl(), st = this.cur(), P = this.shapeP(), O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 }, pt = (k) => (k === 'O' ? O : P[k]);
+      const diagOn = !!(f.diag || (this.state.diag && (this.state.diag.AC || this.state.diag.BD)) || (st.fig && st.fig.diag));
+      const halvesOn = !!(f.split || f.halfPairs || (st.fig && st.fig.diag));
+      const runs = parts.map((k) => (k === 'dAC' || k === 'dBD') && diagOn ? [k[1], k[2]] : /^h[A-D]$/.test(k) && halvesOn ? (dirs && dirs[k]) || [k[1], 'O'] : null)
+        .filter(Boolean).map((e) => { const a = this.boardToStage(pt(e[0])), b = this.boardToStage(pt(e[1])); return a && b ? { x1: a.x, y1: a.y, x2: b.x, y2: b.y } : null; }).filter(Boolean);
+      if (runs.length) Motion.traceRun(runs);
+    }
     this.setState({ emph: Object.assign({}, this.state.emph, parts.reduce((o, k) => { o[k] = 1; return o; }, {})) });
     this.tm(() => {
       if (tok !== this.stepTok) return;
@@ -609,7 +619,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         c.done = true;
         if (tok !== this.narrTok) return;
         if (c.seq) this.angleSeq(c.parts, () => focusAngles(c.parts)); // (all four angles: one at a time)
-        else { this.emphasize(c.parts); focusAngles(c.parts); }
+        else { this.emphasize(c.parts, c.dirs); focusAngles(c.parts); }
       });
       cues.forEach((q) => { if (n >= q.i + 1) fireCue(q); });
     };
