@@ -1150,7 +1150,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.handId = null;
       if (tok !== this.stepTok) return;
       // wait for Swiftee to finish and for hands to be off the board
-      if (this.state.talking || this.drag || this.walking || (this.state.fill || {}).open) { this.armHand(); return; }
+      if (this.state.talking || this.drag || (this.conn && this.conn.live) || this.walking || (this.state.fill || {}).open) { this.armHand(); return; } // (never over a drag or a line being drawn)
       if (once && this.touched) { this.armHand(); return; }
       const T = this.handTarget();
       if (!T) return;
@@ -1851,8 +1851,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   connUp(e) {
     const c = this.conn, P = this.shapeP();
     const p = (c.svg && e && e.clientX != null ? this.toSvg(c.svg, e) : null) || (this.state.conn && { x: this.state.conn.x, y: this.state.conn.y });
-    // (the corner the line is on, where it was let go - or, without a move, the corner under the pointer)
-    const hit = (c.moved && this.state.conn && this.state.conn.near) || ['A', 'B', 'C', 'D'].find((k) => k !== c.from && p && Math.hypot(P[k].x - p.x, P[k].y - p.y) < CONFIG.connect.reach);
+    // (the corner the line is on, where it was let go - or, without a move, the corner under the pointer - or, let go
+    // short of it, the opposite corner when the line was plainly drawn towards it: past half way, close to its line)
+    const toward = () => {
+      const o = P[c.from], q = P[this.opp(c.from)], end = this.state.conn, L2 = (q.x - o.x) ** 2 + (q.y - o.y) ** 2;
+      if (!c.moved || !end || !L2) return null;
+      const t = ((end.x - o.x) * (q.x - o.x) + (end.y - o.y) * (q.y - o.y)) / L2, off = Math.abs((end.x - o.x) * (q.y - o.y) - (end.y - o.y) * (q.x - o.x)) / Math.sqrt(L2);
+      return t >= 0.5 && off < 0.15 * Math.sqrt(L2) ? this.opp(c.from) : null;
+    };
+    const hit = (c.moved && this.state.conn && this.state.conn.near) || ['A', 'B', 'C', 'D'].find((k) => k !== c.from && p && Math.hypot(P[k].x - p.x, P[k].y - p.y) < CONFIG.connect.reach) || toward();
     if (hit) { this.conn = null; this.setState({ conn: null }); this.connTo(c.from, hit); return; }
     // released on its own corner (a tap): keep it picked until the next corner is tapped
     this.conn = c.moved ? null : { from: c.from, live: false };
