@@ -446,6 +446,29 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.setState({ emph: e });
     }, CONFIG.emph.holdMs);
   }
+  // A side's parallel arrows called out (after ms): arrows on show beat once; a parallelogram's side showing none gets
+  // them for a moment - they pop on, stay (CONFIG.marks.tempMs) and go (s.parTmp, drawn by render)
+  parBeat(ks, ms) {
+    const tok = this.stepTok, set = (v) => { const t = Object.assign({}, this.state.parTmp); ks.forEach((k) => { if (v) t[k] = v; else delete t[k]; }); this.setState({ parTmp: t }); };
+    this.tm(() => {
+      if (tok !== this.stepTok) return;
+      if (window.Motion && !Motion.reduced && typeof document !== 'undefined') ks.forEach((k) => document.querySelectorAll('.par-ch[data-side="' + k + '"]:not(.tmp)').forEach((el) => {
+        if (el.animate && getComputedStyle(el).display !== 'none') el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.45)', offset: 0.4 }, { transform: 'scale(1)' }], { duration: 520, easing: 'ease-out' });
+      }));
+      set('in');
+      this.sfx('tick', { v: 0.8 });
+    }, ms || 0);
+    this.tm(() => { if (tok === this.stepTok) set('out'); }, (ms || 0) + CONFIG.marks.tempMs);
+    this.tm(() => { if (tok === this.stepTok) set(null); }, (ms || 0) + CONFIG.marks.tempMs + 320);
+  }
+  // "parallelogram" said with a parallelogram on the board (one shape, not a grid of them): its arrows are called out
+  // pair by pair - AB and CD, then AD and BC
+  parWord() {
+    const st = this.cur();
+    if (!st || st.grid || st.end || !this.isPg(this.shapeP())) return;
+    this.parBeat(['AB', 'CD'], 0);
+    this.parBeat(['DA', 'BC'], CONFIG.marks.pairGap);
+  }
   // o: { f: pitch Hz, v: volume x, delay: s } for the synthesised effects (js/sfx.js)
   sfx(kind, o) {
     if (this.state.muted) return;
@@ -523,6 +546,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // until: the cue lasts until that word is said (span, s: from the clip's own word times; else about 0.3 s a word)
     const cueKey = keep ? L.s : text.replace(/\s*\n\s*/g, ' ').trim();
     const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), j: c.until ? words.map(key).indexOf(key(c.until)) : -1, done: false }));
+    // "parallelogram" said: its parallel arrows are called out (parWord), unless the line calls out arrows itself
+    const pw = words.map(key).findIndex((w) => /^parallelograms?$/.test(w));
+    if (pw >= 0 && !(L.cues || []).some((c) => c.beat || c.mark)) cues.push({ c: { parWord: 1 }, i: pw, j: -1, done: false });
     const fireCue = (q) => {
       if (q.done || tok !== this.narrTok) return;
       q.done = true;
@@ -824,6 +850,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
     // passes them, 0.43 s into its run (their tick: markSounds)
     if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); this.busyFor(1100 + 420); }
+    // beat: these sides' parallel arrows are called out (parBeat) - as their light passes them when the cue lights them
+    if (c.beat) this.parBeat(c.beat, c.glow ? 430 : 0);
+    if (c.parWord) this.parWord();
     if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
     // diagonals' halves slide onto each other - one pair after another
@@ -1161,7 +1190,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2022,9 +2051,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       return { mx: (p.x + q.x) / 2, my: (p.y + q.y) / 2, ux: ux, uy: uy, nx: -uy, ny: ux };
     };
     const at = (F, d) => ({ x: F.mx + F.ux * d, y: F.my + F.uy * d });
-    const arrows = (k) => {
-      const n = nArrows[k]; if (!n) return '';
-      const F = frame(k), c0 = nTicks[k] ? -MK.gap : 0;
+    const arrows = (k, n, c0) => {
+      n = n || nArrows[k]; if (!n) return '';
+      const F = frame(k); c0 = c0 != null ? c0 : nTicks[k] ? -MK.gap : 0;
       let out = '';
       for (let i = 0; i < n; i++) {
         const c = at(F, c0 + (i - (n - 1) / 2) * MK.arrowStep), tip = { x: c.x + F.ux * MK.arrowDepth, y: c.y + F.uy * MK.arrowDepth };
@@ -2048,10 +2077,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.tk = { p: tkPath || 'M0,0', d: dsp(!!tkPath) };
     // each side's arrows on their own (css .par-ch pops them on as the side's light passes them); a side whose arrows a
     // word cue traces on (markCues) keeps its slot but shows them only from that cue
+    // A parallelogram's side with no arrows of its own gets them for a moment when they are called out (s.parTmp, from
+    // parBeat): two on AB, CD and one on AD, BC as ever; on a side showing its length they sit back along the side, clear
+    // of the number (or not at all if the side is too short for that)
     const due = this.markCues(st);
     ['AB', 'CD', 'DA', 'BC'].forEach((k) => {
       const on = !!nArrows[k] && !(due[k] && !(s.marked && s.marked[k]));
-      g['ch' + k] = { p: on ? arrows(k) : 'M0,0', d: dsp(on) };
+      const tmp = !on && !due[k] && pgNow && s.parTmp && s.parTmp[k], half = this.dist(SIDES[k][0], SIDES[k][1]) / 2;
+      const c0 = lenOn(k) ? -MK.tempShift : 0, fits = !lenOn(k) || half >= MK.tempShift + MK.arrowStep + MK.arrowDepth;
+      const path = on ? arrows(k) : tmp && fits ? arrows(k, k === 'AB' || k === 'CD' ? 2 : 1, c0) : '';
+      g['ch' + k] = { p: path || 'M0,0', d: dsp(!!path), x: !on && path ? ' tmp' + (tmp === 'out' ? ' out' : '') : '' };
     });
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;

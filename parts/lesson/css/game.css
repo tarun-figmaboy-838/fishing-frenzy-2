@@ -323,6 +323,9 @@ a{color:#123b63}a:hover{color:#0b2742}
    its run (hlRun's curve; a mark cue ticks then too), so the trace and the marks read as one stroke. Arrows that
    arrive with a screen pop in on the same beat. */
 .par-ch{transform-box:fill-box;transform-origin:center;animation:mkPop .42s cubic-bezier(.3,1.6,.5,1) .43s both}
+/* arrows called out for a moment on a side that shows none (parBeat): they pop on at once, and shrink away */
+.par-ch.tmp{animation:mkPop .42s cubic-bezier(.3,1.6,.5,1) both}.par-ch.tmp.out{animation:mkOut .3s ease-in both}
+@keyframes mkOut{from{transform:none;opacity:1}to{transform:scale(0);opacity:0}}
 @keyframes mkPop{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
 .edge.lit{stroke-width:8px;filter:drop-shadow(0 0 3px rgba(255,208,0,.95)) drop-shadow(0 0 7px rgba(255,208,0,.55))}
 /* dim with stroke-opacity: GSAP animates opacity on the sides (entrances), and a CSS opacity transition would lag them */
@@ -341,7 +344,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .wedge.try{filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px rgba(255,196,0,.7));animation:wedgeTry .9s ease-out 1}
 @keyframes wedgeTry{0%,100%{transform:scale(1)}45%{transform:scale(1.14)}}
 @media (prefers-reduced-motion: reduce){.wedge.try{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
-@media (prefers-reduced-motion: reduce){.par-ch{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
+@media (prefers-reduced-motion: reduce){.par-ch,.par-ch.tmp,.par-ch.tmp.out{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
 .wedge.dim{opacity:.35}.tag.alab.dim{opacity:.5}

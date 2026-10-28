@@ -23,7 +23,8 @@ const CONFIG = {
   // depth, half height (11 deep, 22 tall), spacing between two (back to back); equal-length ticks - half length (24 long),
   // spacing between two; gap = how far each kind sits from the midpoint when a side has both; labelGap = a length
   // label's gap from its side (bases also clear their arrows: +12, as there), markGap = the extra room past a side's marks
-  marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 28, labelGap: 10, markGap: 14 },
+  marks: { arrowDepth: 5.5, arrowWing: 11, arrowStep: 14, tickHalf: 12, tickStep: 10, gap: 28, labelGap: 10, markGap: 14,
+    tempMs: 1800, pairGap: 450, tempShift: 56 }, // (arrows called out for a moment: how long they stay, the second pair's lag, how far back along a side showing its length)
   // dropdown answers: one option's height, the menu's narrowest width, the lowest it may reach (stage px), close and
   // wrong-answer display times (ms)
   dropdown: { itemH: 46, minItemW: 64, gap: 8, left: 112, right: 1168, maxBottom: 692, closeMs: 180, wrongMs: 1000 }, // the choices' row: where the tiles were, under the boxes, inside the card (stage px)
