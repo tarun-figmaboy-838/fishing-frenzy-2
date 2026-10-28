@@ -883,8 +883,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // A tag relating two parts of the shape (sides, angles, halves of a diagonal) is never just popped on: the two parts
   // send what they show - their values, or their names when none is on show - flying from the shape into the tag's
   // place; it comes in as they land, reading what the shape shows ("110° + 70°", then "= 180°"), and settles into what
-  // it states ("∠A + ∠D = 180°"). opt.sumAt: when "= 180°" joins after it lands (a 180° demo's rim)
-  tagPart(name) {
+  // it states ("∠A + ∠D = 180°"). opt.sumAt: when "= 180°" joins after it lands (a 180° demo's rim). A ∥ tag is about
+  // the sides' directions, not their lengths: its sides always send their names (byName), never "6 cm ∥ 6 cm"
+  tagPart(name, byName) {
     const P = this.shapeP(), f = this.fl(), st = this.cur(), mid = (p, q) => ({ x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
     if (name[0] === '∠') {
       const k = name[1], on = !st.fig && (f.arcs || '').indexOf(k) >= 0 && !!(this.alabAt && this.alabAt[k]);
@@ -895,12 +896,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       return { text: on ? this.cm(this.dist(O, P[k])) : name, val: on, at: mid(O, P[k]) };
     }
     const key = { AB: 'AB', BA: 'AB', BC: 'BC', CB: 'BC', CD: 'CD', DC: 'CD', DA: 'DA', AD: 'DA' }[name], Lb = this.lenAt && this.lenAt[key];
-    const on = !!(Lb && !/ off\b/.test(Lb.cls));
+    const on = !byName && !!(Lb && !/ off\b/.test(Lb.cls));
     return { text: on ? Lb.t : name, val: on, at: on ? { x: Lb.x, y: Lb.y } : mid(P[name[0]], P[name[1]]) };
   }
   tagParts(t) {
     const m = /^(∠[A-D]|[A-DO][A-DO]) (∥|=|\+) (∠[A-D]|[A-DO][A-DO])( = 180°)?$/.exec(String(t || '').trim());
-    return m ? { a: this.tagPart(m[1]), op: m[2], b: this.tagPart(m[3]), sum: !!m[4] } : null;
+    return m ? { a: this.tagPart(m[1], m[2] === '∥'), op: m[2], b: this.tagPart(m[3], m[2] === '∥'), sum: !!m[4] } : null;
   }
   setTag(t, o) { this.setState({ chips: this.state.chips.map((c) => (c.t === t ? Object.assign({}, c, o) : c)) }); }
   tagCentre(t) {
