@@ -487,7 +487,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // never a question's answer; a shape's name - the shape pulses once (a parallelogram's arrows beat: parWord);
   // "vertices" - the corners; "equal", "adjacent", "supplementary", "180°" - the parts the line names, together (and
   // "equal" naming none, with the lengths shown: each pair of opposite lengths in turn);
-  // "bisect" - the diagonals' halves. A line lighting sides itself (its glow, or a cue's) gets no more light from
+  // "bisect" - the diagonals' halves; "diagonals" not drawn yet - AC and BD drawn in a moment. A line lighting sides itself (its glow, or a cue's) gets no more light from
   // these; none on a build, a summary, a grid of shapes or the end.
   conceptCues(words, L, ask) {
     const st = this.cur(), out = [];
@@ -520,6 +520,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (/^(equal|adjacent|supplementary|180)$/.test(k) && nParts.length >= 2) c = nParts.some((p) => /^a|^h/.test(p)) ? { emph: nParts } : (lit ? { light: nSides, ms: 1300 } : null);
       else if (k === 'equal' && !nParts.length && (f.sideLen || f.legLen)) c = { emphSeq: [['lAB', 'lCD'], ['lDA', 'lBC']], lightSeq: lit ? [['AB', 'CD'], ['DA', 'BC']] : null }; // (equal lengths: each pair's, together)
       else if (k === 'bisect' && f.diag) c = { emph: ['hA', 'hB', 'hC', 'hD'] };
+      else if (/^diagonals?$/.test(k) && !f.diag && !(this.state.diag && (this.state.diag.AC || this.state.diag.BD))) c = { sketchDiag: 1 }; // (not drawn yet: shown a moment)
       if (c) out.push({ i: i, c: c });
     });
     return out;
@@ -912,6 +913,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // beat: these sides' parallel arrows are called out (parBeat) - as their light passes them when the cue lights them
     if (c.beat) this.parBeat(c.beat, c.glow ? 430 : 0);
     if (c.parWord) this.parWord();
+    if (c.sketchDiag && window.Motion) { // (the diagonals, not on the board yet: AC then BD draw in a moment, dashed)
+      const Q = this.shapeP(), S = (k) => this.boardToStage(Q[k]), A = S('A'), B = S('B'), C = S('C'), D = S('D');
+      if (A && B && C && D) Motion.sketch([{ x1: A.x, y1: A.y, x2: C.x, y2: C.y }, { x1: B.x, y1: B.y, x2: D.x, y2: D.y }], 1300);
+    }
     if (c.sumSaid) { this.sumSaid = true; const w = this.sumWait; this.sumWait = null; if (w) w(); } // (the voice has said 180: a tag waiting adds "= 180°")
     if (c.light) this.lightFor(c.light, c.ms || 1300);
     if (c.lightSeq && c.lightSeq.length) { const id = this.seqId = {}; c.lightSeq.forEach((ks, j) => this.tm(() => { if (tok === this.stepTok && this.seqId === id) this.lightFor(ks, 900, id); }, j * 950)); }

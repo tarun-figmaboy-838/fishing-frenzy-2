@@ -321,6 +321,20 @@
         .to({}, { duration: 0.2 }, 1.9));
     },
     unghost() { if (this.ghostEl) { this.ghostEl.remove(); this.ghostEl = null; } },
+    // a part not drawn on the board yet, shown for a moment as the voice names it (stage px): its lines draw in one
+    // after another from their first end, dashed in the diagonals' glowing yellow, stay a moment (holdMs) and fade
+    sketch(lines, holdMs) {
+      if (!G || reduced || !this.fx()) return 0;
+      const g = this.mk('g', { 'class': 'math-sketch' }), r1 = (n) => n.toFixed(1);
+      const els = lines.map((l) => this.mk('line', { x1: r1(l.x1), y1: r1(l.y1), x2: r1(l.x1), y2: r1(l.y1), stroke: '#f2b400', 'stroke-width': 4, 'stroke-dasharray': '11 8', 'stroke-linecap': 'round', 'class': 'diag-pen' }, g));
+      const end = 0.35 * (lines.length - 1) + 0.6 + (holdMs || 1200) / 1000;
+      add(() => {
+        const tl = G.timeline({ onComplete: () => g.remove() });
+        els.forEach((el, i) => tl.to(el, { attr: { x2: lines[i].x2, y2: lines[i].y2 }, duration: 0.6, ease: 'sine.inOut' }, i * 0.35));
+        return tl.to(g, { opacity: 0, duration: 0.4 }, end);
+      });
+      return Math.round((end + 0.4) * 1000);
+    },
     pop(cx, cy) {
       if (!G || reduced) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];
