@@ -281,6 +281,43 @@ class Net {
     return this.meshPoint(0.5 + (u - 0.5) * (1 - 0.42 * k), v + (0.52 + 0.23 * v - v) * k);
   }
 
+  // Where a fish at a stage point hangs (its place for catchPoint) if it is inside the net as it is drawn now - open,
+  // or closing into its bag - else null. Its place in the drawn mesh is found by a few steps of Newton's method on
+  // meshPoint (from the nearest of a few points over the mesh, in short steps: the closed bag's neck is pinched tight),
+  // then catchPoint's slide into the belly is undone, so a fish is netted just where it is and stays in.
+  placeOf(stagePoint) {
+    if (this.furl || this.tangle) return null;
+    const want = this.toNet(stagePoint);
+    const frame = this.framed();
+    const h = 1e-3;
+    let u = 0.5;
+    let v = 0.5;
+    let near = Infinity;
+    for (let i = 0; i < 5; i += 1) {
+      for (let j = 0; j < 5; j += 1) {
+        const d = distance(this.meshPoint(0.1 + i * 0.2, 0.1 + j * 0.2, frame), want);
+        if (d < near) { near = d; u = 0.1 + i * 0.2; v = 0.1 + j * 0.2; }
+      }
+    }
+    for (let n = 0; n < 12; n += 1) {
+      const p = this.meshPoint(u, v, frame);
+      const e = sub(want, p);
+      if (Math.abs(e.x) + Math.abs(e.y) < 0.1) break;
+      const du = times(sub(this.meshPoint(u + h, v, frame), p), 1 / h);
+      const dv = times(sub(this.meshPoint(u, v + h, frame), p), 1 / h);
+      const det = du.x * dv.y - du.y * dv.x;
+      if (!det) return null;
+      const su = (e.x * dv.y - e.y * dv.x) / det;
+      const sv = (du.x * e.y - du.y * e.x) / det;
+      const cap = Math.min(1, 0.2 / Math.max(Math.abs(su), Math.abs(sv)));
+      u += su * cap;
+      v += sv * cap;
+    }
+    if (u < 0 || u > 1 || v < 0 || v > 1 || distance(this.meshPoint(u, v, frame), want) > 1) return null;
+    const k = this.pouch;
+    return { u: 0.5 + (u - 0.5) / (1 - 0.42 * k), v: (v - 0.52 * k) / (1 - 0.77 * k) };
+  }
+
   // The hole the catch tears: low in the mesh (in the bag's belly, once closed; the frame
   // holds), growing with the tear.
   tearHole() {

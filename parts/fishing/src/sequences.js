@@ -387,13 +387,40 @@ async function lowerNet(game, token, ms) {
   winch.working = 0;
 }
 
+// The net closing: every fish inside it is netted at once, just where it is (one netted a beat later would have swum
+// on, maybe out of the net), and so is any that swims in until the net is out of the water, so the catch is the fish
+// the child sees in the net, no more and no fewer. Returns `take`, which nets them into `caught` and is run on every
+// frame of the close and the haul; each new fish's puff follows the one before by a beat.
+function netter(game, caught, token) {
+  const { net, fx, audio } = game;
+  let heard = -Infinity;
+  return () => {
+    let fresh = 0;
+    for (const f of state.fish) {
+      if (f.gone || f.waiting || f.caught || f.flying) continue;
+      const place = net.placeOf(f);
+      if (!place) continue;
+      f.catchAt(place);
+      caught.push(f);
+      clock.wait(70 * fresh, token).then(() => fx.puff(f.x, f.y, 0, 2, true), () => {});
+      fresh += 1;
+    }
+    if (fresh && clock.time - heard > 300) {
+      heard = clock.time;
+      audio.play('bubbles');
+    }
+  };
+}
+
 // ...and comes up, over `ms`: closing into a bag round a catch (`caught`), rising HAUL above its rest so the bag
-// clears the water; empty, back to where it hangs.
-async function raiseNet(game, token, caught, ms) {
+// clears the water; empty, back to where it hangs. With `take` (netter) it goes on netting any fish it comes up
+// round: an empty net that scoops one up closes into its bag and hauls it clear from then on.
+async function raiseNet(game, token, caught, ms, take) {
   const { net, winch, popo, fx, audio } = game;
   const reduced = fx.reduced;
   const from = winch.ropeOut;
-  const lift = caught.length ? HAUL : 0;
+  let closing = caught.length ? { t: 0, pouch: net.pouch } : null;
+  let haul = caught.length ? 1 : 0;
   const payOut = (length) => {
     winch.setRopeOut(length);
     net.origin = popo.transformPoint(winch.hang.x, winch.hang.y);
@@ -405,10 +432,13 @@ async function raiseNet(game, token, caught, ms) {
   audio.crank(ms / 1000);
   let surfaced = net.ring().y + net.bottom() < game.waterline;
   await clock.tween(ms, token, (t) => {
+    if (take) take();
+    if (caught.length && !closing) closing = { t, pouch: net.pouch };
+    if (closing) haul = Math.max(haul, smooth(Math.min(1, (t - closing.t) / 0.3)));
     const k = smooth(t);
-    payOut(from * (1 - k) - lift * k);
-    if (caught.length) net.pouch = 0.55 + 0.45 * smooth(Math.min(1, t / 0.55));
-    net.swing = reduced || !caught.length ? 0 : Math.sin(t * Math.PI * 2) * 0.026 * Math.sin(t * Math.PI);
+    payOut(from * (1 - k) - HAUL * haul * k);
+    if (closing) net.pouch = closing.pouch + (1 - closing.pouch) * smooth(Math.min(1, (t - closing.t) / 0.55));
+    net.swing = reduced || !caught.length ? 0 : Math.sin(t * Math.PI * 2) * 0.026 * Math.sin(t * Math.PI) * haul;
     const bottom = net.ring().y + net.bottom();
     if (!surfaced && bottom < game.waterline) {
       surfaced = true;
@@ -417,7 +447,7 @@ async function raiseNet(game, token, caught, ms) {
     }
     if (surfaced && Math.random() < 0.12) fx.drips(net.toStage(net.meshPoint(0.3 + Math.random() * 0.4, 1)));
   });
-  winch.setRopeOut(-lift);
+  winch.setRopeOut(-HAUL * haul);
   winch.working = 0;
 }
 
@@ -529,14 +559,10 @@ async function catchNow(game) {
   try {
     ui.setAction('hidden');
     state.phase = PHASE.CATCHING;
-    const caught = state.fish.filter((f) => !f.gone && !f.leaving && !f.waiting && net.contains(f));
-    if (caught.length) audio.play('bubbles');
-    for (const f of caught) {
-      f.catchAt(net.uvOf(net.toNet(f)));
-      fx.puff(f.x, f.y, 0, 2, true);
-      await clock.wait(70, token);
-    }
-    await clock.wait(reduced ? 250 : 420, token);
+    const caught = [];
+    const take = netter(game, caught, token);
+    take();
+    await clock.tween((reduced ? 250 : 420) + 70 * caught.length, token, take);
     if (caught.length) {
       // the mouth closes under the water before the loaded bag rises
       const smooth = (t) => t * t * t * (t * (t * 6 - 15) + 10);
@@ -544,6 +570,7 @@ async function catchNow(game) {
       audio.crank(0.55);
       let gathered = 0;
       await clock.tween(reduced ? 300 : 550, token, (t) => {
+        take();
         const k = smooth(t);
         net.pouch = 0.55 * k;
         winch.turn(-24 * (k - gathered));
@@ -551,7 +578,7 @@ async function catchNow(game) {
       });
     }
     state.phase = PHASE.NET_RAISING;
-    await raiseNet(game, token, caught, reduced ? 1100 : 1800);
+    await raiseNet(game, token, caught, reduced ? 1100 : 1800, take);
     if (!caught.length) {
       popo.react('think', 1.2);
       audio.play('wobble');
@@ -649,16 +676,12 @@ async function dropNet(game) {
     net.swing = 0;
     winch.working = 0;
 
-    // the frame settles over whoever swam under it; each fish inside is netted in turn
+    // the frame settles over whoever swam under it, and every fish inside is netted (netter)
     state.phase = PHASE.CATCHING;
-    const caught = state.fish.filter((f) => !f.gone && !f.leaving && !f.waiting && net.contains(f));
-    if (caught.length) audio.play('bubbles');
-    for (const f of caught) {
-      f.catchAt(net.uvOf(net.toNet(f)));
-      fx.puff(f.x, f.y, 0, 2, true);
-      await clock.wait(70, token);
-    }
-    await clock.wait(reduced ? 250 : 420, token);
+    const caught = [];
+    const take = netter(game, caught, token);
+    take();
+    await clock.tween((reduced ? 250 : 420) + 70 * caught.length, token, take);
 
     // Take up slack first: the mouth closes underwater before the loaded bag rises.
     if (caught.length) {
@@ -666,6 +689,7 @@ async function dropNet(game) {
       audio.crank(0.55);
       let gathered = 0;
       await clock.tween(reduced ? 300 : 550, token, (t) => {
+        take();
         const k = smooth(t);
         net.pouch = 0.55 * k;
         winch.turn(-24 * (k - gathered));
@@ -675,26 +699,7 @@ async function dropNet(game) {
 
     // up it comes, closing into a bag around its catch, the fish sliding down into its belly
     state.phase = PHASE.NET_RAISING;
-    const up = reduced ? 1100 : 1800;
-    const lift = caught.length ? HAUL : 0;
-    winch.working = -1;
-    audio.crank(up / 1000);
-    let surfaced = false;
-    await clock.tween(up, token, (t) => {
-      const k = smooth(t);
-      payOut(depth * (1 - k) - lift * k);
-      if (caught.length) net.pouch = 0.55 + 0.45 * smooth(Math.min(1, t / 0.55));
-      net.swing = reduced || !caught.length ? 0 : Math.sin(t * Math.PI * 2) * 0.026 * Math.sin(t * Math.PI);
-      const bottom = net.ring().y + net.bottom();
-      if (!surfaced && bottom < game.waterline) {
-        surfaced = true;
-        game.netSplash();
-        audio.play('drip');
-      }
-      if (surfaced && Math.random() < 0.12) fx.drips(net.toStage(net.meshPoint(0.3 + Math.random() * 0.4, 1)));
-    });
-    winch.setRopeOut(-lift);
-    winch.working = 0;
+    await raiseNet(game, token, caught, reduced ? 1100 : 1800, take);
     if (right) game.instruct(''); // (the catch speaks for itself)
 
     if (!right) {
