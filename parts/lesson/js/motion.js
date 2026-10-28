@@ -196,10 +196,10 @@
       });
       return 2400;
     },
-    // equal angles: a copy of the wedge at one corner turns a half-turn about the shape's centre O and lands exactly on
-    // the opposite corner's wedge - the reason they are equal: a parallelogram turned half-way round its centre fits
-    // itself, carrying each angle onto the one opposite. (No mark at O: the turn shows it. Without O: the copy travels
-    // across, turning on the way.)
+    // equal angles: a copy of the wedge at one corner travels along the diagonal to the opposite corner, turning a
+    // half-turn on the way, and lands exactly on its wedge - staying inside the shape all the way. (With O: it turns
+    // round the centre instead - a parallelogram turned half-way round its centre fits itself - but on a long shape
+    // that sweeps it out past the shape, so the lesson uses the diagonal.)
     spinMatch(src, dst, O) {
       if (!G || reduced || !this.fx()) return 0;
       const g = this.mk('g', { 'class': 'math-glow' });
@@ -219,11 +219,11 @@
       const origin = r1(v.x) + ' ' + r1(v.y);
       add(() => G.timeline({ onComplete: () => g.remove() })
         .set(g, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, svgOrigin: origin })
-        .to(g, { opacity: 1, scale: 1.2, duration: 0.35, svgOrigin: origin })
-        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.6, ease: 'power2.inOut', svgOrigin: origin }, 0.4)
-        .to(g, { scale: 1, duration: 0.3, ease: 'back.out(2)', svgOrigin: origin }, 2.0)
-        .to(g, { opacity: 0, duration: 0.45 }, 2.8));
-      return 3300;
+        .to(g, { opacity: 1, scale: 1.2, duration: 0.3, svgOrigin: origin })
+        .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.2, ease: 'power2.inOut', svgOrigin: origin }, 0.35)
+        .to(g, { scale: 1, duration: 0.25, ease: 'back.out(2)', svgOrigin: origin }, 1.55)
+        .to(g, { opacity: 0, duration: 0.4 }, 2.1));
+      return 2500;
     },
     // A mask that keeps a drawing off every word on the stage - the corner letters, the lengths and angle sizes, the
     // name cards and the instruction plate - with a little air round each (stage px), so a line passes behind them

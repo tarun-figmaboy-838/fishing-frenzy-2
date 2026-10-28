@@ -60,7 +60,8 @@ class AudioEngine {
     const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (!entries.length || !OAC) return Promise.resolve();
     const decoder = new OAC(1, 1, 24000);
-    const decode = (bytes) => new Promise((resolve) => decoder.decodeAudioData(bytes, resolve, () => resolve(null)));
+    // (Safari calls the error callback and also rejects the promise it returns: both are handled)
+    const decode = (bytes) => new Promise((resolve) => { const p = decoder.decodeAudioData(bytes, resolve, () => resolve(null)); if (p && p.catch) p.catch(() => resolve(null)); });
     const embedded = [];
     for (const [key, src] of entries) {
       if (src.startsWith('data:')) {

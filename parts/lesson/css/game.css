@@ -343,12 +343,13 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* an angle named before its mark is drawn: its wedge peeks in, soft, while it is said */
 .wedge.peek{opacity:.6;animation:wedgePeek .3s ease-out both}
 @keyframes wedgePeek{from{opacity:0}to{opacity:.6}}
-/* an angle that can be tapped: a steady soft outline, after one gentle lift as the question is asked (no blinking) */
-.wedge.try{filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px rgba(255,196,0,.7));animation:wedgeTry .9s ease-out 1}
-@keyframes wedgeTry{0%,100%{transform:scale(1)}45%{transform:scale(1.14)}}
-/* ...and while the hint shows the angles to try, each pulses, in time with the hand's presses */
-.wedge.try.pulse{animation:wedgeTry 1.4s ease-in-out infinite}
-@media (prefers-reduced-motion: reduce){.wedge.try,.wedge.try.pulse{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
+/* an angle that can be tapped pulses - it grows and glows and settles, again and again, in time with the others and
+   with the hint's presses (css handTap, 1.4 s) - for as long as the question waits: what is to be tapped beats (it
+   never fades or blinks) */
+.wedge.try{filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px rgba(255,196,0,.7));animation:wedgeTry 1.4s ease-in-out infinite}
+@keyframes wedgeTry{0%,100%{transform:scale(1);filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px rgba(255,196,0,.55))}
+  45%{transform:scale(1.18);filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,196,0,.95))}}
+@media (prefers-reduced-motion: reduce){.wedge.try{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
 @media (prefers-reduced-motion: reduce){.par-ch,.par-ch.tmp,.par-ch.tmp.out{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
@@ -509,7 +510,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .solo-ok>.opt.opt.leave:not(.gridopt){flex:0 0 0px!important;max-width:0;min-width:0;margin:0 -6px;padding:0!important;border-width:0;
   opacity:0;transform:scale(.6);filter:blur(3px) grayscale(1);box-shadow:none;animation:none;overflow:hidden;white-space:nowrap;pointer-events:none}
 .stage .solo-ok>.opt.opt.leave:not(.gridopt)::after,.stage .solo-ok>.opt.opt.leave:not(.gridopt)::before{display:none}
-.stage .solo-ok>.opt.opt.solo:not(.gridopt){flex:0 0 auto!important;max-width:none;min-width:200px;padding-left:44px!important;padding-right:44px!important;white-space:nowrap;opacity:1; /* (its own width, centred - never stretched over the row) */
+.stage .solo-ok>.opt.opt.solo:not(.gridopt){white-space:nowrap;opacity:1;
   animation:soloPop .35s cubic-bezier(.34,1.56,.64,1) both,soloSettle .45s cubic-bezier(.3,0,.2,1) .62s both,soloGlow 1.1s ease-out .62s both}
 @keyframes soloPop{0%{transform:scale(1)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes soloSettle{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -517,9 +518,9 @@ a{color:#123b63}a:hover{color:#0b2742}
   100%{box-shadow:0 0 0 2px #2f9617,inset 0 -6px 0 rgba(20,110,10,.35),inset 0 2px 0 rgba(255,255,255,.5),0 0 0 18px rgba(120,230,90,0)}}
 @media (prefers-reduced-motion: reduce){.stage .solo-ok>.opt.opt:not(.gridopt){transition:opacity .2s ease}
   .stage .solo-ok>.opt.opt.solo:not(.gridopt){animation:none}}
-/* (the right pill keeps its own flex size - capped at half the row, its width when both are showing - so it never
-   resizes: as the other folds away it only glides to the centre) */
-.stage .solo-ok>.opt.opt.solo:not(.gridopt){flex:1 1 0px!important;max-width:calc(50% - 6px)}
+/* (the right pill - or pills, on a select-all - keeps the width it had in the row (--pill, the row's own pill width:
+   Game.optRow), so it never resizes or stretches over the row: as the others fold away it only glides to the centre) */
+.stage .solo-ok>.opt.opt.solo:not(.gridopt){flex:0 0 var(--pill,calc(50% - 6px))!important;max-width:var(--pill,calc(50% - 6px))}
 .solo-ok>.opt.solo{flex:1 1 0px!important}
 /* the fold is driven by max-width alone (it has a real start value, so it animates from the first frame); every pill
    keeps flex 1 1 0, and the row starts with each pill capped at half its width */
@@ -718,6 +719,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* the number choices (screens 20, 21, 37, 50) stay in view under their boxes - no menu over the shape - and step back
    once the boxes are all right (or while a wrong one is shown) */
 .stage .tile-row:has(.tile.spent){opacity:.35;pointer-events:none}
+.stage .tile-row:has(.tile.done){opacity:0;transition:opacity .35s ease} /* (answered: the used tiles go - no shadows left lying under the boxes) */
 /* the plate's words: one line of inline blocks, spaced as the bubble's flex gap; the plate sizes itself to its text (the
    speech bubble's shrink-to-widest-line width is not for it) */
 .stage.in-card.scene.plate .bubble-text{display:block!important;white-space:nowrap!important;text-align:center}
@@ -746,6 +748,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* equal-length ticks (sides and diagonal halves): crisp 3 px navy strokes that keep their weight at any shape size,
    on a sharp white underlay (no blur) so a single or double tick reads cleanly where it crosses the blue side */
 .stage .ticks{stroke:#123b63;filter:none}
+/* equal-length ticks are drawn on as they appear, one after another (the path's own length is 100: pathLength) */
+.ticks.tk-draw{stroke-dasharray:100 100;animation:tkDraw .9s ease-out both}
+@keyframes tkDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){.ticks.tk-draw{animation:none}}
 /* a solved checkpoint's found values settle onto the figure in the answer's green, so the finished figure reads complete */
 .stage.in-card .tag.mtag.solved,.stage.in-card .tag.alab.solved{color:#13824a!important;animation:solvedIn .45s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes solvedIn{from{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1)}} /* (a half's value keeps its half's slope) */

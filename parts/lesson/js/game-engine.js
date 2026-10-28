@@ -373,7 +373,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const src = CONFIG.sounds[k];
       try { const a = new Audio(src); a.preload = 'auto'; this.sndEl[k] = a; } catch (e) {}
       if (!this.actx || typeof fetch === 'undefined') return;
-      fetch(src).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, no) => this.actx.decodeAudioData(b, ok, no)))
+      fetch(src).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, no) => { const p = this.actx.decodeAudioData(b, ok, no); if (p && p.catch) p.catch(no); })) // (Safari also rejects the promise it returns)
         .then((buf) => { this.sndBuf[k] = buf; }).catch(() => {});
     });
   }
@@ -844,9 +844,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         fail: () => { if (live() && !started) { clipMs = 0; device(); } }
       });
       if (handed) {
-        // a clip that is slow to arrive is waited for (Swiftee's line is the screen's instruction or question); only one
-        // that never starts gives the line to device() (its words, silently)
-        this.tm(() => { if (live() && !started && !sDone) { VO.stop(); clipMs = 0; device(); } }, 8000);
+        // a screen's own line whose clip is slow to arrive is waited for (it is the instruction or the question); a tip
+        // or a right answer's praise is not - its words show within 1.5 s, voiced or not (a clip Safari has not fetched
+        // ahead can take seconds to start, and the plate shows nothing until its first word); only a clip that never
+        // starts gives the line to device() (its words, silently)
+        const own = ((this.cur() || {}).lines || []).indexOf(L) >= 0;
+        this.tm(() => { if (live() && !started && !sDone) { VO.stop(); clipMs = 0; device(); } }, own ? 8000 : 1500);
         return;
       }
       clipMs = 0;
@@ -980,7 +983,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const tagAt = (i, when) => { if (c.tags && c.tags[i]) this.tm(() => { if (tok === this.stepTok && this.state.chips.every((x) => x.t !== c.tags[i].t)) this.buildTag(c.tags[i]); }, when); };
         if (c.match) pairs(c.match).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); tagAt(i, at + 1450); at += 2500; });
         if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
-        if (c.matchAng) pairs(c.matchAng).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); tagAt(i, at + 1700); at += 2700; });
+        if (c.matchAng) pairs(c.matchAng).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), null); }, at); tagAt(i, at + 1700); at += 2700; }); // (along the diagonal: inside the shape)
         // a diagonal's halves: a copy of one slides along the diagonal onto the other (A->O onto O->C: no turn, it stays
         // on its line) and fits it exactly, in their colour, the two halves standing out while it does
         const halfCol = (k) => PAL[(this.fl().halfPairs ? { A: 'vA', C: 'vA', B: 'vB', D: 'vB' } : { A: 'vA', B: 'vB', C: 'vC', D: 'vD' })[k]];
@@ -1203,7 +1206,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         Motion.ghostDrag({ x: hand.x, y: hand.y }, hand.dx, hand.dy, st.task === 'dragB' && S ? [S.A, S.C] : [], st.task === 'connect', cycles);
       }
       // (the angles to try: the hand presses each in turn, a whole tap - lift, press, ring - on one before it hops to the
-      // next, between presses (css handTap, 1.4 s); every one of them pulses meanwhile: each can be tapped)
+      // next, between presses (css handTap, 1.4 s), in time with their pulse)
       if (T.ks) T.ks.forEach((k, i) => this.tm(() => {
         if (tok !== this.stepTok || !this.state.hand) return;
         const el = typeof document !== 'undefined' && document.querySelector('[data-qa="vtx-' + k + '"]'), stage = document.querySelector('.stage');
@@ -2379,7 +2382,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // angle still to try (its wedge) beats gently from its corner; on the diagonals each corner to draw from (its dot)
       const pulse = (tapV && !s.ang[k] && k !== st.ref) || (conn && !(s.conn && s.conn.from === k));
       if (pulse && !this.busy()) {
-        if (tapV && g['a' + k]) g['a' + k].cls += ' try' + (s.hand && s.hand.ks ? ' pulse' : ''); // (pulsing while the hint shows them)
+        if (tapV && g['a' + k]) g['a' + k].cls += ' try'; // (each pulses while the question waits: css .wedge.try)
         if (conn) g['v' + k].cls += ' drag-cue';
       }
       // (an angle to tap is tapped in the angle - its target sits between its wedge and its size, inside the shape -
@@ -2607,8 +2610,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const tok = this.stepTok, X = this.meetPoint(pair), settle = Motion.reduced ? 0 : 800;
     if (!X || !window.Motion) return;
     this.setState({ meet: pair, glow: pair });
-    this.tm(() => { // (once the zoom has settled: the lines are drawn on the stage, where the zoomed shape now is)
-      if (tok !== this.stepTok || !this.state.meet) return;
+    // (once the zoom has settled - its transition's end, however long the machine takes - the lines are drawn on the
+    // stage, where the zoomed shape now is)
+    let drawn = false;
+    const board = typeof document !== 'undefined' && document.querySelector('.stage svg[aria-label="Parallelogram ABCD"]');
+    const zooms = !Motion.reduced && (this.meetZoom(this.cur()) || { f: 1 }).f < 0.999;
+    if (board && zooms) board.addEventListener('transitionend', function done(e) { if (e.target === board && e.propertyName === 'transform') { board.removeEventListener('transitionend', done); draw(); } });
+    const draw = () => {
+      if (drawn || tok !== this.stepTok || !this.state.meet) return;
+      drawn = true;
       const P = this.shapeP(), toStage = (p) => this.boardToStage(p);
       const edge = (k) => document.querySelector('.stage svg .edge.e' + k);
       const lines = pair.map((k) => {
@@ -2620,7 +2630,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }).filter(Boolean);
       const at = toStage(X);
       if (lines.length === 2 && at) Motion.meet(lines, at, span ? Math.max(0.9, span - settle / 1000) : 1.3);
-    }, settle);
+    };
+    this.tm(draw, zooms ? settle + 900 : settle); // (no zoom, or no transition end heard: on time)
   }
   hideMeet() {
     if (!this.state.meet) return;
@@ -2647,7 +2658,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     let w = cols * pw + gap * (cols - 1);
     O.filter((o) => o.wide).forEach((o) => { w = Math.max(w, textW(o)); });
     w = Math.ceil(Math.min(w, C.rowMax));
-    return { w: w, left: Math.round(640 - w / 2) };
+    return { w: w, left: Math.round(640 - w / 2), pw: Math.floor(pw) };
   }
   // the plate glides in once when a screen with Swiftee's bubble hands over to a caption screen (not on every line)
   plateEnter(st) {
@@ -2699,7 +2710,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       tap: () => this.blankTap(b.id) })) : [];
     // the choices: for a number box, in its own menu (ddOpen); for the segment pairs, tiles under the boxes, tapped
     // (into the picked box) or dragged onto a box
-    const tiles = FD && !dd ? FD.tiles.map((t, i) => ({ t: t, i: i, cls: 'tile' + (this.tileUsed(t) ? ' used' : '') + (F.drag && F.drag.t === t ? ' lift' : '') + (s.done || F.checking ? ' spent' : ''), down: (e) => this.tileDown(t, e) })) : [];
+    const tiles = FD && !dd ? FD.tiles.map((t, i) => ({ t: t, i: i, cls: 'tile' + (this.tileUsed(t) ? ' used' : '') + (F.drag && F.drag.t === t ? ' lift' : '') + (s.done || F.checking ? ' spent' : '') + (s.done ? ' done' : ''), down: (e) => this.tileDown(t, e) })) : [];
     const opts = hasOpts ? st.opts.map(mk) : [];
     // end
     const nRight = Object.keys(s.results).filter((k) => s.results[k]).length;
@@ -2742,7 +2753,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       c1: c1, hasOpts: hasOpts, opts: opts,
       // the answers (and answer boxes) in a row under the shape, centred on the card
       optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + (st.okChips && st.opts && !st.grid ? CONFIG.card.chipGap + CONFIG.card.chipLane : 0)) : 376, // (under a right answer's tags)
-      optLeft: this.optRow(st).left,
+      optLeft: this.optRow(st).left, optPill: this.optRow(st).pw, // (a pill's own width: a right answer left alone keeps it)
       optW: this.optRow(st).w, optCls: fadeV + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (soloRow ? ' solo-ok' : ''),
       // the name tags: under the shape, or above it on a question screen (its answers have the space under it)
       chipTop: isLesson ? (!(st.okChips && st.opts) && (st.practice || (st.chipTop && st.chipTop < 200)) ? CONFIG.card.chipTopQ : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)

@@ -4,9 +4,11 @@
 // along a side, holds it while the reading comes in, lifts it and moves on. After the last corner she walks home.
 // Each frame of assets/images/swiftee-protractor.webp is one complete pose, bird and protractor together (poses in
 // js/angle-frames.js). A frame is only turned a little from how it was drawn, so she stays near upright.
-// Drawn on its own canvas (.angle-walk) in stage px, at the shape's real corners (engine.boardToStage).
+// Drawn on its own canvas (.angle-walk) in stage px, at the shape's real corners (engine.boardToStage). The canvas
+// reaches PAD stage px past the stage on each side, so at a corner near its edge (B) she is never cut off.
 // cancel() runs on every screen change: she disappears at once and no reading comes in later.
 // =====================================================================
+const PAD = 200, CW = 1280 + 2 * PAD; // (index.html: the canvas at left -PAD, CW wide)
 window.AngleWalker = class AngleWalker {
   constructor() {
     this.F = window.AngleMeasuringFrames;
@@ -177,18 +179,18 @@ window.AngleWalker = class AngleWalker {
   fitCanvas() {
     const cv = this.canvas();
     if (!cv) return;
-    const w = Math.round(1280 * Math.min(2, Math.max(0.5, cv.getBoundingClientRect().width / 1280 * (window.devicePixelRatio || 1))));
-    if (cv.width !== w) { cv.width = w; cv.height = Math.round(w * 9 / 16); }
+    const w = Math.round(CW * Math.min(2, Math.max(0.5, cv.getBoundingClientRect().width / CW * (window.devicePixelRatio || 1))));
+    if (cv.width !== w) { cv.width = w; cv.height = Math.round(w * 720 / CW); }
   }
   draw(now) {
     const cv = this.canvas();
     if (!cv) { this.loopOn = false; return; }
-    const c = cv.getContext('2d'), k = cv.width / 1280; // canvas px per stage px (fitCanvas)
+    const c = cv.getContext('2d'), k = cv.width / CW; // canvas px per stage px (fitCanvas)
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
     const F = this.F, P = this.pose, im = this.img;
     if (P && this.alpha > 0 && im && im.complete && im.naturalWidth) {
       const s = this.S * (P.k || 1), cell = F.cell, f = this.frame;
-      c.setTransform(k, 0, 0, k, 0, 0);
+      c.setTransform(k, 0, 0, k, k * PAD, 0);
       c.translate(P.x, P.y);
       c.rotate((P.rotation - F.poses[f].angle) * Math.PI / 180); // turn only by the difference from how the frame was drawn
       c.globalAlpha = this.alpha;
@@ -200,7 +202,7 @@ window.AngleWalker = class AngleWalker {
     const tr = this.trace;
     if (tr && tr.t > 0) { // the angle being read sweeps open in its own colour, exactly as the angle that stays on the shape
       const r = tr.r || 40, end = tr.a + tr.sweep * tr.t; // stage px: the angle mark's own radius
-      c.setTransform(k, 0, 0, k, 0, 0);
+      c.setTransform(k, 0, 0, k, k * PAD, 0);
       c.beginPath(); c.moveTo(tr.p.x, tr.p.y); c.arc(tr.p.x, tr.p.y, r, tr.a, end, tr.sweep < 0); c.closePath();
       c.globalAlpha = 0.6; c.fillStyle = tr.col; c.fill(); c.globalAlpha = 1; // see-through, so the protractor reads whole under it
       if (tr.lab) { // the degrees count up as the angle is traced, where the value will land

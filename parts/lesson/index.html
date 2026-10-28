@@ -74,7 +74,7 @@
 <line class="{{g.hC.cls}}" pathLength="100" sc-camel-x1="{{g.hC.x1}}" sc-camel-y1="{{g.hC.y1}}" sc-camel-x2="{{g.hC.x2}}" sc-camel-y2="{{g.hC.y2}}" sc-camel-display="{{g.hC.d}}" style="stroke: {{g.hC.c}}" stroke-width="5" stroke-linecap="round" pointer-events="none"></line>
 <line class="{{g.hD.cls}}" pathLength="100" sc-camel-x1="{{g.hD.x1}}" sc-camel-y1="{{g.hD.y1}}" sc-camel-x2="{{g.hD.x2}}" sc-camel-y2="{{g.hD.y2}}" sc-camel-display="{{g.hD.d}}" style="stroke: {{g.hD.c}}" stroke-width="5" stroke-linecap="round" pointer-events="none"></line>
 <!-- equal halves' ticks over the halves themselves (a half drawn later cut through its tick) -->
-<path sc-camel-d="{{g.htk.p}}" class="fadein ticks" sc-camel-display="{{g.htk.d}}" fill="none" stroke="#123b63" stroke-width="3.5" stroke-linecap="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.htk.p}}" class="ticks tk-draw" pathLength="100" sc-camel-display="{{g.htk.d}}" fill="none" stroke="#123b63" stroke-width="3.5" stroke-linecap="round" pointer-events="none"></path>
 <!-- the supplementary demo (as Fishing Frenzy's suppAt): the side carried on past the corner, the corner's own angle, the
      copy of the other angle sliding in and turning onto the line, and the gold rim round the half-disc (css .supp-*) -->
 <g class="supp" sc-camel-display="{{g.sp.d}}" pointer-events="none">
@@ -90,7 +90,7 @@
 <path sc-camel-d="{{g.tapeTk.p}}" sc-camel-display="{{g.tapeTk.d}}" fill="none" stroke="#6b4c0c" stroke-width="1.6" stroke-linecap="round"></path>
 <!-- side marks, as in Fishing Frenzy's lesson: navy equal-length ticks; orange parallel chevrons over a white halo,
      each side's its own (they pop onto their side as its light passes them: css .par-ch) -->
-<path sc-camel-d="{{g.tk.p}}" class="fadein ticks" sc-camel-display="{{g.tk.d}}" fill="none" stroke="#123b63" stroke-width="3.5" stroke-linecap="round" pointer-events="none"></path>
+<path sc-camel-d="{{g.tk.p}}" class="ticks tk-draw" pathLength="100" sc-camel-display="{{g.tk.d}}" fill="none" stroke="#123b63" stroke-width="3.5" stroke-linecap="round" pointer-events="none"></path>
 <path sc-camel-d="{{g.chAB.p}}" class="par-ch par-halo{{g.chAB.x}}" data-side="AB" sc-camel-display="{{g.chAB.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
 <path sc-camel-d="{{g.chAB.p}}" class="par-ch{{g.chAB.x}}" data-side="AB" sc-camel-display="{{g.chAB.d}}" fill="none" stroke="#ff7a00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
 <path sc-camel-d="{{g.chCD.p}}" class="par-ch par-halo{{g.chCD.x}}" data-side="CD" sc-camel-display="{{g.chCD.d}}" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"></path>
@@ -168,7 +168,7 @@
 </sc-if>
 
 <sc-if value="{{hasOpts}}" hint-placeholder-val="{{ false }}">
-<div class="{{optCls}}" style="position: absolute; left: {{optLeft}}px; top: {{optTop}}px; width: {{optW}}px; display: flex; gap: 12px">
+<div class="{{optCls}}" style="position: absolute; left: {{optLeft}}px; top: {{optTop}}px; width: {{optW}}px; display: flex; gap: 12px; --pill: {{optPill}}px">
 <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
 <button class="opt {{o.cls}}" data-qa="opt-{{o.id}}" disabled="{{o.dis}}" onClick="{{o.pick}}" style="flex-grow: 1; flex-basis: 0; height: 87px; padding: 4px 8px; line-height: 1.15">{{o.t}}</button>
 </sc-for>
@@ -213,7 +213,7 @@
 <!-- (no screen list, Back or Next: each screen moves on by itself once its voice and animations are done, and a
      screen that asks for something waits for it; ?dev=1 on the journey's page jumps to any screen) -->
 
-<canvas class="angle-walk" width="1280" height="720" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 1280px; height: 720px; pointer-events: none; z-index: 12"></canvas>
+<canvas class="angle-walk" width="1680" height="720" aria-hidden="true" style="position: absolute; left: -200px; top: 0px; width: 1680px; height: 720px; pointer-events: none; z-index: 12"></canvas>
 <div class="walker" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 120px; height: 120px; pointer-events: none; visibility: hidden; z-index: 12"><canvas width="512" height="512" style="width: 100%; height: 100%; display: block"></canvas></div>
 
 <sc-if value="{{handOn}}" hint-placeholder-val="{{ false }}">

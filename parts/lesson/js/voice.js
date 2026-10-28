@@ -14,8 +14,11 @@
   let canOgg = false;
   try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); } catch (e) {}
   const lines = typeof VO_LINES !== 'undefined' ? VO_LINES : {};
-  // absolute, so it resolves against the lesson's page even on the shell's <audio> (in the journey)
-  const src = (id) => new URL('assets/vo/' + id + '.ogg', location.href).href;
+  // absolute, so it resolves against the lesson's page even on the shell's <audio> (in the journey); a clip fetched ahead
+  // (VO.want) plays from memory, so it starts at once - Safari does not preload an <audio> it was only asked to load
+  const url = (id) => new URL('assets/vo/' + id + '.ogg', location.href).href;
+  const mem = {};
+  const src = (id) => mem[id] || url(id);
   let tok = 0, played = false, unlocked = !!shared, unlocking = null; // unlocking: the muted unlock play() still settling
   // the quiet fetcher (VO.want): one reused element - a new Audio() per clip left players alive until garbage collection,
   // and past the browser's player limit it suspends them (the voice-over element then stalled without ever starting)
@@ -25,12 +28,18 @@
     const id = queue.shift();
     loading = !!id;
     if (!id) return;
+    // into memory (a blob the <audio> plays at once), where fetch works; from disk, an <audio> asked to load it
+    if (typeof fetch === 'function' && location.protocol !== 'file:' && window.URL && URL.createObjectURL) {
+      fetch(url(id)).then((r) => (r.ok ? r.blob() : null)).then((b) => { if (b && b.size) mem[id] = URL.createObjectURL(b); })
+        .catch(() => {}).then(() => setTimeout(pump, 10));
+      return;
+    }
     if (!loader) { try { loader = new Audio(); loader.preload = 'auto'; loader.muted = true; } catch (e) { loading = false; return; } }
     let gone = false;
     const go = () => { if (gone) return; gone = true; clearTimeout(cap); loader.oncanplaythrough = loader.onerror = null; setTimeout(pump, 30); };
     const cap = setTimeout(go, 8000);
     loader.oncanplaythrough = go; loader.onerror = go;
-    loader.src = src(id);
+    loader.src = url(id);
     try { loader.load(); } catch (e) { go(); }
   }
 
