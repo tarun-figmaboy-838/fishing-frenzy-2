@@ -236,10 +236,11 @@ const LESSON = {
     { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', segs: 1, auto: 1, f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     { pdf: 45, id: 'compare', lines: [{ m: 'thinking', t: "Let's compare the lengths\nof these segments." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     Object.assign({ pdf: '46-47', id: 'matchSeg', lines: [{ m: 'curious', t: 'Drag the segments to\ntheir correct place.' }],
-      // right: no cards repeating the boxes - as the line says it, the halves the learner paired light on the shape while
-      // their boxes pulse: OA and OC on "same", OB and OD on "equal"
+      // right: no cards repeating the boxes - as the line says it, each pair the learner made lights on the shape and its
+      // lengths jump into its boxes, which read "2.9 cm = 2.9 cm" a moment, then "OA = OC" again (pairJump): OA and OC
+      // on "same", OB and OD on "equal"
       ok: "That's correct! The segments\nof the same diagonal\nare equal.", okF: { halfPairs: 1, hticks: 1 },
-      okCues: [{ at: 'same', emph: ['hA', 'hC'], pair: 1 }, { at: 'equal', emph: ['hB', 'hD'], pair: 2 }],
+      okCues: [{ at: 'same', pairJump: 1 }, { at: 'equal', pairJump: 2 }],
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
       f: Object.assign({ split: 1, halves: 1 }, DIAG) }),

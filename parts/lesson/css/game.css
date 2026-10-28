@@ -560,6 +560,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .blank.dd.good .dd-val{color:#1d6b35}
 /* a right answer's pair of boxes, as the line names what they show on the shape: two gentle beats with a gold ring */
 .stage .blank.seg.hot{animation:segHot .8s ease-in-out 2}
+/* pairJump: a matched pair's boxes read their lengths a moment ("2.9 cm"), then their names again - each change rises in */
+.stage .blank.seg.val .dd-val{animation:chipM1 .35s ease-out both}.stage .blank.seg.back .dd-val{animation:chipM2 .35s ease-out both}
 /* a right answer's value on its way from its box to its "?" on the figure (Motion.flyValue) */
 /* ...a part's value on its way into a name tag (the tag's own look), and a whole tag on its way into another */
 .stage .fly-val.src{background:var(--pg-panel,#FFF8EC);border-color:var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);font-size:24px}

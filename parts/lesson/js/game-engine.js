@@ -854,6 +854,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (c.beat) this.parBeat(c.beat, c.glow ? 430 : 0);
     if (c.parWord) this.parWord();
     if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
+    if (c.pairJump) this.tagStep(() => this.pairJump(c.pairJump), 3000);
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
     // diagonals' halves slide onto each other - one pair after another
     if (window.Motion && (c.match || c.matchAng || c.halfSlide)) {
@@ -891,6 +892,34 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     else if (c.hi !== undefined) this.setState({ chipHi: c.hi || null }); // (a card that lifts on its word, the shape left calm)
     if (c.pulse) Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
     if (c.ms) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null, chipHi: null }); }, c.ms);
+  }
+  // A matched pair's proof, in its own answer boxes (n: the pair): its two halves light, and their lengths jump from
+  // the shape into the boxes, which read them ("2.9 cm = 2.9 cm") a moment and settle back into the names ("OA = OC")
+  // - the name tags' number jump, without a second card repeating the boxes
+  pairJump(n) {
+    const tok = this.stepTok, FD = this.fillDef(), F = this.state.fill, ids = FD.blanks.filter((b) => b.pair === n).map((b) => b.id);
+    const parts = ids.map((id) => ({ id: id, p: this.tagPart(F.at[id] || '') }));
+    this.emphasize(parts.map((x) => 'h' + (F.at[x.id] || '').replace('O', '')));
+    this.setState({ boxHi: n }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, 1700);
+    const show = () => {
+      if (tok !== this.stepTok) return;
+      const val = Object.assign({}, this.state.boxVal), back = Object.assign({}, this.state.boxBack);
+      parts.forEach((x) => { val[x.id] = x.p.text; delete back[x.id]; });
+      this.setState({ boxVal: val, boxBack: back }); this.sfx('pop', { v: 0.7 });
+      this.tm(() => {
+        if (tok !== this.stepTok) return;
+        const v = Object.assign({}, this.state.boxVal), b = Object.assign({}, this.state.boxBack);
+        ids.forEach((id) => { delete v[id]; b[id] = 1; });
+        this.setState({ boxVal: v, boxBack: b });
+      }, 1400);
+    };
+    const stage = typeof document !== 'undefined' && document.querySelector('.stage');
+    if (!window.Motion || Motion.reduced || !stage || !parts.every((x) => x.p.val)) { show(); return; }
+    parts.forEach((x, k) => {
+      const b = this.elBox(stage.querySelector('[data-blank="' + x.id + '"]')), from = this.boardToStage(x.p.at);
+      if (!b || !from) { if (k) show(); return; }
+      this.tm(() => { if (tok === this.stepTok) Motion.flyValue(x.p.text, from, { x: b.x + b.w / 2, y: b.y + b.h / 2 }, k ? show : null, 'src'); }, k * 180);
+    });
   }
   // a screen's tags come one at a time, each built from the shape (buildTag) and given its moment before the next
   addChips(cs) {
@@ -1190,7 +1219,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2535,7 +2564,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const blanks = FD ? FD.blanks.map((b, i) => ({ id: b.id, pre: b.pre || '', post: b.post || '', eq: FD.match && i % 2 === 0 ? '=' : '',
       ph: dd && !F.at[b.id] ? 'ph' : '', exp: 'false',
       gap: FD.match && i % 2 === 1 && i < FD.blanks.length - 1 ? 'gap' : '',
-      t: F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : '') + (dd && F.open === b.id ? ' open' : '') + (b.pair && s.boxHi === b.pair ? ' hot' : ''),
+      t: (s.boxVal && s.boxVal[b.id]) || F.at[b.id] || (dd ? '?' : ''), cls: 'blank' + (dd ? ' dd' : '') + (F.locked[b.id] ? ' good' : F.bad[b.id] ? ' bad' : F.at[b.id] ? ' full' : b.id === actB ? ' act' : '') + (FD.match ? ' seg' : '') + (dd && F.open === b.id ? ' open' : '') + (b.pair && s.boxHi === b.pair ? ' hot' : '') +
+        (s.boxVal && s.boxVal[b.id] ? ' val' : s.boxBack && s.boxBack[b.id] ? ' back' : ''), // (pairJump: a length in the box a moment, then its name again)
       tap: () => this.blankTap(b.id) })) : [];
     // the choices: for a number box, in its own menu (ddOpen); for the segment pairs, tiles under the boxes, tapped
     // (into the picked box) or dragged onto a box
