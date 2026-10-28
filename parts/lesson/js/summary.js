@@ -35,7 +35,7 @@
   const TXT = { A: '#e65100', B: '#00963f', C: '#e65100', D: '#00963f' };
   // Swiftee's two spots: 'peek' over the bubble's top edge, 'middle' standing on the sand between the albums. y = offset
   // in stage px from her CSS position, s = scale of her 259 px box, hide = how far she sinks to be out of sight
-  const SPOT = { peek: { y: 0, s: 218 / 259, hide: 154 }, middle: { y: 186, s: 300 / 259, hide: 300 } };
+  const SPOT = { peek: { y: 0, s: 218 / 259, hide: 154 }, middle: { y: 232, s: 300 / 259, hide: 300 } }; // (middle: her feet on the sand)
 
   // ---------- the parallelogram in every bubble (board units): AB at y = TOP, DC at y = BOT; lean 37, so ∠D = 70° ----------
   const TOP = 262, BOT = 364, LEAN = 37;
@@ -240,13 +240,19 @@
     },
     // the big bubble is see-through, so while Swiftee peeks from behind it its disc is cut out of her: a mask in her own
     // box, worked out again every frame she moves (on: false takes it off)
+    // (the layer's units -> the page, read off two unseen probe squares in it: their client boxes include every
+    // transform on the way, in every browser - Safari's getScreenCTM leaves the page's own scaling out, which put the
+    // cut-out off the bubble and showed her body through it)
     peekMask(on) {
       const sw = document.querySelector('.stage .swiftee');
       if (!sw) return;
-      if (!on || !this.svg || !this.svg.getScreenCTM) { sw.style.maskImage = sw.style.webkitMaskImage = ''; return; }
-      const M = this.svg.getScreenCTM(), rc = sw.getBoundingClientRect(), k = rc.width / (sw.offsetWidth || 1);
-      if (!M || !k) return;
-      const x = (M.a * BUB.cx + M.e - rc.left) / k, y = (M.d * BUB.cy + M.f - rc.top) / k, R = (M.a * BUB.r) / k;
+      if (!on || !this.svg) { sw.style.maskImage = sw.style.webkitMaskImage = ''; return; }
+      let pr = this.svg.querySelector('g.probe');
+      if (!pr) { pr = mk('g', { 'class': 'probe', visibility: 'hidden' }, this.svg); [0, 100].forEach((v) => mk('rect', { x: v, y: v, width: 1, height: 1 }, pr)); }
+      const a = pr.children[0].getBoundingClientRect(), b = pr.children[1].getBoundingClientRect(), sx = (b.left - a.left) / 100, sy = (b.top - a.top) / 100;
+      const rc = sw.getBoundingClientRect(), k = rc.width / (sw.offsetWidth || 1);
+      if (!sx || !sy || !k) return;
+      const x = (a.left + sx * BUB.cx - rc.left) / k, y = (a.top + sy * BUB.cy - rc.top) / k, R = (sx * BUB.r) / k;
       sw.style.maskImage = sw.style.webkitMaskImage = 'radial-gradient(circle ' + f1(R) + 'px at ' + f1(x) + 'px ' + f1(y) + 'px, transparent ' + f1(R - 0.5) + 'px, #000 ' + f1(R + 0.5) + 'px)';
     },
     // every plate has the instruction plate's look, a little larger: navy glass, a gold rim and gold lettering
