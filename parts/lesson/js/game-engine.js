@@ -538,7 +538,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const ks = (nSides.length ? nSides : ['AB', 'CD', 'DA', 'BC']).filter((s) => this.sidePar(P, s));
         if (ks.length && !(ask && !nSides.length)) c = { parSides: ks, lit: lit };
         else if (nSides.length && lit) c = { light: nSides, ms: 1300 }; // (named, not parallel yet: only which sides)
-      } else if (/^parallelograms?$/.test(k)) c = { parWord: 1 };
+      } else if (/^parallelograms?$/.test(k)) c = out.some((a) => a.c.parSides) ? null : { parWord: 1 }; // (its arrows beat once: not again after "parallel")
       else if (/^(trapeziums?|quadrilaterals?|polygon)$/.test(k)) c = { pulse: 1 };
       else if (k === 'vertices') c = { emph: ['vA', 'vB', 'vC', 'vD'] };
       else if (k === '180' && L.tagsWithSupp) c = { sumSaid: 1 }; // (its tag's "= 180°" joins on the word)
@@ -1537,6 +1537,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.tm(() => { if (this.buildArmed) this.runBuild(); }, CONFIG.build.delayMs + 2500 + (st.voiceDelay || 0));
     }
     if (st.enterChips) this.tm(() => this.addChips(st.enterChips), Motion.reduced ? 0 : 450); // the screen's cards come in
+    (st.enterCues || []).forEach((c) => this.tm(() => { if (st === this.cur()) this.runCue(c); }, c.at0 || 0)); // (its moments before its line)
     // screen 2: the sides are counted one by one - as each number lands its side lights (the light runs along it once)
     // and stays lit, 1, 2, 3, 4, so the four sides build up; all four lit a moment, then the outline settles
     if (st.sideNums) {

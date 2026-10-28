@@ -23,6 +23,7 @@
 //          tapEq  = tap the corner whose angle equals ∠ref (want = the right corner, wrong = tip for a wrong tap)
 //          handOnce: 1 = one demo gesture of the hand once the instruction ends
 //          connect = draw both diagonals: drag (or tap, tap) from a corner to the opposite corner
+//   enterCues: [{ at0: ms, ...a word cue }] = board moments as the screen opens, before its line (voiceDelay)
 //   own: 1 = Swiftee's own thought ("There is something interesting..."): she stays and says it in her bubble, the
 //          shape beside her, as on the measuring screens (not the narration plate)
 //   opts:  answer buttons (ok = right; fb = tip for a wrong one; soloOk: 1 = once right, only the right answer stays,
@@ -101,10 +102,11 @@ const LESSON = {
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
     { pdf: 10, id: 'defPg', chipTop: 428,
-      // AB ∥ CD is built from its two sides, then AD ∥ BC; on "parallelogram" the two merge into the name, the outline lit
+      // as the screen opens AB ∥ CD is built from its two sides (lit), then AD ∥ BC; then Swiftee says the line, and on
+      // "parallelogram" the two merge into the name, the outline lit (each moment given its time, none squeezed in a word)
+      enterCues: [{ at0: 300, chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'], ms: 1500 }, { at0: 2100, chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'], ms: 1500 }],
+      voiceDelay: 3800,
       lines: [{ t: 'We call this a parallelogram.', cues: [
-        { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'] },
-        { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'] },
         { at: 'parallelogram', merge: { from: ['AB ∥ CD', 'AD ∥ BC'], into: { t: 'Parallelogram', k: 'name' } }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 2600 }] }], f: PG },
     // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
     // Swiftee says it, AB + CD glow with their card, then AD + BC with theirs; on "parallelogram" the name card (there

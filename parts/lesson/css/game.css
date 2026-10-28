@@ -572,7 +572,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .fly-val.src{background:var(--pg-panel,#FFF8EC);border-color:var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);font-size:24px}
 .stage .fly-val.src.tag{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;padding:6px 20px;border-radius:14px;border-width:2.5px}
 /* a tag sliding into the one it merges into keeps the tags' own navy look on its way */
-.stage .fly-val.src.tag.merge{background:linear-gradient(180deg,#2a4d86 0%,#14295a 100%);color:#fff;border:3px solid #f2c14e;font-weight:800;font-size:26px;box-shadow:0 4px 10px rgba(10,30,70,.25)}
+.stage .fly-val.src.tag.merge{background:linear-gradient(180deg,#2a4d86 0%,#14295a 100%);color:#fff;border:3px solid #f2c14e;font-weight:800;font-size:28px;padding:9px 28px 7px;border-radius:999px;box-shadow:0 4px 10px rgba(10,30,70,.25)}
 /* a tag being built: its place kept until its parts land, then it lands; its text changing as it settles (m1 / m2) */
 .stage .chip.arriving{visibility:hidden;animation:none}
 .stage .chip.landed{animation:chipLand .5s cubic-bezier(.2,1.5,.45,1)}
@@ -738,7 +738,7 @@ a{color:#123b63}a:hover{color:#0b2742}
   transition:opacity .18s ease,transform .3s ease,width .38s cubic-bezier(.22,1,.36,1)}
 .stage.in-card.scene.plate .bubble:not(:has(.w.on,.w.cur)){opacity:0;transition:opacity .18s ease,transform .3s ease} /* (it comes with its first word, already at its size) */
 .stage.in-card.scene.plate .bubble.away,.stage.in-card.scene.plate .bubble.gone{opacity:0;transform:translateY(-6px)}
-.stage.in-card.scene.plate.plate-enter .bubble{animation:plateEnter .42s cubic-bezier(.22,1,.36,1) both}
+.stage.in-card.scene.plate.plate-enter .bubble:not(.gone){animation:plateEnter .42s cubic-bezier(.22,1,.36,1) both} /* (no line yet: no plate - it enters with its line) */
 @keyframes plateEnter{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.w,.stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble-text{animation:none!important;transition:none!important}}
 /* entering from Swiftee's bubble: the plate takes its own size at once (no stretch from the bubble's) and fades down */
