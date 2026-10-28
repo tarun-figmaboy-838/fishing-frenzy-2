@@ -2179,15 +2179,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
     g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });
     g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA'), hl: hlCls('DA') });
-    // a side named on its own lights the way its name is said - A->B, B->C, C->D and A->D ("AD", never "DA") - as its
-    // parallel arrows point (SIDES, below); the whole outline lit, or the sides counted round it (screens 1-2), runs
-    // clockwise round the shape on screen (D->A up the left side)
-    const round = (s.glow && s.glow.length === 4) || !!st.sideNums || !!f.noLetters;
-    const cw = [A, B, C, D].reduce((sum, p, i, Q) => sum + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) >= 0;
-    ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
-      const e = g['e' + k], rev = round ? !cw : k === 'DA';
-      Object.assign(e, rev ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
-    });
     // a tick mark across the middle of p->q (one, or two side by side), for the diagonals' equal halves: the sides'
     // own ticks (CONFIG.marks)
     const ad = this.dist(A, D), bc = this.dist(B, C), MK = CONFIG.marks;
@@ -2263,6 +2254,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const c0 = lenOn(k) ? -MK.tempShift : 0, fits = !lenOn(k) || half >= MK.tempShift + MK.arrowStep + MK.arrowDepth;
       const path = on ? arrows(k) : tmp && fits ? arrows(k, k === 'AB' || k === 'CD' ? 2 : 1, c0) : '';
       g['ch' + k] = { p: path || 'M0,0', d: dsp(!!path), x: !on && path ? ' tmp' + (tmp === 'out' ? ' out' : '') : '' };
+    });
+    // which way each side's light runs: a side showing parallel arrows lights the way they point - A->B, B->C, C->D and
+    // A->D (its name's way: "AD", never "DA") - so the light and the marks always go together; a side with none lights
+    // clockwise round the shape when the whole outline is lit or its sides are counted round it (screens 1-2), and
+    // otherwise the way its name is said
+    const round = (s.glow && s.glow.length === 4) || !!st.sideNums || !!f.noLetters;
+    const cw = [A, B, C, D].reduce((sum, p, i, Q) => sum + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) >= 0;
+    ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
+      const e = g['e' + k], marked = g['ch' + k].d === 'inline', rev = marked ? k === 'DA' : round ? !cw : k === 'DA';
+      Object.assign(e, rev ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
     });
     // diagonals AC and BD (drawn by the pen on the diags screen, then shown by f.diag) and their meeting point O
     const O = { x: (A.x + C.x) / 2, y: (A.y + C.y) / 2 }, O0 = () => O;

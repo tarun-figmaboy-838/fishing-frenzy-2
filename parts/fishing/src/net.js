@@ -665,17 +665,31 @@ class Net {
     const k = Math.min(1, t / o.trace);
     const a = t < o.trace + o.hold ? 1 : 1 - (t - o.trace - o.hold) / o.fade;
     const breathe = t > o.trace && t < o.trace + o.hold && !this.reduced ? Math.sin(((t - o.trace) / o.hold) * Math.PI) : 0;
-    const lens = c.map((q, i) => distance(q, c[(i + 1) % 4]));
-    let left = lens.reduce((sum, l) => sum + l, 0) * k;
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(c[0].x, c[0].y);
-    for (let i = 0; i < 4 && left > 0; i += 1) {
-      const p = lerp(c[i], c[(i + 1) % 4], Math.min(1, left / lens[i]));
-      ctx.lineTo(p.x, p.y);
-      left -= lens[i];
+    const marked = this.markedSides && Object.keys(this.markedSides).length ? this.markedSides : null;
+    if (marked) {
+      // a net carrying parallel marks: every side lights at once, a marked side the way its marks point (A->B, B->C,
+      // C->D and A->D, as drawTicks draws them), the others clockwise round the frame - the light and the marks go together
+      ['AB', 'BC', 'CD', 'DA'].forEach((name, i) => {
+        let a = c[i], b = c[(i + 1) % 4];
+        if (name === 'DA' && marked.DA) [a, b] = [b, a]; // (A->D)
+        const e = lerp(a, b, k);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(e.x, e.y);
+      });
+    } else {
+      // an unmarked net (the hook's): one light round the frame from A, clockwise
+      const lens = c.map((q, i) => distance(q, c[(i + 1) % 4]));
+      let left = lens.reduce((sum, l) => sum + l, 0) * k;
+      ctx.moveTo(c[0].x, c[0].y);
+      for (let i = 0; i < 4 && left > 0; i += 1) {
+        const p = lerp(c[i], c[(i + 1) % 4], Math.min(1, left / lens[i]));
+        ctx.lineTo(p.x, p.y);
+        left -= lens[i];
+      }
+      if (k >= 1) ctx.closePath();
     }
-    if (k >= 1) ctx.closePath();
     // (the lesson's blue on a white edge, as the outline that carries the net into the lesson is drawn: it reads on the
     // golden rope, sky and water alike)
     ctx.lineJoin = 'round';
