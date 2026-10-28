@@ -950,8 +950,9 @@ async function wrongTry(game, token, pull, pace) {
   await raiseNet(game, token, [], 1400 * pace * q);
 }
 
-// H6: a fish swims up under the net, leaps, and its nose bumps corner C: the corner swings over onto `to` (B + D - A,
-// the parallelogram's place) and settles there, the rope wobbling, while the fish drops back with a splash and swims off.
+// H6: a giant fish swims up under the net, leaps and crashes into corner C, where it is caught: it hangs there by its
+// nose and thrashes, the whole net shaking with it, until it wrenches itself free - dragging the corner over onto `to`
+// (B + D - A, the parallelogram's place), where it stays - and drops back with a splash and swims away.
 async function fishBumpsCorner(game, token, to) {
   const { net, fx, audio } = game;
   const wl = game.waterline, corner = () => net.toStage(net.points[2]), q = fx.reduced;
@@ -991,8 +992,25 @@ async function fishBumpsCorner(game, token, to) {
     fx.puff(c0.x, c0.y, 0, 3, true);
     fish.squash = q ? 0 : 1;
     await clock.wait(q ? 0 : 160, token);
-    // the push: the corner slides to its new place along the hit and the net swings and settles; the fish bounces off
-    // and tumbles back into the water with a big splash
+    // caught: its nose tangled in the corner's mesh, it hangs there and thrashes, tail swinging, the net shaking with
+    // it - the corner jerked about, the frame swinging, drops flying off - then a last gather before it wrenches free
+    audio.play('struggle');
+    const held = { ...net.points[2] };
+    await clock.tween(q ? 300 : 1600, token, (t) => {
+      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 10);
+      fish.squash = Math.max(0, 1 - t * 6);
+      fish.pitch = -0.6 + 0.4 * w * env;
+      net.points[2] = { x: held.x + 12 * w * env, y: held.y + 7 * Math.sin(t * Math.PI * 7) * env };
+      net.swing = q ? 0 : 0.045 * Math.sin(t * Math.PI * 5) * env;
+      const c = corner(), n = nose(fish.pitch);
+      fish.x = c.x - n.x;
+      fish.y = c.y - n.y;
+      if (!q && Math.random() < 0.22) fx.puff(c.x + (Math.random() - 0.5) * 40, c.y + 10, 0, 1, true);
+    });
+    net.points[2] = held;
+    if (!q) audio.play('splashSmall');
+    // the wrench free: pulling with all its weight it drags the corner over to its new place, and as the mesh lets go
+    // it drops away; the net swings and settles; the fish tumbles back into the water with a big splash
     const was = { ...net.points[2] }, fall = { x: fish.x, y: fish.y };
     let back = false;
     await clock.tween(q ? 400 : 1000, token, (t) => {
@@ -1144,7 +1162,8 @@ async function hook(game, token) {
     audio.play('hmm');
     await say(H.h5);
     await reshapeNet(game, token, q ? 350 : 800, hookNet(net, N.wrong[2]));
-    // H6: a fish leaps and knocks corner C onto the parallelogram's place; Popo sees it change
+    // H6: a giant fish leaps into the net, is caught on corner C and thrashes, then wrenches free, dragging the corner
+    // onto the parallelogram's place; Popo sees it change
     await clock.wait(q ? 100 : 500, token);
     await fishBumpsCorner(game, token, hookNet(net, N.right)[2]);
     popo.react('think', 1.1);
