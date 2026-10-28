@@ -53,7 +53,7 @@
     // can touch (the runtime's own bindings - left/top, stroke colour, transform-origin - are left alone).
     clear() {
       const fx = document.querySelector('.stage svg.math-fx'); if (fx) fx.innerHTML = ''; // (the maths in motion: gone with the screen)
-      document.querySelectorAll('.stage .fly-val').forEach((e) => e.remove()); // (an answer still in the air)
+      document.querySelectorAll('.stage .fly-val, .stage .pop-bub').forEach((e) => e.remove()); // (an answer still in the air, a right answer's bubbles)
       this.meetEls = null; this.ghostEl = null;
       if (ctx) ctx.revert();
       sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
@@ -221,7 +221,7 @@
         .set(g, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, svgOrigin: origin })
         .to(g, { opacity: 1, scale: 1.2, duration: 0.3, svgOrigin: origin })
         .to(g, { x: dst.v.x - v.x, y: dst.v.y - v.y, rotation: 180, duration: 1.2, ease: 'power2.inOut', svgOrigin: origin }, 0.35)
-        .to(g, { scale: 1, duration: 0.25, ease: 'back.out(2)', svgOrigin: origin }, 1.55)
+        .to(g, { scale: 1, duration: 0.3, ease: 'power2.out', svgOrigin: origin }, 1.5) // (it settles onto the angle - no bounce)
         .to(g, { opacity: 0, duration: 0.4 }, 2.1));
       return 2500;
     },
@@ -326,6 +326,23 @@
           .to(el, { opacity: 0, duration: 0.2 }, 0.85));
       });
     },
+    // a right answer: a burst of colourful bubbles pops out of the spot where it was given (stage px) - they puff out,
+    // drift up a little and pop - so every right tap, drop or drag is answered on the spot
+    bubblePop(x, y) {
+      const stage = document.querySelector('.stage');
+      if (!G || reduced || !stage) return;
+      const cols = ['#ff7a00', '#ffd23f', '#3ad07a', '#1e7bff', '#c05cff', '#ff5c8a'];
+      for (let i = 0; i < 11; i++) {
+        const el = document.createElement('div'), r = 7 + Math.random() * 9, a = (i / 11) * Math.PI * 2 + Math.random() * 0.4, d = 34 + Math.random() * 40;
+        el.className = 'pop-bub'; el.style.width = el.style.height = 2 * r + 'px'; el.style.setProperty('--c', cols[i % cols.length]);
+        stage.appendChild(el);
+        add(() => G.timeline({ onComplete: () => el.remove() })
+          .set(el, { left: x, top: y, xPercent: -50, yPercent: -50, scale: 0.2, opacity: 1 })
+          .to(el, { left: x + Math.cos(a) * d, top: y + Math.sin(a) * d - 18, scale: 1, duration: 0.42, ease: 'power2.out' })
+          .to(el, { top: '-=16', duration: 0.3, ease: 'sine.out' }, 0.42)
+          .to(el, { scale: 1.45, opacity: 0, duration: 0.16, ease: 'power1.in' }, 0.5 + Math.random() * 0.25));
+      }
+    },
     // a hint's ghost (stage px): what the hand's drag would move goes with it, faint and dashed - B and its two sides
     // to the corners beside it (anchors), or the line being drawn from the corner (band) - in step with the hand's own
     // drag (css handDrag, 2.1 s: pressed at 22%, there at 66%, gone by 92%), as often as the hand repeats it
@@ -334,7 +351,7 @@
       if (!G || reduced || !this.fx()) return;
       const g = this.mk('g', { 'class': 'math-ghost', opacity: 0 }), p = { x: from.x, y: from.y };
       const lines = anchors.concat(band ? [from] : []).map(() => this.mk('line', { stroke: '#ffd23f', 'stroke-width': 4, 'stroke-dasharray': '9 7', 'stroke-linecap': 'round' }, g));
-      const knob = this.mk('circle', { r: 11, fill: 'rgba(255,210,63,.45)', stroke: '#fff', 'stroke-width': 3 }, g);
+      const knob = this.mk('circle', { r: 7, fill: 'rgba(255,210,63,.55)', stroke: '#fff', 'stroke-width': 2.5 }, g); // (the corner's own size)
       const ends = anchors.concat(band ? [from] : []);
       const draw = () => { lines.forEach((ln, i) => { ln.setAttribute('x1', ends[i].x); ln.setAttribute('y1', ends[i].y); ln.setAttribute('x2', p.x); ln.setAttribute('y2', p.y); }); knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); };
       draw();

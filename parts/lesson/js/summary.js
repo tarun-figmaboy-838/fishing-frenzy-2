@@ -35,7 +35,7 @@
   const TXT = { A: '#e65100', B: '#00963f', C: '#e65100', D: '#00963f' };
   // Swiftee's two spots: 'peek' over the bubble's top edge, 'middle' standing on the sand between the albums. y = offset
   // in stage px from her CSS position, s = scale of her 259 px box, hide = how far she sinks to be out of sight
-  const SPOT = { peek: { y: 0, s: 218 / 259, hide: 154 }, middle: { y: 232, s: 300 / 259, hide: 300 } }; // (middle: her feet on the sand)
+  const SPOT = { peek: { y: 0, s: 218 / 259, hide: 154 }, middle: { y: 308, s: 300 / 259, hide: 300 } }; // (middle: her feet on the sand)
 
   // ---------- the parallelogram in every bubble (board units): AB at y = TOP, DC at y = BOT; lean 37, so ∠D = 70° ----------
   const TOP = 262, BOT = 364, LEAN = 37;
