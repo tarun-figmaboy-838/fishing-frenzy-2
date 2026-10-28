@@ -198,8 +198,8 @@
     },
     // equal angles: a copy of the wedge at one corner turns a half-turn about the shape's centre O and lands exactly on
     // the opposite corner's wedge - the reason they are equal: a parallelogram turned half-way round its centre fits
-    // itself, carrying each angle onto the one opposite. O shows as a dot while the copy turns round it. (Without O: the
-    // copy travels across, turning on the way.)
+    // itself, carrying each angle onto the one opposite. (No mark at O: the turn shows it. Without O: the copy travels
+    // across, turning on the way.)
     spinMatch(src, dst, O) {
       if (!G || reduced || !this.fx()) return 0;
       const g = this.mk('g', { 'class': 'math-glow' });
@@ -208,13 +208,11 @@
         fill: src.col, 'fill-opacity': 0.95, stroke: '#fff', 'stroke-width': 2 }, g);
       if (O) {
         const origin = r1(O.x) + ' ' + r1(O.y);
-        const dot = this.mk('circle', { cx: r1(O.x), cy: r1(O.y), r: 6, fill: '#fff', stroke: '#123b63', 'stroke-width': 3, opacity: 0 });
-        add(() => G.timeline({ onComplete: () => { g.remove(); dot.remove(); } })
+        add(() => G.timeline({ onComplete: () => g.remove() })
           .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
-          .to([g, dot], { opacity: 1, duration: 0.35 })
+          .to(g, { opacity: 1, duration: 0.35 })
           .to(g, { rotation: 180, duration: 1.7, ease: 'power2.inOut', svgOrigin: origin }, 0.5)
-          .to(g, { opacity: 0.55, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.25)
-          .to([g, dot], { opacity: 0, duration: 0.45 }, 2.9));
+          .to(g, { opacity: 0, duration: 0.45 }, 2.9));
         return 3400;
       }
       // (svgOrigin: the corner itself, in the svg's coordinates - a px transformOrigin would be the group's box corner)
