@@ -2523,7 +2523,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const f = st.f || {}, lengths = !!st.sideNums; // (labels round the outside of the sides - screen 2's numbers - need room; lengths sit inside)
     const padX = C.padX + (lengths ? C.lenPadX : 0), padT = C.padTop + (lengths ? C.lenPadY : 0), padB = C.padBottom + (lengths ? C.lenPadY : 0) + (f.sums ? 34 : 0);
     const w = x1 - x0 + 2 * padX, h = y1 - y0 + padT + padB;
-    const above = (st.chipTop && st.chipTop < 200 && !st.practice) || (st.practice && st.okChips); // name tags above the shape
+    const above = !!(st.chipTop && st.chipTop < 200 && !st.practice); // name tags above the shape (a right answer's tags: under it, above the answers)
     const top = above ? C.topChips : C.top, below = this.belowH(st);
     const walk = st.task === 'measure' || st.task === 'measureAngles'; // Swiftee measures: the shape sits right of her
     const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
@@ -2544,6 +2544,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   belowH(st) {
     const C = CONFIG.card;
     if (st.opts) {
+      if (st.okChips && !st.grid) return C.chipGap + C.chipLane + C.optGap + C.optH; // (its tags' row, then the answers)
       if (!st.optWrap) return C.optGap + C.optH;
       const rows = (st.opts.some((o) => !o.wide) ? 1 : 0) + st.opts.filter((o) => o.wide).length; // short ones in a row, each wide one under
       return C.optGap + rows * C.optH + (rows - 1) * C.optGapX;
@@ -2662,8 +2663,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // (the measured half-diagonals are on the halves themselves: tags, above - no cards for them)
     // cfu options
     const optPulse = s.hand && s.hand.kind === 'opts';
-    // soloOk: once answered, the other answers fold away and the right one settles alone in the centre
-    const solo = !!(st.soloOk && s.done);
+    // once answered, the other answers fold away and the right one (or ones) settle alone in the centre - on every row
+    // of answers (not the grid of shapes): no greyed answers left lying about
+    const soloRow = !!(st.opts && !st.grid), solo = soloRow && !!s.done;
     const mk = (o) => ({ id: o.id, t: o.t || o.id, cls: (s.picks[o.id] || (optPulse && !s.done ? 'nudged' : '')) + (o.wide ? ' wide' : '') + ((o.t || o.id).length > 14 ? ' long' : (o.t || o.id).length <= 4 ? ' short' : '') + (solo ? (o.ok ? ' solo' : ' leave') : ''), dis: !!s.picks[o.id] || s.done, pick: () => this.pick(o) });
     const c1 = {};
     if (st.grid) st.opts.forEach((o) => { c1[o.id] = mk(o); });
@@ -2725,11 +2727,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       wordSize: plate ? plate.size : wi > 15 || (s.line || '').length > 80 ? 22 : 24, // the plate's fit; a long bubble line gets the smaller size
       c1: c1, hasOpts: hasOpts, opts: opts,
       // the answers (and answer boxes) in a row under the shape, centred on the card
-      optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap) : 376,
+      optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + (st.okChips && st.opts && !st.grid ? CONFIG.card.chipGap + CONFIG.card.chipLane : 0)) : 376, // (under a right answer's tags)
       optLeft: this.optRow(st).left,
-      optW: this.optRow(st).w, optCls: fadeV + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (st.soloOk ? ' solo-ok' : ''),
+      optW: this.optRow(st).w, optCls: fadeV + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (soloRow ? ' solo-ok' : ''),
       // the name tags: under the shape, or above it on a question screen (its answers have the space under it)
-      chipTop: isLesson ? (st.practice || (st.chipTop && st.chipTop < 200) ? CONFIG.card.chipTopQ : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
+      chipTop: isLesson ? (!(st.okChips && st.opts) && (st.practice || (st.chipTop && st.chipTop < 200)) ? CONFIG.card.chipTopQ : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left
