@@ -90,13 +90,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (JOURNEY.params.get('dev') === '1') JOURNEY.devScreens(this.steps().map((x, i) => ({ label: (i + 1) + ' ' + this.screenName(x), run: () => this.jumpTo(i) })));
       // the journey's Play has been tapped by the time the shell begins the lesson; begun for a ?dev=1 jump
       // (opts.jump), it leaves the opening out and the jump starts it
-      // fromNet: the game's hook turned its fishing net into this lesson's first shape, just where screen 1 draws it,
-      // and its camera is already down by the sand: the card is there at once (no seashell opening) and screen 1 starts
-      // with its shape in place (stepMotion), Swiftee speaking
-      JOURNEY.onBegin((opts) => {
-        if (opts && opts.fromNet) { this.fromNet = true; this.start(); return; }
-        if (!(opts && opts.jump)) this.begin();
-      });
+      JOURNEY.onBegin((opts) => { if (!(opts && opts.jump)) this.begin(); });
       JOURNEY.onDispose(() => this.leave());
       // ready once the page's pictures are in (the lake, the card, Swiftee)
       const ready = () => JOURNEY.ready();
@@ -1404,12 +1398,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
       this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs); // (each step already holds its pair a while)
     }
-    if (st.build && this.fromNet) {
-      // (from the hook's net: the outline is there already, as the net left it; it settles and fills in)
-      this.fromNet = false;
-      Motion.hideFill();
-      this.runBuild(1);
-    } else if (st.build) {
+    if (st.build) {
       Motion.hideFill();
       this.buildArmed = true; // say() starts the pen the moment the voice starts (begin)
       this.tm(() => { if (this.buildArmed) this.runBuild(); }, CONFIG.build.delayMs + 2500 + (st.voiceDelay || 0));

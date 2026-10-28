@@ -67,14 +67,11 @@ journey` part of `src/game.js`:
     twelve swims into it, one fish to each place in the net (`schoolSwimsIn`), and Popo hauls up the
     catch. Swiftee swoops in and names the shape as its outline is traced (the `trace` cue), Popo
     asks what it is, and "Let's find out!". Its sound effects duck under each line
-    (`AudioEngine.setDuckSfx`). In the journey `netToLesson` follows: Swiftee dives, the HUD steps
-    away, the scene dims and the net's four edges are traced in the lesson's blue (`Game.drawHookFx`);
-    the camera glides down to the lesson's own view (zoom 1.85, pan 0) while the mesh fades and the
-    outline, its four corners kept, glides into the lesson's first shape (`LESSON_SHAPE`). The game
-    then tells the shell (`Game.lessonTime`: `Journey.finish({ intro: true, warmup: true, fish,
-    fromNet: true })`) and the lesson dissolves in over the outline, starting on that shape at once.
-    On the game's own page Swiftee flies off, the net winds up and the first parallelogram net
-    follows.
+    (`AudioEngine.setDuckSfx`). In the journey Swiftee then flies off to the lesson, the HUD steps
+    away, the net winds up and the giant wave carries Popo away (`waveAway`); the game tells the shell
+    (`Game.lessonTime`: `Journey.finish({ intro: true, warmup: true, fish })`) and the lesson dissolves
+    in over the empty lake and opens with its seashell. On the game's own page Swiftee flies off, the
+    net winds up and the first parallelogram net follows.
   - `quiet` — the lesson is dissolving in: every sound fades away with it (`AudioEngine.fadeOut`).
   - `hide` — the lesson covers the game: it stops drawing (its sequences wait with the clock),
     and every sound stops — music, effects, a voice line — and its own AudioContext sleeps;

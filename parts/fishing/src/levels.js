@@ -203,14 +203,8 @@ const HOOK_NETS = {
     { order: [3, 2, 0, 1], twist: 0.26, by: [[-10, 26], [-26, 8], [-16, -34], [34, -10]] },
   ],
 };
-// The shape the lesson's first screen draws (its trapezium), in this stage's pixels: the hook's net turns into it as the
-// lesson comes in (both parts fill the window at 16:9, so a point here is the same point on the lesson's card; measured
-// from the lesson's screen 1, js/game-engine.js sceneFit, at its zoom 1.5455: its sides 5 and its corner dots 7 of its
-// board's pixels)
-const LESSON_SHAPE = { points: [{ x: 873, y: 299.3 }, { x: 1239, y: 299.3 }, { x: 1334.1, y: 560.6 }, { x: 777.9, y: 560.6 }], line: 7.7, dot: 10.8, ring: 4.6 };
-
 // the parallelogram nets (the warm-up is not one of them)
 const NETS = LEVELS.filter((l) => !l.warmup).length;
 
-Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, HOOK_NETS, LESSON_SHAPE, shuffle, bunchesFor });
+Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, HOOK_NETS, shuffle, bunchesFor });
 })(window.PopoGame = window.PopoGame || {});

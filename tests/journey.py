@@ -8,11 +8,12 @@ installed is used if Playwright's own is missing), at 1280x720 with a mouse and 
   intro       a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the game's story
               starts at once: the hook, its ten lines in order (nothing to press meanwhile) - the wrong nets tangle, a
               leaping fish knocks the last one into a parallelogram, which stays open, the scripted school swims into
-              it and all of it is caught, Swiftee names the shape, and "Let's find out!" carries the net's outline into
-              the lesson (the scene dims, the HUD steps away, the camera dives to the lesson's own view)
-  lesson      the lesson dissolves in over the net's outline and starts on its first shape at once (no seashell
-              opening); the game goes on drawing its lake under the lesson (which plays over it), silent (no music,
-              effects or voice; its context asleep), its buttons away, Popo away; jumped to its last screen, a real tap
+              it and all of it is caught, Swiftee names the shape, and on "Let's find out!" she flies off to the
+              lesson, the HUD steps away, the net winds up and the giant wave carries Popo away
+  lesson      the lesson dissolves in over the empty lake and opens with its seashell (it rattles, swings open, its
+              pearl's bubble rises and pops into the card), then its first screen; the game goes on drawing its lake
+              under the lesson (which plays over it), silent (no music, effects or voice; its context asleep), its
+              buttons away, Popo away; jumped to its last screen, a real tap
               on the Next under Swiftee hands over
   fishing     the game wakes under the lesson's frame as it dissolves out: the wave brings Popo back, Swiftee welcomes
               him, and a real catch at the first parallelogram net (the lesson's frame disposed, its voice stopped)
@@ -78,18 +79,18 @@ FISH = '''() => { const d = window.popoDebug; if (!d) return null; const s = d.s
            goal: !$('goal').hidden, goalLine: $('goal-line').textContent, goalN: +$('goal-n').textContent, landed: g.landed, runs: g.runs || 0, widths: PopoGame.LEVELS.map((l) => l.width).join(',') }; }'''
 
 LESSON = '''() => { const e = window.lessonDebug; if (!e) return null;
-  return { step: e.state.step, of: e.steps().length, started: !!e.state.started, handedOff: !!e.handedOff,
+  return { step: e.state.step, of: e.steps().length, started: !!e.state.started, opening: !!e.state.opening, handedOff: !!e.handedOff,
            shared: !e.actx || e.actx === parent.FishingFrenzy.audio.ctx }; }'''
 
 # the hook as it plays: the line said, the net (a parallelogram? tangled? valid?), anything pressable, the scripted
-# school (its own lane, which stands still), the hand-over's outline, the camera and the HUD
+# school (its own lane, which stands still), the giant wave, Popo carried off on it, the net and the HUD
 HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net, p = n.points, $ = (id) => document.getElementById(id);
   const v = (i, j) => ({ x: p[j].x - p[i].x, y: p[j].y - p[i].y }), level = (a, b) => Math.abs(a.x * b.y - a.y * b.x) / (Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y)) < 0.002;
   const school = s.fish.filter((f) => f.lane && f.lane.speed === 0);
   return { line: g.dialogue ? g.dialogue.who + ':' + g.dialogue.words.map((w) => w.text).join(' ') : '', tangle: n.tangle,
            par: level(v(0, 1), v(3, 2)) && level(v(0, 3), v(1, 2)), valid: PopoGame.geo.isValidQuad(p), under: n.drop > 0 && n.pouch === 0,
            pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden,
-           school: school.length, schoolCaught: school.filter((f) => f.caught).length, fx: !!g.hookFx, cam: [g.camera.zoom, g.camera.pan],
+           school: school.length, schoolCaught: school.filter((f) => f.caught).length, wave: !!g.wave, away: g.popo.travelShift, furl: n.furl,
            hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
 # every line the game says, as it says it (installed before Play, so none is missed however quick)
 RECORD_LINES = '''() => { const g = window.popoDebug.game; if (g.__recording) return; g.__recording = true; window.__lines = [];
@@ -356,7 +357,7 @@ def hook(r):
     ff = part(r.page, 'fishing')
     want = ff.evaluate(HOOK_LINES)
     lines, seen, shots = [], {'tangles': 0, 'wrongTangled': False, 'open': False, 'pressable': False, 'invalid': False, 'school': 0,
-                              'caught': 0, 'swiftee': False, 'fx': False, 'hudAway': False, 'duck': False}, set()
+                              'caught': 0, 'swiftee': False, 'wave': False, 'hudAway': False, 'duck': False}, set()
     tangled = False
     end = time.time() + 150
     while r.shell()['current'] != 'lesson':
@@ -381,11 +382,11 @@ def hook(r):
         if h['swiftee'] and 'swiftee' not in shots and h['line'].startswith('swiftee:'):
             seen['swiftee'] = True
             shots.add('swiftee'); r.page.wait_for_timeout(600); r.shot('3b-hook-swiftee')
-        if h['fx']:
-            seen['fx'] = True
+        if h['wave']:
+            seen['wave'] = True
             seen['hudAway'] |= h['hudAway']
-            if 'fx' not in shots:
-                shots.add('fx'); r.page.wait_for_timeout(500); r.shot('3c-hook-outline')
+            if 'wave' not in shots:
+                shots.add('wave'); r.page.wait_for_timeout(500); r.shot('3c-hook-wave')
         r.page.wait_for_timeout(80)
     h = ff.evaluate(HOOK)
     lines = ff.evaluate('() => window.__lines.slice(0, 10)')
@@ -397,8 +398,9 @@ def hook(r):
           f"{seen['caught']} of {seen['school']}")
     check(seen['swiftee'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; nothing could be pressed all through the hook')
     check(seen['duck'] and not h['duck'], f'{r.tag}: the hook\'s sound effects stepped down under its lines, and the usual mix is back after it')
-    check(seen['fx'] and seen['hudAway'] and h['cam'] == [1.85, 0] and h['alpha'] == 0 and not h['swiftee'],
-          f'{r.tag}: "Let\'s find out!": the scene dims, the HUD steps away, the mesh fades and the camera dives to the lesson\'s view (1.85, 0)', str(h['cam']))
+    check(seen['wave'] and seen['hudAway'] and h['away'] >= 2000 and h['furl'] > 0.9 and not h['swiftee'],
+          f'{r.tag}: "Let\'s find out!": Swiftee flies off to the lesson, the HUD steps away, the net winds up and the giant wave carries Popo away',
+          f"Popo {h['away']:.0f} px off, net furled {h['furl']:.2f}")
 
 
 def journey(p, engine, size, url):
@@ -434,13 +436,15 @@ def journey(p, engine, size, url):
     check(True, f'{r.tag}: the narrator\'s lines begin, as after Play on the game\'s own')
     hook(r)
 
-    # ---------- the net's outline becomes the lesson's first shape: the lesson dissolves in over it ----------
+    # ---------- the lesson dissolves in over the empty lake and opens with its seashell ----------
     st = r.shell()
     fs = r.fish()
     check(not st['veil'] and fs['caught'] > 0 and not fs['wave'],
-          f'{r.tag}: the lesson dissolves in over the net\'s outline, the catch kept', f"{fs['caught']} fish")
-    ls = until(r.lesson, lambda s: s['started'], 3, 'the lesson starts on its first shape at once')
-    check(True, f'{r.tag}: the lesson starts on its first shape at once (no seashell opening)')
+          f'{r.tag}: the lesson dissolves in over the empty lake, the catch kept', f"{fs['caught']} fish")
+    ls = until(r.lesson, lambda s: s['opening'], 3, 'the seashell opening')
+    check(not ls['started'], f'{r.tag}: the lesson opens with its seashell (not straight onto its first screen)')
+    ls = until(r.lesson, lambda s: s['started'], 30, 'the seashell opens into the card and the lesson starts')
+    check(True, f'{r.tag}: the seashell opens into the card, and the lesson starts on its first screen')
     page.wait_for_timeout(120)
     r.shot('4a-lesson-comes-in')
     st = until(r.shell, lambda s: 'lesson+live' in s['frames'], 2, 'the dissolve ends')

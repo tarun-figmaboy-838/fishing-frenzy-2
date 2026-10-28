@@ -67,7 +67,7 @@ if (params.has('debug') || params.get('dev') === '1') {
 // with the nets), title (the banner again, after Play Again), wake (a ?dev=1 jump: drawing again).
 if (journey) {
   journey.onCommand((name, args) => {
-    if (name === 'quiet') { audio.fadeOut(); game.quiet(); }
+    if (name === 'quiet') audio.fadeOut();
     else if (name === 'hide') game.hide();
     else if (name === 'backdrop') game.backdrop();
     else if (name === 'camera') game.setCamera(args || {});

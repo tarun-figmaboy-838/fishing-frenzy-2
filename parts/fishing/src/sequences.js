@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, HOOK_NETS, LESSON_SHAPE, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
+const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
 
 function swallow(e) {
   if (!(e instanceof Cancelled)) throw e;
@@ -1158,16 +1158,18 @@ async function hook(game, token) {
   }
 }
 
-// After "Let's find out!": in the journey the net's outline becomes the lesson's first shape as the lesson comes in
-// (netToLesson); then, the lesson over, the wave brings Popo back and Swiftee welcomes him. On the game's own page
-// Swiftee flies off and the net winds up. Either way the first parallelogram net follows.
+// After "Let's find out!": in the journey Swiftee flies off to the lesson, the net winds up and the giant wave carries
+// Popo away (waveAway); the lesson opens on the empty lake with its seashell; then, the lesson over, the wave brings
+// Popo back and Swiftee welcomes him. On the game's own page Swiftee flies off and the net winds up. Either way the
+// first parallelogram net follows.
 async function afterHook(game, token) {
   const { net, winch } = game;
   if (game.embedded && game.lessonAfter) {
-    await netToLesson(game, token);
-    await game.lessonTime(token, { fromNet: true });
-    // (while the lesson played Popo was away; his net was wound up meanwhile, out of sight)
-    net.alpha = 1;
+    game.ui.fadeHud(true);
+    windNetUp(game, token).catch(() => {});
+    await waveAway(game, token);
+    await game.lessonTime(token);
+    // (while the lesson played Popo was away; his net was wound up, out of sight)
     net.tangle = 0;
     net.furl = 1;
     winch.setRopeOut(-TUCK);
@@ -1186,65 +1188,6 @@ async function afterHook(game, token) {
   game.spawnSchool();
   await letNetDown(game, token, before);
   game.beginPuzzle();
-}
-
-// H10's way into the lesson: Swiftee dives into the water; the HUD steps away and the scene dims while the net's four
-// edges are traced over it in the lesson's blue; the camera glides down through the water (the lesson's own camera,
-// its opening's dive, so the lesson takes over without a jump) while the mesh fades away and the outline - its four
-// corners kept - glides into the lesson's first shape, just where the lesson draws it (levels.js LESSON_SHAPE). The
-// lesson then comes in over it with that shape already there. (Drawn on the curtain, over the scene: Game.drawHookFx.)
-async function netToLesson(game, token) {
-  const { net, fx, audio } = game;
-  const q = fx.reduced;
-  swifteeDives(game, token).catch(() => {});
-  game.ui.fadeHud(true);
-  const corners = () => net.points.map((p) => net.toStage(p));
-  const H = game.hookFx = { dim: 0, pts: corners(), trace: 0, dots: 0, line: 6, alpha: 1 };
-  audio.play('shimmer');
-  await clock.tween(q ? 300 : 900, token, (t) => {
-    const k = ease.inOut(t);
-    H.dim = 0.42 * k;
-    H.trace = k;
-    H.pts = corners();
-  });
-  const from = corners(), to = LESSON_SHAPE.points;
-  await clock.tween(q ? 400 : 1400, token, (t) => {
-    const k = ease.inOut(t);
-    if (!q) game.setCamera({ zoom: 1 + 0.85 * k, pan: 1 - k });
-    H.pts = from.map((p, i) => geo.lerp(p, to[i], k));
-    H.line = 6 + (LESSON_SHAPE.line - 6) * k;
-    H.dots = Math.min(1, t * 1.6);
-    net.alpha = 1 - k;
-  });
-  game.setCamera({ zoom: 1.85, pan: 0 });
-  audio.play('snap');
-}
-
-// Swiftee dives into the water in front of the net, with a splash (the lesson's Swiftee wears her diving mask).
-async function swifteeDives(game, token) {
-  const bird = game.swiftee;
-  if (!bird) return;
-  // (nearly straight down, and never across the net, which is about to be traced)
-  const net = game.net, netRight = Math.max(...net.points.map((p) => net.toStage(p).x));
-  const from = { x: bird.x, y: bird.y }, to = { x: Math.max(from.x - 60, netRight + 150), y: game.waterline + 80 };
-  bird.onDownstroke = () => game.audio.play('flap');
-  game.audio.play('whoosh');
-  try {
-    await clock.tween(game.fx.reduced ? 400 : 900, token, (t) => {
-      const k = t * t;
-      bird.x = from.x + (to.x - from.x) * k;
-      bird.y = from.y + (to.y - from.y) * k - 50 * Math.sin(t * Math.PI);
-      bird.lean = 0.9 * t;
-      bird.flapRate = 16 + 12 * t;
-      if (bird.y > game.waterline && game.swiftee === bird) {
-        game.fx.splash(bird.x, game.waterline, true);
-        game.audio.play('splashSmall');
-        game.swiftee = null;
-      }
-    });
-  } finally {
-    if (game.swiftee === bird) game.swiftee = null;
-  }
 }
 
 // Swiftee swoops in from the right and settles into a hover beside Popo, facing him; then she speaks (she is always
@@ -1298,6 +1241,44 @@ async function swifteeDeparts(game, token, { up = false } = {}) {
   }
 }
 
+// "Let's find out!" in the journey: Swiftee flies off to the lesson and the giant wave rolls in from the left, takes Popo
+// up its face onto the crest and carries him away off the right of the stage (the lesson then plays on the empty lake).
+async function waveAway(game, token) {
+  const { popo, fx, audio } = game;
+  const out = (x) => 1 - (1 - x) ** 3;
+  swifteeDeparts(game, token).catch(() => {});
+  const wave = new PopoGame.Wave(game);
+  const ends = popo.raftEnds(), mid = (ends.left + ends.right) / 2;
+  let hitAt = -1;
+  game.wave = wave;
+  try {
+    await clock.wait(fx.reduced ? 100 : 350, token);
+    wave.sound(audio);
+    await clock.tween(wave.ms, token, (t) => {
+      wave.set(t);
+      if (wave.rise > 0.1 && Math.random() < 0.7) fx.ripple(wave.faceX() + 20 + Math.random() * 160, game.waterline + 4, 0.6 + Math.random() * 0.6); // the lake stirs at its foot
+      if (hitAt < 0 && wave.faceX() >= ends.left - 60) { // the face reaches the raft
+        hitAt = t;
+        audio.play('woah');
+        fx.splash(ends.right, game.waterline, true);
+        fx.splash(ends.left, game.waterline, true);
+      }
+      if (hitAt >= 0) {
+        const lift = out(Math.min(1, ((t - hitAt) * wave.ms) / 560)); // up the face onto the crest in half a second...
+        const seat = wave.seat();
+        popo.dip = (seat.y - game.waterline) * lift;
+        popo.tilt = -0.38 * lift + Math.sin(t * 40) * 0.05 * lift;
+        popo.travelShift = (seat.x - mid) * lift; // ...and away with it
+        if (Math.random() < 0.5) fx.splash(mid + popo.travelShift - 60, game.waterline + popo.dip + 50, false);
+      }
+    });
+  } finally {
+    game.wave = null;
+    popo.travelShift = AWAY; // gone with the wave
+    popo.dip = 0;
+    popo.tilt = 0;
+  }
+}
 const AWAY = 2600; // Popo's travelShift while the wave has him: off the right of the stage
 
 // After the lesson the wave rolls in from the left with Popo riding its crest, leaves him on its back as it passes
