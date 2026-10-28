@@ -459,11 +459,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.tm(() => { if (tok === this.stepTok) set('out'); }, (ms || 0) + CONFIG.marks.tempMs);
     this.tm(() => { if (tok === this.stepTok) set(null); }, (ms || 0) + CONFIG.marks.tempMs + 320);
   }
-  // "parallelogram" said with a parallelogram on the board (one shape, not a grid of them): its arrows are called out
-  // pair by pair - AB and CD, then AD and BC
+  // "parallelogram" said with a parallelogram on the board (one shape, not a grid of them, and a board at all: the
+  // summary draws its own ideas): its arrows are called out pair by pair - AB and CD, then AD and BC
   parWord() {
     const st = this.cur();
-    if (!st || st.grid || st.end || !this.isPg(this.shapeP())) return;
+    if (!st || st.grid || st.end || st.summary || !this.isPg(this.shapeP())) return;
     this.parBeat(['AB', 'CD'], 0);
     this.parBeat(['DA', 'BC'], CONFIG.marks.pairGap);
   }
