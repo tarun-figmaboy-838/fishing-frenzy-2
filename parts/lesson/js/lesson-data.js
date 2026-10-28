@@ -287,8 +287,9 @@ const LESSON = {
     Object.assign({ pdf: 50, id: 'cp3c', multi: 1, cpTitle: 'Checkpoint 3 · Choose the Correct Statements',
       lines: [{ m: 'curious', t: 'Which of the following are\ntrue for this parallelogram?\nSelect all that apply.' }],
       ok: 'Perfect! AO = OC, BO = OD,\nso the diagonals bisect\neach other.',
-      okF: { halfPairs: 1 }, okCues: [{ at: 'bisect', fold: [['A', 'C'], ['B', 'D']] }],
-      fig: { P: FIG_SIDES, diag: 1, hticks: 1 },
+      // (the halves' equal ticks would be the answer: they come with it, okF)
+      okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'bisect', fold: [['A', 'C'], ['B', 'D']] }],
+      fig: { P: FIG_SIDES, diag: 1 },
       opts: [
         { id: 'aooc', t: 'AO = OC', ok: true, emph: ['dAC', 'vO'] },
         { id: 'bood', t: 'BO = OD', ok: true, emph: ['dBD', 'vO'] },
