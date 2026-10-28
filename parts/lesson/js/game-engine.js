@@ -987,7 +987,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // a diagonal's halves: a copy of one slides along the diagonal onto the other (A->O onto O->C: no turn, it stays
         // on its line) and fits it exactly, in their colour, the two halves standing out while it does
         const halfCol = (k) => PAL[(this.fl().halfPairs ? { A: 'vA', C: 'vA', B: 'vB', D: 'vB' } : { A: 'vA', B: 'vB', C: 'vC', D: 'vD' })[k]];
-        if (c.halfSlide) pairs(c.halfSlide).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
+        if (c.halfSlide) pairs(c.halfSlide).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]], { ['h' + pr[0]]: [pr[0], 'O'], ['h' + pr[1]]: ['O', pr[1]] }); // (their light runs the way the copy slides: A to O, then on from O to C)
           Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); tagAt(i, at + 1450); at += 2500; });
         // the screen stays until the last of them has been seen through (flow: seqEnd)
         if (at) this.busyFor(at + (c.tags ? 2600 : 0));
