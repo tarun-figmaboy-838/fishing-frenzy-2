@@ -99,15 +99,6 @@
     "devanagari": "बी वेंट टू फ़ार। ड्रैग इट बैक ए लिटिल।"
   },
   {
-    "id": "vo012",
-    "line": "Drag B to the right until BC leans the same way as AD.",
-    "spoken": "Drag B to the right until B C leans the same way as A D.",
-    "where": [
-      "screen 7 dragPar: idle reminder"
-    ],
-    "devanagari": "ड्रैग बी टू द राइट अंटिल बी सी लीन्स द सेम वे एज़ ए डी।"
-  },
-  {
     "id": "vo013",
     "line": "Well done! Now BC is parallel to AD.",
     "spoken": "Well done! Now B C is parallel to A D.",
@@ -252,15 +243,6 @@
     "devanagari": "सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
   },
   {
-    "id": "vo036",
-    "line": "CD is opposite AB. Opposite sides of a parallelogram are equal.",
-    "spoken": "C D is opposite A B. Opposite sides of a parallelogram are equal.",
-    "where": [
-      "screen 20 cp1b: idle reminder"
-    ],
-    "devanagari": "सी डी इज ऑपोजिट ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
-  },
-  {
     "id": "vo037",
     "line": "That's right! Opposite sides are equal, so CD = 7 cm.",
     "spoken": "That's right! Opposite sides are equal, so C D equals seven centimetres.",
@@ -286,15 +268,6 @@
       "screen 21 cp1c: feedback any"
     ],
     "devanagari": "लुक एट विच साइड इज ऑपोजिट। सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी।"
-  },
-  {
-    "id": "vo040",
-    "line": "CD is opposite AB, and AD is opposite BC.",
-    "spoken": "C D is opposite A B, and A D is opposite B C.",
-    "where": [
-      "screen 21 cp1c: idle reminder"
-    ],
-    "devanagari": "सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी।"
   },
   {
     "id": "vo041",
@@ -495,15 +468,6 @@
     "devanagari": "लुक अगेन। ऑपोजिट एंगल्स ऑफ ए पैरेललोग्राम आर इक्वल।"
   },
   {
-    "id": "vo068",
-    "line": "∠C is opposite ∠A. What do you know about opposite angles?",
-    "spoken": "Angle C is opposite angle A. What do you know about opposite angles?",
-    "where": [
-      "screen 35 cp2a: idle reminder"
-    ],
-    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए। वॉट डू यू नो अबाउट ऑपोजिट एंगल्स?"
-  },
-  {
     "id": "vo069",
     "line": "That's right! Opposite angles are equal, so ∠C = 68°.",
     "spoken": "That's right! Opposite angles are equal, so angle C equals sixty-eight degrees.",
@@ -538,15 +502,6 @@
       "screen 36 cp2b: feedback 180"
     ],
     "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज द सम ऑफ एंगल ए एंड एंगल बी, नॉट एंगल बी बाय इटसेल्फ।"
-  },
-  {
-    "id": "vo073",
-    "line": "∠B is next to ∠A. Adjacent angles add up to 180°.",
-    "spoken": "Angle B is next to angle A. Adjacent angles add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 36 cp2b: idle reminder"
-    ],
-    "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
   },
   {
     "id": "vo074",
@@ -729,15 +684,6 @@
     "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, सो इट इक्वल्स ए ओ। ओ डी इज द अदर हाफ ऑफ बी डी, सो इट इक्वल्स बी ओ।"
   },
   {
-    "id": "vo103",
-    "line": "OC is the other half of AC, and OD is the other half of BD.",
-    "spoken": "O C is the other half of A C, and O D is the other half of B D.",
-    "where": [
-      "screen 50 cp3b: idle reminder"
-    ],
-    "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, एंड ओ डी इज द अदर हाफ ऑफ बी डी।"
-  },
-  {
     "id": "vo104",
     "line": "Well done! OC = AO = 5 cm and OD = BO = 3 cm.",
     "spoken": "Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres.",
@@ -808,15 +754,6 @@
       "screen 54 recPar: line"
     ],
     "devanagari": "ऑपोजिट साइड्स आर पैरेलल।"
-  },
-  {
-    "id": "vo113",
-    "line": "B C is parallel to A D.",
-    "spoken": "B C is parallel to A D.",
-    "where": [
-      "screen 54 recPar: line (voice only)"
-    ],
-    "devanagari": "बी सी इज पैरेलल टू ए डी।"
   },
   {
     "id": "vo114",

@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 115 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 108 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -135,7 +135,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo009 | Drag vertex B to make BC parallel to AD. | Drag vertex B to make B C parallel to A D. | ड्रैग वर्टेक्स बी टू मेक बी सी पैरेलल टू ए डी। | 4.73 |
 | vo010 | BC is not parallel to AD yet. Keep dragging B to the right. | B C is not parallel to A D yet. Keep dragging B to the right. | बी सी इज नॉट पैरेलल टू ए डी येट। कीप ड्रैगिंग बी टू द राइट। | 5.28 |
 | vo011 | B went too far. Drag it back a little. | = | बी वेंट टू फ़ार। ड्रैग इट बैक ए लिटिल। | 2.96 |
-| vo012 | Drag B to the right until BC leans the same way as AD. | Drag B to the right until B C leans the same way as A D. | ड्रैग बी टू द राइट अंटिल बी सी लीन्स द सेम वे एज़ ए डी। | 5.66 |
 | vo013 | Well done! Now BC is parallel to AD. | Well done! Now B C is parallel to A D. | वेल डन! नाउ बी सी इज पैरेलल टू ए डी। | 4.68 |
 | vo014 | Now both pairs of opposite sides are parallel. | = | नाउ बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल। | 3.94 |
 | vo016 | We call this a parallelogram. | We call this a Parallelogram. | वी कॉल दिस ए पैरेललोग्राम। | 2.92 |
@@ -152,11 +151,9 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo033 | In this parallelogram, AB = 7 cm. What is the length of CD? | In this parallelogram, A B equals seven centimetres. What is the length of C D? | इन दिस पैरेललोग्राम, ए बी इक्वल्स सेवन सेंटीमीटर्स। वॉट इज द लेंथ ऑफ सी डी? | 5.56 |
 | vo034 | CD is not double AB. Opposite sides of a parallelogram are equal. | C D is not double A B. Opposite sides of a parallelogram are equal. | सी डी इज नॉट डबल ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.32 |
 | vo035 | CD is not half of AB. Opposite sides of a parallelogram are equal. | C D is not half of A B. Opposite sides of a parallelogram are equal. | सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.00 |
-| vo036 | CD is opposite AB. Opposite sides of a parallelogram are equal. | C D is opposite A B. Opposite sides of a parallelogram are equal. | सी डी इज ऑपोजिट ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.68 |
 | vo037 | That's right! Opposite sides are equal, so CD = 7 cm. | That's right! Opposite sides are equal, so C D equals seven centimetres. | दैट्स राइट! ऑपोजिट साइड्स आर इक्वल, सो सी डी इक्वल्स सेवन सेंटीमीटर्स। | 5.72 |
 | vo038 | In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD. | In this parallelogram, A B equals eight centimetres and B C equals five centimetres. Find the lengths of C D and A D. | इन दिस पैरेललोग्राम, ए बी इक्वल्स एट सेंटीमीटर्स एंड बी सी इक्वल्स फाइव सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ सी डी एंड ए डी। | 9.24 |
 | vo039 | Look at which side is opposite. CD is opposite AB, and AD is opposite BC. | Look at which side is opposite. C D is opposite A B, and A D is opposite B C. | लुक एट विच साइड इज ऑपोजिट। सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी। | 6.70 |
-| vo040 | CD is opposite AB, and AD is opposite BC. | C D is opposite A B, and A D is opposite B C. | सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी। | 5.69 |
 | vo041 | Brilliant! CD = AB = 8 cm and AD = BC = 5 cm. | Brilliant! C D equals A B equals eight centimetres and A D equals B C equals five centimetres. | ब्रिलियंट! सी डी इक्वल्स ए बी इक्वल्स एट सेंटीमीटर्स एंड ए डी इक्वल्स बी सी इक्वल्स फाइव सेंटीमीटर्स. | 8.93 |
 | vo042 | We learnt all about the sides of a parallelogram. | = | वी लर्न्ट ऑल अबाउट द साइड्स ऑफ ए पैरेललोग्राम। | 3.84 |
 | vo043 | But what about its angles? Are they equal too? | = | बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू? | 3.94 |
@@ -179,12 +176,10 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo065 | In this parallelogram, ∠A = 68°. What is the measure of ∠C? | In this parallelogram, angle A equals sixty-eight degrees. What is the measure of angle C? | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी? | 6.72 |
 | vo066 | 112° would add up with ∠A to 180°. But ∠C is opposite ∠A, not next to it. | One hundred and twelve degrees would add up with angle A to one hundred and eighty degrees. But angle C is opposite angle A, not next to it. | वन हंड्रेड एंड ट्वेल्व डिग्रीज़ वुड ऐड अप विद एंगल ए टू वन हंड्रेड एंड एटी डिग्रीज़। बट एंगल सी इज ऑपोजिट एंगल ए, नॉट नेक्स्ट टू इट। | 9.24 |
 | vo067 | Look again. Opposite angles of a parallelogram are equal. | = | लुक अगेन। ऑपोजिट एंगल्स ऑफ ए पैरेललोग्राम आर इक्वल। | 4.76 |
-| vo068 | ∠C is opposite ∠A. What do you know about opposite angles? | Angle C is opposite angle A. What do you know about opposite angles? | एंगल सी इज ऑपोजिट एंगल ए। वॉट डू यू नो अबाउट ऑपोजिट एंगल्स? | 5.76 |
 | vo069 | That's right! Opposite angles are equal, so ∠C = 68°. | That's right! Opposite angles are equal, so angle C equals sixty-eight degrees. | दैट्स राइट! ऑपोजिट एंगल्स आर इक्वल, सो एंगल सी इक्वल्स सिक्सटी एट डिग्रीज़। | 6.80 |
 | vo070 | In this parallelogram, ∠A = 72°. What is the measure of ∠B? | In this parallelogram, angle A equals seventy-two degrees. What is the measure of angle B? | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सेवेंटी टू डिग्रीज़। वॉट इज द मेजर ऑफ एंगल बी? | 7.04 |
 | vo071 | ∠B is next to ∠A, not opposite it. Adjacent angles add up to 180°. | Angle B is next to angle A, not opposite it. Adjacent angles add up to one hundred and eighty degrees. | एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 7.44 |
 | vo072 | 180° is the sum of ∠A and ∠B, not ∠B by itself. | One hundred and eighty degrees is the sum of angle A and angle B, not angle B by itself. | वन हंड्रेड एंड एटी डिग्रीज़ इज द सम ऑफ एंगल ए एंड एंगल बी, नॉट एंगल बी बाय इटसेल्फ। | 6.92 |
-| vo073 | ∠B is next to ∠A. Adjacent angles add up to 180°. | Angle B is next to angle A. Adjacent angles add up to one hundred and eighty degrees. | एंगल बी इज नेक्स्ट टू एंगल ए। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 7.24 |
 | vo074 | Correct! 72° + 108° = 180°. | Correct! Seventy-two degrees plus one hundred and eight degrees equals one hundred and eighty degrees. | करेक्ट! सेवेंटी-टू डिग्रीज़ प्लस वन हंड्रेड एंड एट डिग्रीज़ इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 6.86 |
 | vo075 | In this parallelogram, ∠A = 65°. Find the measures of ∠B, ∠C and ∠D. | In this parallelogram, angle A equals sixty-five degrees. Find the measures of angle B, angle C and angle D. | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी फाइव डिग्रीज़। फाइंड द मेज़र्स ऑफ एंगल बी, एंगल सी एंड एंगल डी। | 9.24 |
 | vo078 | Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°. | Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees. | अमेजिंग! एंगल बी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़, एंगल सी इक्वल्स सिक्सटी फाइव डिग्रीज़ एंड एंगल डी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़। | 10.08 |
@@ -205,7 +200,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo096 | In this parallelogram, AO = 6 cm. What is the length of OC? | In this parallelogram, A O equals six centimetres. What is the length of O C? | इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी? | 6.60 |
 | vo101 | In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD. | In this parallelogram, A O equals five centimetres and B O equals three centimetres. Find the lengths of O C and O D. | इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी। | 10.08 |
 | vo102 | OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO. | O C is the other half of A C, so it equals A O. O D is the other half of B D, so it equals B O. | ओ सी इज द अदर हाफ ऑफ ए सी, सो इट इक्वल्स ए ओ। ओ डी इज द अदर हाफ ऑफ बी डी, सो इट इक्वल्स बी ओ। | 9.74 |
-| vo103 | OC is the other half of AC, and OD is the other half of BD. | O C is the other half of A C, and O D is the other half of B D. | ओ सी इज द अदर हाफ ऑफ ए सी, एंड ओ डी इज द अदर हाफ ऑफ बी डी। | 5.57 |
 | vo104 | Well done! OC = AO = 5 cm and OD = BO = 3 cm. | Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres. | वेल डन! ओ सी इक्वल्स ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड ओ डी इक्वल्स बी ओ इक्वल्स थ्री सेंटीमीटर्स। | 8.74 |
 | vo105 | Which of the following are true for this parallelogram? Select all that apply. | = | विच ऑफ द फॉलोइंग आर ट्रू फॉर दिस पैरेललोग्राम? सिलेक्ट ऑल दैट अप्लाई। | 5.45 |
 | vo106 | AO and BO are parts of different diagonals, so they need not be equal. | A O and B O are parts of different diagonals, so they need not be equal. | ए ओ एंड बी ओ आर पार्ट्स ऑफ डिफरेंट डायगोनल्स, सो दे नीड नॉट बी इक्वल। | 6.28 |
@@ -214,7 +208,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo110 | Let's recall what we learnt about parallelograms. | = | लेट्स रिकॉल वॉट वी लर्न्ट अबाउट पैरेललोग्राम्स. | 3.58 |
 | vo111 | A parallelogram is a quadrilateral with two pairs of opposite sides parallel. | = | ए पैरेललोग्राम इज ए क्वाड्रिलैटरल विद टू पेयर्स ऑफ ऑपोजिट साइड्स पैरेलल। | 5.57 |
 | vo112 | Opposite sides are parallel. | = | ऑपोजिट साइड्स आर पैरेलल। | 2.69 |
-| vo113 | B C is parallel to A D. | = | बी सी इज पैरेलल टू ए डी। | 2.90 |
 | vo114 | Opposite sides are equal. | = | ऑपोजिट साइड्स आर इक्वल। | 2.74 |
 | vo115 | Opposite angles are equal. | = | ऑपोजिट एंगल्स आर इक्वल। | 2.56 |
 | vo116 | Adjacent angles are supplementary. They add up to 180°. | Adjacent angles are supplementary. They add up to one hundred and eighty degrees. | एडजेसेंट एंगल्स आर सप्लीमेंट्री। दे ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 6.24 |
