@@ -2387,17 +2387,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (conn && s.conn && s.conn.from === k) g['v' + k].r = 11;
       if (conn && s.conn && s.conn.near === k) { g['v' + k].r = 11; g['v' + k].c = '#ffab00'; g['v' + k].cls = 'on'; } // (the corner the line is on)
     });
-    if (dk) {
-      // the arrow lies on the corner's own track, just past it (B slides along the line of AB), clear of its letter
-      const Vk = P[dk], y0 = r1(Vk.y), x = r1(Vk.x + 82);
-      g.arw = {
-        p: 'M' + (x - 26) + ',' + y0 + ' L' + (x + 26) + ',' + y0,
-        h: 'M' + (x - 40) + ',' + y0 + ' L' + (x - 27) + ',' + (y0 - 7) + ' L' + (x - 27) + ',' + (y0 + 7) + ' Z M' + (x + 40) + ',' + y0 + ' L' + (x + 27) + ',' + (y0 - 7) + ' L' + (x + 27) + ',' + (y0 + 7) + ' Z',
-        d: dsp(!s.moved && !s.dragging)
-      };
-    } else {
-      g.arw = { p: 'M0,0', h: 'M0,0', d: 'none' };
-    }
     // labels: a fixed set of slots (hidden ones get "off") so each tag keeps its element and
     // only animates when it first appears
     const cx = (A.x + B.x + C.x + D.x) / 4, cy = (A.y + B.y + C.y + D.y) / 4;
