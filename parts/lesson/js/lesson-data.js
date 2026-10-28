@@ -176,10 +176,12 @@ const LESSON = {
     { pdf: '27-28', id: 'tapEqA', handOnce: 1, lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
       after: [{ cues: [{ at: 'equal', matchAng: ['A', 'C'], tags: [{ t: '∠A = ∠C', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠A is\nequal to ∠C." }], f: { arcs: 'ABCD' } },
-    { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
+    { pdf: '29-30', id: 'tapEqD', enterChips: [{ t: '∠A = ∠C', k: 'gold' }], lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
       wrong: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.',
       after: [{ cues: [{ at: 'equal', matchAng: ['D', 'B'], tags: [{ t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠D is\nequal to ∠B." }], f: { arcs: 'ABCD', pairA: 1 } },
-    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'opposite', matchAng: [['A', 'C'], ['B', 'D']], tags: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
+    // (the recap of screens 26-27: both tags stay, and the opposite angles light pair by pair as they are said - no
+    // second showing of the demos just seen)
+    { pdf: 31, id: 'oppAng', enterChips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }], lines: [{ m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
     { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
@@ -189,7 +191,9 @@ const LESSON = {
     { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.', cues: [{ at: 'add', focus: ['A', 'D'], ms: 2200 }],
       chips: [{ t: '∠A + ∠D = 180°', k: 'white' }], tagsWithSupp: 1 }], f: { arcs: 'ABCD', supp: ['AD'] } }, // (its tag built with the demo: 110° + 70°, = 180°)
     Object.assign({ pdf: 35, id: 'askAdj', multi: 1, lines: [{ m: 'curious', t: 'Which other angles\nadd up to 180°?' }],
+      // (each tag built as the voice says it)
       ok: 'Yes! ∠B + ∠C = 180° and\n∠A + ∠B = 180°.', okChips: [{ t: '∠B + ∠C = 180°', k: 'gold sm' }, { t: '∠A + ∠B = 180°', k: 'gold sm' }],
+      okCues: [{ at: '∠B + ∠C = 180°', chip: { t: '∠B + ∠C = 180°', k: 'gold sm' } }, { at: '∠A + ∠B = 180°.', chip: { t: '∠A + ∠B = 180°', k: 'gold sm' } }],
       opts: [
         { id: 'BC', t: '∠B & ∠C', ok: true },
         { id: 'BD', t: '∠B & ∠D', fb: '∠B and ∠D are opposite angles. 70° + 70° is not 180°.' },
@@ -247,9 +251,9 @@ const LESSON = {
     { pdf: 42, id: 'meetO', lines: [{ t: 'They meet each other\nat point O.' }], f: DIAG },
     // each diagonal splits into its two halves (four colours)
     { pdf: 43, id: 'segs', lines: [{ t: 'Each diagonal divides\nthe other into\n2 segments.' }], f: Object.assign({ split: 1 }, DIAG) },
-    // as screens 13 and 24: Swiftee says it, then walks the diagonals with her tape - A to O to C, B to O to D - each
-    // half's length coming in as the tape lands on it
-    { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', segs: 1, auto: 1, f: Object.assign({ split: 1, halves: 1 }, DIAG) },
+    // as screens 13 and 24: Swiftee asks what she will find out, says it, then walks the diagonals with her tape - A to
+    // O to C, B to O to D - each half's length coming in as the tape lands on it
+    { pdf: 44, id: 'measureSeg', lines: [{ m: 'thinking', t: 'Are the two segments of\neach diagonal equal?' }, { m: 'curious', t: "Let's find out!" }], task: 'measure', segs: 1, auto: 1, f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     { pdf: 45, id: 'compare', lines: [{ m: 'thinking', t: "Let's compare the lengths\nof these segments." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     Object.assign({ pdf: '46-47', id: 'matchSeg', lines: [{ m: 'curious', t: 'Drag the segments to\ntheir correct place.' }],
       // right: no cards repeating the boxes - as the line says it, each pair the learner made lights on the shape and its

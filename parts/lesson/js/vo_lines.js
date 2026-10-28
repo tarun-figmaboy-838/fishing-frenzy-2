@@ -110,5 +110,6 @@ const VO_LINES = {
   "CD is opposite AB, so CD = AB.": ["vo138",4.44,[0.28,0.61,0.86,1.61,2.4,2.65],4.02],
   "AD is opposite BC, so AD = BC.": ["vo139",4.84,[0.3,0.67,0.94,1.77,2.64,2.93],4.48],
   "OC is the other half of AC, so OC = AO.": ["vo140",4.84,[0.29,0.57,0.78,1.06,1.48,1.83,2.04,2.71,3],4.56],
-  "OD is the other half of BD, so OD = BO.": ["vo141",5.04,[0.27,0.57,0.79,1.09,1.53,1.91,2.13,2.87,3.17],4.78]
+  "OD is the other half of BD, so OD = BO.": ["vo141",5.04,[0.27,0.57,0.79,1.09,1.53,1.91,2.13,2.87,3.17],4.78],
+  "Are the two segments of each diagonal equal?": ["vo142",3.64,[0.28,0.54,0.8,1.06,1.64,1.83,2.16,2.74],3.2]
 };

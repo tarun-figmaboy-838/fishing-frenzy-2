@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 109 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 110 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -233,3 +233,4 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo139 | AD is opposite BC, so AD = BC. | A D is opposite B C, so A D equals B C. | ए डी इज ऑपोजिट बी सी, सो ए डी इक्वल्स बी सी। | 4.84 |
 | vo140 | OC is the other half of AC, so OC = AO. | O C is the other half of A C, so O C equals A O. | ओ सी इज द अदर हाफ ऑफ ए सी, सो ओ सी इक्वल्स ए ओ । | 4.84 |
 | vo141 | OD is the other half of BD, so OD = BO. | O D is the other half of B D, so O D equals B O. | ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ। | 5.04 |
+| vo142 | Are the two segments of each diagonal equal? | = | आर द टू सेगमेंट्स ऑफ ईच डायगोनल इक्वल? | 3.64 |

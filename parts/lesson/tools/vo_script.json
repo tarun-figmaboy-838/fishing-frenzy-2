@@ -979,5 +979,14 @@
       "screen 49 cp3b: feedback OD"
     ],
     "devanagari": "ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ।"
+  },
+  {
+    "id": "vo142",
+    "line": "Are the two segments of each diagonal equal?",
+    "spoken": "Are the two segments of each diagonal equal?",
+    "where": [
+      "screen 43 measureSeg: the question"
+    ],
+    "devanagari": "आर द टू सेगमेंट्स ऑफ ईच डायगोनल इक्वल?"
   }
 ]
