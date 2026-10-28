@@ -1061,6 +1061,25 @@ class Game {
     this.ui.placeSpeech(p.x + 36, p.y + 16, [this.mastInView()]);
   }
 
+  // The scenery's fish (the far shadows and the hazy deep fish) fade away while they pass behind the net in the water
+  // and back once past it: through its open mesh or its bag one would look caught and left in it (the net takes only
+  // the school: Net.placeOf, netter).
+  veilScenery(dt) {
+    const net = this.net, k = Math.min(1, dt * 6);
+    let box = null;
+    if (net.visible && !net.furl) {
+      const pts = [0, 0.5, 1].flatMap((u) => [0, 0.5, 1].map((v) => net.toStage(net.meshPoint(u, v))));
+      box = { x0: Math.min(...pts.map((q) => q.x)), x1: Math.max(...pts.map((q) => q.x)), y0: Math.min(...pts.map((q) => q.y)), y1: Math.max(...pts.map((q) => q.y)) };
+    }
+    const veil = (f, x, y, w) => {
+      const near = box && x + w / 2 > box.x0 && x - w / 2 < box.x1 && y > box.y0 - 20 && y < box.y1 + 20;
+      const behind = near && [-0.4, 0, 0.4].some((s) => net.placeOf({ x: x + s * w, y }));
+      f.behind = (f.behind || 0) + ((behind ? 1 : 0) - (f.behind || 0)) * k;
+    };
+    for (const f of this.ambient) veil(f, f.x, f.y, f.w);
+    for (const d of this.deep) veil(d, d.fish.x, d.fish.y, d.fish.w * d.fish.scale);
+  }
+
   // a scene point where the view shows it (through the zoom on the net; the lesson's camera has a view of its own)
   inView(x, y) {
     const f = this.focus;
@@ -1400,6 +1419,7 @@ class Game {
     for (const f of this.ambient) f.update(dt, this.area);
     if (this.deep.some((d) => d.gone)) this.deep = this.deep.filter((d) => !d.gone);
     for (const d of this.deep) d.update(dt);
+    this.veilScenery(dt);
     if (state.phase === PHASE.PUZZLE_READY || state.phase === PHASE.DRAGGING) this.placeHandle();
     this.applyFocus(dt);
     this.updateHint(dt);

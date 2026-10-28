@@ -431,7 +431,7 @@ class ShadowFish {
     const sheet = shadowSprites();
     const frame = Math.floor(this.wag) % SHADOW.frames;
     ctx.save();
-    ctx.globalAlpha = (0.2 + (1 - this.depth) * 0.22) * this.fade;
+    ctx.globalAlpha = (0.2 + (1 - this.depth) * 0.22) * this.fade * (1 - (this.behind || 0));
     ctx.translate(this.x, this.y + Math.sin(this.phase * 2.3) * 1.5);
     ctx.scale(this.dir * this.size, this.size);
     ctx.drawImage(sheet, frame * SHADOW.w, 0, SHADOW.w, SHADOW.h, -SHADOW.w / 2, -SHADOW.h / 2, SHADOW.w, SHADOW.h);
@@ -484,7 +484,7 @@ class DeepFish {
   }
 
   draw(ctx) {
-    this.fish.alpha = this.haze * this.fade;
+    this.fish.alpha = this.haze * this.fade * (1 - (this.behind || 0));
     this.fish.draw(ctx);
   }
 }
