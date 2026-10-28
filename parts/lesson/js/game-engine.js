@@ -467,6 +467,62 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.parBeat(['AB', 'CD'], 0);
     this.parBeat(['DA', 'BC'], CONFIG.marks.pairGap);
   }
+  // these sides lit (their light runs) for ms; a light that comes after takes over (id: a sequence's own step)
+  lightFor(ks, ms, id) {
+    const tok = this.stepTok, g = ks.slice();
+    if (!id) this.seqId = null; // (a sequence still running stops: this light is the newer word's)
+    this.setState({ glow: g });
+    this.sfx('glint', { v: 0.8 });
+    this.tm(() => { if (tok === this.stepTok && this.state.glow === g) this.setState({ glow: null }); }, ms);
+  }
+  // whether side k's opposite side is parallel to it, on this shape
+  sidePar(P, k) {
+    const v = (p, q) => ({ x: P[q].x - P[p].x, y: P[q].y - P[p].y });
+    const [a, b] = k === 'AB' || k === 'CD' ? [v('A', 'B'), v('D', 'C')] : [v('A', 'D'), v('B', 'C')];
+    return Math.abs(a.x * b.y - a.y * b.x) / ((Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y)) || 1) < 0.01;
+  }
+  // The key words (gold on the plate) show what they mean on the shape as they are said: "sides" - all four lit;
+  // "opposite" - the opposite pairs lit in turn (of sides, or of angles); "parallel" - the arrows of the sides that are
+  // parallel (the ones the line names, else every parallel pair), lit with them - only what is true of this shape, and
+  // never a question's answer; a shape's name - the shape pulses once (a parallelogram's arrows beat: parWord);
+  // "vertices" - the corners; "equal", "adjacent", "supplementary", "180°" - the parts the line names, together (and
+  // "equal" naming none, with the lengths shown: each pair of opposite lengths in turn);
+  // "bisect" - the diagonals' halves. A line lighting sides itself (its glow, or a cue's) gets no more light from
+  // these; none on a build, a summary, a grid of shapes or the end.
+  conceptCues(words, L, ask) {
+    const st = this.cur(), out = [];
+    if (!st || st.build || st.summary || st.grid || st.end) return out;
+    const key = (w) => String(w || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const nm = (w) => String(w || '').split('\u00a0')[0].replace(/[^A-Za-z∠]/g, '');
+    const sideOf = { AB: 'AB', BA: 'AB', BC: 'BC', CB: 'BC', CD: 'CD', DC: 'CD', DA: 'DA', AD: 'DA' };
+    const nSides = [], nParts = [];
+    words.forEach((w) => {
+      const t = nm(w), m = /^∠([A-D])$/.exec(t);
+      if (sideOf[t] && nSides.indexOf(sideOf[t]) < 0) { nSides.push(sideOf[t]); nParts.push(sideOf[t]); }
+      else if (m && nParts.indexOf('a' + m[1]) < 0) nParts.push('a' + m[1]);
+      else if (/^(O[A-D]|[A-D]O)$/.test(t) && nParts.indexOf('h' + t.replace('O', '')) < 0) nParts.push('h' + t.replace('O', ''));
+    });
+    const lit = !L.glow && !(L.cues || []).some((c) => c.glow !== undefined); // (the line does not light sides itself)
+    const P = this.shapeP(), f = this.fl();
+    words.forEach((w, i) => {
+      const k = key(w), next = key(words[i + 1]), prev = key(words[i - 1]);
+      let c = null;
+      if (k === 'sides' && lit && !nSides.length && !/^(opposite|adjacent)$/.test(prev)) c = { light: ['AB', 'BC', 'CD', 'DA'], ms: 1300 };
+      else if (k === 'opposite' && /^angles?$/.test(next) && f.arcs) c = { emphSeq: [['aA', 'aC'], ['aB', 'aD']] };
+      else if (k === 'opposite' && /^sides?$/.test(next) && lit && !nSides.length) c = { lightSeq: [['AB', 'CD'], ['DA', 'BC']] };
+      else if (k === 'parallel') {
+        const ks = (nSides.length ? nSides : ['AB', 'CD', 'DA', 'BC']).filter((s) => this.sidePar(P, s));
+        if (ks.length && !(ask && !nSides.length)) c = { parSides: ks, lit: lit };
+      } else if (/^parallelograms?$/.test(k)) c = { parWord: 1 };
+      else if (/^(trapeziums?|quadrilaterals?|polygon)$/.test(k)) c = { pulse: 1 };
+      else if (k === 'vertices') c = { emph: ['vA', 'vB', 'vC', 'vD'] };
+      else if (/^(equal|adjacent|supplementary|180)$/.test(k) && nParts.length >= 2) c = nParts.some((p) => /^a|^h/.test(p)) ? { emph: nParts } : (lit ? { light: nSides, ms: 1300 } : null);
+      else if (k === 'equal' && !nParts.length && (f.sideLen || f.legLen)) c = { emphSeq: [['lAB', 'lCD'], ['lDA', 'lBC']], lightSeq: lit ? [['AB', 'CD'], ['DA', 'BC']] : null }; // (equal lengths: each pair's, together)
+      else if (k === 'bisect' && f.diag) c = { emph: ['hA', 'hB', 'hC', 'hD'] };
+      if (c) out.push({ i: i, c: c });
+    });
+    return out;
+  }
   // o: { f: pitch Hz, v: volume x, delay: s } for the synthesised effects (js/sfx.js)
   sfx(kind, o) {
     if (this.state.muted) return;
@@ -544,9 +600,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // until: the cue lasts until that word is said (span, s: from the clip's own word times; else about 0.3 s a word)
     const cueKey = keep ? L.s : text.replace(/\s*\n\s*/g, ' ').trim();
     const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), j: c.until ? words.map(key).indexOf(key(c.until)) : -1, done: false }));
-    // "parallelogram" said: its parallel arrows are called out (parWord), unless the line calls out arrows itself
-    const pw = words.map(key).findIndex((w) => /^parallelograms?$/.test(w));
-    if (pw >= 0 && !(L.cues || []).some((c) => c.beat || c.mark)) cues.push({ c: { parWord: 1 }, i: pw, j: -1, done: false });
+    // the key words show what they mean on the shape as they are said (conceptCues), where the line's own cue at that
+    // word does not; a line calling out arrows itself (beat, mark) keeps them its own
+    const own = (L.cues || []).some((c) => c.beat || c.mark);
+    this.conceptCues(words, L, L === this.askLine).forEach((a) => {
+      const arrows = a.c.parWord || a.c.parSides;
+      if (arrows ? !own : !cues.some((q) => q.i === a.i)) cues.push({ c: a.c, i: a.i, j: -1, done: false });
+    });
     const fireCue = (q) => {
       if (q.done || tok !== this.narrTok) return;
       q.done = true;
@@ -851,6 +911,17 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // beat: these sides' parallel arrows are called out (parBeat) - as their light passes them when the cue lights them
     if (c.beat) this.parBeat(c.beat, c.glow ? 430 : 0);
     if (c.parWord) this.parWord();
+    if (c.light) this.lightFor(c.light, c.ms || 1300);
+    if (c.lightSeq && c.lightSeq.length) { const id = this.seqId = {}; c.lightSeq.forEach((ks, j) => this.tm(() => { if (tok === this.stepTok && this.seqId === id) this.lightFor(ks, 900, id); }, j * 950)); }
+    if (c.emphSeq) c.emphSeq.forEach((ks, j) => this.tm(() => { if (tok === this.stepTok) this.emphasize(ks); }, j * 950));
+    if (c.parSides) { // (each pair on its own: AB and CD, then AD and BC; lit with them unless the line lights its sides)
+      const p1 = c.parSides.filter((k) => k === 'AB' || k === 'CD'), p2 = c.parSides.filter((k) => k === 'DA' || k === 'BC');
+      [p1, p2].filter((ks) => ks.length).forEach((ks, j) => this.tm(() => {
+        if (tok !== this.stepTok) return;
+        if (c.lit) this.lightFor(ks, 1300);
+        this.parBeat(ks, c.lit ? 430 : 0);
+      }, j * CONFIG.marks.pairGap * 2));
+    }
     if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
     if (c.pairJump) this.tagStep(() => this.pairJump(c.pairJump), 3000);
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
@@ -2107,13 +2178,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.tk = { p: tkPath || 'M0,0', d: dsp(!!tkPath) };
     // each side's arrows on their own (css .par-ch pops them on as the side's light passes them); a side whose arrows a
     // word cue traces on (markCues) keeps its slot but shows them only from that cue
-    // A parallelogram's side with no arrows of its own gets them for a moment when they are called out (s.parTmp, from
+    // A side parallel to its opposite with no arrows of its own gets them for a moment when they are called out (s.parTmp, from
     // parBeat): two on AB, CD and one on AD, BC as ever; on a side showing its length they sit back along the side, clear
     // of the number (or not at all if the side is too short for that)
     const due = this.markCues(st);
     ['AB', 'CD', 'DA', 'BC'].forEach((k) => {
       const on = !!nArrows[k] && !(due[k] && !(s.marked && s.marked[k]));
-      const tmp = !on && !due[k] && pgNow && s.parTmp && s.parTmp[k], half = this.dist(SIDES[k][0], SIDES[k][1]) / 2;
+      const tmp = !on && !due[k] && this.sidePar(P, k) && s.parTmp && s.parTmp[k], half = this.dist(SIDES[k][0], SIDES[k][1]) / 2;
       const c0 = lenOn(k) ? -MK.tempShift : 0, fits = !lenOn(k) || half >= MK.tempShift + MK.arrowStep + MK.arrowDepth;
       const path = on ? arrows(k) : tmp && fits ? arrows(k, k === 'AB' || k === 'CD' ? 2 : 1, c0) : '';
       g['ch' + k] = { p: path || 'M0,0', d: dsp(!!path), x: !on && path ? ' tmp' + (tmp === 'out' ? ' out' : '') : '' };

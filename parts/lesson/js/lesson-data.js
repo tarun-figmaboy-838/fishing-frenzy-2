@@ -66,7 +66,10 @@ const LESSON = {
       cues: [{ at: 'trapezium', chip: { t: 'Trapezium', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 1300 }] }], f: { noLetters: 1 } },
     { pdf: 4, id: 'onePair', skin: 'intro', enterChips: [{ t: 'Trapezium', k: 'name' }],
       lines: [{ t: 'A trapezium has one pair of\nopposite sides parallel.' }], f: { noLetters: 1 } },
-    Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?' }],
+    // (the question names no pair: on "pair" one pair of opposite sides lights, on "sides" the other - the two the
+    // answers name - and "parallel" shows nothing, which would be the answer)
+    Object.assign({ pdf: '5-6', id: 'askPar', skin: 'intro', lines: [{ m: 'curious', t: 'Which pair of sides are\nparallel to each other?',
+      cues: [{ at: 'pair', light: ['AB', 'CD'], ms: 950 }, { at: 'sides', light: ['DA', 'BC'], ms: 950 }] }],
       // right answer: AD ∥ BC folds away and AB ∥ CD settles alone in the centre, green (storyboard page 6)
       // right: AB is traced as it is said, its parallel marks popping on as the light passes them, then CD; wrong: AD, then BC, light as
       // they are said; on "lean" the card zooms out just enough, and they are carried on until they meet as "meet" is said
@@ -123,9 +126,10 @@ const LESSON = {
     { pdf: 15, id: 'interesting', lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
       lenSeq: [[700, ['AB', 'CD']], [2300, ['DA', 'BC']]], f: Object.assign({ lenSeq: 1 }, PG, LENS) },
     Object.assign({ pdf: '16-17', id: 'askSides', lines: [{ m: 'curious', t: 'What do you notice\nabout the sides?' }],
-      // right answer: the other option folds away, this one settles green in the centre, then AB + CD and AD + BC
-      // pulse in turn; the correct sound, no confetti (storyboard page 17)
-      ok: "That's correct! Opposite\nsides are equal.", soloOk: 1, calmOk: 1, okGlow: [['AB', 'CD'], ['DA', 'BC']], okF: { ticks: 1 },
+      // right answer: the other option folds away, this one settles green in the centre; as the line says it, AB + CD
+      // and AD + BC light in turn on "opposite", their lengths in turn on "equal" (conceptCues); the correct sound, no
+      // confetti (storyboard page 17)
+      ok: "That's correct! Opposite\nsides are equal.", soloOk: 1, calmOk: 1, okF: { ticks: 1 },
       opts: [
         { id: 'all', t: 'All sides are equal', fb: 'Look at the lengths again. AB is 6 cm, but AD is only 3 cm.' },
         { id: 'opp', t: 'Opposite sides are equal', ok: true }
