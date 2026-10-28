@@ -785,6 +785,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   qNext() {
     const q = this.q;
     if (!q || q.tok !== this.stepTok) return;
+    const rest = q.i > 0 && q.i < q.lines.length ? (this.seqEnd || 0) - Date.now() : 0; // (the last line's animation, and its rest)
+    if (rest > 0) { this.tm(() => this.qNext(), rest); return; }
     if (q.i >= q.lines.length) { this.q = null; if (q.done) q.done(); this.armIdle(); return; }
     const L = q.lines[q.i++];
     this.say(L, () => this.qNext());
@@ -813,11 +815,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
-    if (c.meet) this.showMeet(c.meet, c.span);
+    if (c.meet) { this.showMeet(c.meet, c.span); this.busyFor((Motion.reduced ? 0 : 800) + (c.span ? Math.max(0.9, c.span - 0.8) + 0.45 : 1.75) * 1000); }
     if (c.meetPulse && window.Motion) Motion.meetPulse(); // ("...if we made them longer": the lines carried on beat once)
     // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
     // passes them, 0.43 s into its run (their tick: markSounds)
-    if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); }
+    if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); this.busyFor(1100 + 420); }
     if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
     if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
@@ -845,12 +847,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (c.halfSlide) pairs(c.halfSlide).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
           Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); at += 3400; });
         // the screen stays until the last of them has been seen through (flow: seqEnd)
-        const ends = at ? at + 1000 : 0;
-        if (ends) this.seqEnd = Math.max(this.seqEnd || 0, Date.now() + ends);
+        if (at) this.busyFor(at);
       }
     }
-    if (c.chip) this.addChips([c.chip]);
-    if (c.glow) this.sfx('glint', { v: 0.9 }); // a side (or the outline) lights up on its word
+    if (c.chip) { this.addChips([c.chip]); this.busyFor(600); }
+    if (c.glow) { this.sfx('glint', { v: 0.9 }); this.busyFor(1100); } // a side (or the outline) lights up on its word: its light runs
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
     else if (c.hi !== undefined) this.setState({ chipHi: c.hi || null }); // (a card that lifts on its word, the shape left calm)
     if (c.pulse) Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
@@ -1109,6 +1110,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const seq = st.okGlow, tok = this.stepTok, ms = 950;
     if (!seq) return;
     seq.forEach((pair, i) => this.tm(() => { if (tok === this.stepTok) this.setState({ glow: pair }); }, 550 + i * ms));
+    this.busyFor(550 + seq.length * ms);
     this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, 550 + seq.length * ms);
   }
   // every correct learner action: the correct sound and one confetti burst from the top, together, then praise
@@ -1117,6 +1119,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (window.Confetti && !this.cur().calmOk) window.Confetti.burst(); // calmOk: sound and praise only
     this.react(CONFIG.swiftee.praise);
   }
+  // an animation running for ms from now: nothing new starts until CONFIG.flow.restMs after it (seqEnd, read by the line
+  // queue and by maybeAdvance)
+  busyFor(ms) { this.seqEnd = Math.max(this.seqEnd || 0, Date.now() + Math.max(0, ms) + CONFIG.flow.restMs); }
   // A finished screen moves on by itself: CONFIG.flow.advanceMs (or the step's autoNext) after the last line ends.
   // Called whenever narration goes quiet; does nothing until the screen's task/check is done. Lesson complete stays,
   // and in review (the journey's Back / Next bar used) every screen stays.
@@ -1215,7 +1220,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (fresh) this.setState({ lenOn: Object.assign({}, on, q[1].reduce((o, k) => { o[k] = 1; return o; }, {})) });
         this.emphasize(q[1]); if (fresh) this.sfx('pop');
       }, q[0] + (st.voiceDelay || 0)));
-      this.seqEnd = Date.now() + st.lenSeq[st.lenSeq.length - 1][0] + 1200;
+      this.busyFor(st.lenSeq[st.lenSeq.length - 1][0] + 400);
     }
     const sp = (st.f || {}).supp;
     if (sp) {
@@ -1224,7 +1229,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const eqs = ((st.lines || [])[0] || {}).chips || [];
       sp.forEach((pair, i) => this.tm(() => { this.setState({ supp: i, chipHi: eqs.length === sp.length ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop'); }, 500 + i * ms));
       if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
-      this.seqEnd = Date.now() + 500 + sp.length * ms;
+      this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs); // (each step already holds its pair a while)
     }
     if (st.build && this.fromNet) {
       // (from the hook's net: the outline is there already, as the net left it; it settles and fills in)

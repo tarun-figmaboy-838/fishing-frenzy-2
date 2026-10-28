@@ -45,7 +45,10 @@ const CONFIG = {
   // question or task waits for the learner, then moves on after its feedback). A question's answers, or a task's corner,
   // come in as Swiftee says the question's last word (at the latest answersMaxMs after the screen starts, should her
   // voice stall). In the journey, the lesson's last screen hands over to the fishing on its Next.
-  flow: { advanceMs: 2600, answersMaxMs: 15000 },
+  // restMs: after every animation (a side's light, marks coming in, sides carried on, a slide, a sequence) the screen is
+  // still this long before anything new starts - its next line, the next animation, the next screen - so each can be
+  // taken in (engine busyFor)
+  flow: { advanceMs: 2600, answersMaxMs: 15000, restMs: 1500 },
   plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 5000 },
