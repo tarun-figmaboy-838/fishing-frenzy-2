@@ -516,6 +516,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       } else if (/^parallelograms?$/.test(k)) c = { parWord: 1 };
       else if (/^(trapeziums?|quadrilaterals?|polygon)$/.test(k)) c = { pulse: 1 };
       else if (k === 'vertices') c = { emph: ['vA', 'vB', 'vC', 'vD'] };
+      else if (k === '180' && L.tagsWithSupp) c = { sumSaid: 1 }; // (its tag's "= 180°" joins on the word)
       else if (/^(equal|adjacent|supplementary|180)$/.test(k) && nParts.length >= 2) c = nParts.some((p) => /^a|^h/.test(p)) ? { emph: nParts } : (lit ? { light: nSides, ms: 1300 } : null);
       else if (k === 'equal' && !nParts.length && (f.sideLen || f.legLen)) c = { emphSeq: [['lAB', 'lCD'], ['lDA', 'lBC']], lightSeq: lit ? [['AB', 'CD'], ['DA', 'BC']] : null }; // (equal lengths: each pair's, together)
       else if (k === 'bisect' && f.diag) c = { emph: ['hA', 'hB', 'hC', 'hD'] };
@@ -911,6 +912,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // beat: these sides' parallel arrows are called out (parBeat) - as their light passes them when the cue lights them
     if (c.beat) this.parBeat(c.beat, c.glow ? 430 : 0);
     if (c.parWord) this.parWord();
+    if (c.sumSaid) { this.sumSaid = true; const w = this.sumWait; this.sumWait = null; if (w) w(); } // (the voice has said 180: a tag waiting adds "= 180°")
     if (c.light) this.lightFor(c.light, c.ms || 1300);
     if (c.lightSeq && c.lightSeq.length) { const id = this.seqId = {}; c.lightSeq.forEach((ks, j) => this.tm(() => { if (tok === this.stepTok && this.seqId === id) this.lightFor(ks, 900, id); }, j * 950)); }
     if (c.emphSeq) c.emphSeq.forEach((ks, j) => this.tm(() => { if (tok === this.stepTok) this.emphasize(ks); }, j * 950));
@@ -1051,7 +1053,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const land = () => {
         if (tok !== this.stepTok) return;
         this.setTag(c.t, { arriving: 0, landed: 1 }); this.sfx('pop', { v: 0.7 });
-        if (num && T.sum) { show(num + ' = 180°', sumAt); show(c.t, sumAt + 1300); } else if (num) show(c.t, 1300);
+        if (num && T.sum && opt.sumWord) { // ("= 180°" joins as the voice says 180 - at once if it has said it already)
+          const join = () => { if (tok === this.stepTok) { show(num + ' = 180°', 0); show(c.t, 1300); } };
+          if (this.sumSaid) join(); // (the word came while its numbers were flying: it lands complete)
+          else { this.sumWait = join; this.tm(() => { if (this.sumWait === join) { this.sumWait = null; join(); } }, sumAt); }
+        } else if (num && T.sum) { show(num + ' = 180°', sumAt); show(c.t, sumAt + 1300); } else if (num) show(c.t, 1300);
       };
       if (!to) { land(); return; }
       [T.a, T.b].forEach((p, k) => this.tm(() => { if (tok === this.stepTok) Motion.flyValue(p.text, this.boardToStage(p.at) || to, to, k ? land : null, 'src'); }, k * 180));
@@ -1274,7 +1280,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this.diveTl) { this.diveTl.kill(); this.diveTl = null; const sw = document.querySelector('.stage .swiftee'); if (sw && window.gsap) { gsap.set(sw, { clearProps: 'transform' }); sw.classList.remove('flying'); } }
     Motion.clear(); // the previous screen's animations stop and leave no inline styles behind
     if (window.Summary) Summary.stop(); // (the summary's layer, timers and Swiftee's place there)
-    this.handId = null; this.handShown = 0; this.touched = false;
+    this.handId = null; this.handShown = 0; this.touched = false; this.sumSaid = false; this.sumWait = null;
     if (this.wk) this.wk.hide();
     if (this.aw) this.aw.cancel();
     this.stepTok++; this.narrTok++;
@@ -1485,8 +1491,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const L0 = (st.lines || [])[0] || {}, eqs = L0.chips || [], own = L0.tagsWithSupp && eqs.length === sp.length; // (each pair's tag comes with its demo)
       sp.forEach((pair, i) => this.tm(() => {
         this.setState({ supp: i, chipHi: eqs.length === sp.length && !own ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop');
-        if (own) this.tm(() => { if (st === this.cur()) this.buildTag(eqs[i], { sumAt: 2300 }); }, 400); // ("= 180°" as the rim closes)
-      }, 500 + i * ms));
+        if (own) this.tm(() => { if (st === this.cur()) this.buildTag(eqs[i], { sumAt: 2300, sumWord: !i }); }, i ? 400 : 0); // ("= 180°" as the rim closes; the first as the voice says 180)
+      }, (i ? 500 : 150) + i * ms)); // (the first at once, so its tag is in by the time the voice says 180)
       if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
       this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs); // (each step already holds its pair a while)
     }
