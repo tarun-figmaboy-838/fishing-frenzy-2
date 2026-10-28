@@ -497,7 +497,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // The key words (gold on the plate) show what they mean on the shape as they are said: "sides" - all four lit;
   // "opposite" - the opposite pairs lit in turn (of sides, or of angles); "parallel" - the arrows of the sides that are
   // parallel (the ones the line names, else every parallel pair), lit with them - only what is true of this shape, and
-  // never a question's answer; a shape's name - the shape pulses once (a parallelogram's arrows beat: parWord);
+  // never a question's answer; "parallelogram" - its arrows beat (parWord), where the screen is about its sides;
   // "vertices" - the corners; "equal", "adjacent", "supplementary", "180°" - the parts the line names, together (and
   // "equal" naming none, with the lengths shown: each pair of opposite lengths in turn);
   // "bisect" - the diagonals' halves; "diagonals" not drawn yet - AC and BD drawn in a moment. A line lighting sides itself (its glow, or a cue's) gets no more light from
@@ -517,7 +517,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (/^(O[A-D]|[A-D]O)$/.test(t) && nParts.indexOf('h' + t.replace('O', '')) < 0) nParts.push('h' + t.replace('O', ''));
     });
     const lit = !L.glow && !(L.cues || []).some((c) => c.glow !== undefined); // (the line does not light sides itself)
-    const P = this.shapeP(), f = this.fl(), arcs = st.fig ? Object.keys(st.fig.angles || {}).join('') : (f.arcs || '');
+    const P = this.shapeP(), f = st.fig ? Object.assign({ diag: st.fig.diag }, this.fl()) : this.fl(), arcs = st.fig ? Object.keys(st.fig.angles || {}).join('') : (f.arcs || '');
+    const demo = (L.cues || []).some((c) => c.match || c.matchAng || c.halfSlide || c.pairJump || c.fold) || !!L.tagsWithSupp || !!f.supp;
+    // (a parallelogram's arrows beat on its name where the screen is about its sides - not over angles, diagonals, a
+    // checkpoint's figure or a demo, where they would only be in the way)
+    const sidesScreen = !arcs && !f.diag && !st.fig && st.task !== 'connect' && !demo;
     const lens = !!(f.sideLen || f.legLen || (st.fig && st.fig.sides));
     const aboutAngles = words.some((w) => /^(angles?|∠[A-D])$/.test(nm(w)) || /^angles?$/.test(key(w)));
     const pairOf = (k) => (k === 'AB' || k === 'CD' ? ['AB', 'CD'] : ['DA', 'BC']);
@@ -539,8 +543,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const ks = (nSides.length ? nSides : ['AB', 'CD', 'DA', 'BC']).filter((s) => this.sidePar(P, s));
         if (ks.length && !(ask && !nSides.length)) c = { parSides: ks, lit: lit };
         else if (nSides.length && lit) c = { light: nSides, ms: 1300 }; // (named, not parallel yet: only which sides)
-      } else if (/^parallelograms?$/.test(k)) c = out.some((a) => a.c.parSides) ? null : { parWord: 1 }; // (its arrows beat once: not again after "parallel")
-      else if (/^(trapeziums?|quadrilaterals?|polygon)$/.test(k)) c = { pulse: 1 };
+      } else if (/^parallelograms?$/.test(k)) c = !sidesScreen || out.some((a) => a.c.parSides) ? null : { parWord: 1 }; // (its arrows beat once: not again after "parallel")
       else if (k === 'vertices') c = { emph: ['vA', 'vB', 'vC', 'vD'] };
       else if (k === '180' && L.tagsWithSupp) c = { sumSaid: 1 }; // (its tag's "= 180°" joins on the word)
       else if (/^(equal|adjacent|supplementary|180)$/.test(k) && nParts.length >= 2) c = nParts.some((p) => /^a|^h/.test(p)) ? { emph: nParts } : (lit ? { light: nSides, ms: 1300 } : null);
@@ -549,7 +552,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (k === 'equal' && lit && nSides.length === 1) c = { light: pairOf(nSides[0]), ms: 1300 };
       else if (k === 'equal' && lit && !nParts.length) c = arcs && !lens ? { emph: ['aA', 'aB', 'aC', 'aD'].filter((a) => arcs.indexOf(a[1]) >= 0) } : { light: ['AB', 'BC', 'CD', 'DA'], ms: 1300 };
       else if (k === 'bisect' && f.diag) c = { emph: ['hA', 'hB', 'hC', 'hD'] };
-      else if (/^diagonals?$/.test(k) && !f.diag && !(this.state.diag && (this.state.diag.AC || this.state.diag.BD))) c = { sketchDiag: 1 }; // (not drawn yet: shown a moment)
+      else if (/^diagonals?$/.test(k) && !f.diag && !ask && st.task !== 'connect' && !(this.state.diag && (this.state.diag.AC || this.state.diag.BD))) c = { sketchDiag: 1 }; // (not drawn yet, nor to be drawn: shown a moment)
       if (c) out.push({ i: i, c: c });
     });
     return out;
@@ -631,10 +634,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // until: the cue lasts until that word is said (span, s: from the clip's own word times; else about 0.3 s a word)
     const cueKey = keep ? L.s : text.replace(/\s*\n\s*/g, ' ').trim();
     const cues = (L.cues || []).map((c) => ({ c: c, i: words.map(key).indexOf(key(c.at)), j: c.until ? words.map(key).indexOf(key(c.until)) : -1, done: false }));
+    const cueAt = new Set(cues.map((q) => q.i)); // (the words the line's own cues are on)
     // the key words show what they mean on the shape as they are said (conceptCues), where the line's own cue at that
     // word does not; a line calling out arrows itself (beat, mark) keeps them its own
     const own = (L.cues || []).some((c) => c.beat || c.mark);
-    this.conceptCues(words, L, L === this.askLine).forEach((a) => {
+    const concepts = this.conceptCues(words, L, L === this.askLine);
+    const conceptAt = new Set(concepts.map((a) => a.i));
+    concepts.forEach((a) => {
       const arrows = a.c.parWord || a.c.parSides;
       if (arrows ? !own : !cues.some((q) => q.i === a.i)) cues.push({ c: a.c, i: a.i, j: -1, done: false });
     });
@@ -649,7 +655,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.runCue(c);
     };
     // a part of the shape named in the line (∠A, AB, "A B", vertex A, legs, bases) grows briefly as the voice says it
-    const emphCues = this.partCues(words);
+    // ...one picture at a time: on a line showing its fact with a demo (a slide, a turn, lengths jumping into boxes, the
+    // 180° demos) no part grows besides it; a word with its own cue does not also grow; and a group of parts (the
+    // sides, the angles, the halves) does not grow on top of a key word's picture of them, on that word or the word
+    // after it ("opposite sides": the pairs light in turn, and all four do not then grow over them)
+    const demoLine = (L.cues || []).some((c) => c.match || c.matchAng || c.halfSlide || c.pairJump || c.fold) || !!L.tagsWithSupp || !!(this.cur().f || {}).supp;
+    const emphCues = demoLine ? [] : this.partCues(words).filter((c) => !cueAt.has(c.i) && !(c.parts.length > 1 && (conceptAt.has(c.i) || conceptAt.has(c.i - 1))));
     // angles named in the line join the focus as the voice says them; the rest fade back until shortly after the line
     const aNamed = {};
     const focusAngles = (parts) => {
