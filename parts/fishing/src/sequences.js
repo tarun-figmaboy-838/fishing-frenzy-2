@@ -943,36 +943,46 @@ async function fishBumpsCorner(game, token, to) {
   // out with the nose on the corner, however big the fish
   const nose = (pitch) => { const a = pitch * fish.dir; return { x: fish.dir * 0.45 * fish.w * Math.cos(a), y: fish.dir * 0.45 * fish.w * Math.sin(a) }; };
   try {
-    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + fish.w * 0.5 + 30, y: wl + fish.h * 0.15 };
-    await clock.tween(q ? 400 : 800, token, (t) => {
+    // it comes in under the water, rising towards the corner
+    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + fish.w * 0.55 + 40, y: wl + fish.h * 0.2 };
+    await clock.tween(q ? 400 : 900, token, (t) => {
       const k = ease.inOut(t);
       fish.x = start.x + (launch.x - start.x) * k;
       fish.y = start.y + (launch.y - start.y) * k;
       fish.pitch = -0.45 * k;
       if (Math.random() < 0.3) fx.puff(fish.x + fish.w * 0.4, fish.y, 1, 1);
     });
+    // the leap: one arc out of the water, the fish tilting with its flight, its nose meeting the corner just before
+    // the top of the arc - so the hit is seen
     audio.play('leap');
     fx.splash(launch.x, wl, true);
-    const from = { x: fish.x, y: fish.y }, n = nose(-0.55);
-    await clock.tween(q ? 250 : 460, token, (t) => {
-      const c = corner(), k = 1 - (1 - t) ** 2;
-      fish.x = from.x + (c.x - n.x - from.x) * k;
-      fish.y = from.y + (c.y - n.y - from.y) * k;
-      fish.pitch = -0.85 + 0.3 * t;
+    const from = { x: fish.x, y: fish.y }, n = nose(-0.6), hit = { x: c0.x - n.x, y: c0.y - n.y }, top = hit.y - 70;
+    await clock.tween(q ? 250 : 640, token, (t) => {
+      const u = 1 - t;
+      fish.x = from.x + (hit.x - from.x) * t;
+      fish.y = u * u * from.y + 2 * u * t * top + t * t * hit.y; // (a parabola through its peak)
+      fish.pitch = -0.95 + 0.35 * t;
     });
-    // the bump
+    // the hit: a moment's stillness, the fish squashed against the corner, a burst of sparks and the bump
     audio.play('bump');
-    fx.sparkle(corner().x, corner().y, 6);
+    fx.sparkle(c0.x, c0.y, 14);
+    fx.puff(c0.x, c0.y, 0, 3, true);
+    fish.squash = q ? 0 : 1;
+    await clock.wait(q ? 0 : 160, token);
+    // the push: the corner slides to its new place along the hit and the net swings and settles; the fish bounces off
+    // and tumbles back into the water with a big splash
     const was = { ...net.points[2] }, fall = { x: fish.x, y: fish.y };
     let back = false;
-    await clock.tween(q ? 400 : 950, token, (t) => {
-      net.points[2] = geo.lerp(was, to, q ? t : ease.outBack(t)); // (swings over, a hair past, and settles)
-      net.swing = q ? 0 : -0.06 * Math.sin(t * Math.PI * 3) * (1 - t);
-      fish.x = fall.x + 80 * t;
-      fish.y = fall.y + 440 * t * t;
-      fish.pitch = 1.1 * t;
+    await clock.tween(q ? 400 : 1000, token, (t) => {
+      net.points[2] = geo.lerp(was, to, q ? t : ease.out(t));
+      net.swing = q ? 0 : -0.05 * Math.sin(t * Math.PI * 2.5) * (1 - t);
+      fish.squash = Math.max(0, 1 - t * 5);
+      fish.x = fall.x + 110 * t;
+      fish.y = fall.y - 70 * t + 560 * t * t;
+      fish.pitch = -0.6 + 2.2 * t; // (a tumble)
       if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); fx.ripple(fish.x, wl + 4, 1.4); audio.play('splashBig'); } // (a big fish, a big splash)
     });
+    fx.sparkle(corner().x, corner().y, 6); // (the corner where it stays)
     net.points[2] = { ...to };
     net.swing = 0;
     const gone = { x: fish.x, y: fish.y };

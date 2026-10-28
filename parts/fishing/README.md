@@ -59,8 +59,10 @@ journey` part of `src/game.js`:
     comes down in a shape that is no parallelogram (`HOOK_NETS.wrong`); in the water its corners pull
     unevenly, one after another, it twists and its mesh tangles (`tangleNet`) and hangs there a moment,
     tangled, before it comes up: three shapes in a row, each a little quicker but every step slow enough
-    to follow. Then a giant fish (four times the school's) leaps, and its nose bumps the third net's
-    corner C onto B + D − A (`fishBumpsCorner`): a
+    to follow. Then a giant fish (four times the school's) leaps in one arc out of the water, its nose meeting the
+    third net's corner C just before the top: a moment's stillness as it squashes against the corner, sparks and a
+    bump, and the corner slides along the hit onto B + D − A while the net swings and settles and the fish tumbles back
+    with a big splash (`fishBumpsCorner`): a
     parallelogram, which stays open in the water while its edge is outlined; a scripted school of
     twelve swims into it, one fish to each place in the net (`schoolSwimsIn`), and Popo hauls up the
     catch. Swiftee swoops in and names the shape as its outline is traced (the `trace` cue), Popo

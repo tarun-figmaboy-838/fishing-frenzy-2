@@ -38,6 +38,7 @@ class Fish {
     this.wiggleT = -1;
     this.flipT = -1;
     this.scale = 1;
+    this.squash = 0;       // a hit: squashed along its length for a moment (0..1; the leaping fish's bump)
     this.alpha = 1;
     this.gone = false;
     this.waiting = false;  // a newcomer out of sight at its lane's start, until there's room to swim in
@@ -151,7 +152,7 @@ class Fish {
       ctx.fill();
     }
     ctx.rotate(rot + this.pitch * this.dir);
-    ctx.scale(this.dir * this.scale, this.scale);
+    ctx.scale(this.dir * this.scale * (1 - this.squash * 0.2), this.scale * (1 + this.squash * 0.16));
     const [x0, y0, x1, y1] = this.box;
     if (this.reduced || this.frozen || this.flying) {
       ctx.drawImage(this.img, x0, y0, x1 - x0, y1 - y0, -this.w / 2, -this.h / 2, this.w, this.h);
