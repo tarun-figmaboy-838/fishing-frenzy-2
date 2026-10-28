@@ -188,7 +188,7 @@ const LESSON = {
         { id: 'BC', t: '∠B & ∠C', ok: true },
         { id: 'BD', t: '∠B & ∠D', fb: '∠B and ∠D are opposite angles. 70° + 70° is not 180°.' },
         { id: 'AB', t: '∠A & ∠B', ok: true },
-        { id: 'AD', t: '∠A & ∠D', ok: true, req: false, fb: 'Yes, but we found that pair already! Find the other pairs.' }
+        { id: 'AC', t: '∠A & ∠C', fb: '∠A and ∠C are opposite angles. 110° + 110° is not 180°.' }
       ], f: { arcs: 'ABCD' } }, PRACTICE),
     { pdf: 36, id: 'adjRule', lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.', tagsWithSupp: 1, // (each pair's tag is built with its own 180° demo)
       chips: [{ t: '∠A + ∠D = 180°', k: 'white sm' }, { t: '∠A + ∠B = 180°', k: 'white sm' }, { t: '∠B + ∠C = 180°', k: 'white sm' }, { t: '∠C + ∠D = 180°', k: 'white sm' }] }],

@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 110 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 110 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -180,7 +180,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo058 | They add up to make 180°. | They add up to make one hundred and eighty degrees. | दे ऐड अप टू मेक वन हंड्रेड एंड एटी डिग्रीज़। | 3.82 |
 | vo059 | Which other angles add up to 180°? | Which other angles add up to one hundred and eighty degrees? | विच अदर एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़? | 3.64 |
 | vo060 | ∠B and ∠D are opposite angles. 70° + 70° is not 180°. | Angle B and angle D are opposite angles. Seventy degrees plus seventy degrees is not one hundred and eighty degrees. | एंगल बी एंड एंगल डी आर ऑपोजिट एंगल्स। सेवेंटी डिग्रीज़ प्लस सेवेंटी डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़। | 8.60 |
-| vo061 | Yes, but we found that pair already! Find the other pairs. | = | येस, बट वी फाउंड दैट पेयर ऑलरेडी! फाइंड द अदर पेयर्स। | 4.88 |
 | vo063 | Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°. | Yes! Angle B plus angle C equals one hundred and eighty degrees and angle A plus angle B equals one hundred and eighty degrees. | येस! एंगल बी प्लस एंगल सी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़ एंड एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 9.65 |
 | vo064 | All the adjacent angles of this parallelogram add up to 180°. | All the adjacent angles of this parallelogram add up to one hundred and eighty degrees. | ऑल द एडजेसेंट एंगल्स ऑफ दिस पैरेललोग्राम ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 5.98 |
 | vo065 | In this parallelogram, ∠A = 68°. What is the measure of ∠C? | In this parallelogram, angle A equals sixty-eight degrees. What is the measure of angle C? | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी? | 6.72 |
@@ -235,3 +234,4 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo119 | Watch! BC must lean the same way as AD. | Watch! B C must lean the same way as A D. | वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी। | 4.92 |
 | vo120 | Now BC is parallel to AD. | Now B C is parallel to A D. | नाउ बी सी इज पैरेलल टू ए डी। | 3.20 |
 | vo121 | Let's find out! | = | लेट्स फाइंड आउट! | 1.64 |
+| vo122 | ∠A and ∠C are opposite angles. 110° + 110° is not 180°. | Angle A and angle C are opposite angles. One hundred and ten degrees plus one hundred and ten degrees is not one hundred and eighty degrees. | एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़। | 9.72 |

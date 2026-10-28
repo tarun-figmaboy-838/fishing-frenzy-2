@@ -57,7 +57,6 @@ const VO_LINES = {
   "They add up to make 180°.": ["vo058",3.82,[0.36,0.65,0.88,1.06,1.23,1.53],3.4],
   "Which other angles add up to 180°?": ["vo059",3.64,[0.28,0.58,0.88,1.23,1.43,1.58,1.73],3.35],
   "∠B and ∠D are opposite angles. 70° + 70° is not 180°.": ["vo060",8.6,[0.29,0.96,1.29,1.96,2.3,3.05,4.14,6.14,6.3,6.52],8.26],
-  "Yes, but we found that pair already! Find the other pairs.": ["vo061",4.88,[0.26,1.11,1.33,1.49,1.82,2.09,2.37,3.3,3.56,3.77,4.08],4.45],
   "Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°.": ["vo063",9.65,[0.29,1.28,5.15,5.41],9.35],
   "All the adjacent angles of this parallelogram add up to 180°.": ["vo064",5.98,[0.33,0.57,0.81,1.35,1.76,1.94,2.24,3.08,3.32,3.5,3.68],5.6],
   "In this parallelogram, ∠A = 68°. What is the measure of ∠C?": ["vo065",6.72,[0.29,0.47,0.78,1.95,4.95,5.18,5.32,5.51,5.88,6.01],6.44],
@@ -111,5 +110,6 @@ const VO_LINES = {
   "Amazing work! You know all about parallelograms now.": ["vo118",4.25,[0.33,0.92,1.67,1.9,2.18,2.41,2.75,3.6],3.89],
   "Watch! BC must lean the same way as AD.": ["vo119",4.92,[0.27,1.31,1.67,2.11,2.55,2.91,3.35,3.71,3.98],4.43],
   "Now BC is parallel to AD.": ["vo120",3.2,[0.29,0.65,1.01,1.28,2.08,2.35],2.81],
-  "Let's find out!": ["vo121",1.64,[0.3,0.65,0.94],1.24]
+  "Let's find out!": ["vo121",1.64,[0.3,0.65,0.94],1.24],
+  "∠A and ∠C are opposite angles. 110° + 110° is not 180°.": ["vo122",9.72,[0.28,0.89,1.2,1.81,2.11,2.8,3.99,7.31,7.47,7.69],9.44]
 };

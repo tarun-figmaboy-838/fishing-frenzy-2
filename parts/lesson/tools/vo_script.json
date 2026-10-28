@@ -495,15 +495,6 @@
     "devanagari": "एंगल बी एंड एंगल डी आर ऑपोजिट एंगल्स। सेवेंटी डिग्रीज़ प्लस सेवेंटी डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
   },
   {
-    "id": "vo061",
-    "line": "Yes, but we found that pair already! Find the other pairs.",
-    "spoken": "Yes, but we found that pair already! Find the other pairs.",
-    "where": [
-      "screen 33 askAdj: feedback AD"
-    ],
-    "devanagari": "येस, बट वी फाउंड दैट पेयर ऑलरेडी! फाइंड द अदर पेयर्स।"
-  },
-  {
     "id": "vo063",
     "line": "Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°.",
     "spoken": "Yes! Angle B plus angle C equals one hundred and eighty degrees and angle A plus angle B equals one hundred and eighty degrees.",
@@ -988,5 +979,14 @@
       "screens 13 measure, 24 measureAng: line"
     ],
     "devanagari": "लेट्स फाइंड आउट!"
+  },
+  {
+    "id": "vo122",
+    "line": "∠A and ∠C are opposite angles. 110° + 110° is not 180°.",
+    "spoken": "Angle A and angle C are opposite angles. One hundred and ten degrees plus one hundred and ten degrees is not one hundred and eighty degrees.",
+    "where": [
+      "screen 35 askAdj: feedback AC"
+    ],
+    "devanagari": "एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
   }
 ]
