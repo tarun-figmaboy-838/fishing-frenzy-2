@@ -450,15 +450,6 @@
     "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी?"
   },
   {
-    "id": "vo066",
-    "line": "112° would add up with ∠A to 180°. But ∠C is opposite ∠A, not next to it.",
-    "spoken": "One hundred and twelve degrees would add up with angle A to one hundred and eighty degrees. But angle C is opposite angle A, not next to it.",
-    "where": [
-      "screen 35 cp2a: feedback 112"
-    ],
-    "devanagari": "वन हंड्रेड एंड ट्वेल्व डिग्रीज़ वुड ऐड अप विद एंगल ए टू वन हंड्रेड एंड एटी डिग्रीज़। बट एंगल सी इज ऑपोजिट एंगल ए, नॉट नेक्स्ट टू इट।"
-  },
-  {
     "id": "vo067",
     "line": "Look again. Opposite angles of a parallelogram are equal.",
     "spoken": "Look again. Opposite angles of a parallelogram are equal.",

@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 108 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 107 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -174,7 +174,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo063 | Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°. | Yes! Angle B plus angle C equals one hundred and eighty degrees and angle A plus angle B equals one hundred and eighty degrees. | येस! एंगल बी प्लस एंगल सी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़ एंड एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़। | 9.65 |
 | vo064 | All the adjacent angles of this parallelogram add up to 180°. | All the adjacent angles of this parallelogram add up to one hundred and eighty degrees. | ऑल द एडजेसेंट एंगल्स ऑफ दिस पैरेललोग्राम ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 5.98 |
 | vo065 | In this parallelogram, ∠A = 68°. What is the measure of ∠C? | In this parallelogram, angle A equals sixty-eight degrees. What is the measure of angle C? | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी? | 6.72 |
-| vo066 | 112° would add up with ∠A to 180°. But ∠C is opposite ∠A, not next to it. | One hundred and twelve degrees would add up with angle A to one hundred and eighty degrees. But angle C is opposite angle A, not next to it. | वन हंड्रेड एंड ट्वेल्व डिग्रीज़ वुड ऐड अप विद एंगल ए टू वन हंड्रेड एंड एटी डिग्रीज़। बट एंगल सी इज ऑपोजिट एंगल ए, नॉट नेक्स्ट टू इट। | 9.24 |
 | vo067 | Look again. Opposite angles of a parallelogram are equal. | = | लुक अगेन। ऑपोजिट एंगल्स ऑफ ए पैरेललोग्राम आर इक्वल। | 4.76 |
 | vo069 | That's right! Opposite angles are equal, so ∠C = 68°. | That's right! Opposite angles are equal, so angle C equals sixty-eight degrees. | दैट्स राइट! ऑपोजिट एंगल्स आर इक्वल, सो एंगल सी इक्वल्स सिक्सटी एट डिग्रीज़। | 6.80 |
 | vo070 | In this parallelogram, ∠A = 72°. What is the measure of ∠B? | In this parallelogram, angle A equals seventy-two degrees. What is the measure of angle B? | इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सेवेंटी टू डिग्रीज़। वॉट इज द मेजर ऑफ एंगल बी? | 7.04 |

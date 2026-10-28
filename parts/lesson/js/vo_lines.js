@@ -52,7 +52,6 @@ const VO_LINES = {
   "Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°.": ["vo063",9.65,[0.29,1.28,5.15,5.41],9.35],
   "All the adjacent angles of this parallelogram add up to 180°.": ["vo064",5.98,[0.33,0.57,0.81,1.35,1.76,1.94,2.24,3.08,3.32,3.5,3.68],5.6],
   "In this parallelogram, ∠A = 68°. What is the measure of ∠C?": ["vo065",6.72,[0.29,0.47,0.78,1.95,4.95,5.18,5.32,5.51,5.88,6.01],6.44],
-  "112° would add up with ∠A to 180°. But ∠C is opposite ∠A, not next to it.": ["vo066",9.24,[0.27,1.85,2.16,2.36,2.51,2.77,3.18,3.33,5.38,5.66,6.22,6.43,7.07,7.92,8.16,8.45,8.63],8.88],
   "Look again. Opposite angles of a parallelogram are equal.": ["vo067",4.76,[0.28,0.6,1.55,2.11,2.54,2.73,2.85,3.72,3.97],4.41],
   "That's right! Opposite angles are equal, so ∠C = 68°.": ["vo069",6.8,[0.25,0.69,1.55,2.04,2.43,2.65,3.36,3.6],6.44],
   "In this parallelogram, ∠A = 72°. What is the measure of ∠B?": ["vo070",7.04,[0.3,0.48,0.77,1.99,5.05,5.29,5.43,5.62,5.99,6.14],6.57],

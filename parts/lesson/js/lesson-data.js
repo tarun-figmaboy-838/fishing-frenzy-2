@@ -206,7 +206,7 @@ const LESSON = {
       fig: { P: tilt(68), angles: { A: '68°', C: '?' } },
       opts: [
         { id: '68', t: '68°', ok: true },
-        { id: '112', t: '112°', fb: '112° would add up with ∠A to 180°. But ∠C is opposite ∠A, not next to it.' },
+        { id: '112', t: '112°', fb: 'Look again. Opposite angles of a parallelogram are equal.' },
         { id: '90', t: '90°', fb: 'Look again. Opposite angles of a parallelogram are equal.' }
       ] }, CP),
     Object.assign({ pdf: 37, id: 'cp2b', cpTitle: 'Checkpoint 2 · Find the Adjacent Angle',
