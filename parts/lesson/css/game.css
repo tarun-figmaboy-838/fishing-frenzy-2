@@ -586,7 +586,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 
 /* the menu: one per screen, at the stage level, so nothing can clip it - the choices in one row under their box, a notch
    pointing up at it (--nx: the box's middle) */
-.stage .dd-menu{position:absolute;z-index:22;box-sizing:border-box;display:flex;gap:8px;padding:7px;border-radius:18px;background:#fff;
+.stage .dd-menu{position:absolute;z-index:22;box-sizing:border-box;width:max-content;display:flex;gap:8px;padding:7px;border-radius:18px;background:#fff;
   border:2px solid #bcd6fb;box-shadow:0 14px 28px rgba(18,59,99,.22),0 2px 6px rgba(18,59,99,.10);
   transform-origin:50% 0;animation:ddIn .2s cubic-bezier(.2,.8,.3,1) both}
 .stage .dd-menu.up{transform-origin:50% 100%}

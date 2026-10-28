@@ -1908,8 +1908,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (F.open === id) { this.ddClose(); return; }
     // the choices in one row right under the box - into the room the answers keep under the boxes, so the menu never
     // lies over the shape - each a tile-sized target, the row kept inside the card; a notch points up at the box
-    const DD = CONFIG.dropdown, itemW = (t) => Math.max(DD.minItemW, Math.round(this.textW(t, '800 24px "Baloo 2"') + 32));
-    const w = D.tiles.reduce((a, t) => a + itemW(t), 0) + DD.gap * (D.tiles.length - 1) + 14, h = DD.itemH + 14;
+    // (sized as css draws the choices - 30px type, 16px padding and a 2px border each side; the menu itself is never
+    // narrower than its choices, max-content, so a wider font can only widen it, not let a choice stick out)
+    const DD = CONFIG.dropdown, itemW = (t) => Math.max(DD.minItemW, Math.round(this.textW(t, '800 30px "Baloo 2"') + 36));
+    const w = D.tiles.reduce((a, t) => a + itemW(t), 0) + DD.gap * (D.tiles.length - 1) + 18, h = DD.itemH + 14;
     let x = 640 - w / 2, y = 0, up = false, nx = w / 2;
     if (typeof document !== 'undefined') {
       const el = document.querySelector('[data-blank="' + id + '"]'), st = document.querySelector('.stage');
