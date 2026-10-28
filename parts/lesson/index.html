@@ -226,12 +226,12 @@
 </sc-if>
 <!-- the journey's Next buttons, at the bottom middle of the card (as Fishing Frenzy's): the end's, under Swiftee's goodbye, and the
      summary's, once every idea has been explained - the learner moves on when they choose -->
-<sc-if value="{{endNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next" data-qa="end-next" onClick="{{endGo}}">Next <span aria-hidden="true">▶</span></button></sc-if>
-<sc-if value="{{showSumNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next sum-next" data-qa="sum-next" onClick="{{sumNextGo}}">Next <span aria-hidden="true">▶</span></button></sc-if>
+<sc-if value="{{endNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next" data-qa="end-next" onClick="{{endGo}}">Next</button></sc-if>
+<sc-if value="{{showSumNext}}" hint-placeholder-val="{{ false }}"><button class="next end-next sum-next" data-qa="sum-next" onClick="{{sumNextGo}}">Next</button></sc-if>
 
 </div>
 <sc-if value="{{notStarted}}" hint-placeholder-val="{{ false }}">
-<button class="journey-next" data-qa="start" onClick="{{begin}}">Next <span aria-hidden="true">▶</span></button>
+<button class="journey-next" data-qa="start" onClick="{{begin}}">Next</button>
 </sc-if>
 </div>
 </x-dc>
