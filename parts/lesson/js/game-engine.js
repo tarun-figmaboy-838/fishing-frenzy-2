@@ -1399,21 +1399,38 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const P = this.state.P, O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 };
     return { AB: [P.A, P.B], BC: [P.B, P.C], CD: [P.C, P.D], DA: [P.D, P.A], OA: [P.A, O], OC: [O, P.C], OB: [P.B, O], OD: [O, P.D] }[leg];
   }
+  // The board's own px <-> the page (client px), read off two unseen probe squares the board carries, at (0, 0) and
+  // (100, 100): their client boxes include every transform on the way - the board's zoom and glide, the stage's fit to
+  // the window. Not getScreenCTM: Safari works that out without the CSS transforms on the svg and the page around it,
+  // which put everything drawn over the shape (lines carried on, a drag's ghost, the measuring walk, the tags' and the
+  // answers' jumps, a slide onto the opposite side) off it, and a drag off the finger. { x0, y0, sx, sy }: client =
+  // x0 + board x * sx (the board is only ever moved and scaled, never turned).
+  boardMap(svg) {
+    if (typeof document === 'undefined') return null;
+    svg = svg || document.querySelector('.stage svg[aria-label="Parallelogram ABCD"]');
+    if (!svg) return null;
+    let pr = svg.querySelector('g.probe');
+    if (!pr) {
+      pr = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      pr.setAttribute('class', 'probe'); pr.setAttribute('aria-hidden', 'true'); pr.setAttribute('visibility', 'hidden'); pr.setAttribute('pointer-events', 'none');
+      [0, 100].forEach((v) => { const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect'); ['x', 'y'].forEach((a) => r.setAttribute(a, v)); r.setAttribute('width', 1); r.setAttribute('height', 1); pr.appendChild(r); });
+      svg.appendChild(pr);
+    }
+    const a = pr.children[0].getBoundingClientRect(), b = pr.children[1].getBoundingClientRect();
+    const sx = (b.left - a.left) / 100, sy = (b.top - a.top) / 100;
+    return sx && sy ? { x0: a.left, y0: a.top, sx: sx, sy: sy } : null;
+  }
   boardToStage(p) {
-    const svg = typeof document !== 'undefined' && document.querySelector('.stage svg[aria-label="Parallelogram ABCD"]');
-    const stage = svg && document.querySelector('.stage');
-    if (!svg || !stage) return null;
-    const m = svg.getScreenCTM(), sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1;
-    const pt = svg.createSVGPoint(); pt.x = p.x; pt.y = p.y;
-    const q = pt.matrixTransform(m);
-    return { x: (q.x - sr.left) / k, y: (q.y - sr.top) / k };
+    const M = this.boardMap(), stage = M && document.querySelector('.stage');
+    if (!M || !stage) return null;
+    const sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1;
+    return { x: (M.x0 + p.x * M.sx - sr.left) / k, y: (M.y0 + p.y * M.sy - sr.top) / k };
   }
   stageToBoard(p) {
-    const svg = p && typeof document !== 'undefined' && document.querySelector('.stage svg[aria-label="Parallelogram ABCD"]');
-    if (!svg) return null;
-    const sr = document.querySelector('.stage').getBoundingClientRect(), k = sr.width / 1280 || 1;
-    const pt = svg.createSVGPoint(); pt.x = sr.left + p.x * k; pt.y = sr.top + p.y * k;
-    return pt.matrixTransform(svg.getScreenCTM().inverse());
+    const M = p && this.boardMap(), stage = M && document.querySelector('.stage');
+    if (!M || !stage) return null;
+    const sr = stage.getBoundingClientRect(), k = sr.width / 1280 || 1;
+    return { x: (sr.left + p.x * k - M.x0) / M.sx, y: (sr.top + p.y * k - M.y0) / M.sy };
   }
   // screen 1 build: one continuous pen stroke round the outline (D->A->B->C->D) at a steady pace, eased in at the
   // start and out at the end only, so it runs through the corners without stopping. Then the outline glow settles
@@ -1617,12 +1634,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const v = Math.round((px / this.S) * 10) / 10;
     return (Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1)) + ' cm';
   }
+  // a pointer's place on the board (board px), as boardMap reads the board (not getScreenCTM: Safari)
   toSvg(svg, e) {
-    try {
-      const m = svg.getScreenCTM();
-      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
-      return pt.matrixTransform(m.inverse());
-    } catch (err) { return null; }
+    const M = this.boardMap(svg);
+    return M ? { x: (e.clientX - M.x0) / M.sx, y: (e.clientY - M.y0) / M.sy } : null;
   }
   // the corner the learner can drag: B, until BC is parallel to AD
   dragKey() { return this.cur().task === 'dragB' && !this.state.done && !this.state.revealing ? 'B' : null; }
