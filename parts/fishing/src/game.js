@@ -1392,6 +1392,9 @@ class Game {
       if (f.rare && Math.random() < dt * 0.6) this.fx.sparkle(f.x - f.dir * f.w * 0.3, f.y + (Math.random() - 0.5) * f.h * 0.5, 1);
     }
     for (const f of this.strays) f.update(dt, this.swimArea);
+    // (a fish a sequence moves - the hook's leaping fish - is not swum by the sea, but its tail still beats: quick as it
+    // swims in, quicker still as it thrashes; Fish.beat, set by the sequence)
+    for (const f of this.leapers) f.swimPhase += dt * (f.beat || 9);
     if (this.strays.some((f) => f.gone)) this.strays = this.strays.filter((f) => !f.gone);
     if (this.ambient.some((f) => f.gone)) this.ambient = this.ambient.filter((f) => !f.gone);
     for (const f of this.ambient) f.update(dt, this.area);

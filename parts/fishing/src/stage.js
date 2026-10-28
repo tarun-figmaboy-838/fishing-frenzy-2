@@ -50,9 +50,13 @@ class Stage {
   }
 
   // Resets the transform so drawing code can use logical coordinates.
+  // (pictures drawn smaller or larger than their art are smoothed at the best quality: the browsers' default, 'low',
+  // left the fish jagged and pixelated)
   begin() {
     const k = this.dpr * this.scale;
     this.ctx.setTransform(k, 0, 0, k, 0, 0);
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
     return this.ctx;
   }
 

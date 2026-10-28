@@ -457,7 +457,7 @@ def journey(p, engine, size, url):
     ls = until(r.lesson, lambda s: s['started'], 40, 'the lesson starts its screens')
     check(ls['shared'] and ls['of'] > 50, f'{r.tag}: the lesson plays its screens through the shell\'s sound', f"{ls['of']} screens")
     if engine == 'chromium':
-        st = until(r.shell, lambda s: '/parts/lesson/' in s['voice'], 20, 'the voice-over plays')
+        st = until(r.shell, lambda s: '/parts/lesson/' in s['voice'] or s['voice'].startswith('blob:'), 20, 'the voice-over plays')  # (a clip fetched ahead plays from memory)
         check(True, f'{r.tag}: the lesson\'s voice plays in the shell\'s unlocked <audio>', st['voice'].split('/')[-1])
     page.wait_for_timeout(1500)
     r.shot('4b-lesson')

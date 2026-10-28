@@ -959,6 +959,7 @@ async function fishBumpsCorner(game, token, to) {
   const c0 = corner();
   // (a giant of the sea's own fish, four times the school that follows it into the net: its leap is the moment to watch)
   const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], 0, 0, -1, 2);
+  fish.beat = 11; // (its tail beats as it swims in)
   fish.x = c0.x + 300 + fish.w;
   fish.y = wl + 130 + fish.h / 2;
   game.leapers.push(fish);
@@ -991,16 +992,23 @@ async function fishBumpsCorner(game, token, to) {
     fx.sparkle(c0.x, c0.y, 14);
     fx.puff(c0.x, c0.y, 0, 3, true);
     fish.squash = q ? 0 : 1;
-    await clock.wait(q ? 0 : 160, token);
+    // the net gives: the corner is knocked on along the fish's path (it springs back as the fish starts to thrash)
+    const held = { ...net.points[2] }, il = Math.hypot(hit.x - from.x, hit.y - from.y) || 1, ix = (hit.x - from.x) / il, iy = (hit.y - from.y) / il;
+    await clock.tween(q ? 1 : 170, token, (t) => {
+      const k = Math.sin(t * Math.PI / 2);
+      net.points[2] = { x: held.x + ix * 22 * k, y: held.y + iy * 22 * k };
+      const c = corner(), n = nose(fish.pitch);
+      fish.x = c.x - n.x; fish.y = c.y - n.y;
+    });
     // caught: its nose tangled in the corner's mesh, it hangs there and thrashes, tail swinging, the net shaking with
     // it - the corner jerked about, the frame swinging, drops flying off - then a last gather before it wrenches free
     audio.play('struggle');
-    const held = { ...net.points[2] };
+    fish.beat = 26; // (thrashing: the tail whips)
     await clock.tween(q ? 300 : 1600, token, (t) => {
-      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 10);
+      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 10), give = 22 * (1 - Math.min(1, t * 3)) ** 2; // (the knock springing back)
       fish.squash = Math.max(0, 1 - t * 6);
       fish.pitch = -0.6 + 0.4 * w * env;
-      net.points[2] = { x: held.x + 12 * w * env, y: held.y + 7 * Math.sin(t * Math.PI * 7) * env };
+      net.points[2] = { x: held.x + ix * give + 12 * w * env, y: held.y + iy * give + 7 * Math.sin(t * Math.PI * 7) * env };
       net.swing = q ? 0 : 0.045 * Math.sin(t * Math.PI * 5) * env;
       const c = corner(), n = nose(fish.pitch);
       fish.x = c.x - n.x;
@@ -1008,6 +1016,7 @@ async function fishBumpsCorner(game, token, to) {
       if (!q && Math.random() < 0.22) fx.puff(c.x + (Math.random() - 0.5) * 40, c.y + 10, 0, 1, true);
     });
     net.points[2] = held;
+    fish.beat = 14;
     if (!q) audio.play('splashSmall');
     // the wrench free: pulling with all its weight it drags the corner over to its new place, and as the mesh lets go
     // it drops away; the net swings and settles; the fish tumbles back into the water with a big splash
