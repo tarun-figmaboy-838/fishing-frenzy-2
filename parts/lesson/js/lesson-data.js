@@ -23,6 +23,8 @@
 //          tapEq  = tap the corner whose angle equals ∠ref (want = the right corner, wrong = tip for a wrong tap)
 //          handOnce: 1 = one demo gesture of the hand once the instruction ends
 //          connect = draw both diagonals: drag (or tap, tap) from a corner to the opposite corner
+//   own: 1 = Swiftee's own thought ("There is something interesting..."): she stays and says it in her bubble, the
+//          shape beside her, as on the measuring screens (not the narration plate)
 //   opts:  answer buttons (ok = right; fb = tip for a wrong one; soloOk: 1 = once right, only the right answer stays,
 //          centred; okGlow: [[sides], ...] = side pairs pulse in turn after it; calmOk: 1 = no confetti; okCues = word cues on
 //          the feedback line; an option's emph = the parts that grow as it is picked right). multi: 1 = select every right answer
@@ -123,7 +125,7 @@ const LESSON = {
     { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?' }], f: PG },
     { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
-    { pdf: 15, id: 'interesting', lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
+    { pdf: 15, id: 'interesting', own: 1, lines: [{ m: 'surprised', t: 'There is something\ninteresting about\nthe lengths.' }],
       lenSeq: [[700, ['AB', 'CD']], [2300, ['DA', 'BC']]], f: Object.assign({ lenSeq: 1 }, PG, LENS) },
     Object.assign({ pdf: '16-17', id: 'askSides', lines: [{ m: 'curious', t: 'What do you notice\nabout the sides?' }],
       // right answer: the other option folds away, this one settles green in the centre; as the line says it, AB + CD
@@ -170,7 +172,7 @@ const LESSON = {
     // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
     { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
-    { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 25, id: 'interestingAng', own: 1, lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     { pdf: '27-28', id: 'tapEqA', handOnce: 1, lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
@@ -181,7 +183,7 @@ const LESSON = {
     { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'equal', matchAng: [['A', 'C'], ['B', 'D']], tags: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
-    { pdf: 32, id: 'seeElse', lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts

@@ -2529,9 +2529,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const w = x1 - x0 + 2 * padX, h = y1 - y0 + padT + padB;
     const above = !!(st.chipTop && st.chipTop < 200 && !st.practice); // name tags above the shape (a right answer's tags: under it, above the answers)
     const top = above ? C.topChips : C.top, below = this.belowH(st);
-    const walk = st.task === 'measure' || st.task === 'measureAngles'; // Swiftee measures: the shape sits right of her
-    const cxS = st.id === 'intro' ? C.introCx : walk ? C.measureCx : 640;
-    const maxW = st.id === 'intro' ? C.introW : walk ? C.measureW : C.maxW;
+    const walk = st.task === 'measure' || st.task === 'measureAngles' || !!st.own; // Swiftee measures, or speaks her own thought: the shape sits right of her
+    // (Swiftee's own thought over lengths shown outside the shape: a little further right and narrower, so her bubble
+    // stays clear of the left side's length)
+    const ownLens = !!st.own && !!(f.sideLen || f.legLen);
+    const cxS = st.id === 'intro' ? C.introCx : ownLens ? C.measureCx + 40 : walk ? C.measureCx : 640;
+    const maxW = st.id === 'intro' ? C.introW : ownLens ? C.measureW - 80 : walk ? C.measureW : C.maxW;
     // (the lane under the shape: the answer row, the tallest thing most screens put there - one row of cards fits in it -
     // so the shape is as big as that leaves room for, and the same size from screen to screen)
     const lane = C.optGap + C.optH, room = C.bottom - top - lane; // the shape's room on every screen
@@ -2645,7 +2648,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this._plateStep !== step) { this._plateIn = !this._plateWas; this._plateWas = this.isPlate(st); this._plateStep = step; }
     return this._plateIn && this._plateWas;
   }
-  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.end && !st.summary); }
+  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.own && !st.end && !st.summary); } // (own: Swiftee's own thought, in her bubble)
   renderVals() {
     const s = this.state, steps = this.steps(), st = this.cur();
     const isLesson = !st.grid && !st.end && !st.summary; // (the summary draws its own ideas: no board)
@@ -2739,7 +2742,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left
-      sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.summary ? ' summary' : '') + (st.task === 'measure' || st.task === 'measureAngles' ? ' measure-room' : '') + (st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look; summary / measure-room: their own places for Swiftee (css/game.css)
+      sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.summary ? ' summary' : '') + (st.task === 'measure' || st.task === 'measureAngles' || st.own ? ' measure-room' : '') + (st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look; summary / measure-room: their own places for Swiftee (css/game.css)
       boardTf: isLesson ? this.zoomTf(st) : 'none',
       boardZ: isLesson ? this.sceneFit(st).k : 1, // the board's zoom: angle values keep one size on screen (css .tag.alab)
       meetZ: (isLesson && this.meetZoom(st) || { f: 1 }).f.toFixed(3), // (zoomed out to show where sides meet: the letters keep their size)
