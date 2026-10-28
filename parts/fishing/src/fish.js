@@ -172,7 +172,7 @@ class Fish {
 }
 
 // --- the school ---------------------------------------------------------------------------
-// The school is three bunches of fish (levels.js bunchesFor), one to a lane, in three lanes across the water the
+// The school is one bunch of fish to a lane (levels.js bunchesFor: one school, in the middle lane), in lanes across the water the
 // lowered net reaches: one above another, a fish-height or more apart, each swimming its own way (chosen at random)
 // at its own pace, so no two fish ever overlap or meet head on. A bunch swims nose to tail, with the rest of its lane
 // open water, so the net catches the bunch that is under it as it closes and little or nothing over open water: the
@@ -210,10 +210,11 @@ class Sea {
     for (const f of school) if (f.lane && f.lane.dir !== this.dir) f.wiggle(true);
     this.lanes.forEach((lane, i) => {
       const have = staying.filter((f) => f.lane === lane);
-      lane.fresh = !lane.bunch || have.length < lane.bunch.count;
+      if (i >= bunches.length) { for (const f of have) f.swimAway(); lane.bunch = null; lane.fresh = false; } // (a lane no school swims in)
+      else lane.fresh = !lane.bunch || have.length < lane.bunch.count;
       if (lane.fresh) {
         for (const f of have) f.swimAway();
-        lane.bunch = bunches[i % bunches.length];
+        lane.bunch = bunches[i];
         lane.shoal = i + 1;
       }
       lane.dir = this.dir;

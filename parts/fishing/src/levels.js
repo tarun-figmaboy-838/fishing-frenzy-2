@@ -124,26 +124,21 @@ function shuffle(list) {
   return result;
 }
 
-// A level's sea holds three schools of fish, never one of fewer than eight, each its own size - a shoal of small fish
-// (8 to 16), a school of middling ones (8 to 11) and one of big ones (8 or 9) - each a mix of kinds (three or four of
-// them, every fish its own) and sizes, the three swimming one way in a spaced line (see Sea), so they never run into
-// each other and the child picks which to catch. No two levels in a row open with the same kinds.
-const BUNCHES = 3;
-const BUNCH_SIZES = [0.48, 0.6, 0.72];  // the bunches' fish sizes: small, middling, big (three clouds fit round the sea)
-const BUNCH_COUNTS = [[8, 16], [8, 11], [8, 9]]; // ...and how many of each: never a school of fewer than eight
+// A level's sea holds one school of fish - 10 to 14 middling ones, a mix of kinds (three or four of them, every fish its
+// own) and sizes - so the child's whole task is the moment: Catch as it swims under the net. It swims quicker net by
+// net (Game.spawnSchool). No two levels in a row open with the same kinds.
+const SCHOOL_SIZES = [0.48, 0.6];  // its fish's size: small (the hook's sea), middling (the nets)
+const SCHOOL_COUNT = [10, 14];     // ...and how many
 let lastKinds = [];
 function bunchesFor(level) {
   let pool = shuffle(NATURAL_FISH);
   if (pool.slice(0, 3).every((key) => lastKinds.includes(key))) pool = [NATURAL_FISH.find((key) => !lastKinds.includes(key)) || pool[0], ...pool.slice(1)];
   lastKinds = pool.slice(0, 3);
-  const order = shuffle([0, 1, 2]); // which lane gets which bunch
-  return order.map((b, i) => {
-    const [lo, hi] = BUNCH_COUNTS[b], n = 3 + Math.floor(Math.random() * 2); // (its kinds: three or four)
-    // (the hook's sea - the warm-up net's - is all small fish, the size of the school that swims into its net, so no
-    // fish there looks giant beside it)
-    const size = level && level.warmup ? BUNCH_SIZES[0] : BUNCH_SIZES[b];
-    return { kinds: pool.slice(i * 4, i * 4 + n), key: pool[i * 4], count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: size + (Math.random() - 0.5) * 0.04 };
-  });
+  const [lo, hi] = SCHOOL_COUNT, n = 3 + Math.floor(Math.random() * 2); // (its kinds: three or four)
+  // (the hook's sea - the warm-up net's - is small fish, the size of the school that swims into its net, so no fish
+  // there looks giant beside it)
+  const size = level && level.warmup ? SCHOOL_SIZES[0] : SCHOOL_SIZES[1];
+  return [{ kinds: pool.slice(0, n), key: pool[0], count: lo + Math.floor(Math.random() * (hi - lo + 1)), size: size + (Math.random() - 0.5) * 0.04 }];
 }
 
 // Story lines, delivered word by word. *Stressed* words land bigger with a boing, and a cue
