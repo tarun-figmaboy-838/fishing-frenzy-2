@@ -1326,11 +1326,11 @@ class Net {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const k = this.textScale;
-    // (every mark points clockwise round the net, A->B, B->C, C->D, D->A, the way its outline is traced, as the lesson
-    // marks them - whichever way round a side's letters are named)
+    // (every mark points the way its side's name is said, as the lesson marks them: A->B, B->C, C->D and A->D - AD,
+    // never DA - so AD's and BC's point the same way)
     for (const name of sides) {
       const [i, j] = side(name);
-      const [p, q] = (i + 1) % 4 === j ? [i, j] : [j, i];
+      const [p, q] = [i, j].sort((x, y) => x - y);
       const u = normalize(sub(c[q], c[p]));
       const mid = midpoint(c[i], c[j]);
       for (let pass = 0; pass < 2; pass += 1) {

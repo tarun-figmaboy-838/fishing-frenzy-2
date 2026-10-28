@@ -2036,12 +2036,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
     g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });
     g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA'), hl: hlCls('DA') });
-    // the light runs round the shape clockwise on screen, whichever side it lights: A->B, B->C, C->D, D->A (the
-    // sides are drawn in that order; a shape lettered the other way round runs each side backwards)
-    const cw = [A, B, C, D].reduce((sum, p, i, Q) => sum + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) >= 0;
+    // a side's light runs the way its name is said - A->B, B->C, C->D and A->D ("AD", never "DA") - as its parallel
+    // arrows point (SIDES, below), so what is heard, lit and marked all go one way (AD's and BC's the same way)
     ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
       const e = g['e' + k];
-      Object.assign(e, cw ? { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 } : { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 });
+      Object.assign(e, k === 'DA' ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
     });
     // a tick mark across the middle of p->q (one, or two side by side), for the diagonals' equal halves: the sides'
     // own ticks (CONFIG.marks)
@@ -2073,7 +2072,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (fig) { Object.assign(fHalves, fig.halves || {}); this.askedHalves(st).forEach((k) => { fHalves[k] = '?'; }); }
     this.figPos = {}; // (where each of a checkpoint's labels sits, board px: the answers jump there, flyAnswer)
     const halfOn = (k) => (fig ? !!fHalves[k] : !!(f.halves && (f.split || f.halfPairs)));
-    const SIDES = cw ? { AB: [A, B], BC: [B, C], CD: [C, D], DA: [D, A] } : { AB: [B, A], BC: [C, B], CD: [D, C], DA: [A, D] };
+    const SIDES = { AB: [A, B], BC: [B, C], CD: [C, D], DA: [A, D] }; // (each the way its name is said: AD is A->D)
     const nArrows = { AB: showPar1 && !lenOn('AB') ? 2 : 0, CD: showPar1 && !lenOn('CD') ? 2 : 0, DA: showPar2 && !lenOn('DA') ? 1 : 0, BC: showPar2 && !lenOn('BC') ? 1 : 0 };
     // a parallelogram's top and bottom are equal too (one tick); a trapezium's equal legs get theirs alone (two)
     const nTicks = { AB: showTk && pgNow && !lenOn('AB') ? 1 : 0, CD: showTk && pgNow && !lenOn('CD') ? 1 : 0, DA: showTk && !lenOn('DA') ? 2 : 0, BC: showTk && !lenOn('BC') ? 2 : 0 };
