@@ -126,15 +126,6 @@
     "devanagari": "नाउ बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल।"
   },
   {
-    "id": "vo015",
-    "line": "A D is parallel to B C.",
-    "spoken": "A D is parallel to B C.",
-    "where": [
-      "screen 8 bothPar: line (voice only)"
-    ],
-    "devanagari": "ए डी इज पैरेलल टू बी सी।"
-  },
-  {
     "id": "vo016",
     "line": "We call this a parallelogram.",
     "spoken": "We call this a Parallelogram.",

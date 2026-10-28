@@ -87,9 +87,12 @@ const LESSON = {
       // glides along AB until BC lies on it; then BC and AD are traced, their marks popping on
       showAnswer: { m: 'thinking', t: 'Watch! BC must lean\nthe same way as AD.', cues: [{ at: 'watch', glow: ['DA'] }, { at: 'lean', glideB: 1 }] },
       answerAfter: [{ m: 'happy', t: 'Now BC is parallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }], f: { par: 1 } },
-    { pdf: 9, id: 'bothPar', lines: [
-      { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
-      { keep: 1, s: 'A D is parallel to B C.', glow: ['DA', 'BC'], chips: [{ t: 'AD ∥ BC', k: 'white' }] }], f: PG },
+    // both pairs shown, not spelt out: on "both" AB and CD are traced, their arrows beating as the light passes; on
+    // "sides" AD and BC; on "parallel" the whole outline
+    { pdf: 9, id: 'bothPar', lines: [{ m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', cues: [
+      { at: 'both', glow: ['AB', 'CD'], beat: ['AB', 'CD'] },
+      { at: 'sides', glow: ['DA', 'BC'], beat: ['DA', 'BC'] },
+      { at: 'parallel', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1500 }] }], f: PG },
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
     { pdf: 10, id: 'defPg', chipTop: 428,

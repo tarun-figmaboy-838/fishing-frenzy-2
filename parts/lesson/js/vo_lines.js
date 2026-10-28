@@ -16,7 +16,6 @@ const VO_LINES = {
   "Drag B to the right until BC leans the same way as AD.": ["vo012",5.66,[0.32,0.75,0.92,1.18,1.53,2.04,2.56,2.9,3.42,3.77,4.2,4.54,4.8],5.24],
   "Well done! Now BC is parallel to AD.": ["vo013",4.68,[0.29,0.59,1.41,1.82,2.23,2.54,3.47,3.78],4.3],
   "Now both pairs of opposite sides are parallel.": ["vo014",3.94,[0.32,0.59,0.93,1.34,1.55,2.16,2.57,2.84],3.53],
-  "A D is parallel to B C.": ["vo015",2.44,[0.26,0.41,0.56,0.79,1.47,1.69,1.84],2.08],
   "We call this a parallelogram.": ["vo016",2.92,[0.28,0.5,0.86,1.22,1.37],2.47],
   "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.": ["vo017",6.12,[0.29,0.41,1.25,1.61,1.91,2.27,2.45,2.99,3.35,3.59,4.13,4.31,4.73,4.85],5.76],
   "But what about the side lengths?": ["vo018",3.26,[0.32,0.62,0.99,1.44,1.74,2.12],2.8],

@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 109 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 108 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -138,7 +138,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo012 | Drag B to the right until BC leans the same way as AD. | Drag B to the right until B C leans the same way as A D. | ड्रैग बी टू द राइट अंटिल बी सी लीन्स द सेम वे एज़ ए डी। | 5.66 |
 | vo013 | Well done! Now BC is parallel to AD. | Well done! Now B C is parallel to A D. | वेल डन! नाउ बी सी इज पैरेलल टू ए डी। | 4.68 |
 | vo014 | Now both pairs of opposite sides are parallel. | = | नाउ बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल। | 3.94 |
-| vo015 | A D is parallel to B C. | = | ए डी इज पैरेलल टू बी सी। | 2.44 |
 | vo016 | We call this a parallelogram. | We call this a Parallelogram. | वी कॉल दिस ए पैरेललोग्राम। | 2.92 |
 | vo017 | A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram. | = | ए क्वाड्रिलैटरल व्हेयर बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल इज कॉल्ड ए पैरेललोग्राम। | 6.12 |
 | vo018 | But what about the side lengths? | = | बट वॉट अबाउट द साइड लेंथ्स? | 3.26 |
