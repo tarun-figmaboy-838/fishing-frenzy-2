@@ -14,7 +14,9 @@
 <meta name="apple-mobile-web-app-title" content="Fishing Frenzy 2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;display=swap">
+<!-- (the fonts load without holding up the page: a network that drops Google Fonts would leave it blank until
+     it gave up; the text shows in its fallback a moment, then in Fredoka) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="shell/journey.css">
 </head>
 <body>

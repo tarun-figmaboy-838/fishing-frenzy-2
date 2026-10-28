@@ -70,8 +70,9 @@ async function loadCoreAssets(progress = () => {}) {
     loadImage('assets/sprites/popo-props.webp'),
     loadImage(PLAY),
     loadImage('assets/sprites/logo.webp'), // the banner's logo (tools/build-assets.py --logo)
-    // the canvas text (the end screen's letters) needs its font there first
-    document.fonts ? document.fonts.load('700 120px Fredoka').catch(() => {}) : null,
+    // the canvas text (the end screen's letters) needs its font there first - but never holds the banner up for it
+    // long (a font that doesn't come: the letters are drawn in it once it does)
+    document.fonts ? Promise.race([document.fonts.load('700 120px Fredoka').catch(() => {}), new Promise((r) => setTimeout(r, 2500))]) : null,
   ]));
   assets.popoOperating = operating;
   assets.winchPolished = winch;

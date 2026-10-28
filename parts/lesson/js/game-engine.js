@@ -221,8 +221,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // Shrink-wraps the speech bubble to its widest line. Wrapped text otherwise leaves the box at its max width
   // even when every line is shorter. Measures in layout px (offsetLeft/offsetWidth ignore the stage scale);
   // hidden words still take their place, so the size is final from the first word of a line.
-  warmFonts() {
-    if (this._fontsWarm || typeof document === 'undefined' || !document.fonts || !document.fonts.load) return;
+  warmFonts(again) {
+    if ((this._fontsWarm && !again) || typeof document === 'undefined' || !document.fonts || !document.fonts.load) return;
+    // (the font stylesheets come without holding the page up - index.html: one still on its way warms them again as
+    // it comes, its fonts declared by then)
+    if (!this._fontsWarm) document.querySelectorAll('link[href*="fonts.googleapis"]').forEach((l) => { if (l.media === 'print') l.addEventListener('load', () => this.warmFonts(true), { once: true }); });
     this._fontsWarm = true;
     ['500 21px Fredoka', '600 21px Fredoka', '700 21px Fredoka', '700 26px "Baloo 2"', '800 26px "Baloo 2"', '600 20px Nunito', '700 20px Nunito', '800 20px Nunito', '900 20px Nunito']
       .forEach((f) => document.fonts.load(f).catch(() => {}));
