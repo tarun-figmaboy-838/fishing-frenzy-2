@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 107 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 109 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -153,7 +153,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo035 | CD is not half of AB. Opposite sides of a parallelogram are equal. | C D is not half of A B. Opposite sides of a parallelogram are equal. | सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल। | 6.00 |
 | vo037 | That's right! Opposite sides are equal, so CD = 7 cm. | That's right! Opposite sides are equal, so C D equals seven centimetres. | दैट्स राइट! ऑपोजिट साइड्स आर इक्वल, सो सी डी इक्वल्स सेवन सेंटीमीटर्स। | 5.72 |
 | vo038 | In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD. | In this parallelogram, A B equals eight centimetres and B C equals five centimetres. Find the lengths of C D and A D. | इन दिस पैरेललोग्राम, ए बी इक्वल्स एट सेंटीमीटर्स एंड बी सी इक्वल्स फाइव सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ सी डी एंड ए डी। | 9.24 |
-| vo039 | Look at which side is opposite. CD is opposite AB, and AD is opposite BC. | Look at which side is opposite. C D is opposite A B, and A D is opposite B C. | लुक एट विच साइड इज ऑपोजिट। सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी। | 6.70 |
 | vo041 | Brilliant! CD = AB = 8 cm and AD = BC = 5 cm. | Brilliant! C D equals A B equals eight centimetres and A D equals B C equals five centimetres. | ब्रिलियंट! सी डी इक्वल्स ए बी इक्वल्स एट सेंटीमीटर्स एंड ए डी इक्वल्स बी सी इक्वल्स फाइव सेंटीमीटर्स. | 8.93 |
 | vo042 | We learnt all about the sides of a parallelogram. | = | वी लर्न्ट ऑल अबाउट द साइड्स ऑफ ए पैरेललोग्राम। | 3.84 |
 | vo043 | But what about its angles? Are they equal too? | = | बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू? | 3.94 |
@@ -198,7 +197,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo095 | So the diagonals of a parallelogram bisect each other. | = | सो द डायगोनल्स ऑफ ए पैरेललोग्राम बाईसेक्ट ईच अदर। | 3.84 |
 | vo096 | In this parallelogram, AO = 6 cm. What is the length of OC? | In this parallelogram, A O equals six centimetres. What is the length of O C? | इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी? | 6.60 |
 | vo101 | In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD. | In this parallelogram, A O equals five centimetres and B O equals three centimetres. Find the lengths of O C and O D. | इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी। | 10.08 |
-| vo102 | OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO. | O C is the other half of A C, so it equals A O. O D is the other half of B D, so it equals B O. | ओ सी इज द अदर हाफ ऑफ ए सी, सो इट इक्वल्स ए ओ। ओ डी इज द अदर हाफ ऑफ बी डी, सो इट इक्वल्स बी ओ। | 9.74 |
 | vo104 | Well done! OC = AO = 5 cm and OD = BO = 3 cm. | Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres. | वेल डन! ओ सी इक्वल्स ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड ओ डी इक्वल्स बी ओ इक्वल्स थ्री सेंटीमीटर्स। | 8.74 |
 | vo105 | Which of the following are true for this parallelogram? Select all that apply. | = | विच ऑफ द फॉलोइंग आर ट्रू फॉर दिस पैरेललोग्राम? सिलेक्ट ऑल दैट अप्लाई। | 5.45 |
 | vo106 | AO and BO are parts of different diagonals, so they need not be equal. | A O and B O are parts of different diagonals, so they need not be equal. | ए ओ एंड बी ओ आर पार्ट्स ऑफ डिफरेंट डायगोनल्स, सो दे नीड नॉट बी इक्वल। | 6.28 |
@@ -231,3 +229,7 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo135 | OC is not half of AO. OC = AO. | O C is not half of A O. O C equals A O. | ओ सी इज नॉट हाफ ऑफ ए ओ। ओ सी इक्वल्स ए ओ। | 5.04 |
 | vo136 | 12 cm is the whole of AC. OC is only half of it. | Twelve centimetres is the whole of A C. O C is only half of it. | ट्वेल्व सेंटीमीटर्स इज द होल ऑफ ए सी। ओ सी इज ओनली हाफ ऑफ इट। | 5.32 |
 | vo137 | Yes! O cuts AC in half, so OC = 6 cm. | Yes! O cuts A C in half, so O C equals six centimetres. | येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स। | 6.12 |
+| vo138 | CD is opposite AB, so CD = AB. | C D is opposite A B, so C D equals A B. | सी डी इज ऑपोजिट ए बी, सो सी डी इक्वल्स ए बी। | 4.44 |
+| vo139 | AD is opposite BC, so AD = BC. | A D is opposite B C, so A D equals B C. | ए डी इज ऑपोजिट बी सी, सो ए डी इक्वल्स बी सी। | 4.84 |
+| vo140 | OC is the other half of AC, so OC = AO. | O C is the other half of A C, so O C equals A O. | ओ सी इज द अदर हाफ ऑफ ए सी, सो ओ सी इक्वल्स ए ओ । | 4.84 |
+| vo141 | OD is the other half of BD, so OD = BO. | O D is the other half of B D, so O D equals B O. | ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ। | 5.04 |

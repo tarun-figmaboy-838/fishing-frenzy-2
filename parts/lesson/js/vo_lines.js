@@ -31,7 +31,6 @@ const VO_LINES = {
   "CD is not half of AB. Opposite sides of a parallelogram are equal.": ["vo035",6,[0.27,0.65,0.93,1.31,1.78,2.06,3.04,3.54,3.87,4.03,4.14,4.91,5.13],5.53],
   "That's right! Opposite sides are equal, so CD = 7 cm.": ["vo037",5.72,[0.31,0.65,1.41,1.91,2.24,2.46,3.1,3.31],5.4],
   "In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD.": ["vo038",9.24,[0.28,0.45,0.72,1.91,3.96,4.24,6.82,7.13,7.38,7.89,8.07,8.33,8.58],8.9],
-  "Look at which side is opposite. CD is opposite AB, and AD is opposite BC.": ["vo039",6.7,[0.33,0.6,0.77,1.1,1.37,1.53,2.49,2.81,3.05,3.77,4.54,4.83,5.11,5.33,5.97],6.34],
   "Brilliant! CD = AB = 8 cm and AD = BC = 5 cm.": ["vo041",8.93,[0.32,1.66,4.96,5.29],8.6],
   "We learnt all about the sides of a parallelogram.": ["vo042",3.84,[0.3,0.49,0.93,1.19,1.57,1.82,2.2,2.39,2.52],3.48],
   "But what about its angles? Are they equal too?": ["vo043",3.94,[0.35,0.61,0.93,1.32,1.57,2.51,2.72,2.97,3.28],3.55],
@@ -76,7 +75,6 @@ const VO_LINES = {
   "So the diagonals of a parallelogram bisect each other.": ["vo095",3.84,[0.29,0.46,0.69,1.25,1.42,1.54,2.33,2.73,3.01],3.42],
   "In this parallelogram, AO = 6 cm. What is the length of OC?": ["vo096",6.6,[0.26,0.44,0.74,1.97,4.59,4.87,5.04,5.27,5.67,5.84],6.13],
   "In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD.": ["vo101",10.08,[0.31,0.48,0.78,2.03,4.14,4.45,7.29,7.66,7.95,8.54,8.76,9.05,9.34],9.72],
-  "OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.": ["vo102",9.74,[0.35,0.71,0.98,1.33,1.87,2.32,2.58,3.38,3.6,3.82,4.33,5.45,5.76,5.98,6.29,6.75,7.13,7.36,8.04,8.27,8.5,9.03],9.42],
   "Well done! OC = AO = 5 cm and OD = BO = 3 cm.": ["vo104",8.74,[0.33,0.65,1.67,4.79,5.1],8.39],
   "Which of the following are true for this parallelogram? Select all that apply.": ["vo105",5.45,[0.36,0.69,0.85,1.07,1.61,1.83,2.1,2.32,2.59,3.76,4.16,4.39,4.67],5.08],
   "AO and BO are parts of different diagonals, so they need not be equal.": ["vo106",6.28,[0.3,0.63,0.95,1.28,1.61,2.1,2.34,3.16,4.37,4.54,4.83,5.11,5.34,5.51],5.92],
@@ -108,5 +106,9 @@ const VO_LINES = {
   "180° is ∠A and ∠D together. Take away the 65° of ∠A.": ["vo134",7.76,[0.29,2.14,2.31,2.79,3.03,3.5,4.72,5.02,5.31,5.55,6.68,6.86],7.4],
   "OC is not half of AO. OC = AO.": ["vo135",5.04,[0.27,0.67,0.96,1.36,1.85,2.15,3.17],4.73],
   "12 cm is the whole of AC. OC is only half of it.": ["vo136",5.32,[0.32,1.5,1.68,1.93,2.3,2.49,3.37,3.63,3.82,4.14,4.46,4.65],4.92],
-  "Yes! O cuts AC in half, so OC = 6 cm.": ["vo137",6.12,[0.28,1.58,1.74,2.13,2.45,2.69,3.58,3.79],5.76]
+  "Yes! O cuts AC in half, so OC = 6 cm.": ["vo137",6.12,[0.28,1.58,1.74,2.13,2.45,2.69,3.58,3.79],5.76],
+  "CD is opposite AB, so CD = AB.": ["vo138",4.44,[0.28,0.61,0.86,1.61,2.4,2.65],4.02],
+  "AD is opposite BC, so AD = BC.": ["vo139",4.84,[0.3,0.67,0.94,1.77,2.64,2.93],4.48],
+  "OC is the other half of AC, so OC = AO.": ["vo140",4.84,[0.29,0.57,0.78,1.06,1.48,1.83,2.04,2.71,3],4.56],
+  "OD is the other half of BD, so OD = BO.": ["vo141",5.04,[0.27,0.57,0.79,1.09,1.53,1.91,2.13,2.87,3.17],4.78]
 };

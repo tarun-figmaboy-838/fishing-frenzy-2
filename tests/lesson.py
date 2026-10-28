@@ -185,7 +185,11 @@ def main():
                     pick('CD', '7')
                     check(st()['done'], 'Checkpoint 1b: CD = 7 finishes it')
                 elif sid == 'cp1c':
-                    asked(); pick('CD', '8'); pick('AD', '5')
+                    asked(); pick('CD', '13')  # a wrong CD gets CD's tip only, not AD's too
+                    line = (st()['line'] or '').replace('\n', ' ')
+                    check('CD is opposite AB' in line and 'AD' not in line, 'Checkpoint 1c: a wrong CD gets its own tip', line)
+                    until(st, lambda s: not s['talking'], 20, 'the tip'); time.sleep(0.6)
+                    pick('CD', '8'); pick('AD', '5')
                     check(st()['done'], 'Checkpoint 1c: CD = 8 and AD = 5 finish it')
                 elif sid == 'tapEqA':
                     wrong_then('[data-qa="vtx-B"]', '[data-qa="vtx-C"]', 'Tap the angle equal to ∠A')

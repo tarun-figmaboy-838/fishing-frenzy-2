@@ -261,15 +261,6 @@
     "devanagari": "इन दिस पैरेललोग्राम, ए बी इक्वल्स एट सेंटीमीटर्स एंड बी सी इक्वल्स फाइव सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ सी डी एंड ए डी।"
   },
   {
-    "id": "vo039",
-    "line": "Look at which side is opposite. CD is opposite AB, and AD is opposite BC.",
-    "spoken": "Look at which side is opposite. C D is opposite A B, and A D is opposite B C.",
-    "where": [
-      "screen 21 cp1c: feedback any"
-    ],
-    "devanagari": "लुक एट विच साइड इज ऑपोजिट। सी डी इज ऑपोजिट ए बी, एंड ए डी इज ऑपोजिट बी सी।"
-  },
-  {
     "id": "vo041",
     "line": "Brilliant! CD = AB = 8 cm and AD = BC = 5 cm.",
     "spoken": "Brilliant! C D equals A B equals eight centimetres and A D equals B C equals five centimetres.",
@@ -666,15 +657,6 @@
     "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी।"
   },
   {
-    "id": "vo102",
-    "line": "OC is the other half of AC, so it equals AO. OD is the other half of BD, so it equals BO.",
-    "spoken": "O C is the other half of A C, so it equals A O. O D is the other half of B D, so it equals B O.",
-    "where": [
-      "screen 50 cp3b: feedback any"
-    ],
-    "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, सो इट इक्वल्स ए ओ। ओ डी इज द अदर हाफ ऑफ बी डी, सो इट इक्वल्स बी ओ।"
-  },
-  {
     "id": "vo104",
     "line": "Well done! OC = AO = 5 cm and OD = BO = 3 cm.",
     "spoken": "Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres.",
@@ -961,5 +943,41 @@
       "screen 49 cp3a: right"
     ],
     "devanagari": "येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स।"
+  },
+  {
+    "id": "vo138",
+    "line": "CD is opposite AB, so CD = AB.",
+    "spoken": "C D is opposite A B, so C D equals A B.",
+    "where": [
+      "screen 20 cp1c: feedback CD"
+    ],
+    "devanagari": "सी डी इज ऑपोजिट ए बी, सो सी डी इक्वल्स ए बी।"
+  },
+  {
+    "id": "vo139",
+    "line": "AD is opposite BC, so AD = BC.",
+    "spoken": "A D is opposite B C, so A D equals B C.",
+    "where": [
+      "screen 20 cp1c: feedback AD"
+    ],
+    "devanagari": "ए डी इज ऑपोजिट बी सी, सो ए डी इक्वल्स बी सी।"
+  },
+  {
+    "id": "vo140",
+    "line": "OC is the other half of AC, so OC = AO.",
+    "spoken": "O C is the other half of A C, so O C equals A O.",
+    "where": [
+      "screen 49 cp3b: feedback OC"
+    ],
+    "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, सो ओ सी इक्वल्स ए ओ ।"
+  },
+  {
+    "id": "vo141",
+    "line": "OD is the other half of BD, so OD = BO.",
+    "spoken": "O D is the other half of B D, so O D equals B O.",
+    "where": [
+      "screen 49 cp3b: feedback OD"
+    ],
+    "devanagari": "ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ।"
   }
 ]
