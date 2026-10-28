@@ -128,11 +128,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // as in Fishing Frenzy: once Swiftee has flown out, the card's content fades and the card shrinks into its bubble,
     // which floats up and pops, as the camera rises back to the lake's surface; then the journey dissolves back into
     // the game, on the same view, and the giant wave brings Popo in
+    // (only once she is clean out of sight - her flight ends 1.19 s in - and she is hidden for good, so she never shows
+    // over the bubble as the card shrinks into it)
     setTimeout(() => {
-      const card = document.querySelector('.stage');
+      const card = document.querySelector('.stage'), sw = card && card.querySelector('.swiftee');
+      if (sw) sw.style.visibility = 'hidden';
       if (card && window.gsap) gsap.to(card, { opacity: 0, duration: Motion.reduced ? 0 : 0.35, ease: 'sine.out' });
       Opening.close((k) => this.sfx(k), finish);
-    }, Motion.reduced ? 0 : 1150);
+    }, Motion.reduced ? 0 : 1350);
   }
   // she crouches, then takes off out of the right of the card, rising as she goes
   depart() {
