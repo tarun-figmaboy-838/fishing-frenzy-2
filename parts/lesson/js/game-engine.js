@@ -1840,6 +1840,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const picks = Object.assign({}, s.picks);
     if (o.ok && o.emph) this.emphasize(o.emph); // (the part a right answer is about grows as it is picked)
     if (o.ok) this.popAt(typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null); // (every right pick, a card of the grid too)
+    if (o.ok) this.hideMeet(); // (a wrong pick's sides, carried on till they meet, go at once: the praise is on the shape)
     if (st.multi && o.ok) {
       picks[o.id] = 'good';
       const need = st.opts.filter((x) => x.ok && x.req !== false), all = need.every((x) => picks[x.id]);
@@ -2672,9 +2673,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   }
   hideMeet() {
     if (!this.state.meet) return;
-    const tok = this.stepTok;
+    const tok = this.stepTok, pair = this.state.meet;
     if (window.Motion) Motion.unmeet();
-    this.tm(() => { if (tok === this.stepTok) this.setState({ meet: null, glow: null }); }, Motion.reduced ? 0 : 420);
+    // (its sides' light goes with it; a light lit since - a right answer's - stays)
+    this.tm(() => { if (tok === this.stepTok) this.setState({ meet: null, glow: this.state.glow === pair ? null : this.state.glow }); }, Motion.reduced ? 0 : 420);
   }
   // a caption screen (reference isPlate): no Swiftee - her line is the navy plate across the top. She stays where she
   // does something: the first screen (she arrives and speaks), the measuring walk and the end
