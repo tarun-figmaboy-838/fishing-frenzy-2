@@ -569,7 +569,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const showCard = () => {
       if (tok !== this.narrTok) return;
-      if (!cardShown) { cardShown = true; this.addChips(L.chips); }
+      if (!cardShown) { cardShown = true; if (!L.tagsWithSupp) this.addChips(L.chips); }
       if (atIdx < 0) highlight();
     };
     const tok = ++this.narrTok;
@@ -821,7 +821,6 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     // passes them, 0.43 s into its run (their tick: markSounds)
     if (c.mark) { const marked = Object.assign({}, this.state.marked); c.mark.forEach((k) => { marked[k] = 1; }); this.setState({ marked: marked }); this.busyFor(1100 + 420); }
     if (c.pair) { this.setState({ boxHi: c.pair }); this.tm(() => { if (tok === this.stepTok) this.setState({ boxHi: null }); }, c.ms || 1700); } // (the answer boxes of that pair pulse)
-    if (c.hiEq) { this.setState({ chipHiEq: true }); this.tm(() => { if (tok === this.stepTok) this.setState({ chipHiEq: false }); }, c.ms || 1500); }
     // the maths in motion (js/motion.js): equal sides slide onto each other, equal angles fly across and fit, the
     // diagonals' halves slide onto each other - one pair after another
     if (window.Motion && (c.match || c.matchAng || c.halfSlide)) {
@@ -838,39 +837,126 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // on the opposite's - the same value)
         const lab = (k1, k2) => { const L = this.lenAt || {}, a = L[k1] && this.boardToStage(L[k1]), b = L[k2] && this.boardToStage(L[k2]);
           return a && b && !/ off\b/.test(L[k1].cls) ? { t: L[k1].t, from: a, to: b, px: 24 * (this.sceneFit(this.cur()).k || 1), col: k1 === 'AB' || k1 === 'CD' ? '#1656e0' : '#00806d' } : null; };
-        if (c.match) pairs(c.match).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); at += 2400; });
+        // (a cue's tags: the pair's tag is built as its slide lands)
+        const tagAt = (i, when) => { if (c.tags && c.tags[i]) this.tm(() => { if (tok === this.stepTok && this.state.chips.every((x) => x.t !== c.tags[i].t)) this.buildTag(c.tags[i]); }, when); };
+        if (c.match) pairs(c.match).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); tagAt(i, at + 2000); at += 3400; });
         if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
-        if (c.matchAng) pairs(c.matchAng).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); at += 2600; });
+        if (c.matchAng) pairs(c.matchAng).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); tagAt(i, at + 2300); at += 3600; });
         // a diagonal's halves: a copy of one slides along the diagonal onto the other (A->O onto O->C: no turn, it stays
         // on its line) and fits it exactly, in their colour, the two halves standing out while it does
         const halfCol = (k) => PAL[(this.fl().halfPairs ? { A: 'vA', C: 'vA', B: 'vB', D: 'vB' } : { A: 'vA', B: 'vB', C: 'vC', D: 'vD' })[k]];
-        if (c.halfSlide) pairs(c.halfSlide).forEach((pr) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
-          Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); at += 3400; });
+        if (c.halfSlide) pairs(c.halfSlide).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
+          Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); tagAt(i, at + 2000); at += 3400; });
         // the screen stays until the last of them has been seen through (flow: seqEnd)
-        if (at) this.busyFor(at);
+        if (at) this.busyFor(at + (c.tags ? 2600 : 0));
       }
     }
-    if (c.chip) { this.addChips([c.chip]); this.busyFor(600); }
+    if (c.chip) this.addChips([c.chip]);
+    if (c.merge) this.tagStep(() => this.mergeTags(c.merge.from, c.merge.into), 1500); // (tags that make one idea: into it)
     if (c.glow) { this.sfx('glint', { v: 0.9 }); this.busyFor(1100); } // a side (or the outline) lights up on its word: its light runs
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
     else if (c.hi !== undefined) this.setState({ chipHi: c.hi || null }); // (a card that lifts on its word, the shape left calm)
     if (c.pulse) Motion.pop((P.A.x + P.B.x + P.C.x + P.D.x) / 4, (P.A.y + P.B.y + P.C.y + P.D.y) / 4);
     if (c.ms) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null, chipHi: null }); }, c.ms);
   }
-  // cards arriving together come in one after another (css .chip.cd1-.cd3, CHIP_GAP apart), each with its own sound:
-  // the shape's name a chime, any other card a soft pop rising note by note
-  staggerChips(cs) {
-    const N = window.Sfx ? Sfx.notes : [523.25, 659.25, 783.99, 1046.5, 1318.5];
-    return cs.map((c, i) => {
-      const name = /\bname\b/.test(c.k);
-      this.sfx(name ? 'chime' : 'pop', { f: name ? undefined : N[Math.min(i, N.length - 1)] * 1.5, v: 0.6, delay: (i * CHIP_GAP) / 1000 });
-      return i ? Object.assign({}, c, { k: c.k + ' cd' + Math.min(i, 3) }) : c;
-    });
-  }
+  // a screen's tags come one at a time, each built from the shape (buildTag) and given its moment before the next
   addChips(cs) {
-    const have = this.state.chips.map((c) => c.t), add = cs.filter((c) => have.indexOf(c.t) < 0);
-    if (!add.length) return;
-    this.setState({ chips: this.state.chips.concat(this.staggerChips(add)) });
+    const have = this.state.chips.map((c) => c.t), add = (cs || []).filter((c) => have.indexOf(c.t) < 0);
+    add.forEach((c) => this.tagStep(() => (this.state.chips.every((x) => x.t !== c.t) ? this.buildTag(c) : 0), this.tagMs(c)));
+  }
+  // tag moments take turns: each waits for the one before it (its build or merge, and a beat), so words that come close
+  // together never pile tags up half-built; the screen waits for the last (busyFor)
+  tagStep(fn, ms) {
+    const tok = this.stepTok;
+    if (this.tagTok !== tok) { this.tagTok = tok; this.tagFree = 0; }
+    const start = Math.max(Date.now(), this.tagFree || 0);
+    this.tagFree = start + ms + 300;
+    this.busyFor(this.tagFree - Date.now());
+    this.tm(() => { if (tok === this.stepTok) fn(); }, start - Date.now());
+  }
+  tagMs(c) { const T = this.tagParts(c.t); return !T ? CHIP_GAP : T.a.val && T.b.val ? (T.sum ? 3500 : 2800) : 1500; }
+  // ---------- name tags, built from the shape ----------
+  // A tag relating two parts of the shape (sides, angles, halves of a diagonal) is never just popped on: the two parts
+  // send what they show - their values, or their names when none is on show - flying from the shape into the tag's
+  // place; it comes in as they land, reading what the shape shows ("110° + 70°", then "= 180°"), and settles into what
+  // it states ("∠A + ∠D = 180°"). opt.sumAt: when "= 180°" joins after it lands (a 180° demo's rim)
+  tagPart(name) {
+    const P = this.shapeP(), f = this.fl(), st = this.cur(), mid = (p, q) => ({ x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
+    if (name[0] === '∠') {
+      const k = name[1], on = !st.fig && (f.arcs || '').indexOf(k) >= 0 && !!(this.alabAt && this.alabAt[k]);
+      return { text: on ? Math.round(this.vals(P)[k]) + '°' : name, val: on, at: on ? this.alabAt[k] : P[k] };
+    }
+    if (name.indexOf('O') >= 0) {
+      const k = name.replace('O', ''), O = mid(P.A, P.C), on = !!(f.halves && (f.split || f.halfPairs));
+      return { text: on ? this.cm(this.dist(O, P[k])) : name, val: on, at: mid(O, P[k]) };
+    }
+    const key = { AB: 'AB', BA: 'AB', BC: 'BC', CB: 'BC', CD: 'CD', DC: 'CD', DA: 'DA', AD: 'DA' }[name], Lb = this.lenAt && this.lenAt[key];
+    const on = !!(Lb && !/ off\b/.test(Lb.cls));
+    return { text: on ? Lb.t : name, val: on, at: on ? { x: Lb.x, y: Lb.y } : mid(P[name[0]], P[name[1]]) };
+  }
+  tagParts(t) {
+    const m = /^(∠[A-D]|[A-DO][A-DO]) (∥|=|\+) (∠[A-D]|[A-DO][A-DO])( = 180°)?$/.exec(String(t || '').trim());
+    return m ? { a: this.tagPart(m[1]), op: m[2], b: this.tagPart(m[3]), sum: !!m[4] } : null;
+  }
+  setTag(t, o) { this.setState({ chips: this.state.chips.map((c) => (c.t === t ? Object.assign({}, c, o) : c)) }); }
+  tagCentre(t) {
+    const stage = typeof document !== 'undefined' && document.querySelector('.stage'), el = stage && stage.querySelector('.chip[aria-label="' + t + '"]');
+    if (!el) return null;
+    const sr = stage.getBoundingClientRect(), z = sr.width / 1280 || 1, r = el.getBoundingClientRect();
+    return { x: (r.left - sr.left + r.width / 2) / z, y: (r.top - sr.top + r.height / 2) / z };
+  }
+  buildTag(c, opt) {
+    opt = opt || {};
+    const tok = this.stepTok, T = this.tagParts(c.t), name = /\bname\b/.test(c.k);
+    if (!T || !window.Motion || Motion.reduced || typeof document === 'undefined') {
+      this.setState({ chips: this.state.chips.concat([c]) }); this.sfx(name ? 'chime' : 'pop', { v: 0.6 }); return CHIP_GAP;
+    }
+    const num = T.a.val && T.b.val ? T.a.text + ' ' + T.op + ' ' + T.b.text : null, sumAt = opt.sumAt || 600;
+    const show = (s, after) => this.tm(() => { if (tok === this.stepTok) this.setTag(c.t, { show: s, morph: ((this.state.chips.find((x) => x.t === c.t) || {}).morph || 0) % 2 + 1 }); }, after);
+    this.setState({ chips: this.state.chips.concat([Object.assign({}, c, { show: num || c.t, arriving: 1 })]) }, () => {
+      if (tok !== this.stepTok) return;
+      const to = this.tagCentre(c.t);
+      const land = () => {
+        if (tok !== this.stepTok) return;
+        this.setTag(c.t, { arriving: 0, landed: 1 }); this.sfx('pop', { v: 0.7 });
+        if (num && T.sum) { show(num + ' = 180°', sumAt); show(c.t, sumAt + 1300); } else if (num) show(c.t, 1300);
+      };
+      if (!to) { land(); return; }
+      [T.a, T.b].forEach((p, k) => this.tm(() => { if (tok === this.stepTok) Motion.flyValue(p.text, this.boardToStage(p.at) || to, to, k ? land : null, 'src'); }, k * 180));
+    });
+    return 1300 + (num ? (T.sum ? sumAt + 1300 : 1300) : 0);
+  }
+  // tags that together make one idea merge into it: each lifts off its place and flies into the new tag's, which comes
+  // in as they arrive (screen 10: AB ∥ CD and AD ∥ BC make the parallelogram)
+  mergeTags(from, into) {
+    const tok = this.stepTok, had = this.state.chips.some((c) => c.t === into.t);
+    const src = from.map((t) => ({ t: t, p: this.tagCentre(t) })).filter((x) => x.p);
+    const rest = this.state.chips.filter((c) => from.indexOf(c.t) < 0).map((c) => (c.t === into.t ? Object.assign({}, c, { arriving: 1, landed: 0, kept: 0 }) : c));
+    const chips = had ? rest : rest.concat([Object.assign({}, into, { arriving: 1 })]);
+    if (!window.Motion || Motion.reduced || !src.length) { this.setState({ chips: chips.map((c) => Object.assign({}, c, { arriving: 0 })) }); return CHIP_GAP; }
+    this.setState({ chips: chips }, () => {
+      if (tok !== this.stepTok) return;
+      const to = this.tagCentre(into.t);
+      const land = () => { if (tok !== this.stepTok) return; this.setTag(into.t, { arriving: 0, landed: 1 }); this.sfx(/\bname\b/.test(into.k) ? 'chime' : 'pop', { v: 0.7 }); };
+      if (!to) { land(); return; }
+      src.forEach((x, k) => this.tm(() => { if (tok === this.stepTok) Motion.flyValue(x.t, x.p, to, k === src.length - 1 ? land : null, 'src tag'); }, k * 150));
+    });
+    return 1500;
+  }
+  // the tags a screen starts with: the screen before's that it shows too, where they are (no second entrance, in this
+  // screen's look); the others go with the screen they belonged to
+  carryChips(st) {
+    const want = {}, take = (cs) => (cs || []).forEach((c) => { want[c.t] = c; });
+    (st.lines || []).concat(st.after || []).forEach((Ln) => {
+      take(Ln.chips);
+      (Ln.cues || []).forEach((c) => {
+        if (c.chip) take([c.chip]);
+        take(c.tags);
+        if (c.merge) { c.merge.from.forEach((t) => { want[t] = want[t] || { t: t, k: ((this.state.chips || []).find((x) => x.t === t) || {}).k || 'white' }; }); take([c.merge.into]); }
+      });
+    });
+    take(st.enterChips);
+    return (this.state.chips || []).filter((c) => want[c.t] && !c.arriving).map((c) => ({ t: c.t, k: want[c.t].k, kept: 1 }));
   }
   replay() {
     if (!this.state.started || !this.curLine) return;
@@ -1055,8 +1141,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.setState({
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
-      supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: [],
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, chipHiEq: false, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
+      supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1226,8 +1312,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (sp) {
       const ms = CONFIG.supp.stepMs;
       // (each pair's equation card, where the screen has them, lifts while its own pair is shown: one equation at a time)
-      const eqs = ((st.lines || [])[0] || {}).chips || [];
-      sp.forEach((pair, i) => this.tm(() => { this.setState({ supp: i, chipHi: eqs.length === sp.length ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop'); }, 500 + i * ms));
+      const L0 = (st.lines || [])[0] || {}, eqs = L0.chips || [], own = L0.tagsWithSupp && eqs.length === sp.length; // (each pair's tag comes with its demo)
+      sp.forEach((pair, i) => this.tm(() => {
+        this.setState({ supp: i, chipHi: eqs.length === sp.length && !own ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop');
+        if (own) this.tm(() => { if (st === this.cur()) this.buildTag(eqs[i], { sumAt: 2300 }); }, 400); // ("= 180°" as the rim closes)
+      }, 500 + i * ms));
       if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
       this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs); // (each step already holds its pair a while)
     }
@@ -1483,14 +1572,16 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
-      this.setState({ done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
+      this.setState({ done: true, results: results });
+      if (st.okChips) this.addChips(st.okChips);
       this.cheer();
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
     } else if (o.ok) {
       picks[o.id] = 'good';
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
-      this.setState({ picks: picks, done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
+      this.setState({ picks: picks, done: true, results: results });
+      if (st.okChips) this.addChips(st.okChips);
       this.cheer();
       if (st.fig) this.flyAnswer(this.figUnknowns(st), typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null);
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
@@ -1661,7 +1752,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (D.blanks.every((x) => locked[x.id])) {
         const s = this.state, results = Object.assign({}, s.results);
         if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
-        this.setState({ done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
+        this.setState({ done: true, results: results });
+        if (st.okChips) this.addChips(st.okChips);
         this.cheer();
         this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       } else { this.sfx('snap'); this.poke(); }
@@ -1723,7 +1815,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (D.blanks.every((b) => ok[b.id])) {
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice && st.cp) results[st.id] = s.cfuFirst;
-      this.setState({ fill: Object.assign({}, F, { locked: locked, checking: false }), done: true, results: results, chips: st.okChips ? this.staggerChips(st.okChips) : s.chips });
+      this.setState({ fill: Object.assign({}, F, { locked: locked, checking: false }), done: true, results: results });
+      if (st.okChips) this.addChips(st.okChips);
       this.cheer();
       this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues });
       return;
@@ -2159,10 +2252,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // a card as a notation panel: a small caption naming the property it states, and its relation signs (∥ = +) split
   // out so they wear the highlight colour (p0 s0 p1 s1 ... in index.html)
   chipView(c) {
-    const t = c.t || '', side = '(AB|BC|CD|AD|DA)', half = '(AO|OA|BO|OB|CO|OC|DO|OD)';
-    const cap = /\bname\b|brk/.test(c.k) ? '' : /∥/.test(t) ? 'Parallel sides' : /^∠[A-D] = ∠[A-D]$/.test(t) ? 'Equal angles' :
-      /180°/.test(t) ? 'Supplementary' : new RegExp('^' + side + ' = ' + side + '$').test(t) ? 'Equal sides' :
-      new RegExp('^' + half + ' = ' + half + '$').test(t) ? 'Equal halves' : '';
+    const t = c.show || c.t || '', ttl = c.t || '', side = '(AB|BC|CD|AD|DA)', half = '(AO|OA|BO|OB|CO|OC|DO|OD)';
+    const cap = /\bname\b|brk/.test(c.k) ? '' : /∥/.test(ttl) ? 'Parallel sides' : /^∠[A-D] = ∠[A-D]$/.test(ttl) ? 'Equal angles' :
+      /180°/.test(ttl) ? 'Supplementary' : new RegExp('^' + side + ' = ' + side + '$').test(ttl) ? 'Equal sides' :
+      new RegExp('^' + half + ' = ' + half + '$').test(ttl) ? 'Equal halves' : '';
     const bits = t.split(/ (∥|=|\+) /), v = { cap: cap };
     // the spaces travel with the sign, so unused slots take no room (the runtime wraps every value in a span: no :empty)
     for (let i = 0; i < 5; i++) { v['p' + i] = bits[2 * i] || ''; if (i < 4) v['s' + i] = bits[2 * i + 1] ? ' ' + bits[2 * i + 1] + ' ' : ''; }
@@ -2217,7 +2310,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // whether a screen shows cards under its shape at any point (so their row is kept free from the start)
   hasChips(st) {
     const f = st.f || {};
-    return !!(st.enterChips || st.okChips || f.eq || (st.lines || []).concat(st.after || []).some((L) => L.chips || (L.cues || []).some((c) => c.chip)));
+    return !!(st.enterChips || st.okChips || (st.lines || []).concat(st.after || []).some((L) => L.chips || (L.cues || []).some((c) => c.chip || c.tags || c.merge)));
   }
   zoomTf(st) {
     const Z = this.sceneFit(st), B = CONFIG.board || { x: 640, y: 104 };
@@ -2320,10 +2413,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const plate = this.isPlate(st) ? this.plateFit(words) : null;
     const G = isLesson ? this.geo() : { g: {}, tags: [], V: {} };
     // chips
-    let chips = s.chips.slice();
-    const f = this.fl();
-    if (isLesson && f.eq === 'AD') chips = [{ t: '∠A + ∠D = ' + G.V.A + '° + ' + G.V.D + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
-    if (isLesson && f.eq === 'BC') chips = [{ t: G.V.B + '° + ' + G.V.C + '° = 180°', k: 'white' + (s.chipHiEq ? ' hi' : '') }];
+    const chips = s.chips.slice();
     // (the measured half-diagonals are on the halves themselves: tags, above - no cards for them)
     // cfu options
     const optPulse = s.hand && s.hand.kind === 'opts';
@@ -2384,7 +2474,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       chips: chips.reduce((a, c) => a.concat(st.chipRows && /\bname\b/.test(c.k) && a.length ? [{ t: '', k: 'brk' }] : [], [c]), [])
         .map((c) => (/^(AB|CD) [∥=] (AB|CD)$/.test(c.t) ? Object.assign({}, c, { k: c.k + ' pairA' }) :
           /^(AD|BC) [∥=] (AD|BC)$/.test(c.t) ? Object.assign({}, c, { k: c.k + ' pairB' }) : c))
-        .map((c) => ((v) => Object.assign(v, { k: v.k + (v.cap ? ' hascap' : '') }))(Object.assign({ t: c.t, k: c.k + (c.t.length > 20 ? ' long' : '') + (c.t && c.t === s.chipHi ? ' hi' : s.chipHi && c.k !== 'brk' ? ' lo' : '') }, this.chipView(c)))),
+        .map((c) => ((v) => Object.assign(v, { k: v.k + (v.cap ? ' hascap' : '') }))(Object.assign({ t: c.t, k: c.k + (c.t.length > 20 ? ' long' : '') + (c.arriving ? ' arriving' : c.landed ? ' landed' : '') + (c.kept ? ' kept' : '') + (c.morph ? ' m' + c.morph : '') + (c.t && c.t === s.chipHi ? ' hi' : s.chipHi && c.k !== 'brk' ? ' lo' : '') }, this.chipView(c)))),
       rootDown: (e) => this.rootDown(e),
       wordSize: plate ? plate.size : wi > 15 || (s.line || '').length > 80 ? 22 : 24, // the plate's fit; a long bubble line gets the smaller size
       c1: c1, hasOpts: hasOpts, opts: opts,

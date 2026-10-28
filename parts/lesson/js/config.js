@@ -51,7 +51,7 @@ const CONFIG = {
   flow: { advanceMs: 2600, answersMaxMs: 15000, restMs: 1500 },
   plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
-  supp: { stepMs: 5000 },
+  supp: { stepMs: 6500 }, // (each pair's demo, its tag built with it, and a rest)
   // the card (game-engine sceneFit / belowH / optRow): every screen stacks the shape and what sits under it, centred on it
   card: {
     scale: 2,                        // the shape's largest size (board px -> stage px): each screen draws it as big as fits

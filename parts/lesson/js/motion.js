@@ -287,10 +287,10 @@
     },
     // a right answer's value rises from where it was given, arcs over and lands on its "?" on the figure (stage px);
     // onLand: the figure takes it there (its own label pops in as this one goes)
-    flyValue(text, from, to, onLand) {
+    flyValue(text, from, to, onLand, cls) {
       const stage = document.querySelector('.stage');
       if (!G || reduced || !stage) { if (onLand) onLand(); return 0; }
-      const el = document.createElement('div'); el.className = 'fly-val'; el.textContent = text; stage.appendChild(el);
+      const el = document.createElement('div'); el.className = 'fly-val' + (cls ? ' ' + cls : ''); el.textContent = text; stage.appendChild(el);
       const top = Math.min(from.y, to.y) - 70;
       add(() => G.timeline({ onComplete: () => el.remove() })
         .set(el, { left: from.x, top: from.y, xPercent: -50, yPercent: -50, scale: 0.7, opacity: 0 })

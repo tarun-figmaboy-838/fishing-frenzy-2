@@ -7,6 +7,9 @@
 //          glow = sides drawn bolder while the line is spoken, e.g. ['AB', 'CD']; glowAt: 'word' = wait for that word;
 //          pulse: 1 + pulseAt = the shape zooms once on that word; growAt = the shape comes forward on that word;
 //          cues = board moments on a spoken word: [{ at: 'word', glow: [sides] | null, hi: card text, chip, pulse, ms }];
+//          a cue's tags: [{ t, k }] = the name tag of each of its pairs (match, matchAng, halfSlide), built as that pair's
+//          slide lands; merge: { from: [tags], into: tag } = those tags fly into a new one; a line's tagsWithSupp: its
+//          chips come one with each 180° demo (f.supp);
 //          a cue's mark: [sides] = those sides' parallel arrows wait for the cue and pop on as its glow's light passes them;
 //          meet: [two sides] = carried on until they meet (until: 'word' = they meet as that word is said); meetPulse = they beat;
 //          chips = cards shown with the line; m = Swiftee's expression (default talking; reactions in CONFIG.swiftee)
@@ -29,7 +32,7 @@
 //          diag = draw the diagonals
 //   f:     board display flags: noLetters, par (arrows on AB, CD), par2 (arrows on AD, BC), sideLen / legLen (lengths),
 //          lenSeq (lengths appear pair by pair: AB + CD, then AD + BC), ticks (equal-side marks), arcs (angle arcs),
-//          pairCol (equal angles share a colour), eq: 'AD' (live ∠A + ∠D card), supp (supplementary demo pairs, in turn),
+//          pairCol (equal angles share a colour), supp (supplementary demo pairs, in turn),
 //          diag, O, split (diagonal halves in four colours), halfPairs (equal halves share a colour), hticks, halves (cards)
 //   flow:  explanation screens move on by themselves (CONFIG.flow.advanceMs after the voice); questions wait for the
 //          learner; autoNext (ms) = move on this soon after the last line (recall sequence)
@@ -84,18 +87,20 @@ const LESSON = {
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
     { pdf: 10, id: 'defPg', chipTop: 428,
+      // AB ∥ CD is built from its two sides, then AD ∥ BC; on "parallelogram" the two merge into the name, the outline lit
       lines: [{ t: 'We call this a parallelogram.', cues: [
-        { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, hi: 'AB ∥ CD' },
-        { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, hi: 'AD ∥ BC' },
-        { at: 'parallelogram', chip: { t: 'Parallelogram', k: 'name' }, glow: ['AB', 'BC', 'CD', 'DA'], hi: 'Parallelogram', ms: 1400 }] }], f: PG },
+        { at: 'we', chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'] },
+        { at: 'this', chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'] },
+        { at: 'parallelogram', merge: { from: ['AB ∥ CD', 'AD ∥ BC'], into: { t: 'Parallelogram', k: 'name' } }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 2600 }] }], f: PG },
     // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
     // Swiftee says it, AB + CD glow with their card, then AD + BC with theirs; on "parallelogram" the name card (there
     // since screen 9, in the same row) lifts
     { pdf: 11, id: 'defFull', chipTop: 428,
-      enterChips: [{ t: 'AB ∥ CD', k: 'white' }, { t: 'AD ∥ BC', k: 'white' }, { t: 'Parallelogram', k: 'name' }],
+      // (the name made on screen 10 stays; the definition is said with its sides lighting pair by pair)
+      enterChips: [{ t: 'Parallelogram', k: 'name' }],
       lines: [{ t: 'A quadrilateral where both pairs\nof opposite sides are parallel is\ncalled a parallelogram.', cues: [
-        { at: 'pairs', glow: ['AB', 'CD'], hi: 'AB ∥ CD' },
-        { at: 'sides', glow: ['DA', 'BC'], hi: 'AD ∥ BC' },
+        { at: 'pairs', glow: ['AB', 'CD'] },
+        { at: 'sides', glow: ['DA', 'BC'] },
         { at: 'called', glow: null, hi: null },
         { at: 'parallelogram', hi: 'Parallelogram', ms: 1400 }] }],
       f: PG },
@@ -116,7 +121,7 @@ const LESSON = {
         { id: 'all', t: 'All sides are equal', fb: 'Look at the lengths again. AB is 6 cm, but AD is only 3 cm.' },
         { id: 'opp', t: 'Opposite sides are equal', ok: true }
       ], f: LENS }, PRACTICE),
-    { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'equal', match: [['AB', 'CD'], ['DA', 'BC']] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.', chips: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }],
+    { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'equal', match: [['AB', 'CD'], ['DA', 'BC']], tags: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.' }],
       f: Object.assign({ ticks: 1 }, LENS) },
     { pdf: 19, id: 'soAny', lines: [{ t: 'So, in any parallelogram…',
       chips: [{ t: 'AB ∥ CD', k: 'white sm' }, { t: 'AD ∥ BC', k: 'white sm' }, { t: 'AB = CD', k: 'white sm' }, { t: 'AD = BC', k: 'white sm' }] }],
@@ -158,19 +163,19 @@ const LESSON = {
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     { pdf: '27-28', id: 'tapEqA', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
-      after: [{ cues: [{ at: 'equal', matchAng: ['A', 'C'] }], m: 'happy', t: "That's correct! ∠A is\nequal to ∠C.", chips: [{ t: '∠A = ∠C', k: 'gold' }] }], f: { arcs: 'ABCD' } },
+      after: [{ cues: [{ at: 'equal', matchAng: ['A', 'C'], tags: [{ t: '∠A = ∠C', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠A is\nequal to ∠C." }], f: { arcs: 'ABCD' } },
     { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
       wrong: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.',
-      after: [{ cues: [{ at: 'equal', matchAng: ['D', 'B'] }], m: 'happy', t: "That's correct! ∠D is\nequal to ∠B.", chips: [{ t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairA: 1 } },
-    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'equal', matchAng: [['A', 'C'], ['B', 'D']] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.',
-      chips: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], f: { arcs: 'ABCD', pairCol: 1 } },
+      after: [{ cues: [{ at: 'equal', matchAng: ['D', 'B'], tags: [{ t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠D is\nequal to ∠B." }], f: { arcs: 'ABCD', pairA: 1 } },
+    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'equal', matchAng: [['A', 'C'], ['B', 'D']], tags: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
     { pdf: 32, id: 'seeElse', lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts
-    { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.', cues: [{ at: 'add', focus: ['A', 'D'], ms: 2200 }, { at: '180°', hiEq: 1, ms: 1600 }] }], f: { arcs: 'ABCD', eq: 'AD', supp: ['AD'] } },
+    { pdf: 34, id: 'sumAD', lines: [{ m: 'surprised', t: 'They add up to make 180°.', cues: [{ at: 'add', focus: ['A', 'D'], ms: 2200 }],
+      chips: [{ t: '∠A + ∠D = 180°', k: 'white' }], tagsWithSupp: 1 }], f: { arcs: 'ABCD', supp: ['AD'] } }, // (its tag built with the demo: 110° + 70°, = 180°)
     Object.assign({ pdf: 35, id: 'askAdj', multi: 1, lines: [{ m: 'curious', t: 'Which other angles\nadd up to 180°?' }],
       ok: 'Yes! ∠B + ∠C = 180° and\n∠A + ∠B = 180°.', okChips: [{ t: '∠B + ∠C = 180°', k: 'gold sm' }, { t: '∠A + ∠B = 180°', k: 'gold sm' }],
       opts: [
@@ -179,7 +184,7 @@ const LESSON = {
         { id: 'AB', t: '∠A & ∠B', ok: true },
         { id: 'AD', t: '∠A & ∠D', ok: true, req: false, fb: 'Yes, but we found that pair already! Find the other pairs.' }
       ], f: { arcs: 'ABCD' } }, PRACTICE),
-    { pdf: 36, id: 'adjRule', lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.',
+    { pdf: 36, id: 'adjRule', lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.', tagsWithSupp: 1, // (each pair's tag is built with its own 180° demo)
       chips: [{ t: '∠A + ∠D = 180°', k: 'white sm' }, { t: '∠A + ∠B = 180°', k: 'white sm' }, { t: '∠B + ∠C = 180°', k: 'white sm' }, { t: '∠C + ∠D = 180°', k: 'white sm' }] }],
       f: { arcs: 'ABCD', supp: ['AD', 'BA', 'BC', 'DC'] } }, // (each demo at the corner whose side carries on clear of the letters)
 
@@ -230,9 +235,10 @@ const LESSON = {
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
       f: Object.assign({ split: 1, halves: 1 }, DIAG) }),
-    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', halfSlide: [['A', 'C'], ['B', 'D']] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.', chips: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }],
+    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', halfSlide: [['A', 'C'], ['B', 'D']], tags: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.' }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
-    { pdf: 49, id: 'bisect', lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect', chips: [{ t: 'Diagonals bisect each other.', k: 'name' }] }],
+    { pdf: 49, id: 'bisect', lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect',
+      cues: [{ at: 'bisect', merge: { from: ['OA = OC', 'OB = OD'], into: { t: 'Diagonals bisect each other.', k: 'name' } } }] }], // (screen 48's two tags merge into it)
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
 
     // ---------- Checkpoint 3 · Let's use the diagonals! (page 50) ----------

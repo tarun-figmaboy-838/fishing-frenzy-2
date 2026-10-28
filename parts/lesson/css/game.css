@@ -555,6 +555,16 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* a right answer's pair of boxes, as the line names what they show on the shape: two gentle beats with a gold ring */
 .stage .blank.seg.hot{animation:segHot .8s ease-in-out 2}
 /* a right answer's value on its way from its box to its "?" on the figure (Motion.flyValue) */
+/* ...a part's value on its way into a name tag (the tag's own look), and a whole tag on its way into another */
+.stage .fly-val.src{background:var(--pg-panel,#FFF8EC);border-color:var(--pg-line,#DA7E20);color:var(--pg-ink,#1d2f52);font-size:24px}
+.stage .fly-val.src.tag{font-family:'Baloo 2','Noto Sans Math',system-ui,sans-serif;font-weight:700;padding:6px 20px;border-radius:14px;border-width:2.5px}
+/* a tag being built: its place kept until its parts land, then it lands; its text changing as it settles (m1 / m2) */
+.stage .chip.arriving{visibility:hidden;animation:none}
+.stage .chip.landed{animation:chipLand .5s cubic-bezier(.2,1.5,.45,1)}
+@keyframes chipLand{from{transform:scale(.55);opacity:.3}to{transform:none;opacity:1}}
+.stage .chip.kept{animation:none}
+.stage .chip.m1 .chip-ln{animation:chipM1 .45s ease}.stage .chip.m2 .chip-ln{animation:chipM2 .45s ease}
+@keyframes chipM1{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes chipM2{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .stage .fly-val{position:absolute;z-index:30;pointer-events:none;white-space:nowrap;padding:4px 12px;border-radius:12px;background:#effbe9;border:2px solid #6cc35a;
   color:#13824a;font:900 26px/1.1 'Nunito','Noto Sans Math',system-ui,sans-serif;box-shadow:0 6px 16px rgba(18,59,99,.22)}
 @keyframes segHot{50%{transform:scale(1.1);box-shadow:0 0 0 6px rgba(255,210,63,.6)}}

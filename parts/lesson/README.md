@@ -70,7 +70,7 @@ storyboard's parallelogram: AB = CD = 6 cm, AD = BC = 3 cm, ∠A = ∠C = 110°,
 - **Dual coding.** As Swiftee says a part's name the part itself grows for a moment (`partCues` / `emphasize`): a
   side (AB, "A B", legs, bases, sides), an angle (∠A, angles: the wedges, or the corners before the angles are drawn),
   a length, a diagonal (AC, diagonals), point O, a half (AO, segments); a line's own `cues` add a glow, a name card, a
-  pulse, an angle focus (`focus`: the named angles stay vivid, the others step back) or the sum card lifting (`hiEq`).
+  pulse, or an angle focus (`focus`: the named angles stay vivid, the others step back).
   While one card is lifted the others step back (`.chip.lo`); in the summary the albums step back while an idea is
   explained. Focus: while a part is named, the others of its kind step back too (sides, a lone diagonal, the halves,
   the lengths, the angles), so the eye goes to what is being said. A line's cards come in as its voice starts, and
