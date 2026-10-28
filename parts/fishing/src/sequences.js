@@ -1017,6 +1017,12 @@ async function fishBumpsCorner(game, token, to) {
   }
 }
 
+// Any of the hook's school still in the water swims on out of the lake: missed by its catch, or the hook cut short
+// by the journey's Next (afterHook) - its lane stands still, so they would otherwise stay where they stopped for good.
+function schoolSwimsOn() {
+  for (const f of state.fish) if (f.lane && f.lane.speed === 0 && !f.caught && !f.gone) { f.leaving = true; f.speed = 140; }
+}
+
 // H7: a school swims in from the right and slows to a stop right inside the open net: each fish has its own place in
 // the net (three staggered rows of four, a little uneven), so the whole school always ends up in it. Its fish keep a
 // lane of their own, which the sea leaves alone.
@@ -1156,7 +1162,7 @@ async function hook(game, token) {
     await schoolSwimsIn(game, token, q ? 1200 : 2600);
     await clock.wait(q ? 100 : 250, token);
     const caught = await hookCatch(game, token);
-    for (const f of state.fish) if (f.lane && f.lane.speed === 0 && !f.caught && !f.gone) { f.leaving = true; f.speed = 140; } // (any of the school it missed swim on)
+    schoolSwimsOn(); // (any of the school it missed)
     state.caught += caught.length;
     popo.react('laugh', 1.8);
     audio.play('catch');
@@ -1186,6 +1192,7 @@ async function hook(game, token) {
 // first parallelogram net follows.
 async function afterHook(game, token) {
   const { net, winch } = game;
+  schoolSwimsOn();
   if (game.embedded && game.lessonAfter) {
     game.ui.fadeHud(true);
     windNetUp(game, token).catch(() => {});
