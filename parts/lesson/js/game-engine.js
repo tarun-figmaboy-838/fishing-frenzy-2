@@ -503,22 +503,37 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       else if (/^(O[A-D]|[A-D]O)$/.test(t) && nParts.indexOf('h' + t.replace('O', '')) < 0) nParts.push('h' + t.replace('O', ''));
     });
     const lit = !L.glow && !(L.cues || []).some((c) => c.glow !== undefined); // (the line does not light sides itself)
-    const P = this.shapeP(), f = this.fl();
+    const P = this.shapeP(), f = this.fl(), arcs = st.fig ? Object.keys(st.fig.angles || {}).join('') : (f.arcs || '');
+    const lens = !!(f.sideLen || f.legLen || (st.fig && st.fig.sides));
+    const aboutAngles = words.some((w) => /^(angles?|∠[A-D])$/.test(nm(w)) || /^angles?$/.test(key(w)));
+    const pairOf = (k) => (k === 'AB' || k === 'CD' ? ['AB', 'CD'] : ['DA', 'BC']);
+    const oppAngles = [['A', 'C'], ['B', 'D']].map((q) => q.filter((x) => arcs.indexOf(x) >= 0).map((x) => 'a' + x)).filter((q) => q.length);
+    // the parts named next to word i (two words before it, three after: "CD is opposite AB", "∠C is opposite ∠A")
+    const near = (i, re) => words.slice(Math.max(0, i - 2), i + 4).map(nm).map((t) => (re.test(t) ? t : null)).filter(Boolean);
     words.forEach((w, i) => {
       const k = key(w), next = key(words[i + 1]), prev = key(words[i - 1]);
       let c = null;
       if (k === 'sides' && lit && !nSides.length && !/^(opposite|adjacent)$/.test(prev)) c = { light: ['AB', 'BC', 'CD', 'DA'], ms: 1300 };
-      else if (k === 'opposite' && /^angles?$/.test(next) && f.arcs) c = { emphSeq: [['aA', 'aC'], ['aB', 'aD']] };
-      else if (k === 'opposite' && /^sides?$/.test(next) && lit && !nSides.length) c = { lightSeq: [['AB', 'CD'], ['DA', 'BC']] };
-      else if (k === 'parallel') {
+      else if (k === 'opposite' && (/^angles?$/.test(next) || near(i, /^∠[A-D]$/).length >= 2)) {
+        const na = near(i, /^∠[A-D]$/).map((t) => 'a' + t[1]);
+        if (na.length >= 2) c = { emph: na.slice(0, 2) }; else if (oppAngles.length) c = { emphSeq: oppAngles };
+      } else if (k === 'opposite' && lit) {
+        const ns = near(i, /^[A-D]{2}$/).map((t) => sideOf[t]).filter(Boolean);
+        const ks = ns.length ? ns : nSides.length === 1 ? pairOf(nSides[0]) : null;
+        c = ks ? { light: ks.length === 1 ? pairOf(ks[0]) : ks, ms: 1300 } : { lightSeq: [['AB', 'CD'], ['DA', 'BC']] };
+      } else if (k === 'parallel') {
         const ks = (nSides.length ? nSides : ['AB', 'CD', 'DA', 'BC']).filter((s) => this.sidePar(P, s));
         if (ks.length && !(ask && !nSides.length)) c = { parSides: ks, lit: lit };
+        else if (nSides.length && lit) c = { light: nSides, ms: 1300 }; // (named, not parallel yet: only which sides)
       } else if (/^parallelograms?$/.test(k)) c = { parWord: 1 };
       else if (/^(trapeziums?|quadrilaterals?|polygon)$/.test(k)) c = { pulse: 1 };
       else if (k === 'vertices') c = { emph: ['vA', 'vB', 'vC', 'vD'] };
       else if (k === '180' && L.tagsWithSupp) c = { sumSaid: 1 }; // (its tag's "= 180°" joins on the word)
       else if (/^(equal|adjacent|supplementary|180)$/.test(k) && nParts.length >= 2) c = nParts.some((p) => /^a|^h/.test(p)) ? { emph: nParts } : (lit ? { light: nSides, ms: 1300 } : null);
-      else if (k === 'equal' && !nParts.length && (f.sideLen || f.legLen)) c = { emphSeq: [['lAB', 'lCD'], ['lDA', 'lBC']], lightSeq: lit ? [['AB', 'CD'], ['DA', 'BC']] : null }; // (equal lengths: each pair's, together)
+      else if (k === 'equal' && aboutAngles && oppAngles.length) c = st.task === 'tapEq' || ask ? { emph: ['aA', 'aB', 'aC', 'aD'].filter((a) => arcs.indexOf(a[1]) >= 0) } : { emphSeq: oppAngles };
+      else if (k === 'equal' && (f.sideLen || f.legLen)) c = { emphSeq: [['lAB', 'lCD'], ['lDA', 'lBC']], lightSeq: lit ? [['AB', 'CD'], ['DA', 'BC']] : null }; // (equal lengths: each pair's, together)
+      else if (k === 'equal' && lit && nSides.length === 1) c = { light: pairOf(nSides[0]), ms: 1300 };
+      else if (k === 'equal' && lit && !nParts.length) c = arcs && !lens ? { emph: ['aA', 'aB', 'aC', 'aD'].filter((a) => arcs.indexOf(a[1]) >= 0) } : { light: ['AB', 'BC', 'CD', 'DA'], ms: 1300 };
       else if (k === 'bisect' && f.diag) c = { emph: ['hA', 'hB', 'hC', 'hD'] };
       else if (/^diagonals?$/.test(k) && !f.diag && !(this.state.diag && (this.state.diag.AC || this.state.diag.BD))) c = { sketchDiag: 1 }; // (not drawn yet: shown a moment)
       if (c) out.push({ i: i, c: c });
