@@ -1140,9 +1140,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur(), s = this.state, P = s.P;
     if (!s.started || st.end || s.done || s.revealing) return null;
     const t = st.task;
-    if (t === 'tapEq') { // never the answer: the hand glides over every angle still to try, pressing none
+    if (t === 'tapEq') { // never the answer: the hand taps on every angle still to try, one after another
       const ks = ['A', 'B', 'C', 'D'].filter((k) => k !== st.ref && !s.ang[k]);
-      return ks.length ? { qa: 'vtx-' + ks[0], kind: 'sweep', ks: ks } : null;
+      return ks.length ? { qa: 'vtx-' + ks[0], kind: 'tap hop', ks: ks } : null;
     }
     if (t === 'connect') { // from a corner toward its opposite corner
       const a = s.diag.AC ? 'B' : 'A', b = this.opp(a), L = this.dist(P[a], P[b]) || 1, k2 = Math.min(130, L * 0.6) / L;
@@ -1173,7 +1173,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (once && this.touched) { this.armHand(); return; }
       const T = this.handTarget();
       if (!T) return;
-      let hand = { kind: T.kind, x: 0, y: 0, dx: T.dx || 0, dy: T.dy || 0, n: (this.handShown || 0), once: once };
+      let hand = { kind: T.kind, x: 0, y: 0, dx: T.dx || 0, dy: T.dy || 0, n: (this.handShown || 0), once: once, ks: T.ks || null };
       if (T.qa) {
         if (typeof document === 'undefined') return;
         const el = document.querySelector('[data-qa="' + T.qa + '"]'), stage = document.querySelector('.stage');
@@ -1191,13 +1191,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const S = this.fxPts(), st = this.cur(), cycles = once ? 1 : Math.ceil(CONFIG.hand.showMs / 2100);
         Motion.ghostDrag({ x: hand.x, y: hand.y }, hand.dx, hand.dy, st.task === 'dragB' && S ? [S.A, S.C] : [], st.task === 'connect', cycles);
       }
-      if (hand.kind === 'sweep' && T.ks) T.ks.forEach((k, i) => this.tm(() => { // (from one angle to the next, each lifting as it comes)
+      // (the angles to try: the hand presses each in turn, a whole tap - lift, press, ring - on one before it hops to the
+      // next, between presses (css handTap, 1.4 s); every one of them pulses meanwhile: each can be tapped)
+      if (T.ks) T.ks.forEach((k, i) => this.tm(() => {
         if (tok !== this.stepTok || !this.state.hand) return;
         const el = typeof document !== 'undefined' && document.querySelector('[data-qa="vtx-' + k + '"]'), stage = document.querySelector('.stage');
         if (el && stage) { const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), sc = sr.width / 1280 || 1;
           this.setState({ hand: Object.assign({}, this.state.hand, { x: Math.round((r.left + r.width / 2 - sr.left) / sc), y: Math.round((r.top + r.height / 2 - sr.top) / sc) }) }); }
-        this.emphasize(['a' + k]);
-      }, 250 + i * 700));
+      }, i * 1400));
       // a few presses, then step back; it returns only if the learner is still idle
       this.handId = this.tm(() => { this.handId = null; if (tok === this.stepTok) { if (window.Motion && Motion.unghost) Motion.unghost(); this.setState({ hand: null }, () => this.armHand()); } }, once ? CONFIG.hand.onceMs : CONFIG.hand.showMs);
     }, (once ? CONFIG.hand.onceDelayMs : CONFIG.hand.idleMs) + (extraMs || 0));
@@ -1998,9 +1999,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       return;
     }
     // wrong: the value shows briefly in an orange box that shakes, the tip plays, then the box empties for a retry - the
-    // tip for that value in that box ("B:65"), else for the value, else the screen's own
+    // tip for that value in that box ("B:65"), else for the value, else for the box, else the screen's own
     this.setState({ fill: Object.assign({}, F, { at: at, bad: { [id]: true }, checking: true, open: null, closing: false }), cfuFirst: false });
-    this.oops((D.fb && (D.fb[id + ':' + t] || D.fb[t] || D.fb.any)) || 'Not quite. Try again.');
+    this.oops((D.fb && (D.fb[id + ':' + t] || D.fb[t] || D.fb[id] || D.fb.any)) || 'Not quite. Try again.');
     const tok = this.stepTok;
     this.tm(() => {
       if (tok !== this.stepTok) return;
@@ -2361,7 +2362,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // angle still to try (its wedge) beats gently from its corner; on the diagonals each corner to draw from (its dot)
       const pulse = (tapV && !s.ang[k] && k !== st.ref) || (conn && !(s.conn && s.conn.from === k));
       if (pulse && !this.busy()) {
-        if (tapV && g['a' + k]) g['a' + k].cls += ' try';
+        if (tapV && g['a' + k]) g['a' + k].cls += ' try' + (s.hand && s.hand.ks ? ' pulse' : ''); // (pulsing while the hint shows them)
         if (conn) g['v' + k].cls += ' drag-cue';
       }
       // (an angle to tap is tapped in the angle - its target sits between its wedge and its size, inside the shape -
