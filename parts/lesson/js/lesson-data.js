@@ -15,7 +15,9 @@
 //          chips = cards shown with the line; m = Swiftee's expression (default talking; reactions in CONFIG.swiftee)
 //          holdM: 1 = Swiftee keeps the m pose while she speaks (e.g. waves hello) instead of the talking loop
 //   skin:  'intro' = the opening look (storyboard pages 1-8): white bubble, light-blue shape with a thin blue outline
-//   task:  dragB  = drag B until BC ∥ AD (the trapezium becomes a parallelogram; snaps when close)
+//   task:  dragB  = drag B until BC ∥ AD (the trapezium becomes a parallelogram; snaps when close); showAnswer = the
+//          line said when a drag is missed after CONFIG.reveal.afterTips tips (B then moved into place: a glideB cue),
+//          answerAfter = the lines once it is there (instead of after)
 //          measure (+auto) = Swiftee walks every side with her tape measure
 //          measureAngles (+auto) = Swiftee measures every angle with a protractor (js/angle-walker.js)
 //          tapEq  = tap the corner whose angle equals ∠ref (want = the right corner, wrong = tip for a wrong tap)
@@ -80,7 +82,11 @@ const LESSON = {
     // then AD are traced as they are said, their parallel marks popping on with the light
     { pdf: 8, id: 'dragPar', skin: 'intro', lines: [{ m: 'curious', t: 'Drag vertex B to make\nBC parallel to AD.' }],
       task: 'dragB', handOnce: 1,
-      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }], f: { par: 1 } },
+      after: [{ m: 'happy', t: 'Well done! Now BC is\nparallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }],
+      // missed after two tips: the answer shown - AD lights, its copy slides across to C (the way BC must lean) and B
+      // glides along AB until BC lies on it; then BC and AD are traced, their marks popping on
+      showAnswer: { m: 'thinking', t: 'Watch! BC must lean\nthe same way as AD.', cues: [{ at: 'watch', glow: ['DA'] }, { at: 'lean', glideB: 1 }] },
+      answerAfter: [{ m: 'happy', t: 'Now BC is parallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }], f: { par: 1 } },
     { pdf: 9, id: 'bothPar', lines: [
       { m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', glow: ['AB', 'CD'], chips: [{ t: 'AB ∥ CD', k: 'white' }] },
       { keep: 1, s: 'A D is parallel to B C.', glow: ['DA', 'BC'], chips: [{ t: 'AD ∥ BC', k: 'white' }] }], f: PG },

@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 109 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 111 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -234,3 +234,5 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo116 | Adjacent angles are supplementary. They add up to 180°. | Adjacent angles are supplementary. They add up to one hundred and eighty degrees. | एडजेसेंट एंगल्स आर सप्लीमेंट्री। दे ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़। | 6.24 |
 | vo117 | Diagonals bisect each other. | = | डायगोनल्स बाईसेक्ट ईच अदर। | 2.60 |
 | vo118 | Amazing work! You know all about parallelograms now. | = | अमेज़िंग वर्क! यू नो ऑल अबाउट पैरेललोग्राम्स नाउ. | 4.25 |
+| vo119 | Watch! BC must lean the same way as AD. | Watch! B C must lean the same way as A D. | वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी। | 4.92 |
+| vo120 | Now BC is parallel to AD. | Now B C is parallel to A D. | नाउ बी सी इज पैरेलल टू ए डी। | 3.20 |

@@ -223,7 +223,7 @@ function lessonLines() {
   ['A parallelogram is a quadrilateral with two pairs of opposite sides parallel.', 'Opposite sides are parallel.', 'Opposite sides are equal.',
     'Opposite angles are equal.', 'Adjacent angles are supplementary. They add up to 180°.', 'Diagonals bisect each other.'].forEach((t) => keys.add(t));
   LESSON.steps.forEach((st) => {
-    (st.lines || []).concat(st.after || []).forEach(shown);
+    (st.lines || []).concat(st.after || [], st.answerAfter || [], st.showAnswer ? [st.showAnswer] : []).forEach(shown); // (and a drag's answer shown)
     (ENGINE[st.task] || []).forEach((t) => keys.add(t));
     [st.wrong, st.ok].forEach((t) => { if (t) keys.add(plain(t)); });
     (st.opts || []).forEach((o) => { if (o.fb) keys.add(plain(o.fb)); });

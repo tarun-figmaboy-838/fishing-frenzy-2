@@ -979,5 +979,23 @@
       "screen 59 end: line"
     ],
     "devanagari": "अमेज़िंग वर्क! यू नो ऑल अबाउट पैरेललोग्राम्स नाउ."
+  },
+  {
+    "id": "vo119",
+    "line": "Watch! BC must lean the same way as AD.",
+    "spoken": "Watch! B C must lean the same way as A D.",
+    "where": [
+      "screen 7 dragPar: the answer shown"
+    ],
+    "devanagari": "वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी।"
+  },
+  {
+    "id": "vo120",
+    "line": "Now BC is parallel to AD.",
+    "spoken": "Now B C is parallel to A D.",
+    "where": [
+      "screen 7 dragPar: after the answer shown"
+    ],
+    "devanagari": "नाउ बी सी इज पैरेलल टू ए डी।"
   }
 ]

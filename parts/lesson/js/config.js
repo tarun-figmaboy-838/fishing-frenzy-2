@@ -30,6 +30,7 @@ const CONFIG = {
   // B this close to its place (board px) snaps into the parallelogram - held or let go - and held there this long is
   // taken as placed (so a finger that never lifts cleanly still finishes the task)
   snap: { parallelPx: 40, holdMs: 600 },
+  reveal: { afterTips: 2, glideMs: 1100 }, // a drag missed after this many tips shows the answer (dragB: st.showAnswer)
   connect: { reach: 40 }, // drawing a diagonal: how near a corner the pointer must be for the line to go to it (board px)
   // recorded sound effects (others are synthesised): 'good' = every correct action (with the confetti), 'bad' = every wrong one
   sounds: { good: 'assets/audio/correct.mp3', bad: 'assets/audio/incorrect.mp3' },

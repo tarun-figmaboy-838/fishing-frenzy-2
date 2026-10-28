@@ -110,5 +110,7 @@ const VO_LINES = {
   "Opposite angles are equal.": ["vo115",2.56,[0.29,0.93,1.43,1.72],2.23],
   "Adjacent angles are supplementary. They add up to 180°.": ["vo116",6.24,[0.28,0.91,1.4,1.67,3.22,3.5,3.73,3.9,4.07],5.9],
   "Diagonals bisect each other.": ["vo117",2.6,[0.31,0.95,1.39,1.71],2.17],
-  "Amazing work! You know all about parallelograms now.": ["vo118",4.25,[0.33,0.92,1.67,1.9,2.18,2.41,2.75,3.6],3.89]
+  "Amazing work! You know all about parallelograms now.": ["vo118",4.25,[0.33,0.92,1.67,1.9,2.18,2.41,2.75,3.6],3.89],
+  "Watch! BC must lean the same way as AD.": ["vo119",4.92,[0.27,1.31,1.67,2.11,2.55,2.91,3.35,3.71,3.98],4.43],
+  "Now BC is parallel to AD.": ["vo120",3.2,[0.29,0.65,1.01,1.28,2.08,2.35],2.81]
 };

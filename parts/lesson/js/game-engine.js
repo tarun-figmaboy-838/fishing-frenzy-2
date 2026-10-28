@@ -154,7 +154,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   voiceKeys(st) {
     if (!st) return [];
     const plain = (t) => t.replace(/\s*\n\s*/g, ' ').trim(), out = [];
-    (st.lines || []).concat(st.after || []).forEach((L) => { const k = L.keep ? L.s : L.t; if (k) out.push(plain(k)); });
+    (st.lines || []).concat(st.after || [], st.answerAfter || [], st.showAnswer ? [st.showAnswer] : []).forEach((L) => { const k = L.keep ? L.s : L.t; if (k) out.push(plain(k)); });
     [st.wrong, st.ok].concat((st.opts || []).map((o) => o.fb), st.fill && st.fill.fb ? Object.values(st.fill.fb) : [])
       .forEach((t) => { if (t) out.push(plain(t)); });
     if (st.task === 'dragB') out.push('BC is not parallel to AD yet. Keep dragging B to the right.', 'B went too far. Drag it back a little.');
@@ -194,7 +194,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // they wait, then come in with the side's light
   markCues(st) {
     const out = {}, scan = (cs) => (cs || []).forEach((c) => (c.mark || []).forEach((k) => { out[k] = 1; }));
-    (st.lines || []).concat(st.after || [], st.revealAfter || []).forEach((L) => scan(L.cues));
+    (st.lines || []).concat(st.after || [], st.answerAfter || [], st.showAnswer ? [st.showAnswer] : []).forEach((L) => scan(L.cues));
     scan(st.okCues); (st.opts || []).forEach((o) => scan(o.fbCues));
     return out;
   }
@@ -815,6 +815,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
+    if (c.glideB) this.glideB();
     if (c.meet) { this.showMeet(c.meet, c.span); this.busyFor((Motion.reduced ? 0 : 800) + (c.span ? Math.max(0.9, c.span - 0.8) + 0.45 : 1.75) * 1000); }
     if (c.meetPulse && window.Motion) Motion.meetPulse(); // ("...if we made them longer": the lines carried on beat once)
     // mark: the sides' parallel arrows come in with their light (the cue's glow): css .par-ch pops them on as the light
@@ -976,7 +977,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // answer: the open options pulse together instead.
   handTarget() {
     const st = this.cur(), s = this.state, P = s.P;
-    if (!s.started || st.end || s.done) return null;
+    if (!s.started || st.end || s.done || s.revealing) return null;
     const t = st.task;
     if (t === 'tapEq') return null; // never the answer: the angles to try pulse instead (.wedge.try)
     if (t === 'connect') { // from a corner toward its opposite corner
@@ -1142,7 +1143,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, landed: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -1185,9 +1186,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     this.setState({ done: true, hand: null, listen: false }); // task done: the hand has nothing left to point at
     this.armIdle();
     const st = this.cur();
+    const shown = this.state.revealing; // (the answer was shown, not found: a soft sound, no confetti, its own lines)
     if (st.auto) { this.sfx('good'); this.react(CONFIG.swiftee.praise); } // played by itself: no learner action to celebrate
+    else if (shown) this.sfx('pop');
     else this.cheer();
-    if (st.after) this.playLines(st.after, () => this.maybeAdvance(true));
+    const after = shown && st.answerAfter ? st.answerAfter : st.after;
+    if (after) this.playLines(after, () => this.maybeAdvance(true));
     else this.maybeAdvance(false);
   }
   // okGlow: once answered right, each listed side pair pulses in turn (e.g. AB + CD, then AD + BC), then settles;
@@ -1473,7 +1477,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     } catch (err) { return null; }
   }
   // the corner the learner can drag: B, until BC is parallel to AD
-  dragKey() { return this.cur().task === 'dragB' && !this.state.done ? 'B' : null; }
+  dragKey() { return this.cur().task === 'dragB' && !this.state.done && !this.state.revealing ? 'B' : null; }
   // ---------- lesson interactions ----------
   // tapEq: tap the corner whose angle equals the one named (want); a wrong corner gets the screen's tip
   tapVertex(k) {
@@ -1550,8 +1554,40 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       this.setState({ P: P });
       this.finishTask();
     } else if (moved) {
-      this.oops(P.B.x < tx ? 'BC is not parallel to AD yet. Keep dragging B to the right.' : 'B went too far. Drag it back a little.', null);
+      // a tip says which way to go; missed again after CONFIG.reveal.afterTips tips, the answer is shown (revealB)
+      const wrongs = s.wrongs + 1;
+      this.setState({ wrongs: wrongs });
+      if (st.showAnswer && wrongs > CONFIG.reveal.afterTips) this.revealB();
+      else this.oops(P.B.x < tx ? 'BC is not parallel to AD yet. Keep dragging B to the right.' : 'B went too far. Drag it back a little.', null);
     }
+  }
+  // dragB missed once too often: B stops taking drags and Swiftee says why (st.showAnswer); on its glideB word a copy of
+  // AD slides across to C - the way BC must lean - and B glides along AB until BC lies on it (glideB). It is then the
+  // parallelogram, with its own lines (st.answerAfter) and no fanfare: the learner did not find it
+  revealB() {
+    this.sfx('bad');
+    this.drag = null;
+    this.setState({ revealing: true, hand: null, dragging: null });
+    this.interject(Object.assign({ m: CONFIG.swiftee.wrong }, this.cur().showAnswer));
+  }
+  glideB() {
+    const tok = this.stepTok, P0 = this.clone(this.state.P), tx = P0.C.x + (P0.A.x - P0.D.x), S = this.fxPts();
+    const at = Motion.reduced ? 0 : 1900, dur = Motion.reduced ? 0 : CONFIG.reveal.glideMs; // (B goes once the copy has landed)
+    if (S && window.Motion) {
+      const Bt = this.boardToStage({ x: tx, y: P0.B.y });
+      if (Bt) Motion.slideMatch({ x1: S.D.x, y1: S.D.y, x2: S.A.x, y2: S.A.y }, { x1: S.C.x, y1: S.C.y, x2: Bt.x, y2: Bt.y }, CONFIG.palette.pair2);
+    }
+    this.busyFor(at + dur);
+    const t0 = performance.now() + at, x0 = P0.B.x;
+    const step = () => {
+      if (tok !== this.stepTok) return;
+      const k = dur ? Math.max(0, Math.min(1, (performance.now() - t0) / dur)) : 1, e = k < 0.5 ? 2 * k * k : 1 - Math.pow(2 - 2 * k, 2) / 2;
+      const P = this.clone(this.state.P); P.B.x = x0 + (tx - x0) * e; this.setState({ P: P });
+      if (k < 1) { requestAnimationFrame(step); return; }
+      const done = () => { if (tok !== this.stepTok) return; if (this.state.talking) { this.tm(done, 120); return; } this.finishTask(); };
+      done(); // (once the line explaining it has ended)
+    };
+    requestAnimationFrame(step);
   }
 
   // ---------- CFU ----------
