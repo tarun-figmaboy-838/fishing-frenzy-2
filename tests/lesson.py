@@ -198,7 +198,10 @@ def main():
                 elif sid == 'cp2b':
                     wrong_then('[data-qa="opt-72"]', '[data-qa="opt-108"]', 'Checkpoint 2b')
                 elif sid == 'cp2c':
-                    asked(); pick('B', '115'); pick('C', '65'); pick('D', '115')
+                    asked(); pick('B', '65')  # a wrong value gets the tip about that value in that box
+                    check('next to ∠A, not opposite it' in (st()['line'] or '').replace('\n', ' '), 'Checkpoint 2c: ∠B = 65° gets its own tip')
+                    until(st, lambda s: not s['talking'], 20, 'the tip'); time.sleep(0.6)
+                    pick('B', '115'); pick('C', '65'); pick('D', '115')
                     check(st()['done'], 'Checkpoint 2c: all three angles finish it')
                 elif sid == 'drawDiag':
                     until(st, lambda s: not s['listen'], 30, 'the diagonal instruction'); time.sleep(2.6)

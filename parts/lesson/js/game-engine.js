@@ -1879,9 +1879,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       } else { this.sfx('snap'); this.poke(); }
       return;
     }
-    // wrong: the value shows briefly in an orange box that shakes, the tip plays, then the box empties for a retry
+    // wrong: the value shows briefly in an orange box that shakes, the tip plays, then the box empties for a retry - the
+    // tip for that value in that box ("B:65"), else for the value, else the screen's own
     this.setState({ fill: Object.assign({}, F, { at: at, bad: { [id]: true }, checking: true, open: null, closing: false }), cfuFirst: false });
-    this.oops((D.fb && (D.fb[t] || D.fb.any)) || 'Not quite. Try again.');
+    this.oops((D.fb && (D.fb[id + ':' + t] || D.fb[t] || D.fb.any)) || 'Not quite. Try again.');
     const tok = this.stepTok;
     this.tm(() => {
       if (tok !== this.stepTok) return;
