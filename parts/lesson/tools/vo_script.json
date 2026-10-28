@@ -684,15 +684,6 @@
     "devanagari": "ईच डायगोनल डिवाइड्स द अदर इनटू टू सेगमेंट्स।"
   },
   {
-    "id": "vo088",
-    "line": "Let's measure each segment.",
-    "spoken": "Let's measure each segment.",
-    "where": [
-      "screen 44 measureSeg: line"
-    ],
-    "devanagari": "लेट्स मेजर ईच सेगमेंट।"
-  },
-  {
     "id": "vo089",
     "line": "Let's compare the lengths of these segments.",
     "spoken": "Let's compare the lengths of these segments.",
@@ -958,7 +949,7 @@
     "line": "Let's find out!",
     "spoken": "Let's find out!",
     "where": [
-      "screens 13 measure, 24 measureAng: line"
+      "screens 13 measure, 24 measureAng, 44 measureSeg: line"
     ],
     "devanagari": "लेट्स फाइंड आउट!"
   },

@@ -231,7 +231,9 @@ const LESSON = {
     { pdf: 42, id: 'meetO', lines: [{ t: 'They meet each other\nat point O.' }], f: DIAG },
     // each diagonal splits into its two halves (four colours)
     { pdf: 43, id: 'segs', lines: [{ t: 'Each diagonal divides\nthe other into\n2 segments.' }], f: Object.assign({ split: 1 }, DIAG) },
-    { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's measure each segment." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
+    // as screens 13 and 24: Swiftee says it, then walks the diagonals with her tape - A to O to C, B to O to D - each
+    // half's length coming in as the tape lands on it
+    { pdf: 44, id: 'measureSeg', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', segs: 1, auto: 1, f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     { pdf: 45, id: 'compare', lines: [{ m: 'thinking', t: "Let's compare the lengths\nof these segments." }], f: Object.assign({ split: 1, halves: 1 }, DIAG) },
     Object.assign({ pdf: '46-47', id: 'matchSeg', lines: [{ m: 'curious', t: 'Drag the segments to\ntheir correct place.' }],
       // right: no cards repeating the boxes - as the line says it, the halves the learner paired light on the shape while

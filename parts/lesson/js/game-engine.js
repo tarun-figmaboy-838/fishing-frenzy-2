@@ -1287,8 +1287,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
 
 
   // ---------- measuring ----------
-  // measuring goes one side at a time, clockwise from the top
-  measureOrder() { return ['AB', 'BC', 'CD', 'DA']; }
+  // measuring goes one side at a time, clockwise from the top; a screen measuring the diagonals' halves (segs) walks
+  // each diagonal in turn, A to O to C, then B to O to D
+  measureOrder() { return this.cur().segs ? ['OA', 'OC', 'OB', 'OD'] : ['AB', 'BC', 'CD', 'DA']; }
   activeSide() {
     const s = this.state;
     if (this.cur().task !== 'measure' || s.done || s.measuring) return null;
@@ -1296,7 +1297,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   }
   // Screen 13: Swiftee flies onto the shape and walks each side with her tape measure, A -> B -> C -> D -> A.
   // Without a page (headless test) the same steps run on timers.
-  walkEnds(leg) { const P = this.state.P; return { AB: [P.A, P.B], BC: [P.B, P.C], CD: [P.C, P.D], DA: [P.D, P.A] }[leg]; }
+  walkEnds(leg) {
+    const P = this.state.P, O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 };
+    return { AB: [P.A, P.B], BC: [P.B, P.C], CD: [P.C, P.D], DA: [P.D, P.A], OA: [P.A, O], OC: [O, P.C], OB: [P.B, O], OD: [O, P.D] }[leg];
+  }
   boardToStage(p) {
     const svg = typeof document !== 'undefined' && document.querySelector('.stage svg[aria-label="Parallelogram ABCD"]');
     const stage = svg && document.querySelector('.stage');
@@ -1435,8 +1439,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // the full tape stays laid on the side until the next side starts (no blink)
       this.setState({ tap: tap, tape: Object.assign({}, this.state.tape, { t: 1, tip: null }) }); // lets go: the tape lies flat
       this.sfx('pop');
-      this.walking = false;
-      if (tap.AB && tap.BC && tap.CD && tap.DA) {
+      this.walking = false; this.walkAt = ends[1];
+      if (this.measureOrder().every((k) => tap[k])) {
         // all four measured: fly home, then the screen carries on
         const home = () => { if (!live()) return; this.setState({ measuring: null, swAway: false, tape: null, bubOff: true }); if (wk) wk.hide(); this.pose(this.restPose()); this.tm(() => this.finishTask(), Motion.reduced ? 250 : CONFIG.walker.homeMs); };
         if (wk) { const from = () => this.boardToStage(ends[1]); this.tm(() => { if (live() && from()) wk.stroll(from, this.homeFeet(), W.size, W.homeSize, home); else home(); }, 450); }
@@ -1457,6 +1461,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const to = () => this.boardToStage(ends[0]); // (live, as the walk's corners)
       this.setState({ swAway: true });
       if (to()) wk.stroll(this.homeFeet(), to, W.homeSize, W.size, walkIt); else walkIt();
+    } else if (wk && this.walkAt && this.dist(this.walkAt, ends[0]) > 1) {
+      // the next half starts where the last did not end (C, then B): she walks over to it first
+      const from = this.walkAt, a = () => this.boardToStage(from), b = () => this.boardToStage(ends[0]);
+      if (a() && b()) wk.stroll(a, b, W.size, W.size, walkIt); else walkIt();
     } else walkIt();
   }
   walker() {
@@ -2259,14 +2267,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (fig) this.askedHalves(this.cur()).forEach((k) => { asked[k] = '?'; });
       const H = fig ? Object.assign({}, fig.halves, asked, found) : { A: this.cm(this.dist(Om, A)), B: this.cm(this.dist(Om, B)), C: this.cm(this.dist(Om, C)), D: this.cm(this.dist(Om, D)) };
       const hueOf = (k) => (f.halfPairs ? { A: 'A', C: 'A', B: 'B', D: 'B' }[k] : k); // (its half's colour: equal halves share one)
+      const walked = task === 'measure' && st.segs; // (measured by the walk: each comes in as the tape lands on its half)
       Object.keys(H).forEach((k, i) => {
         // written along its half, as on a ruler (turned to the half's slope, never upside down), beside it in the triangle
-        // the half shares with its neighbour (AO's and BO's in the one under AB, OC's and OD's in the one over CD): slid
-        // from the half's middle towards O, where the triangle is taller, until its box sits inside that triangle clear of
-        // all three of its lines; failing that, on the half's other side - so a length never touches a side or another
-        // length, and reads with the half it measures
+        // the half shares with its neighbour (AO's and BO's in the one under AB, OC's and OD's in the one over CD): as near
+        // the half's middle as its box fits inside that triangle clear of all three of its lines and of the letter O;
+        // failing that, on the half's other side - so a length never touches a side, O or another length, and reads with
+        // the half it measures
         const L = this.dist(P[k], Om) || 1, ux = (Om.x - P[k].x) / L, uy = (Om.y - P[k].y) / L;
-        const hw = this.textW(H[k], '900 24px Nunito') / 2, hh = 15, gap = hh + 7;
+        const hw = this.textW(H[k], '900 24px Nunito') / 2, hh = 15, gap = hh + 4;
         let deg = Math.atan2(uy, ux) * 180 / Math.PI;
         if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
         const nb = { A: ['B', 'D'], B: ['A', 'C'], C: ['D', 'B'], D: ['C', 'A'] }[k];
@@ -2278,14 +2287,18 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           let nx = -uy, ny = ux; if (nx * (P[into].x - cxh) + ny * (P[into].y - cyh) < 0) { nx = -nx; ny = -ny; }
           const c = { x: cxh + nx * gap, y: cyh + ny * gap };
           const ok = [[-1, -1], [1, -1], [1, 1], [-1, 1]].every((e) => inTri(T, c.x + ux * hw * e[0] + nx * hh * e[1] * 0.75, c.y + uy * hw * e[0] + ny * hh * e[1] * 0.75));
-          return ok ? c : null;
+          // (and clear of the letter O just above O: about 16 px across, in the label's own frame, 4 px apart)
+          const ox = Om.x - c.x, oy = Om.y - 26 - c.y, along = Math.abs(ox * ux + oy * uy), across = Math.abs(ox * nx + oy * ny);
+          return ok && (!f.O || along > hw + 12 || across > hh * 0.75 + 12) ? c : null;
         };
         const first = measured ? { A: 'B', B: 'A', C: 'D', D: 'C' }[k] : nb[0], other = nb[0] === first ? nb[1] : nb[0];
         let c = null;
-        for (const into of [first, other]) { for (let t = 0.5; t >= 0.24 && !c; t -= 0.04) c = at(t, into); if (c) break; }
+        // (t: from the corner, 0, to O, 1 - tried from the half's middle outwards, nearest first)
+        const ts = [0.5, 0.54, 0.46, 0.58, 0.42, 0.62, 0.38, 0.66, 0.34, 0.7, 0.3, 0.74, 0.26];
+        for (const into of [first, other]) { for (const t of ts) { c = at(t, into); if (c) break; } if (c) break; }
         if (!c) c = at(0.5, first) || { x: (P[k].x + Om.x) / 2 - uy * gap, y: (P[k].y + Om.y) / 2 + ux * gap };
         if (fig) this.figPos['O' + k] = { x: c.x, y: c.y };
-        tags.push({ t: H[k], x: r1(c.x), y: r1(c.y), r: H[k] === '?' ? '0deg' : deg.toFixed(1) + 'deg', cls: fig ? 'mtag fig' + (found[k] ? ' solved' : H[k] === '?' ? ' q' : '') : 'mtag hv h' + hueOf(k) + ' hd' + i });
+        tags.push({ t: H[k], x: r1(c.x), y: r1(c.y), r: H[k] === '?' ? '0deg' : deg.toFixed(1) + 'deg', cls: fig ? 'mtag fig' + (found[k] ? ' solved' : H[k] === '?' ? ' q' : '') : walked ? 'mtag hv h' + hueOf(k) + (s.tap['O' + k] ? '' : ' off') : 'mtag hv h' + hueOf(k) + ' hd' + i });
       });
     }
     // a tag beside a side, pushed out along the side's outward normal far enough that its box clears the line

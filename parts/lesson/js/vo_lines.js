@@ -78,7 +78,6 @@ const VO_LINES = {
   "AC and BD are the diagonals of this parallelogram.": ["vo085",5.12,[0.3,0.64,0.97,1.31,1.64,1.98,2.82,3.07,3.49],4.76],
   "They meet each other at point O.": ["vo086",2.69,[0.33,0.61,0.9,1.18,1.53,1.7,2.04],2.22],
   "Each diagonal divides the other into 2 segments.": ["vo087",4.04,[0.32,0.65,1.24,1.76,2.02,2.42,2.74,3.01],3.67],
-  "Let's measure each segment.": ["vo088",2.5,[0.33,0.71,1.22,1.54],2.12],
   "Let's compare the lengths of these segments.": ["vo089",3.64,[0.33,0.64,1.05,1.26,1.67,1.83,2.13],2.66],
   "Drag the segments to their correct place.": ["vo090",3.26,[0.34,0.64,0.87,1.4,1.58,1.93,2.41],2.83],
   "Those two are not the same length. Look at the lengths again.": ["vo091",4.22,[0.3,0.62,0.83,1.05,1.26,1.48,1.74,2.62,2.82,2.95,3.11,3.43],3.73],

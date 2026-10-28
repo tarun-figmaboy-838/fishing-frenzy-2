@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 108 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 107 clips, about 9 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -200,7 +200,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo085 | AC and BD are the diagonals of this parallelogram. | A C and B D are the diagonals of this parallelogram. | ए सी एंड बी डी आर द डायगोनल्स ऑफ दिस पैरेललोग्राम। | 5.12 |
 | vo086 | They meet each other at point O. | = | दे मीट ईच अदर एट पॉइंट ओ। | 2.69 |
 | vo087 | Each diagonal divides the other into 2 segments. | Each diagonal divides the other into two segments. | ईच डायगोनल डिवाइड्स द अदर इनटू टू सेगमेंट्स। | 4.04 |
-| vo088 | Let's measure each segment. | = | लेट्स मेजर ईच सेगमेंट। | 2.50 |
 | vo089 | Let's compare the lengths of these segments. | = | लेट्स कंपेयर द लेंथ्स ऑफ दीज़ सेगमेंट्स। | 3.64 |
 | vo090 | Drag the segments to their correct place. | = | ड्रैग द सेगमेंट्स टू देयर करेक्ट प्लेस। | 3.26 |
 | vo091 | Those two are not the same length. Look at the lengths again. | = | दोज़ टू आर नॉट द सेम लेंथ। लुक एट द लेंथ्स अगेन। | 4.22 |
