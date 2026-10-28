@@ -54,7 +54,7 @@
     clear() {
       const fx = document.querySelector('.stage svg.math-fx'); if (fx) fx.innerHTML = ''; // (the maths in motion: gone with the screen)
       document.querySelectorAll('.stage .fly-val').forEach((e) => e.remove()); // (an answer still in the air)
-      this.meetEls = null;
+      this.meetEls = null; this.ghostEl = null;
       if (ctx) ctx.revert();
       sweeps.splice(0).forEach((r) => { if (!r.done && r.w.isConnected) r.w.setAttribute('d', r.d0); r.done = true; });
       const els = $(ANIMATED); // (none yet before the lesson's first screen: GSAP warns about an empty target)
@@ -302,6 +302,27 @@
         .to(el, { opacity: 0, duration: 0.18 }, 1.1));
       return 1300;
     },
+    // a hint's ghost (stage px): what the hand's drag would move goes with it, faint and dashed - B and its two sides
+    // to the corners beside it (anchors), or the line being drawn from the corner (band) - in step with the hand's own
+    // drag (css handDrag, 2.1 s: pressed at 22%, there at 66%, gone by 92%), as often as the hand repeats it
+    ghostDrag(from, dx, dy, anchors, band, cycles) {
+      this.unghost();
+      if (!G || reduced || !this.fx()) return;
+      const g = this.mk('g', { 'class': 'math-ghost', opacity: 0 }), p = { x: from.x, y: from.y };
+      const lines = anchors.concat(band ? [from] : []).map(() => this.mk('line', { stroke: '#ffd23f', 'stroke-width': 4, 'stroke-dasharray': '9 7', 'stroke-linecap': 'round' }, g));
+      const knob = this.mk('circle', { r: 11, fill: 'rgba(255,210,63,.45)', stroke: '#fff', 'stroke-width': 3 }, g);
+      const ends = anchors.concat(band ? [from] : []);
+      const draw = () => { lines.forEach((ln, i) => { ln.setAttribute('x1', ends[i].x); ln.setAttribute('y1', ends[i].y); ln.setAttribute('x2', p.x); ln.setAttribute('y2', p.y); }); knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); };
+      draw();
+      this.ghostEl = g;
+      add(() => G.timeline({ repeat: Math.max(0, (cycles || 1) - 1), onComplete: () => this.unghost() })
+        .set(p, { x: from.x, y: from.y, onUpdate: draw }, 0).set(g, { opacity: 0 }, 0)
+        .to(g, { opacity: 0.9, duration: 0.25 }, 0.25)
+        .to(p, { x: from.x + dx, y: from.y + dy, duration: 0.93, ease: 'power1.inOut', onUpdate: draw }, 0.46)
+        .to(g, { opacity: 0, duration: 0.3 }, 1.6)
+        .to({}, { duration: 0.2 }, 1.9));
+    },
+    unghost() { if (this.ghostEl) { this.ghostEl.remove(); this.ghostEl = null; } },
     pop(cx, cy) {
       if (!G || reduced) return;
       const g = $('svg g.pop-g')[0], d = $('div.pop-g')[0];

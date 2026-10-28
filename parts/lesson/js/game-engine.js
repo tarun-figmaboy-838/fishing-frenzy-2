@@ -979,7 +979,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur(), s = this.state, P = s.P;
     if (!s.started || st.end || s.done || s.revealing) return null;
     const t = st.task;
-    if (t === 'tapEq') return null; // never the answer: the angles to try pulse instead (.wedge.try)
+    if (t === 'tapEq') { // never the answer: the hand glides over every angle still to try, pressing none
+      const ks = ['A', 'B', 'C', 'D'].filter((k) => k !== st.ref && !s.ang[k]);
+      return ks.length ? { qa: 'vtx-' + ks[0], kind: 'sweep', ks: ks } : null;
+    }
     if (t === 'connect') { // from a corner toward its opposite corner
       const a = s.diag.AC ? 'B' : 'A', b = this.opp(a), L = this.dist(P[a], P[b]) || 1, k2 = Math.min(130, L * 0.6) / L;
       return { qa: 'vtx-' + a, kind: 'drag', dx: Math.round((P[b].x - P[a].x) * k2), dy: Math.round((P[b].y - P[a].y) * k2) };
@@ -992,7 +995,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (st.opts) return { kind: 'opts' };
     return null;
   }
-  hideHand() { if (this.state.hand) this.setState({ hand: null }); }
+  hideHand() { if (window.Motion && Motion.unghost) Motion.unghost(); if (this.state.hand) this.setState({ hand: null }); }
   armHand(extraMs) {
     if (this.state.hand) return; // already showing: only a touch (poke) or its own timer takes it down
     if (this.handId) { clearTimeout(this.handId); this.T.delete(this.handId); this.handId = null; }
@@ -1023,8 +1026,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }
       this.handShown = (this.handShown || 0) + 1;
       this.setState({ hand: hand });
+      if (hand.kind === 'drag' && window.Motion) { // (a ghost of what moves goes with the hand: B and its sides, or the line being drawn)
+        const S = this.fxPts(), st = this.cur(), cycles = once ? 1 : Math.ceil(CONFIG.hand.showMs / 2100);
+        Motion.ghostDrag({ x: hand.x, y: hand.y }, hand.dx, hand.dy, st.task === 'dragB' && S ? [S.A, S.C] : [], st.task === 'connect', cycles);
+      }
+      if (hand.kind === 'sweep' && T.ks) T.ks.forEach((k, i) => this.tm(() => { // (from one angle to the next, each lifting as it comes)
+        if (tok !== this.stepTok || !this.state.hand) return;
+        const el = typeof document !== 'undefined' && document.querySelector('[data-qa="vtx-' + k + '"]'), stage = document.querySelector('.stage');
+        if (el && stage) { const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), sc = sr.width / 1280 || 1;
+          this.setState({ hand: Object.assign({}, this.state.hand, { x: Math.round((r.left + r.width / 2 - sr.left) / sc), y: Math.round((r.top + r.height / 2 - sr.top) / sc) }) }); }
+        this.emphasize(['a' + k]);
+      }, 250 + i * 700));
       // a few presses, then step back; it returns only if the learner is still idle
-      this.handId = this.tm(() => { this.handId = null; if (tok === this.stepTok) { this.setState({ hand: null }, () => this.armHand()); } }, once ? CONFIG.hand.onceMs : CONFIG.hand.showMs);
+      this.handId = this.tm(() => { this.handId = null; if (tok === this.stepTok) { if (window.Motion && Motion.unghost) Motion.unghost(); this.setState({ hand: null }, () => this.armHand()); } }, once ? CONFIG.hand.onceMs : CONFIG.hand.showMs);
     }, (once ? CONFIG.hand.onceDelayMs : CONFIG.hand.idleMs) + (extraMs || 0));
   }
   // Browsers only allow audio after a user gesture, so the first tap unlocks it.

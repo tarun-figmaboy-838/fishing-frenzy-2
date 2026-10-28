@@ -91,7 +91,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* Hand nudge: the wrapper sits exactly on the target; the fingertip (25px, 22px into the 64x90 hand) lands on it.
    Each showing fades in, presses a few times (or demonstrates a drag), then fades out. */
 .hand-nudge{position:absolute;width:0;height:0;pointer-events:none;z-index:20;animation:handLife 4.4s linear forwards}
-.hand-move{position:absolute;left:-25px;top:-22px;width:64px;height:90px;transform-origin:25px 22px;filter:drop-shadow(0 4px 6px rgba(18,59,99,.28))}
+.hand-move{position:absolute;left:-9px;top:-3px;width:64px;height:77px;transform-origin:9px 3px;filter:drop-shadow(0 4px 6px rgba(18,59,99,.28))} /* (the game's own hand: its fingertip on the point) */
+/* the angles to tap: the hand glides from one to the next (each lifts as it comes), pressing none of them */
+.hand-nudge.sweep{transition:left .55s cubic-bezier(.45,0,.3,1),top .55s cubic-bezier(.45,0,.3,1)}.hand-nudge.sweep .hand-move{animation:none}.hand-nudge.sweep .hand-ring{display:none}
 .hand-move img{display:block;width:100%;height:100%}
 .hand-ring{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #ff7a00;background:rgba(255,122,0,.16);box-sizing:border-box;opacity:0}
 .hand-nudge.tap .hand-move{animation:handTap 1.4s cubic-bezier(.45,0,.3,1) infinite}
@@ -335,8 +337,9 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* an angle named before its mark is drawn: its wedge peeks in, soft, while it is said */
 .wedge.peek{opacity:.6;animation:wedgePeek .3s ease-out both}
 @keyframes wedgePeek{from{opacity:0}to{opacity:.6}}
-.wedge.try{animation:wedgeTry 1.4s ease-in-out 3}
-@keyframes wedgeTry{0%,100%{transform:scale(1);filter:none}50%{transform:scale(1.22);filter:brightness(1.12) drop-shadow(0 0 5px rgba(255,196,0,.85))}}
+/* an angle that can be tapped: a steady soft outline, after one gentle lift as the question is asked (no blinking) */
+.wedge.try{filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px rgba(255,196,0,.7));animation:wedgeTry .9s ease-out 1}
+@keyframes wedgeTry{0%,100%{transform:scale(1)}45%{transform:scale(1.14)}}
 @media (prefers-reduced-motion: reduce){.wedge.try{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
 @media (prefers-reduced-motion: reduce){.par-ch{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 

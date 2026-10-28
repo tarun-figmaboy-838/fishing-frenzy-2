@@ -146,7 +146,7 @@ const LESSON = {
         { id: 'C', ok: true },
         { id: 'D', fb: 'Shape D has five sides, so it is not even a quadrilateral.' }
       ] }, CP),
-    Object.assign({ pdf: 21, id: 'cp1b', cpTitle: 'Checkpoint 1 · Find the Missing Side',
+    Object.assign({ pdf: 21, id: 'cp1b', handOnce: 1, cpTitle: 'Checkpoint 1 · Find the Missing Side',
       lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 7 cm. What is the\nlength of CD?' }],
       ok: "That's right! Opposite sides\nare equal, so CD = 7 cm.",
       fig: { P: FIG_SIDES, sides: { AB: '7 cm', CD: '? cm' } },
@@ -167,7 +167,7 @@ const LESSON = {
     // the four arcs and their sizes draw in one after another
     { pdf: 25, id: 'interestingAng', lines: [{ m: 'surprised', t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
-    { pdf: '27-28', id: 'tapEqA', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
+    { pdf: '27-28', id: 'tapEqA', handOnce: 1, lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠A.', glow: [] }], task: 'tapEq', ref: 'A', want: 'C',
       wrong: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.',
       after: [{ cues: [{ at: 'equal', matchAng: ['A', 'C'], tags: [{ t: '∠A = ∠C', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠A is\nequal to ∠C." }], f: { arcs: 'ABCD' } },
     { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
@@ -224,7 +224,7 @@ const LESSON = {
     // ---------- Part 7 · diagonals (pages 38-49) ----------
     { pdf: 38, id: 'explored', lines: [{ m: 'happy', t: 'We have explored all about\nthe sides and angles of\na parallelogram.' }] },
     { pdf: 39, id: 'diagIntro', lines: [{ m: 'curious', t: "Let's learn about its\ndiagonals." }] },
-    { pdf: 40, id: 'drawDiag', lines: [{ m: 'curious', t: 'Draw all the diagonals\nof this parallelogram.' }], task: 'connect', handOnce: 1,
+    { pdf: 40, id: 'drawDiag', handOnce: 1, lines: [{ m: 'curious', t: 'Draw all the diagonals\nof this parallelogram.' }], task: 'connect', handOnce: 1,
       wrong: 'That is a side. A diagonal joins two opposite corners.',
       after: [{ m: 'happy', t: 'Great! You drew both\ndiagonals.' }] },
     { pdf: 41, id: 'diagNames', lines: [{ t: 'AC and BD are the diagonals\nof this parallelogram.' }], f: { diag: 1 } },
