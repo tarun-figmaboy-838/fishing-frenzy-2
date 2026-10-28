@@ -178,7 +178,7 @@
     },
     // equal sides: a glowing copy of side a lifts off, glides onto its opposite b (a slide: every point moves the same
     // way, the same distance) and fits it exactly, beats once, rests there so the fit can be seen, and fades. Paced to
-    // be followed: the lift, a slow glide, the beat, the rest
+    // be followed and to keep pace with the voice: the lift, the glide, the beat, a short rest
     // lab { t, from, to, px, col }: the side's length rides along with it, from its own place onto the opposite's
     slideMatch(a, b, col, lab) {
       if (!G || reduced || !this.fx()) return 0;
@@ -187,14 +187,14 @@
         'font-family': "Nunito, 'Noto Sans Math', system-ui, sans-serif", fill: lab.col || '#1656e0', stroke: '#fff', 'stroke-width': 4, 'paint-order': 'stroke', opacity: 0, text: lab.t }) : null;
       add(() => {
         const tl = G.timeline({ onComplete: () => { ln.remove(); if (tx) tx.remove(); } })
-          .to(ln, { opacity: 1, 'stroke-width': 11, duration: 0.35 })
-          .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 1.4, ease: 'power2.inOut' }, 0.45)
-          .to(ln, { 'stroke-width': 14, duration: 0.22, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.9)
-          .to(ln, { opacity: 0, duration: 0.45 }, 2.75);
-        if (tx) tl.to(tx, { opacity: 1, duration: 0.3 }, 0.15).to(tx, { attr: { x: lab.to.x, y: lab.to.y }, duration: 1.4, ease: 'power2.inOut' }, 0.45).to(tx, { opacity: 0, duration: 0.45 }, 2.75);
+          .to(ln, { opacity: 1, 'stroke-width': 11, duration: 0.3 })
+          .to(ln, { attr: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 }, duration: 1.0, ease: 'power2.inOut' }, 0.35)
+          .to(ln, { 'stroke-width': 14, duration: 0.2, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 1.4)
+          .to(ln, { opacity: 0, duration: 0.4 }, 2.0);
+        if (tx) tl.to(tx, { opacity: 1, duration: 0.25 }, 0.1).to(tx, { attr: { x: lab.to.x, y: lab.to.y }, duration: 1.0, ease: 'power2.inOut' }, 0.35).to(tx, { opacity: 0, duration: 0.4 }, 2.0);
         return tl;
       });
-      return 3200;
+      return 2400;
     },
     // equal angles: a copy of the wedge at one corner turns a half-turn about the shape's centre O and lands exactly on
     // the opposite corner's wedge - the reason they are equal: a parallelogram turned half-way round its centre fits
@@ -210,10 +210,10 @@
         const origin = r1(O.x) + ' ' + r1(O.y);
         add(() => G.timeline({ onComplete: () => g.remove() })
           .set(g, { rotation: 0, opacity: 0, svgOrigin: origin })
-          .to(g, { opacity: 1, duration: 0.35 })
-          .to(g, { rotation: 180, duration: 1.7, ease: 'power2.inOut', svgOrigin: origin }, 0.5)
-          .to(g, { opacity: 0, duration: 0.45 }, 2.9));
-        return 3400;
+          .to(g, { opacity: 1, duration: 0.3 })
+          .to(g, { rotation: 180, duration: 1.25, ease: 'power2.inOut', svgOrigin: origin }, 0.35)
+          .to(g, { opacity: 0, duration: 0.4 }, 2.1));
+        return 2500;
       }
       // (svgOrigin: the corner itself, in the svg's coordinates - a px transformOrigin would be the group's box corner)
       const origin = r1(v.x) + ' ' + r1(v.y);

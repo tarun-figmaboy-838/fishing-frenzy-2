@@ -504,7 +504,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // these; none on a build, a summary, a grid of shapes or the end.
   conceptCues(words, L, ask) {
     const st = this.cur(), out = [];
-    if (!st || st.build || st.summary || st.grid || st.end) return out;
+    if (!st || st.build || st.sideNums || st.assemble || st.summary || st.grid || st.end) return out; // (screens 1-3 show the sides their own way)
+    if ((L.cues || []).some((c) => c.match || c.matchAng || c.halfSlide)) return out; // (a line showing its fact with a demo: the demo is the picture)
     const key = (w) => String(w || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const nm = (w) => String(w || '').split('\u00a0')[0].replace(/[^A-Za-z∠]/g, '');
     const sideOf = { AB: 'AB', BA: 'AB', BC: 'BC', CB: 'BC', CD: 'CD', DC: 'CD', DA: 'DA', AD: 'DA' };
@@ -977,14 +978,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           return a && b && !/ off\b/.test(L[k1].cls) ? { t: L[k1].t, from: a, to: b, px: 24 * (this.sceneFit(this.cur()).k || 1), col: k1 === 'AB' || k1 === 'CD' ? '#1656e0' : '#00806d' } : null; };
         // (a cue's tags: the pair's tag is built as its slide lands)
         const tagAt = (i, when) => { if (c.tags && c.tags[i]) this.tm(() => { if (tok === this.stepTok && this.state.chips.every((x) => x.t !== c.tags[i].t)) this.buildTag(c.tags[i]); }, when); };
-        if (c.match) pairs(c.match).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); tagAt(i, at + 2000); at += 3400; });
+        if (c.match) pairs(c.match).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { const a = seg(pr[0]); this.setState({ glow: pr }); Motion.slideMatch(a, onto(a, seg(pr[1])), null, lab(pr[0], pr[1])); } }, at); tagAt(i, at + 1450); at += 2500; });
         if (c.match) this.tm(() => { if (tok === this.stepTok) this.setState({ glow: null }); }, at + 800);
-        if (c.matchAng) pairs(c.matchAng).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); tagAt(i, at + 2300); at += 3600; });
+        if (c.matchAng) pairs(c.matchAng).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) Motion.spinMatch(this.fxWedge(S, pr[0]), this.fxWedge(S, pr[1]), S.O); }, at); tagAt(i, at + 1700); at += 2700; });
         // a diagonal's halves: a copy of one slides along the diagonal onto the other (A->O onto O->C: no turn, it stays
         // on its line) and fits it exactly, in their colour, the two halves standing out while it does
         const halfCol = (k) => PAL[(this.fl().halfPairs ? { A: 'vA', C: 'vA', B: 'vB', D: 'vB' } : { A: 'vA', B: 'vB', C: 'vC', D: 'vD' })[k]];
         if (c.halfSlide) pairs(c.halfSlide).forEach((pr, i) => { this.tm(() => { if (tok === this.stepTok) { this.emphasize(['h' + pr[0], 'h' + pr[1]]);
-          Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); tagAt(i, at + 2000); at += 3400; });
+          Motion.slideMatch({ x1: S[pr[0]].x, y1: S[pr[0]].y, x2: S.O.x, y2: S.O.y }, { x1: S.O.x, y1: S.O.y, x2: S[pr[1]].x, y2: S[pr[1]].y }, halfCol(pr[0])); } }, at); tagAt(i, at + 1450); at += 2500; });
         // the screen stays until the last of them has been seen through (flow: seqEnd)
         if (at) this.busyFor(at + (c.tags ? 2600 : 0));
       }
@@ -1120,7 +1121,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   carryChips(st) {
     const want = {}, take = (cs) => (cs || []).forEach((c) => { want[c.t] = c; });
     (st.lines || []).concat(st.after || []).forEach((Ln) => {
-      take(Ln.chips);
+      if (!Ln.tagsWithSupp) take(Ln.chips); // (tags built with the screen's demos start fresh, each with its own demo)
       (Ln.cues || []).forEach((c) => {
         if (c.chip) take([c.chip]);
         take(c.tags);
@@ -1526,10 +1527,12 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const L0 = (st.lines || [])[0] || {}, eqs = L0.chips || [], own = L0.tagsWithSupp && eqs.length === sp.length; // (each pair's tag comes with its demo)
       sp.forEach((pair, i) => this.tm(() => {
         this.setState({ supp: i, chipHi: eqs.length === sp.length && !own ? eqs[i].t : null }); this.emphasize(['a' + pair[0], 'a' + pair[1]]); this.sfx('pop');
-        if (own) this.tm(() => { if (st === this.cur()) this.buildTag(eqs[i], { sumAt: 2300, sumWord: !i }); }, i ? 400 : 0); // ("= 180°" as the rim closes; the first as the voice says 180)
+        if (own) this.tm(() => { if (st === this.cur() && this.state.chips.every((x) => x.t !== eqs[i].t)) this.buildTag(eqs[i], { sumAt: 2300, sumWord: !i }); }, i ? 400 : 0); // ("= 180°" as the rim closes; the first as the voice says 180)
       }, (i ? 500 : 150) + i * ms)); // (the first at once, so its tag is in by the time the voice says 180)
       if (eqs.length === sp.length) this.tm(() => this.setState({ chipHi: null }), 500 + sp.length * ms);
-      this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs); // (each step already holds its pair a while)
+      // (each step already holds its pair a while; tags built with the demos: the last one lands as its demo ends, so it
+      // is given its rest too)
+      this.busyFor(500 + sp.length * ms - CONFIG.flow.restMs + (own ? 2000 : 0));
     }
     if (st.build) {
       Motion.hideFill();
@@ -2173,11 +2176,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     g.eCD = seg(C, D, edgeOn('CD'), { c: baseCol('CD'), cls: eCls('CD'), hl: hlCls('CD') });
     g.eBC = seg(B, C, edgeOn('BC'), { c: legCol('BC'), cls: eCls('BC'), hl: hlCls('BC') });
     g.eDA = seg(D, A, edgeOn('DA'), { c: legCol('DA'), cls: eCls('DA'), hl: hlCls('DA') });
-    // a side's light runs the way its name is said - A->B, B->C, C->D and A->D ("AD", never "DA") - as its parallel
-    // arrows point (SIDES, below), so what is heard, lit and marked all go one way (AD's and BC's the same way)
+    // a side named on its own lights the way its name is said - A->B, B->C, C->D and A->D ("AD", never "DA") - as its
+    // parallel arrows point (SIDES, below); the whole outline lit, or the sides counted round it (screens 1-2), runs
+    // clockwise round the shape on screen (D->A up the left side)
+    const round = (s.glow && s.glow.length === 4) || !!st.sideNums || !!f.noLetters;
+    const cw = [A, B, C, D].reduce((sum, p, i, Q) => sum + p.x * Q[(i + 1) % 4].y - Q[(i + 1) % 4].x * p.y, 0) >= 0;
     ['AB', 'BC', 'CD', 'DA'].forEach((k) => {
-      const e = g['e' + k];
-      Object.assign(e, k === 'DA' ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
+      const e = g['e' + k], rev = round ? !cw : k === 'DA';
+      Object.assign(e, rev ? { h1x: e.x2, h1y: e.y2, h2x: e.x1, h2y: e.y1 } : { h1x: e.x1, h1y: e.y1, h2x: e.x2, h2y: e.y2 });
     });
     // a tick mark across the middle of p->q (one, or two side by side), for the diagonals' equal halves: the sides'
     // own ticks (CONFIG.marks)

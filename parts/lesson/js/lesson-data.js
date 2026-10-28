@@ -93,19 +93,16 @@ const LESSON = {
       // glides along AB until BC lies on it; then BC and AD are traced, their marks popping on
       showAnswer: { m: 'thinking', t: 'Watch! BC must lean\nthe same way as AD.', cues: [{ at: 'watch', glow: ['DA'] }, { at: 'lean', glideB: 1 }] },
       answerAfter: [{ m: 'happy', t: 'Now BC is parallel to AD.', cues: [{ at: 'bc', glow: ['BC'], mark: ['BC'] }, { at: 'ad', glow: ['BC', 'DA'], mark: ['DA'], ms: 1800 }] }], f: { par: 1 } },
-    // both pairs shown, not spelt out: on "both" AB and CD are traced, their arrows beating as the light passes; on
-    // "sides" AD and BC; on "parallel" the whole outline
-    { pdf: 9, id: 'bothPar', lines: [{ m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', cues: [
-      { at: 'both', glow: ['AB', 'CD'], beat: ['AB', 'CD'] },
-      { at: 'sides', glow: ['DA', 'BC'], beat: ['DA', 'BC'] },
+    // both pairs shown, not spelt out: on "both" AB and CD are traced, their arrows beating as the light passes, and
+    // their tag is built from them; on "sides" AD and BC, with theirs; on "parallel" the whole outline
+    { pdf: 9, id: 'bothPar', chipTop: 428, lines: [{ m: 'surprised', t: 'Now both pairs of opposite\nsides are parallel.', cues: [
+      { at: 'both', glow: ['AB', 'CD'], beat: ['AB', 'CD'], chip: { t: 'AB ∥ CD', k: 'white' } },
+      { at: 'sides', glow: ['DA', 'BC'], beat: ['DA', 'BC'], chip: { t: 'AD ∥ BC', k: 'white' } },
       { at: 'parallel', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1500 }] }], f: PG },
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
     { pdf: 10, id: 'defPg', chipTop: 428,
-      // as the screen opens AB ∥ CD is built from its two sides (lit), then AD ∥ BC; then Swiftee says the line, and on
-      // "parallelogram" the two merge into the name, the outline lit (each moment given its time, none squeezed in a word)
-      enterCues: [{ at0: 300, chip: { t: 'AB ∥ CD', k: 'white' }, glow: ['AB', 'CD'], ms: 1500 }, { at0: 2100, chip: { t: 'AD ∥ BC', k: 'white' }, glow: ['DA', 'BC'], ms: 1500 }],
-      voiceDelay: 3800,
+      // the two pair tags built on screen 8 stay; on "parallelogram" they merge into the name, the outline lit
       lines: [{ t: 'We call this a parallelogram.', cues: [
         { at: 'parallelogram', merge: { from: ['AB ∥ CD', 'AD ∥ BC'], into: { t: 'Parallelogram', k: 'name' } }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 2600 }] }], f: PG },
     // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
@@ -138,7 +135,7 @@ const LESSON = {
         { id: 'all', t: 'All sides are equal', fb: 'Look at the lengths again. AB is 6 cm, but AD is only 3 cm.' },
         { id: 'opp', t: 'Opposite sides are equal', ok: true }
       ], f: LENS }, PRACTICE),
-    { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'equal', match: [['AB', 'CD'], ['DA', 'BC']], tags: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.' }],
+    { pdf: 18, id: 'oppEq', lines: [{ cues: [{ at: 'opposite', match: [['AB', 'CD'], ['DA', 'BC']], tags: [{ t: 'AB = CD', k: 'gold' }, { t: 'AD = BC', k: 'gold' }] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.' }],
       f: Object.assign({ ticks: 1 }, LENS) },
     { pdf: 20, id: 'sidesSum', lines: [{ m: 'happy', t: 'So, in any parallelogram,\nopposite sides are\nparallel and equal.',
       chips: [{ t: 'AB ∥ CD', k: 'white sm' }, { t: 'AD ∥ BC', k: 'white sm' }, { t: 'AB = CD', k: 'white sm' }, { t: 'AD = BC', k: 'white sm' }] }],
@@ -182,7 +179,7 @@ const LESSON = {
     { pdf: '29-30', id: 'tapEqD', lines: [{ m: 'curious', t: 'Tap the angle which is\nequal to ∠D.' }], task: 'tapEq', ref: 'D', want: 'B',
       wrong: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.',
       after: [{ cues: [{ at: 'equal', matchAng: ['D', 'B'], tags: [{ t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: "That's correct! ∠D is\nequal to ∠B." }], f: { arcs: 'ABCD', pairA: 1 } },
-    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'equal', matchAng: [['A', 'C'], ['B', 'D']], tags: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
+    { pdf: 31, id: 'oppAng', lines: [{ cues: [{ at: 'opposite', matchAng: [['A', 'C'], ['B', 'D']], tags: [{ t: '∠A = ∠C', k: 'gold' }, { t: '∠D = ∠B', k: 'gold' }] }], m: 'happy', t: 'So in any parallelogram,\nthe pairs of opposite\nangles are also equal.' }], f: { arcs: 'ABCD', pairCol: 1 } },
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
     { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
@@ -263,7 +260,7 @@ const LESSON = {
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
       f: Object.assign({ split: 1, halves: 1 }, DIAG) }),
-    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'equal', halfSlide: [['A', 'C'], ['B', 'D']], tags: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.' }],
+    { pdf: 48, id: 'bisectEq', lines: [{ cues: [{ at: 'divided', halfSlide: [['A', 'C'], ['B', 'D']], tags: [{ t: 'OA = OC', k: 'gold' }, { t: 'OB = OD', k: 'gold' }] }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.' }],
       f: Object.assign({ halfPairs: 1, hticks: 1 }, DIAG) },
     { pdf: 49, id: 'bisect', lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect',
       cues: [{ at: 'bisect', merge: { from: ['OA = OC', 'OB = OD'], into: { t: 'Diagonals bisect each other.', k: 'name' } } }] }], // (screen 48's two tags merge into it)
