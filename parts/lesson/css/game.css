@@ -344,8 +344,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 @media (prefers-reduced-motion: reduce){.par-ch{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */
-.wedge.dim{opacity:.22}.tag.alab.dim{opacity:.42}
-.wedge,.tag.alab{transition:opacity .3s ease,transform .3s cubic-bezier(.3,0,.3,1)}
+.wedge.dim{opacity:.35}.tag.alab.dim{opacity:.5}
+.wedge,.tag.alab{transition:opacity .5s ease,transform .3s cubic-bezier(.3,0,.3,1)}
 @media (prefers-reduced-motion: reduce){.wedge,.tag.alab{transition:none}}
 /* pair cards (AB ∥ CD, AB = CD / AD ∥ BC, AD = BC) carry their sides' colour, as in the colour key */
 

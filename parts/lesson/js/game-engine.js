@@ -422,16 +422,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     });
     return cues;
   }
-  // The four angles named together are shown one at a time - A, B, C, D - each growing while the others step back a
-  // moment, then all four together again (then: what follows)
+  // The four angles named together are pointed out one at a time - A, B, C, D, round the shape - each growing as its
+  // turn comes and staying grown, then all four ease back together (nothing fades out and back: no blinking)
   angleSeq(parts, then) {
-    const tok = this.stepTok, GAP = 520;
+    const tok = this.stepTok, GAP = 600;
     parts.forEach((p, j) => this.tm(() => {
-      if (tok !== this.stepTok) return;
-      this.emphasize([p]);
-      this.setState({ aFocus: { [p[1]]: 1 } });
+      if (tok === this.stepTok) this.setState({ emph: Object.assign({}, this.state.emph, { [p]: 1 }) });
     }, j * GAP));
-    this.tm(() => { if (tok !== this.stepTok) return; this.setState({ aFocus: null }); if (then) then(); }, parts.length * GAP + 300);
+    this.tm(() => {
+      if (tok !== this.stepTok) return;
+      const e = Object.assign({}, this.state.emph); parts.forEach((k) => { delete e[k]; });
+      this.setState({ emph: e });
+      if (then) then();
+    }, (parts.length - 1) * GAP + CONFIG.emph.holdMs);
   }
   // grow -> brief hold -> back (CSS transitions do the easing; same timing everywhere)
   emphasize(parts) {
@@ -536,7 +539,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const aNamed = {};
     const focusAngles = (parts) => {
       const ks = parts.filter((p) => /^a[A-D]$/.test(p)).map((p) => p[1]);
-      if (!ks.length) return;
+      if (!ks.length || (L === this.askLine && this.cur().task === 'tapEq')) return; // (the others are the choices: they stay)
       ks.forEach((k) => { aNamed[k] = 1; });
       this.setState({ aFocus: Object.assign({}, aNamed) });
     };
