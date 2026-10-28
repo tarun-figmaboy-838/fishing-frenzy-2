@@ -1034,10 +1034,31 @@ async function fishBumpsCorner(game, token, to) {
     fx.sparkle(corner().x, corner().y, 6); // (the corner where it stays)
     net.points[2] = { ...to };
     net.swing = 0;
-    const gone = { x: fish.x, y: fish.y };
-    fish.dir = 1;
-    clock.tween(1300, token, (t) => { fish.x = gone.x + 760 * t; fish.y = gone.y + (wl + 170 - gone.y) * Math.min(1, t * 2); fish.pitch = 0.3 * (1 - t); })
-      .then(() => { game.leapers = game.leapers.filter((f) => f !== fish); }).catch(() => {});
+    // then the comic beat: it bobs up just under the surface, dizzy - its head wobbling, sparkles circling it, a
+    // bubble popping out - shakes it off, and darts away to the left under the net, tail whipping, bobbing as it goes,
+    // a trail of bubbles behind it, out of sight (not awaited: the hook goes on as it swims off)
+    const gone = { x: fish.x, y: fish.y }, rest = { x: fish.x - 20, y: wl + fish.h * 0.55 };
+    fish.dir = -1; fish.beat = 6;
+    (async () => {
+      await clock.tween(q ? 200 : 450, token, (t) => { const k = ease.out(t); fish.x = gone.x + (rest.x - gone.x) * k; fish.y = gone.y + (rest.y - gone.y) * k; fish.pitch = (1.6 - 1.6 * k) * (1 - t); });
+      if (!q) audio.play('boing');
+      await clock.tween(q ? 200 : 900, token, (t) => {
+        fish.pitch = 0.35 * Math.sin(t * Math.PI * 7) * (1 - t * 0.6); // (dizzy)
+        fish.y = rest.y + 6 * Math.sin(t * Math.PI * 3);
+        if (!q && Math.random() < 0.35) { const a = t * Math.PI * 6; fx.sparkle(fish.x + Math.cos(a) * fish.w * 0.45, fish.y - fish.h * 0.55 + Math.sin(a) * 14, 1); }
+        if (!q && Math.random() < 0.06) fx.puff(fish.x - fish.w * 0.42, fish.y - 6, 0, 1, true);
+      });
+      fish.pitch = 0; fish.beat = 26;
+      if (!q) audio.play('whoosh');
+      const from = { x: fish.x, y: fish.y }, end = -fish.w * 1.2;
+      await clock.tween(q ? 500 : 1700, token, (t) => {
+        const k = t * t * (3 - 2 * t) * 0.35 + t * t * 0.65; // (a dash: quick to get going, faster still as it goes)
+        fish.x = from.x + (end - from.x) * k;
+        fish.y = from.y + 40 * t + 9 * Math.sin(t * Math.PI * 6);
+        fish.pitch = 0.12 * Math.cos(t * Math.PI * 6);
+        if (!q && Math.random() < 0.4) fx.puff(fish.x + fish.w * 0.45, fish.y + (Math.random() - 0.5) * 12, 1, 1);
+      });
+    })().then(() => { game.leapers = game.leapers.filter((f) => f !== fish); }, () => { game.leapers = game.leapers.filter((f) => f !== fish); });
   } catch (e) {
     game.leapers = game.leapers.filter((f) => f !== fish);
     throw e;
