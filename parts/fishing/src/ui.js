@@ -327,11 +327,12 @@ class UI {
     const b = this.speechBox || { w: 0, h: 0, em: 0 };
     const width = this.el.hits.clientWidth;
     const ax = x * this.scale, inset = 0.6 * b.em, k = this.scale;
-    let lo = 6, hi = width - 4; // (the room: never past the stage's edges)
+    // (the room: never past the stage's edges, even at the height of a bump, which widens it 8% about its tail)
+    let lo = 6 + 0.08 * b.w, hi = width - 4;
     for (const a of avoid) if (ax < ((a.x0 + a.x1) / 2) * k) hi = Math.min(hi, a.x0 * k - 6);
     const fits = (l) => l - inset >= lo && l - inset + b.w <= hi;
     let left = Math.max(lo + inset, Math.min(ax, hi - b.w + inset));
-    let top = Math.max(y * this.scale, b.h + 14); // clear of the top edge, even as it pops
+    let top = Math.max(y * this.scale - 0.88 * b.em, b.h + 14); // the tail's tip on (x, y) (css .speech::before); clear of the top edge, even as it pops
     for (const r of this.hudBoxes()) {
       const l0 = left - inset;
       if (l0 + b.w <= r.l - 6 || l0 >= r.r + 6 || top <= r.t - 6 || top - b.h >= r.b + 6) continue;

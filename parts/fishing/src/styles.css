@@ -279,12 +279,12 @@ html, body {
 .line .w.in { visibility: visible; animation: word-in 0.32s cubic-bezier(0.2, 1.8, 0.4, 1); }
 .line .w.em { font-weight: 700; font-size: 1.15em; transform-origin: 0 75%; } /* (a key word boings out to its right, into the words not yet shown, never over the one before it) */
 .line .w.em.in { animation: word-boing 0.55s cubic-bezier(0.2, 1.8, 0.4, 1); }
-/* in the bubble, words take no room until they're said, so it grows with them; the breaks are
-   pinned where the whole line wraps (balanced), so words never jump between lines as it grows */
+/* in the bubble every word keeps its room from the start (unseen until said), so the bubble has its final size and
+   place from its first word - it never grows, slides along or leaves its tail behind; the breaks are pinned where the
+   whole line wraps (balanced) */
 .speech .line { white-space: nowrap; }
-.speech .line .w { display: none; visibility: visible; }
-.speech .line br:not(.in) { display: none; }
-.speech .line .w.in { display: inline-block; animation: word-in 0.32s cubic-bezier(0.2, 1.8, 0.4, 1); }
+.speech .line .w { display: inline-block; visibility: hidden; }
+.speech .line .w.in { visibility: visible; animation: word-in 0.32s cubic-bezier(0.2, 1.8, 0.4, 1); }
 .speech.measuring .line { white-space: normal; text-wrap: balance; }
 .speech.measuring .line .w { display: inline-block; animation: none; }
 .speech .line .w.em { color: #e8590c; transform-origin: 0 75%; }

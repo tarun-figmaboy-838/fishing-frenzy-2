@@ -1077,7 +1077,7 @@ class Game {
   // 7 of its letters' em), it keeps its usual width.
   popoBubbleWidth() {
     const em = parseFloat(getComputedStyle(this.ui.el.speech).fontSize) || 20;
-    const room = this.mastInView().x0 * this.stage.scale - 14;
+    const room = (this.mastInView().x0 * this.stage.scale - 14) / 1.08; // (UI.placeSpeech keeps room for a bump's 8%)
     return room >= 7 * em ? Math.min(room, 15 * em) : 0;
   }
 
