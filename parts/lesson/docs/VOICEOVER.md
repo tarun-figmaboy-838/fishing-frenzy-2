@@ -1,6 +1,6 @@
 # Voice-over
 
-Every line Swiftee says is a recorded clip: 110 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
+Every line Swiftee says is a recorded clip: 109 clips, about 10 minutes of audio, in `assets/vo/` (Ogg Opus, 32 kbps,
 mono), every one at the same loudness (-16.4 LUFS) and saying each word the same way. The game plays the clip for a
 line and types the words at the clip's pace.
 
@@ -57,7 +57,6 @@ The bubble keeps the written form; the voice is given words. `spoken` in the scr
 - **Numbers are written as English words** ("seven", "sixty-eight", "one hundred and eighty"), never digits: the
   script step sometimes *translates* a digit into Hindi (7 → सात), and then the voice says it in Hindi.
 - A sentence that now starts with a number word or "angle" is capitalised.
-- "So, in any parallelogram…" keeps its trailing pause ("...").
 
 **Devanagari check.** For every line, the Devanagari the studio produced (now in `vo_script.json`) was scanned for Hindi
 number words (एक दो तीन … पचास सौ, and compounds such as सत्तर), leftover Latin letters or digits, and odd names or
@@ -149,7 +148,6 @@ All in `say()` (`js/game-engine.js`), the one function that puts a line in Swift
 | vo023 | Look at the lengths again. AB is 6 cm, but AD is only 3 cm. | Look at the lengths again. A B is six centimetres, but A D is only three centimetres. | लुक एट द लेंथ्स अगेन। ए बी इज सिक्स सेंटीमीटर्स, बट ए डी इज ओनली थ्री सेंटीमीटर्स। | 7.04 |
 | vo024 | That's correct! Opposite sides are equal. | = | दैट्स करेक्ट! ऑपोजिट साइड्स आर इक्वल। | 3.56 |
 | vo025 | In any parallelogram, opposite sides are of equal lengths. | = | इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर ऑफ इक्वल लेंथ्स। | 4.84 |
-| vo026 | So, in any parallelogram… | = | सो, इन एनी पैरेललोग्राम... | 3.02 |
 | vo027 | So, in any parallelogram, opposite sides are parallel and equal. | = | सो, इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर पैरेलल एंड इक्वल। | 6.04 |
 | vo028 | Which of these are parallelograms? Select all that apply. | = | विच ऑफ दीज़ आर पैरेललोग्राम्स? सिलेक्ट ऑल दैट अप्लाई। | 4.24 |
 | vo029 | Shape B is a trapezium. Only one pair of its sides is parallel. | = | शेप बी इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल। | 5.84 |

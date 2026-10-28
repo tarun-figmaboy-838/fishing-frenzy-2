@@ -26,7 +26,6 @@ const VO_LINES = {
   "Look at the lengths again. AB is 6 cm, but AD is only 3 cm.": ["vo023",7.04,[0.26,0.5,0.65,0.84,1.23,2.12,2.42,2.65,4.25,4.53,4.8,5.01,5.36],6.68],
   "That's correct! Opposite sides are equal.": ["vo024",3.56,[0.26,0.67,1.49,2.07,2.45,2.71],3.17],
   "In any parallelogram, opposite sides are of equal lengths.": ["vo025",4.84,[0.38,0.59,0.86,2.25,2.79,3.15,3.38,3.56,3.92],4.47],
-  "So, in any parallelogram…": ["vo026",3.02,[0.37,0.73,0.99,1.35],2.69],
   "So, in any parallelogram, opposite sides are parallel and equal.": ["vo027",6.04,[0.27,0.97,1.2,1.5,3.02,3.62,4.03,4.3,4.9,5.17],5.65],
   "Which of these are parallelograms? Select all that apply.": ["vo028",4.24,[0.27,0.62,0.8,1.15,1.38,2.66,3.04,3.26,3.53],3.92],
   "Shape B is a trapezium. Only one pair of its sides is parallel.": ["vo029",5.84,[0.28,0.81,0.99,1.25,1.43,3,3.31,3.55,3.86,4.05,4.29,4.66,4.85],5.47],
