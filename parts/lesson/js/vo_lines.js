@@ -28,7 +28,7 @@ const VO_LINES = {
   "Which of these are parallelograms? Select all that apply.": ["vo028",4.24,[0.27,0.62,0.8,1.15,1.38,2.66,3.04,3.26,3.53],3.92],
   "In this parallelogram, AB = 7 cm. What is the length of CD?": ["vo033",5.56,[0.28,0.43,0.68,1.78,4.1,4.3,4.42,4.58,4.87,4.99],5.2],
   "CD is not double AB. Opposite sides of a parallelogram are equal.": ["vo034",6.32,[0.3,0.67,0.95,1.31,1.96,3.2,3.73,4.08,4.25,4.37,5.19,5.42],5.84],
-  "CD is not half of AB. Opposite sides of a parallelogram are equal.": ["vo035",6,[0.27,0.65,0.93,1.31,1.78,2.06,3.04,3.54,3.87,4.03,4.14,4.91,5.13],5.53],
+  "CD is not half of AB. Opposite sides of a parallelogram are equal.": ["vo035",5.92,[0.26,0.61,0.88,1.23,1.67,1.94,3.05,3.55,3.88,4.05,4.16,4.93,5.15],5.55],
   "That's right! Opposite sides are equal, so CD = 7 cm.": ["vo037",5.72,[0.31,0.65,1.41,1.91,2.24,2.46,3.1,3.31],5.4],
   "In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD.": ["vo038",9.24,[0.28,0.45,0.72,1.91,3.96,4.24,6.82,7.13,7.38,7.89,8.07,8.33,8.58],8.9],
   "We learnt all about the sides of a parallelogram.": ["vo042",3.84,[0.3,0.49,0.93,1.19,1.57,1.82,2.2,2.39,2.52],3.48],

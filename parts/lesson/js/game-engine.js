@@ -2738,7 +2738,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   answersGo(st, fn) {
     if (!st.opts || st.grid) { fn(); return; }
     // (the right answer first shows itself - green, in the middle - long enough to be seen; then it goes)
-    const tok = this.stepTok, hold = 1000, glide = window.Motion && Motion.reduced ? 0 : 720; // (css .board, .chip-row: 0.7 s)
+    const tok = this.stepTok, hold = 1800, glide = window.Motion && Motion.reduced ? 0 : 720; // (css .board, .chip-row: 0.7 s)
     this.busyFor(hold + glide + 100);
     this.tm(() => { if (tok === this.stepTok) this.setState({ optsGone: true }); }, hold);
     this.tm(() => { if (tok === this.stepTok) fn(); }, hold + glide);
