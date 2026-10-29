@@ -1,992 +1,992 @@
 [
-  {
-    "id": "vo001",
-    "line": "We learnt about quadrilaterals earlier.",
-    "spoken": "We learnt about quadrilaterals earlier.",
-    "where": [
-      "screen 1 intro: line"
-    ],
-    "devanagari": "वी लर्न्ट अबाउट क्वाड्रिलैटरल्स अर्लियर।"
-  },
-  {
-    "id": "vo002",
-    "line": "Any polygon with 4 sides is called a quadrilateral.",
-    "spoken": "Any polygon with four sides is called a quadrilateral.",
-    "where": [
-      "screen 2 quadSides: line"
-    ],
-    "devanagari": "एनी पॉलीगन विद फोर साइड्स इज कॉल्ड ए क्वाड्रिलैटरल।"
-  },
-  {
-    "id": "vo003",
-    "line": "This is a special type of quadrilateral called trapezium.",
-    "spoken": "This is a special type of quadrilateral called Trapezium.",
-    "where": [
-      "screen 3 special: line"
-    ],
-    "devanagari": "दिस इज ए स्पेशल टाइप ऑफ क्वाड्रिलैटरल कॉल्ड ट्रेपीज़ियम।"
-  },
-  {
-    "id": "vo004",
-    "line": "A trapezium has one pair of opposite sides parallel.",
-    "spoken": "A trapezium has one pair of opposite sides parallel.",
-    "where": [
-      "screen 4 onePair: line"
-    ],
-    "devanagari": "ए ट्रेपीज़ियम हैज़ वन पेयर ऑफ ऑपोजिट साइड्स पैरेलल।"
-  },
-  {
-    "id": "vo005",
-    "line": "Which pair of sides are parallel to each other?",
-    "spoken": "Which pair of sides are parallel to each other?",
-    "where": [
-      "screen 5 askPar: line"
-    ],
-    "devanagari": "विच पेयर ऑफ साइड्स आर पैरेलल टू ईच अदर?"
-  },
-  {
-    "id": "vo006",
-    "line": "Look again. AD and BC lean towards each other, so they would meet if we made them longer.",
-    "spoken": "Look again. A D and B C lean towards each other, so they would meet if we made them longer.",
-    "where": [
-      "screen 5 askPar: feedback AD"
-    ],
-    "devanagari": "लुक अगेन। ए डी एंड बी सी लीन टुवर्ड्स ईच अदर, सो दे वुड मीट इफ वी मेड देम लॉन्गर।"
-  },
-  {
-    "id": "vo007",
-    "line": "That's correct! AB ∥ CD.",
-    "spoken": "That's correct! A B is parallel to C D.",
-    "where": [
-      "screen 5 askPar: right answer"
-    ],
-    "devanagari": "दैट्स करेक्ट! ए बी इज पैरेलल टू सी डी।"
-  },
-  {
-    "id": "vo008",
-    "line": "What if we made the other pair of opposite sides parallel too?",
-    "spoken": "What if we made the other pair of opposite sides parallel too?",
-    "where": [
-      "screen 6 whatIf: line"
-    ],
-    "devanagari": "वॉट इफ वी मेड द अदर पेयर ऑफ ऑपोजिट साइड्स पैरेलल टू?"
-  },
-  {
-    "id": "vo009",
-    "line": "Drag vertex B to make BC parallel to AD.",
-    "spoken": "Drag vertex B to make B C parallel to A D.",
-    "where": [
-      "screen 7 dragPar: line"
-    ],
-    "devanagari": "ड्रैग वर्टेक्स बी टू मेक बी सी पैरेलल टू ए डी।"
-  },
-  {
-    "id": "vo010",
-    "line": "BC is not parallel to AD yet. Keep dragging B to the right.",
-    "spoken": "B C is not parallel to A D yet. Keep dragging B to the right.",
-    "where": [
-      "screen 7 dragPar: drag tip"
-    ],
-    "devanagari": "बी सी इज नॉट पैरेलल टू ए डी येट। कीप ड्रैगिंग बी टू द राइट।"
-  },
-  {
-    "id": "vo011",
-    "line": "B went too far. Drag it back a little.",
-    "spoken": "B went too far. Drag it back a little.",
-    "where": [
-      "screen 7 dragPar: drag tip"
-    ],
-    "devanagari": "बी वेंट टू फ़ार। ड्रैग इट बैक ए लिटिल।"
-  },
-  {
-    "id": "vo013",
-    "line": "Well done! Now BC is parallel to AD.",
-    "spoken": "Well done! Now B C is parallel to A D.",
-    "where": [
-      "screen 7 dragPar: after task"
-    ],
-    "devanagari": "वेल डन! नाउ बी सी इज पैरेलल टू ए डी।"
-  },
-  {
-    "id": "vo014",
-    "line": "Now both pairs of opposite sides are parallel.",
-    "spoken": "Now both pairs of opposite sides are parallel.",
-    "where": [
-      "screen 8 bothPar: line"
-    ],
-    "devanagari": "नाउ बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल।"
-  },
-  {
-    "id": "vo016",
-    "line": "We call this a parallelogram.",
-    "spoken": "We call this a Parallelogram.",
-    "where": [
-      "screen 9 defPg: line"
-    ],
-    "devanagari": "वी कॉल दिस ए पैरेललोग्राम।"
-  },
-  {
-    "id": "vo017",
-    "line": "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.",
-    "spoken": "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.",
-    "where": [
-      "screen 10 defFull: line"
-    ],
-    "devanagari": "ए क्वाड्रिलैटरल व्हेयर बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल इज कॉल्ड ए पैरेललोग्राम।"
-  },
-  {
-    "id": "vo018",
-    "line": "But what about the side lengths?",
-    "spoken": "But what about the side lengths?",
-    "where": [
-      "screen 11 lengthsQ: line"
-    ],
-    "devanagari": "बट वॉट अबाउट द साइड लेंथ्स?"
-  },
-  {
-    "id": "vo019",
-    "line": "Are they equal too?",
-    "spoken": "Are they equal too?",
-    "where": [
-      "screen 12 equalQ: line"
-    ],
-    "devanagari": "आर दे इक्वल टू?"
-  },
-  {
-    "id": "vo021",
-    "line": "There is something interesting about the lengths.",
-    "spoken": "There is something interesting about the lengths.",
-    "where": [
-      "screen 14 interesting: line"
-    ],
-    "devanagari": "देयर इज समथिंग इंटरेस्टिंग अबाउट द लेंथ्स।"
-  },
-  {
-    "id": "vo022",
-    "line": "What do you notice about the sides?",
-    "spoken": "What do you notice about the sides?",
-    "where": [
-      "screen 15 askSides: line"
-    ],
-    "devanagari": "वॉट डू यू नोटिस अबाउट द साइड्स?"
-  },
-  {
-    "id": "vo023",
-    "line": "Look at the lengths again. AB is 6 cm, but AD is only 3 cm.",
-    "spoken": "Look at the lengths again. A B is six centimetres, but A D is only three centimetres.",
-    "where": [
-      "screen 15 askSides: feedback all"
-    ],
-    "devanagari": "लुक एट द लेंथ्स अगेन। ए बी इज सिक्स सेंटीमीटर्स, बट ए डी इज ओनली थ्री सेंटीमीटर्स।"
-  },
-  {
-    "id": "vo024",
-    "line": "That's correct! Opposite sides are equal.",
-    "spoken": "That's correct! Opposite sides are equal.",
-    "where": [
-      "screen 15 askSides: right answer"
-    ],
-    "devanagari": "दैट्स करेक्ट! ऑपोजिट साइड्स आर इक्वल।"
-  },
-  {
-    "id": "vo025",
-    "line": "In any parallelogram, opposite sides are of equal lengths.",
-    "spoken": "In any parallelogram, opposite sides are of equal lengths.",
-    "where": [
-      "screen 16 oppEq: line"
-    ],
-    "devanagari": "इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर ऑफ इक्वल लेंथ्स।"
-  },
-  {
-    "id": "vo027",
-    "line": "So, in any parallelogram, opposite sides are parallel and equal.",
-    "spoken": "So, in any parallelogram, opposite sides are parallel and equal.",
-    "where": [
-      "screen 18 sidesSum: line"
-    ],
-    "devanagari": "सो, इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर पैरेलल एंड इक्वल।"
-  },
-  {
-    "id": "vo028",
-    "line": "Which of these are parallelograms? Select all that apply.",
-    "spoken": "Which of these are parallelograms? Select all that apply.",
-    "where": [
-      "screen 19 cp1a: line"
-    ],
-    "devanagari": "विच ऑफ दीज़ आर पैरेललोग्राम्स? सिलेक्ट ऑल दैट अप्लाई।"
-  },
-  {
-    "id": "vo033",
-    "line": "In this parallelogram, AB = 7 cm. What is the length of CD?",
-    "spoken": "In this parallelogram, A B equals seven centimetres. What is the length of C D?",
-    "where": [
-      "screen 20 cp1b: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, ए बी इक्वल्स सेवन सेंटीमीटर्स। वॉट इज द लेंथ ऑफ सी डी?"
-  },
-  {
-    "id": "vo034",
-    "line": "CD is not double AB. Opposite sides of a parallelogram are equal.",
-    "spoken": "C D is not double A B. Opposite sides of a parallelogram are equal.",
-    "where": [
-      "screen 20 cp1b: feedback 14"
-    ],
-    "devanagari": "सी डी इज नॉट डबल ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
-  },
-  {
-    "id": "vo035",
-    "line": "CD is not half of AB. Opposite sides of a parallelogram are equal.",
-    "spoken": "C D is not half of A B. Opposite sides of a parallelogram are equal.",
-    "where": [
-      "screen 20 cp1b: feedback 3.5"
-    ],
-    "devanagari": "सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
-  },
-  {
-    "id": "vo037",
-    "line": "That's right! Opposite sides are equal, so CD = 7 cm.",
-    "spoken": "That's right! Opposite sides are equal, so C D equals seven centimetres.",
-    "where": [
-      "screen 20 cp1b: right answer"
-    ],
-    "devanagari": "दैट्स राइट! ऑपोजिट साइड्स आर इक्वल, सो सी डी इक्वल्स सेवन सेंटीमीटर्स।"
-  },
-  {
-    "id": "vo038",
-    "line": "In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD.",
-    "spoken": "In this parallelogram, A B equals eight centimetres and B C equals five centimetres. Find the lengths of C D and A D.",
-    "where": [
-      "screen 21 cp1c: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, ए बी इक्वल्स एट सेंटीमीटर्स एंड बी सी इक्वल्स फाइव सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ सी डी एंड ए डी।"
-  },
-  {
-    "id": "vo041",
-    "line": "Brilliant! CD = AB = 8 cm and AD = BC = 5 cm.",
-    "spoken": "Brilliant! C D equals A B equals eight centimetres and A D equals B C equals five centimetres.",
-    "where": [
-      "screen 21 cp1c: right answer"
-    ],
-    "devanagari": "ब्रिलियंट! सी डी इक्वल्स ए बी इक्वल्स एट सेंटीमीटर्स एंड ए डी इक्वल्स बी सी इक्वल्स फाइव सेंटीमीटर्स."
-  },
-  {
-    "id": "vo042",
-    "line": "We learnt all about the sides of a parallelogram.",
-    "spoken": "We learnt all about the sides of a parallelogram.",
-    "where": [
-      "screen 22 sidesDone: line"
-    ],
-    "devanagari": "वी लर्न्ट ऑल अबाउट द साइड्स ऑफ ए पैरेललोग्राम।"
-  },
-  {
-    "id": "vo043",
-    "line": "But what about its angles? Are they equal too?",
-    "spoken": "But what about its angles? Are they equal too?",
-    "where": [
-      "screen 23 angles: line"
-    ],
-    "devanagari": "बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू?"
-  },
-  {
-    "id": "vo045",
-    "line": "There is something interesting here too.",
-    "spoken": "There is something interesting here too.",
-    "where": [
-      "screen 25 interestingAng: line"
-    ],
-    "devanagari": "देयर इज समथिंग इंटरेस्टिंग हियर टू।"
-  },
-  {
-    "id": "vo046",
-    "line": "Some angles are equal to one another.",
-    "spoken": "Some angles are equal to one another.",
-    "where": [
-      "screen 26 someEq: line"
-    ],
-    "devanagari": "सम एंगल्स आर इक्वल टू वन अनदर।"
-  },
-  {
-    "id": "vo047",
-    "line": "Tap the angle which is equal to ∠A.",
-    "spoken": "Tap the angle which is equal to angle A.",
-    "where": [
-      "screen 27 tapEqA: line"
-    ],
-    "devanagari": "टैप द एंगल विच इज इक्वल टू एंगल ए।"
-  },
-  {
-    "id": "vo048",
-    "line": "Not quite. Compare its size with ∠A. Look at the corner opposite A.",
-    "spoken": "Not quite. Compare its size with angle A. Look at the corner opposite A.",
-    "where": [
-      "screen 27 tapEqA: wrong tap"
-    ],
-    "devanagari": "नॉट क्वाइट। कंपेयर इट्स साइज विद एंगल ए। लुक एट द कॉर्नर ऑपोजिट ए।"
-  },
-  {
-    "id": "vo050",
-    "line": "That's correct! ∠A is equal to ∠C.",
-    "spoken": "That's correct! Angle A is equal to angle C.",
-    "where": [
-      "screen 27 tapEqA: after task"
-    ],
-    "devanagari": "दैट्स करेक्ट! एंगल ए इज इक्वल टू एंगल सी।"
-  },
-  {
-    "id": "vo051",
-    "line": "Tap the angle which is equal to ∠D.",
-    "spoken": "Tap the angle which is equal to angle D.",
-    "where": [
-      "screen 28 tapEqD: line"
-    ],
-    "devanagari": "टैप द एंगल विच इज इक्वल टू एंगल डी।"
-  },
-  {
-    "id": "vo052",
-    "line": "Not quite. Compare its size with ∠D. Look at the corner opposite D.",
-    "spoken": "Not quite. Compare its size with angle D. Look at the corner opposite D.",
-    "where": [
-      "screen 28 tapEqD: wrong tap"
-    ],
-    "devanagari": "नॉट क्वाइट। कंपेयर इट्स साइज विद एंगल डी। लुक एट द कॉर्नर ऑपोजिट डी।"
-  },
-  {
-    "id": "vo054",
-    "line": "That's correct! ∠D is equal to ∠B.",
-    "spoken": "That's correct! Angle D is equal to angle B.",
-    "where": [
-      "screen 28 tapEqD: after task"
-    ],
-    "devanagari": "दैट्स करेक्ट! एंगल डी इज इक्वल टू एंगल बी।"
-  },
-  {
-    "id": "vo055",
-    "line": "So in any parallelogram, the pairs of opposite angles are also equal.",
-    "spoken": "So in any parallelogram, the pairs of opposite angles are also equal.",
-    "where": [
-      "screen 29 oppAng: line"
-    ],
-    "devanagari": "सो इन एनी पैरेललोग्राम, द पेयर्स ऑफ ऑपोजिट एंगल्स आर ऑल्सो इक्वल।"
-  },
-  {
-    "id": "vo056",
-    "line": "But I see something else too.",
-    "spoken": "But I see something else too.",
-    "where": [
-      "screen 30 seeElse: line"
-    ],
-    "devanagari": "बट आई सी समथिंग एल्स टू।"
-  },
-  {
-    "id": "vo057",
-    "line": "Look at ∠A and ∠D.",
-    "spoken": "Look at angle A and angle D.",
-    "where": [
-      "screen 31 lookAD: line"
-    ],
-    "devanagari": "लुक एट एंगल ए एंड एंगल डी।"
-  },
-  {
-    "id": "vo058",
-    "line": "They add up to make 180°.",
-    "spoken": "They add up to make one hundred and eighty degrees.",
-    "where": [
-      "screen 32 sumAD: line"
-    ],
-    "devanagari": "दे ऐड अप टू मेक वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo059",
-    "line": "Which other angles add up to 180°?",
-    "spoken": "Which other angles add up to one hundred and eighty degrees?",
-    "where": [
-      "screen 33 askAdj: line"
-    ],
-    "devanagari": "विच अदर एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़?"
-  },
-  {
-    "id": "vo060",
-    "line": "∠B and ∠D are opposite angles. 70° + 70° is not 180°.",
-    "spoken": "Angle B and angle D are opposite angles. Seventy degrees plus seventy degrees is not one hundred and eighty degrees.",
-    "where": [
-      "screen 33 askAdj: feedback BD"
-    ],
-    "devanagari": "एंगल बी एंड एंगल डी आर ऑपोजिट एंगल्स। सेवेंटी डिग्रीज़ प्लस सेवेंटी डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo063",
-    "line": "Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°.",
-    "spoken": "Yes! Angle B plus angle C equals one hundred and eighty degrees and angle A plus angle B equals one hundred and eighty degrees.",
-    "where": [
-      "screen 33 askAdj: right answer"
-    ],
-    "devanagari": "येस! एंगल बी प्लस एंगल सी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़ एंड एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo064",
-    "line": "All the adjacent angles of this parallelogram add up to 180°.",
-    "spoken": "All the adjacent angles of this parallelogram add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 34 adjRule: line"
-    ],
-    "devanagari": "ऑल द एडजेसेंट एंगल्स ऑफ दिस पैरेललोग्राम ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo065",
-    "line": "In this parallelogram, ∠A = 68°. What is the measure of ∠C?",
-    "spoken": "In this parallelogram, angle A equals sixty-eight degrees. What is the measure of angle C?",
-    "where": [
-      "screen 35 cp2a: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी?"
-  },
-  {
-    "id": "vo067",
-    "line": "Look again. Opposite angles of a parallelogram are equal.",
-    "spoken": "Look again. Opposite angles of a parallelogram are equal.",
-    "where": [
-      "screen 35 cp2a: feedback 90"
-    ],
-    "devanagari": "लुक अगेन। ऑपोजिट एंगल्स ऑफ ए पैरेललोग्राम आर इक्वल।"
-  },
-  {
-    "id": "vo069",
-    "line": "That's right! Opposite angles are equal, so ∠C = 68°.",
-    "spoken": "That's right! Opposite angles are equal, so angle C equals sixty-eight degrees.",
-    "where": [
-      "screen 35 cp2a: right answer"
-    ],
-    "devanagari": "दैट्स राइट! ऑपोजिट एंगल्स आर इक्वल, सो एंगल सी इक्वल्स सिक्सटी एट डिग्रीज़।"
-  },
-  {
-    "id": "vo070",
-    "line": "In this parallelogram, ∠A = 72°. What is the measure of ∠B?",
-    "spoken": "In this parallelogram, angle A equals seventy-two degrees. What is the measure of angle B?",
-    "where": [
-      "screen 36 cp2b: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सेवेंटी टू डिग्रीज़। वॉट इज द मेजर ऑफ एंगल बी?"
-  },
-  {
-    "id": "vo071",
-    "line": "∠B is next to ∠A, not opposite it. Adjacent angles add up to 180°.",
-    "spoken": "Angle B is next to angle A, not opposite it. Adjacent angles add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 36 cp2b: feedback 72"
-    ],
-    "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo072",
-    "line": "180° is the sum of ∠A and ∠B, not ∠B by itself.",
-    "spoken": "One hundred and eighty degrees is the sum of angle A and angle B, not angle B by itself.",
-    "where": [
-      "screen 36 cp2b: feedback 180"
-    ],
-    "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज द सम ऑफ एंगल ए एंड एंगल बी, नॉट एंगल बी बाय इटसेल्फ।"
-  },
-  {
-    "id": "vo074",
-    "line": "Correct! 72° + 108° = 180°.",
-    "spoken": "Correct! Seventy-two degrees plus one hundred and eight degrees equals one hundred and eighty degrees.",
-    "where": [
-      "screen 36 cp2b: right answer"
-    ],
-    "devanagari": "करेक्ट! सेवेंटी-टू डिग्रीज़ प्लस वन हंड्रेड एंड एट डिग्रीज़ इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo075",
-    "line": "In this parallelogram, ∠A = 65°. Find the measures of ∠B, ∠C and ∠D.",
-    "spoken": "In this parallelogram, angle A equals sixty-five degrees. Find the measures of angle B, angle C and angle D.",
-    "where": [
-      "screen 37 cp2c: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी फाइव डिग्रीज़। फाइंड द मेज़र्स ऑफ एंगल बी, एंगल सी एंड एंगल डी।"
-  },
-  {
-    "id": "vo078",
-    "line": "Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°.",
-    "spoken": "Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees.",
-    "where": [
-      "screen 37 cp2c: right answer"
-    ],
-    "devanagari": "अमेजिंग! एंगल बी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़, एंगल सी इक्वल्स सिक्सटी फाइव डिग्रीज़ एंड एंगल डी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़।"
-  },
-  {
-    "id": "vo079",
-    "line": "We have explored all about the sides and angles of a parallelogram.",
-    "spoken": "We have explored all about the sides and angles of a parallelogram.",
-    "where": [
-      "screen 38 explored: line"
-    ],
-    "devanagari": "वी हैव एक्सप्लोर्ड ऑल अबाउट द साइड्स एंड एंगल्स ऑफ ए पैरेललोग्राम।"
-  },
-  {
-    "id": "vo080",
-    "line": "Let's learn about its diagonals.",
-    "spoken": "Let's learn about its diagonals.",
-    "where": [
-      "screen 39 diagIntro: line"
-    ],
-    "devanagari": "लेट्स लर्न अबाउट इट्स डायगोनल्स।"
-  },
-  {
-    "id": "vo081",
-    "line": "Draw all the diagonals of this parallelogram.",
-    "spoken": "Draw all the diagonals of this parallelogram.",
-    "where": [
-      "screen 40 drawDiag: line"
-    ],
-    "devanagari": "ड्रॉ ऑल द डायगोनल्स ऑफ दिस पैरेललोग्राम।"
-  },
-  {
-    "id": "vo082",
-    "line": "That is a side. A diagonal joins two opposite corners.",
-    "spoken": "That is a side. A diagonal joins two opposite corners.",
-    "where": [
-      "screen 40 drawDiag: wrong tap"
-    ],
-    "devanagari": "दैट इज ए साइड। ए डायगोनल जॉइन्स टू ऑपोजिट कॉर्नर्स।"
-  },
-  {
-    "id": "vo084",
-    "line": "Great! You drew both diagonals.",
-    "spoken": "Great! You drew both diagonals.",
-    "where": [
-      "screen 40 drawDiag: after task"
-    ],
-    "devanagari": "ग्रेट! यू ड्रू बोथ डायगोनल्स."
-  },
-  {
-    "id": "vo085",
-    "line": "AC and BD are the diagonals of this parallelogram.",
-    "spoken": "A C and B D are the diagonals of this parallelogram.",
-    "where": [
-      "screen 41 diagNames: line"
-    ],
-    "devanagari": "ए सी एंड बी डी आर द डायगोनल्स ऑफ दिस पैरेललोग्राम।"
-  },
-  {
-    "id": "vo086",
-    "line": "They meet each other at point O.",
-    "spoken": "They meet each other at point O.",
-    "where": [
-      "screen 42 meetO: line"
-    ],
-    "devanagari": "दे मीट ईच अदर एट पॉइंट ओ।"
-  },
-  {
-    "id": "vo087",
-    "line": "Each diagonal divides the other into 2 segments.",
-    "spoken": "Each diagonal divides the other into two segments.",
-    "where": [
-      "screen 43 segs: line"
-    ],
-    "devanagari": "ईच डायगोनल डिवाइड्स द अदर इनटू टू सेगमेंट्स।"
-  },
-  {
-    "id": "vo089",
-    "line": "Let's compare the lengths of these segments.",
-    "spoken": "Let's compare the lengths of these segments.",
-    "where": [
-      "screen 45 compare: line"
-    ],
-    "devanagari": "लेट्स कंपेयर द लेंथ्स ऑफ दीज़ सेगमेंट्स।"
-  },
-  {
-    "id": "vo090",
-    "line": "Drag the segments to their correct place.",
-    "spoken": "Drag the segments to their correct place.",
-    "where": [
-      "screen 46 matchSeg: line"
-    ],
-    "devanagari": "ड्रैग द सेगमेंट्स टू देयर करेक्ट प्लेस।"
-  },
-  {
-    "id": "vo091",
-    "line": "Those two are not the same length. Look at the lengths again.",
-    "spoken": "Those two are not the same length. Look at the lengths again.",
-    "where": [
-      "screen 46 matchSeg: feedback any"
-    ],
-    "devanagari": "दोज़ टू आर नॉट द सेम लेंथ। लुक एट द लेंथ्स अगेन।"
-  },
-  {
-    "id": "vo093",
-    "line": "That's correct! The segments of the same diagonal are equal.",
-    "spoken": "That's correct! The segments of the same diagonal are equal.",
-    "where": [
-      "screen 46 matchSeg: right answer"
-    ],
-    "devanagari": "दैट्स करेक्ट! द सेगमेंट्स ऑफ द सेम डायगोनल आर इक्वल।"
-  },
-  {
-    "id": "vo094",
-    "line": "Each diagonal is divided into two equal parts by the other.",
-    "spoken": "Each diagonal is divided into two equal parts by the other.",
-    "where": [
-      "screen 47 bisectEq: line"
-    ],
-    "devanagari": "ईच डायगोनल इज डिवाइडेड इनटू टू इक्वल पार्ट्स बाय द अदर।"
-  },
-  {
-    "id": "vo095",
-    "line": "So the diagonals of a parallelogram bisect each other.",
-    "spoken": "So the diagonals of a parallelogram bisect each other.",
-    "where": [
-      "screen 48 bisect: line"
-    ],
-    "devanagari": "सो द डायगोनल्स ऑफ ए पैरेललोग्राम बाईसेक्ट ईच अदर।"
-  },
-  {
-    "id": "vo096",
-    "line": "In this parallelogram, AO = 6 cm. What is the length of OC?",
-    "spoken": "In this parallelogram, A O equals six centimetres. What is the length of O C?",
-    "where": [
-      "screen 49 cp3a: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी?"
-  },
-  {
-    "id": "vo101",
-    "line": "In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD.",
-    "spoken": "In this parallelogram, A O equals five centimetres and B O equals three centimetres. Find the lengths of O C and O D.",
-    "where": [
-      "screen 50 cp3b: line"
-    ],
-    "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी।"
-  },
-  {
-    "id": "vo104",
-    "line": "Well done! OC = AO = 5 cm and OD = BO = 3 cm.",
-    "spoken": "Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres.",
-    "where": [
-      "screen 50 cp3b: right answer"
-    ],
-    "devanagari": "वेल डन! ओ सी इक्वल्स ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड ओ डी इक्वल्स बी ओ इक्वल्स थ्री सेंटीमीटर्स।"
-  },
-  {
-    "id": "vo105",
-    "line": "Which of the following are true for this parallelogram? Select all that apply.",
-    "spoken": "Which of the following are true for this parallelogram? Select all that apply.",
-    "where": [
-      "screen 51 cp3c: line"
-    ],
-    "devanagari": "विच ऑफ द फॉलोइंग आर ट्रू फॉर दिस पैरेललोग्राम? सिलेक्ट ऑल दैट अप्लाई।"
-  },
-  {
-    "id": "vo106",
-    "line": "AO and BO are parts of different diagonals, so they need not be equal.",
-    "spoken": "A O and B O are parts of different diagonals, so they need not be equal.",
-    "where": [
-      "screen 51 cp3c: feedback aobo"
-    ],
-    "devanagari": "ए ओ एंड बी ओ आर पार्ट्स ऑफ डिफरेंट डायगोनल्स, सो दे नीड नॉट बी इक्वल।"
-  },
-  {
-    "id": "vo107",
-    "line": "The two diagonals of this parallelogram have different lengths.",
-    "spoken": "The two diagonals of this parallelogram have different lengths.",
-    "where": [
-      "screen 51 cp3c: feedback acbd"
-    ],
-    "devanagari": "द टू डायगोनल्स ऑफ दिस पैरेललोग्राम हैव डिफरेंट लेंथ्स।"
-  },
-  {
-    "id": "vo109",
-    "line": "Perfect! AO = OC, BO = OD, so the diagonals bisect each other.",
-    "spoken": "Perfect! A O equals O C, B O equals O D, so the diagonals bisect each other.",
-    "where": [
-      "screen 51 cp3c: right answer"
-    ],
-    "devanagari": "परफेक्ट! ए ओ इक्वल्स ओ सी, बी ओ इक्वल्स ओ डी, सो द डायगोनल्स बाईसेक्ट ईच अदर।"
-  },
-  {
-    "id": "vo110",
-    "line": "Let's recall what we learnt about parallelograms.",
-    "spoken": "Let's recall what we learnt about parallelograms.",
-    "where": [
-      "screen 52 recall: line"
-    ],
-    "devanagari": "लेट्स रिकॉल वॉट वी लर्न्ट अबाउट पैरेललोग्राम्स."
-  },
-  {
-    "id": "vo111",
-    "line": "A parallelogram is a quadrilateral with two pairs of opposite sides parallel.",
-    "spoken": "A parallelogram is a quadrilateral with two pairs of opposite sides parallel.",
-    "where": [
-      "screen 53 recDef: line"
-    ],
-    "devanagari": "ए पैरेललोग्राम इज ए क्वाड्रिलैटरल विद टू पेयर्स ऑफ ऑपोजिट साइड्स पैरेलल।"
-  },
-  {
-    "id": "vo112",
-    "line": "Opposite sides are parallel.",
-    "spoken": "Opposite sides are parallel.",
-    "where": [
-      "screen 54 recPar: line"
-    ],
-    "devanagari": "ऑपोजिट साइड्स आर पैरेलल।"
-  },
-  {
-    "id": "vo114",
-    "line": "Opposite sides are equal.",
-    "spoken": "Opposite sides are equal.",
-    "where": [
-      "screen 55 recEq: line"
-    ],
-    "devanagari": "ऑपोजिट साइड्स आर इक्वल।"
-  },
-  {
-    "id": "vo115",
-    "line": "Opposite angles are equal.",
-    "spoken": "Opposite angles are equal.",
-    "where": [
-      "screen 56 recAng: line"
-    ],
-    "devanagari": "ऑपोजिट एंगल्स आर इक्वल।"
-  },
-  {
-    "id": "vo116",
-    "line": "Adjacent angles are supplementary. They add up to 180°.",
-    "spoken": "Adjacent angles are supplementary. They add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 57 recSupp: line"
-    ],
-    "devanagari": "एडजेसेंट एंगल्स आर सप्लीमेंट्री। दे ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo117",
-    "line": "Diagonals bisect each other.",
-    "spoken": "Diagonals bisect each other.",
-    "where": [
-      "screen 58 recDiag: line"
-    ],
-    "devanagari": "डायगोनल्स बाईसेक्ट ईच अदर।"
-  },
-  {
-    "id": "vo118",
-    "line": "Amazing work! You know all about parallelograms now.",
-    "spoken": "Amazing work! You know all about parallelograms now.",
-    "where": [
-      "screen 59 end: line"
-    ],
-    "devanagari": "अमेज़िंग वर्क! यू नो ऑल अबाउट पैरेललोग्राम्स नाउ."
-  },
-  {
-    "id": "vo119",
-    "line": "Watch! BC must lean the same way as AD.",
-    "spoken": "Watch! B C must lean the same way as A D.",
-    "where": [
-      "screen 7 dragPar: the answer shown"
-    ],
-    "devanagari": "वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी।"
-  },
-  {
-    "id": "vo120",
-    "line": "Now BC is parallel to AD.",
-    "spoken": "Now B C is parallel to A D.",
-    "where": [
-      "screen 7 dragPar: after the answer shown"
-    ],
-    "devanagari": "नाउ बी सी इज पैरेलल टू ए डी।"
-  },
-  {
-    "id": "vo121",
-    "line": "Let's find out!",
-    "spoken": "Let's find out!",
-    "where": [
-      "screens 13 measure, 24 measureAng, 44 measureSeg: line"
-    ],
-    "devanagari": "लेट्स फाइंड आउट!"
-  },
-  {
-    "id": "vo122",
-    "line": "∠A and ∠C are opposite angles. 110° + 110° is not 180°.",
-    "spoken": "Angle A and angle C are opposite angles. One hundred and ten degrees plus one hundred and ten degrees is not one hundred and eighty degrees.",
-    "where": [
-      "screen 35 askAdj: feedback AC"
-    ],
-    "devanagari": "एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo123",
-    "line": "This shape is a trapezium. Only one pair of its sides is parallel.",
-    "spoken": "This shape is a trapezium. Only one pair of its sides is parallel.",
-    "where": [
-      "screen 19 cp1a: feedback B"
-    ],
-    "devanagari": "दिस शेप इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल।"
-  },
-  {
-    "id": "vo124",
-    "line": "This shape has five sides, so it is not a quadrilateral.",
-    "spoken": "This shape has five sides, so it is not a quadrilateral.",
-    "where": [
-      "screen 19 cp1a: feedback D"
-    ],
-    "devanagari": "दिस शेप हैज़ फाइव साइड्स, सो इट इज नॉट ए क्वाड्रिलैटरल।"
-  },
-  {
-    "id": "vo125",
-    "line": "Yes! Both these shapes have two pairs of parallel sides.",
-    "spoken": "Yes! Both these shapes have two pairs of parallel sides.",
-    "where": [
-      "screen 19 cp1a: right"
-    ],
-    "devanagari": "येस! बोथ दीज़ शेप्स हैव टू पेयर्स ऑफ पैरेलल साइड्स।"
-  },
-  {
-    "id": "vo126",
-    "line": "25° + 65° is only 90°. ∠A and ∠B must add up to 180°.",
-    "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle B must add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback B 25"
-    ],
-    "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल बी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo127",
-    "line": "∠B is next to ∠A, not opposite it. ∠A + ∠B = 180°.",
-    "spoken": "Angle B is next to angle A, not opposite it. Angle A plus angle B equals one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback B 65"
-    ],
-    "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo128",
-    "line": "180° is ∠A and ∠B together. Take away the 65° of ∠A.",
-    "spoken": "One hundred and eighty degrees is angle A and angle B together. Take away the sixty-five degrees of angle A.",
-    "where": [
-      "screen 37 cp2c: feedback B 180"
-    ],
-    "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल बी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
-  },
-  {
-    "id": "vo129",
-    "line": "∠C is opposite ∠A, so it is equal to ∠A, not 25°.",
-    "spoken": "Angle C is opposite angle A, so it is equal to angle A, not twenty-five degrees.",
-    "where": [
-      "screen 37 cp2c: feedback C 25"
-    ],
-    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट ट्वेंटी फाइव डिग्रीज़।"
-  },
-  {
-    "id": "vo130",
-    "line": "115° is the size of an angle next to ∠A. ∠C is opposite ∠A, so ∠C = ∠A.",
-    "spoken": "One hundred and fifteen degrees is the size of an angle next to angle A. Angle C is opposite angle A, so angle C equals angle A.",
-    "where": [
-      "screen 37 cp2c: feedback C 115"
-    ],
-    "devanagari": "वन हंड्रेड एंड फिफ्टीन डिग्रीज़ इज द साइज ऑफ एन एंगल नेक्स्ट टू एंगल ए। एंगल सी इज ऑपोजिट एंगल ए, सो एंगल सी इक्वल्स एंगल ए।"
-  },
-  {
-    "id": "vo131",
-    "line": "∠C is opposite ∠A, so it is equal to ∠A, not 180°.",
-    "spoken": "Angle C is opposite angle A, so it is equal to angle A, not one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback C 180"
-    ],
-    "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo132",
-    "line": "25° + 65° is only 90°. ∠A and ∠D must add up to 180°.",
-    "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle D must add up to one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback D 25"
-    ],
-    "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल डी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo133",
-    "line": "∠D is next to ∠A, not opposite it. ∠A + ∠D = 180°.",
-    "spoken": "Angle D is next to angle A, not opposite it. Angle A plus angle D equals one hundred and eighty degrees.",
-    "where": [
-      "screen 37 cp2c: feedback D 65"
-    ],
-    "devanagari": "एंगल डी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल डी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
-  },
-  {
-    "id": "vo134",
-    "line": "180° is ∠A and ∠D together. Take away the 65° of ∠A.",
-    "spoken": "One hundred and eighty degrees is angle A and angle D together. Take away the sixty-five degrees of angle A.",
-    "where": [
-      "screen 37 cp2c: feedback D 180"
-    ],
-    "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल डी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
-  },
-  {
-    "id": "vo135",
-    "line": "OC is not half of AO. OC = AO.",
-    "spoken": "O C is not half of A O. O C equals A O.",
-    "where": [
-      "screen 49 cp3a: feedback 3"
-    ],
-    "devanagari": "ओ सी इज नॉट हाफ ऑफ ए ओ। ओ सी इक्वल्स ए ओ।"
-  },
-  {
-    "id": "vo136",
-    "line": "12 cm is the whole of AC. OC is only half of it.",
-    "spoken": "Twelve centimetres is the whole of A C. O C is only half of it.",
-    "where": [
-      "screen 49 cp3a: feedback 12"
-    ],
-    "devanagari": "ट्वेल्व सेंटीमीटर्स इज द होल ऑफ ए सी। ओ सी इज ओनली हाफ ऑफ इट।"
-  },
-  {
-    "id": "vo137",
-    "line": "Yes! O cuts AC in half, so OC = 6 cm.",
-    "spoken": "Yes! O cuts A C in half, so O C equals six centimetres.",
-    "where": [
-      "screen 49 cp3a: right"
-    ],
-    "devanagari": "येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स।"
-  },
-  {
-    "id": "vo138",
-    "line": "CD is opposite AB, so CD = AB.",
-    "spoken": "C D is opposite A B, so C D equals A B.",
-    "where": [
-      "screen 20 cp1c: feedback CD"
-    ],
-    "devanagari": "सी डी इज ऑपोजिट ए बी, सो सी डी इक्वल्स ए बी।"
-  },
-  {
-    "id": "vo139",
-    "line": "AD is opposite BC, so AD = BC.",
-    "spoken": "A D is opposite B C, so A D equals B C.",
-    "where": [
-      "screen 20 cp1c: feedback AD"
-    ],
-    "devanagari": "ए डी इज ऑपोजिट बी सी, सो ए डी इक्वल्स बी सी।"
-  },
-  {
-    "id": "vo140",
-    "line": "OC is the other half of AC, so OC = AO.",
-    "spoken": "O C is the other half of A C, so O C equals A O.",
-    "where": [
-      "screen 49 cp3b: feedback OC"
-    ],
-    "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, सो ओ सी इक्वल्स ए ओ ।"
-  },
-  {
-    "id": "vo141",
-    "line": "OD is the other half of BD, so OD = BO.",
-    "spoken": "O D is the other half of B D, so O D equals B O.",
-    "where": [
-      "screen 49 cp3b: feedback OD"
-    ],
-    "devanagari": "ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ।"
-  },
-  {
-    "id": "vo142",
-    "line": "Are the two segments of each diagonal equal?",
-    "spoken": "Are the two segments of each diagonal equal?",
-    "where": [
-      "screen 43 measureSeg: the question"
-    ],
-    "devanagari": "आर द टू सेगमेंट्स ऑफ ईच डायगोनल इक्वल?"
-  }
+ {
+  "id": "vo001",
+  "line": "We learnt about quadrilaterals earlier.",
+  "spoken": "We learnt about quadrilaterals earlier.",
+  "where": [
+   "screen 1 intro: line"
+  ],
+  "devanagari": "वी लर्न्ट अबाउट क्वाड्रिलैटरल्स अर्लियर।"
+ },
+ {
+  "id": "vo002",
+  "line": "Any polygon with 4 sides is called a quadrilateral.",
+  "spoken": "Any polygon with four sides is called a quadrilateral.",
+  "where": [
+   "screen 2 quadSides: line"
+  ],
+  "devanagari": "एनी पॉलीगन विद फोर साइड्स इज कॉल्ड ए क्वाड्रिलैटरल।"
+ },
+ {
+  "id": "vo003",
+  "line": "This is a special type of quadrilateral called trapezium.",
+  "spoken": "This is a special type of quadrilateral called Trapezium.",
+  "where": [
+   "screen 3 special: line"
+  ],
+  "devanagari": "दिस इज ए स्पेशल टाइप ऑफ क्वाड्रिलैटरल कॉल्ड ट्रेपीज़ियम।"
+ },
+ {
+  "id": "vo004",
+  "line": "A trapezium has one pair of opposite sides parallel.",
+  "spoken": "A trapezium has one pair of opposite sides parallel.",
+  "where": [
+   "screen 4 onePair: line"
+  ],
+  "devanagari": "ए ट्रेपीज़ियम हैज़ वन पेयर ऑफ ऑपोजिट साइड्स पैरेलल।"
+ },
+ {
+  "id": "vo005",
+  "line": "Which pair of sides are parallel to each other?",
+  "spoken": "Which pair of sides are parallel to each other?",
+  "where": [
+   "screen 5 askPar: line"
+  ],
+  "devanagari": "विच पेयर ऑफ साइड्स आर पैरेलल टू ईच अदर?"
+ },
+ {
+  "id": "vo006",
+  "line": "Look again. AD and BC lean towards each other, so they would meet if we made them longer.",
+  "spoken": "Look again. A D and B C lean towards each other, so they would meet if we made them longer.",
+  "where": [
+   "screen 5 askPar: feedback AD"
+  ],
+  "devanagari": "लुक अगेन। ए डी एंड बी सी लीन टुवर्ड्स ईच अदर, सो दे वुड मीट इफ वी मेड देम लॉन्गर।"
+ },
+ {
+  "id": "vo007",
+  "line": "That's correct! AB ∥ CD.",
+  "spoken": "That's correct! A B is parallel to C D.",
+  "where": [
+   "screen 5 askPar: right answer"
+  ],
+  "devanagari": "दैट्स करेक्ट! ए बी इज पैरेलल टू सी डी।"
+ },
+ {
+  "id": "vo008",
+  "line": "What if we made the other pair of opposite sides parallel too?",
+  "spoken": "What if we made the other pair of opposite sides parallel too?",
+  "where": [
+   "screen 6 whatIf: line"
+  ],
+  "devanagari": "वॉट इफ वी मेड द अदर पेयर ऑफ ऑपोजिट साइड्स पैरेलल टू?"
+ },
+ {
+  "id": "vo009",
+  "line": "Drag vertex B to make BC parallel to AD.",
+  "spoken": "Drag vertex B to make B C parallel to A D.",
+  "where": [
+   "screen 7 dragPar: line"
+  ],
+  "devanagari": "ड्रैग वर्टेक्स बी टू मेक बी सी पैरेलल टू ए डी।"
+ },
+ {
+  "id": "vo010",
+  "line": "BC is not parallel to AD yet. Keep dragging B to the right.",
+  "spoken": "B C is not parallel to A D yet. Keep dragging B to the right.",
+  "where": [
+   "screen 7 dragPar: drag tip"
+  ],
+  "devanagari": "बी सी इज नॉट पैरेलल टू ए डी येट। कीप ड्रैगिंग बी टू द राइट।"
+ },
+ {
+  "id": "vo011",
+  "line": "B went too far. Drag it back a little.",
+  "spoken": "B went too far. Drag it back a little.",
+  "where": [
+   "screen 7 dragPar: drag tip"
+  ],
+  "devanagari": "बी वेंट टू फ़ार। ड्रैग इट बैक ए लिटिल।"
+ },
+ {
+  "id": "vo013",
+  "line": "Well done! Now BC is parallel to AD.",
+  "spoken": "Well done! Now B C is parallel to A D.",
+  "where": [
+   "screen 7 dragPar: after task"
+  ],
+  "devanagari": "वेल डन! नाउ बी सी इज पैरेलल टू ए डी।"
+ },
+ {
+  "id": "vo014",
+  "line": "Now both pairs of opposite sides are parallel.",
+  "spoken": "Now both pairs of opposite sides are parallel.",
+  "where": [
+   "screen 8 bothPar: line"
+  ],
+  "devanagari": "नाउ बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल।"
+ },
+ {
+  "id": "vo016",
+  "line": "We call this a parallelogram.",
+  "spoken": "We call this a Parallelogram.",
+  "where": [
+   "screen 9 defPg: line"
+  ],
+  "devanagari": "वी कॉल दिस ए पैरेललोग्राम।"
+ },
+ {
+  "id": "vo017",
+  "line": "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.",
+  "spoken": "A quadrilateral where both pairs of opposite sides are parallel is called a parallelogram.",
+  "where": [
+   "screen 10 defFull: line"
+  ],
+  "devanagari": "ए क्वाड्रिलैटरल व्हेयर बोथ पेयर्स ऑफ ऑपोजिट साइड्स आर पैरेलल इज कॉल्ड ए पैरेललोग्राम।"
+ },
+ {
+  "id": "vo018",
+  "line": "But what about the side lengths?",
+  "spoken": "But what about the side lengths?",
+  "where": [
+   "screen 11 lengthsQ: line"
+  ],
+  "devanagari": "बट वॉट अबाउट द साइड लेंथ्स?"
+ },
+ {
+  "id": "vo019",
+  "line": "Are they equal too?",
+  "spoken": "Are they equal too?",
+  "where": [
+   "screen 12 equalQ: line"
+  ],
+  "devanagari": "आर दे इक्वल टू?"
+ },
+ {
+  "id": "vo021",
+  "line": "There is something interesting about the lengths.",
+  "spoken": "There is something interesting about the lengths.",
+  "where": [
+   "screen 14 interesting: line"
+  ],
+  "devanagari": "देयर इज समथिंग इंटरेस्टिंग अबाउट द लेंथ्स।"
+ },
+ {
+  "id": "vo022",
+  "line": "What do you notice about the sides?",
+  "spoken": "What do you notice about the sides?",
+  "where": [
+   "screen 15 askSides: line"
+  ],
+  "devanagari": "वॉट डू यू नोटिस अबाउट द साइड्स?"
+ },
+ {
+  "id": "vo023",
+  "line": "Look at the lengths again. AB is 6 cm, but AD is only 3 cm.",
+  "spoken": "Look at the lengths again. A B is six centimetres, but A D is only three centimetres.",
+  "where": [
+   "screen 15 askSides: feedback all"
+  ],
+  "devanagari": "लुक एट द लेंथ्स अगेन। ए बी इज सिक्स सेंटीमीटर्स, बट ए डी इज ओनली थ्री सेंटीमीटर्स।"
+ },
+ {
+  "id": "vo024",
+  "line": "That's correct! Opposite sides are equal.",
+  "spoken": "That's correct! Opposite sides are equal.",
+  "where": [
+   "screen 15 askSides: right answer"
+  ],
+  "devanagari": "दैट्स करेक्ट! ऑपोजिट साइड्स आर इक्वल।"
+ },
+ {
+  "id": "vo025",
+  "line": "In any parallelogram, opposite sides are of equal lengths.",
+  "spoken": "In any parallelogram, opposite sides are of equal lengths.",
+  "where": [
+   "screen 16 oppEq: line"
+  ],
+  "devanagari": "इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर ऑफ इक्वल लेंथ्स।"
+ },
+ {
+  "id": "vo027",
+  "line": "So, in any parallelogram, opposite sides are parallel and equal.",
+  "spoken": "So, in any parallelogram, opposite sides are parallel and equal.",
+  "where": [
+   "screen 18 sidesSum: line"
+  ],
+  "devanagari": "सो, इन एनी पैरेललोग्राम, ऑपोजिट साइड्स आर पैरेलल एंड इक्वल।"
+ },
+ {
+  "id": "vo028",
+  "line": "Which of these are parallelograms? Select all that apply.",
+  "spoken": "Which of these are parallelograms? Select all that apply.",
+  "where": [
+   "screen 19 cp1a: line"
+  ],
+  "devanagari": "विच ऑफ दीज़ आर पैरेललोग्राम्स? सिलेक्ट ऑल दैट अप्लाई।"
+ },
+ {
+  "id": "vo033",
+  "line": "In this parallelogram, AB = 7 cm. What is the length of CD?",
+  "spoken": "In this parallelogram, A B equals seven centimetres. What is the length of C D?",
+  "where": [
+   "screen 20 cp1b: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, ए बी इक्वल्स सेवन सेंटीमीटर्स। वॉट इज द लेंथ ऑफ सी डी?"
+ },
+ {
+  "id": "vo034",
+  "line": "CD is not double AB. Opposite sides of a parallelogram are equal.",
+  "spoken": "C D is not double A B. Opposite sides of a parallelogram are equal.",
+  "where": [
+   "screen 20 cp1b: feedback 14"
+  ],
+  "devanagari": "सी डी इज नॉट डबल ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
+ },
+ {
+  "id": "vo035",
+  "line": "CD is not half of AB. Opposite sides of a parallelogram are equal.",
+  "spoken": "C D is not half of A B. Opposite sides of a parallelogram are equal.",
+  "where": [
+   "screen 20 cp1b: feedback 3.5"
+  ],
+  "devanagari": "सी डी इज नॉट हाफ ऑफ ए बी। ऑपोजिट साइड्स ऑफ ए पैरेललोग्राम आर इक्वल।"
+ },
+ {
+  "id": "vo037",
+  "line": "That's right! Opposite sides are equal, so CD = 7 cm.",
+  "spoken": "That's right! Opposite sides are equal, so C D equals seven centimetres.",
+  "where": [
+   "screen 20 cp1b: right answer"
+  ],
+  "devanagari": "दैट्स राइट! ऑपोजिट साइड्स आर इक्वल, सो सी डी इक्वल्स सेवन सेंटीमीटर्स।"
+ },
+ {
+  "id": "vo038",
+  "line": "In this parallelogram, AB = 8 cm and BC = 5 cm. Find the lengths of CD and AD.",
+  "spoken": "In this parallelogram, A B equals eight centimetres and B C equals five centimetres. Find the lengths of C D and A D.",
+  "where": [
+   "screen 21 cp1c: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, ए बी इक्वल्स एट सेंटीमीटर्स एंड बी सी इक्वल्स फाइव सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ सी डी एंड ए डी।"
+ },
+ {
+  "id": "vo042",
+  "line": "We learnt all about the sides of a parallelogram.",
+  "spoken": "We learnt all about the sides of a parallelogram.",
+  "where": [
+   "screen 22 sidesDone: line"
+  ],
+  "devanagari": "वी लर्न्ट ऑल अबाउट द साइड्स ऑफ ए पैरेललोग्राम।"
+ },
+ {
+  "id": "vo043",
+  "line": "But what about its angles? Are they equal too?",
+  "spoken": "But what about its angles? Are they equal too?",
+  "where": [
+   "screen 23 angles: line"
+  ],
+  "devanagari": "बट वॉट अबाउट इट्स एंगल्स? आर दे इक्वल टू?"
+ },
+ {
+  "id": "vo045",
+  "line": "There is something interesting here too.",
+  "spoken": "There is something interesting here too.",
+  "where": [
+   "screen 25 interestingAng: line"
+  ],
+  "devanagari": "देयर इज समथिंग इंटरेस्टिंग हियर टू।"
+ },
+ {
+  "id": "vo046",
+  "line": "Some angles are equal to one another.",
+  "spoken": "Some angles are equal to one another.",
+  "where": [
+   "screen 26 someEq: line"
+  ],
+  "devanagari": "सम एंगल्स आर इक्वल टू वन अनदर।"
+ },
+ {
+  "id": "vo048",
+  "line": "Not quite. Compare its size with ∠A. Look at the corner opposite A.",
+  "spoken": "Not quite. Compare its size with angle A. Look at the corner opposite A.",
+  "where": [
+   "screen 27 tapEqA: wrong tap"
+  ],
+  "devanagari": "नॉट क्वाइट। कंपेयर इट्स साइज विद एंगल ए। लुक एट द कॉर्नर ऑपोजिट ए।"
+ },
+ {
+  "id": "vo050",
+  "line": "That's correct! ∠A is equal to ∠C.",
+  "spoken": "That's correct! Angle A is equal to angle C.",
+  "where": [
+   "screen 27 tapEqA: after task"
+  ],
+  "devanagari": "दैट्स करेक्ट! एंगल ए इज इक्वल टू एंगल सी।"
+ },
+ {
+  "id": "vo052",
+  "line": "Not quite. Compare its size with ∠D. Look at the corner opposite D.",
+  "spoken": "Not quite. Compare its size with angle D. Look at the corner opposite D.",
+  "where": [
+   "screen 28 tapEqD: wrong tap"
+  ],
+  "devanagari": "नॉट क्वाइट। कंपेयर इट्स साइज विद एंगल डी। लुक एट द कॉर्नर ऑपोजिट डी।"
+ },
+ {
+  "id": "vo054",
+  "line": "That's correct! ∠D is equal to ∠B.",
+  "spoken": "That's correct! Angle D is equal to angle B.",
+  "where": [
+   "screen 28 tapEqD: after task"
+  ],
+  "devanagari": "दैट्स करेक्ट! एंगल डी इज इक्वल टू एंगल बी।"
+ },
+ {
+  "id": "vo055",
+  "line": "So in any parallelogram, the pairs of opposite angles are also equal.",
+  "spoken": "So in any parallelogram, the pairs of opposite angles are also equal.",
+  "where": [
+   "screen 29 oppAng: line"
+  ],
+  "devanagari": "सो इन एनी पैरेललोग्राम, द पेयर्स ऑफ ऑपोजिट एंगल्स आर ऑल्सो इक्वल।"
+ },
+ {
+  "id": "vo056",
+  "line": "But I see something else too.",
+  "spoken": "But I see something else too.",
+  "where": [
+   "screen 30 seeElse: line"
+  ],
+  "devanagari": "बट आई सी समथिंग एल्स टू।"
+ },
+ {
+  "id": "vo057",
+  "line": "Look at ∠A and ∠D.",
+  "spoken": "Look at angle A and angle D.",
+  "where": [
+   "screen 31 lookAD: line"
+  ],
+  "devanagari": "लुक एट एंगल ए एंड एंगल डी।"
+ },
+ {
+  "id": "vo058",
+  "line": "They add up to make 180°.",
+  "spoken": "They add up to make one hundred and eighty degrees.",
+  "where": [
+   "screen 32 sumAD: line"
+  ],
+  "devanagari": "दे ऐड अप टू मेक वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo059",
+  "line": "Which other angles add up to 180°?",
+  "spoken": "Which other angles add up to one hundred and eighty degrees?",
+  "where": [
+   "screen 33 askAdj: line"
+  ],
+  "devanagari": "विच अदर एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़?"
+ },
+ {
+  "id": "vo060",
+  "line": "∠B and ∠D are opposite angles. 70° + 70° is not 180°.",
+  "spoken": "Angle B and angle D are opposite angles. Seventy degrees plus seventy degrees is not one hundred and eighty degrees.",
+  "where": [
+   "screen 33 askAdj: feedback BD"
+  ],
+  "devanagari": "एंगल बी एंड एंगल डी आर ऑपोजिट एंगल्स। सेवेंटी डिग्रीज़ प्लस सेवेंटी डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo063",
+  "line": "Yes! ∠B + ∠C = 180° and ∠A + ∠B = 180°.",
+  "spoken": "Yes! Angle B plus angle C equals one hundred and eighty degrees and angle A plus angle B equals one hundred and eighty degrees.",
+  "where": [
+   "screen 33 askAdj: right answer"
+  ],
+  "devanagari": "येस! एंगल बी प्लस एंगल सी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़ एंड एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo064",
+  "line": "All the adjacent angles of this parallelogram add up to 180°.",
+  "spoken": "All the adjacent angles of this parallelogram add up to one hundred and eighty degrees.",
+  "where": [
+   "screen 34 adjRule: line"
+  ],
+  "devanagari": "ऑल द एडजेसेंट एंगल्स ऑफ दिस पैरेललोग्राम ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo065",
+  "line": "In this parallelogram, ∠A = 68°. What is the measure of ∠C?",
+  "spoken": "In this parallelogram, angle A equals sixty-eight degrees. What is the measure of angle C?",
+  "where": [
+   "screen 35 cp2a: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी एट डिग्रीज़। वॉट इज द मेजर ऑफ एंगल सी?"
+ },
+ {
+  "id": "vo067",
+  "line": "Look again. Opposite angles of a parallelogram are equal.",
+  "spoken": "Look again. Opposite angles of a parallelogram are equal.",
+  "where": [
+   "screen 35 cp2a: feedback 90"
+  ],
+  "devanagari": "लुक अगेन। ऑपोजिट एंगल्स ऑफ ए पैरेललोग्राम आर इक्वल।"
+ },
+ {
+  "id": "vo069",
+  "line": "That's right! Opposite angles are equal, so ∠C = 68°.",
+  "spoken": "That's right! Opposite angles are equal, so angle C equals sixty-eight degrees.",
+  "where": [
+   "screen 35 cp2a: right answer"
+  ],
+  "devanagari": "दैट्स राइट! ऑपोजिट एंगल्स आर इक्वल, सो एंगल सी इक्वल्स सिक्सटी एट डिग्रीज़।"
+ },
+ {
+  "id": "vo070",
+  "line": "In this parallelogram, ∠A = 72°. What is the measure of ∠B?",
+  "spoken": "In this parallelogram, angle A equals seventy-two degrees. What is the measure of angle B?",
+  "where": [
+   "screen 36 cp2b: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सेवेंटी टू डिग्रीज़। वॉट इज द मेजर ऑफ एंगल बी?"
+ },
+ {
+  "id": "vo071",
+  "line": "∠B is next to ∠A, not opposite it. Adjacent angles add up to 180°.",
+  "spoken": "Angle B is next to angle A, not opposite it. Adjacent angles add up to one hundred and eighty degrees.",
+  "where": [
+   "screen 36 cp2b: feedback 72"
+  ],
+  "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एडजेसेंट एंगल्स ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo072",
+  "line": "180° is the sum of ∠A and ∠B, not ∠B by itself.",
+  "spoken": "One hundred and eighty degrees is the sum of angle A and angle B, not angle B by itself.",
+  "where": [
+   "screen 36 cp2b: feedback 180"
+  ],
+  "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज द सम ऑफ एंगल ए एंड एंगल बी, नॉट एंगल बी बाय इटसेल्फ।"
+ },
+ {
+  "id": "vo074",
+  "line": "Correct! 72° + 108° = 180°.",
+  "spoken": "Correct! Seventy-two degrees plus one hundred and eight degrees equals one hundred and eighty degrees.",
+  "where": [
+   "screen 36 cp2b: right answer"
+  ],
+  "devanagari": "करेक्ट! सेवेंटी-टू डिग्रीज़ प्लस वन हंड्रेड एंड एट डिग्रीज़ इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo075",
+  "line": "In this parallelogram, ∠A = 65°. Find the measures of ∠B, ∠C and ∠D.",
+  "spoken": "In this parallelogram, angle A equals sixty-five degrees. Find the measures of angle B, angle C and angle D.",
+  "where": [
+   "screen 37 cp2c: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, एंगल ए इक्वल्स सिक्सटी फाइव डिग्रीज़। फाइंड द मेज़र्स ऑफ एंगल बी, एंगल सी एंड एंगल डी।"
+ },
+ {
+  "id": "vo078",
+  "line": "Amazing! ∠B = 115°, ∠C = 65° and ∠D = 115°.",
+  "spoken": "Amazing! Angle B equals one hundred and fifteen degrees, angle C equals sixty-five degrees and angle D equals one hundred and fifteen degrees.",
+  "where": [
+   "screen 37 cp2c: right answer"
+  ],
+  "devanagari": "अमेजिंग! एंगल बी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़, एंगल सी इक्वल्स सिक्सटी फाइव डिग्रीज़ एंड एंगल डी इक्वल्स वन हंड्रेड एंड फिफ्टीन डिग्रीज़।"
+ },
+ {
+  "id": "vo079",
+  "line": "We have explored all about the sides and angles of a parallelogram.",
+  "spoken": "We have explored all about the sides and angles of a parallelogram.",
+  "where": [
+   "screen 38 explored: line"
+  ],
+  "devanagari": "वी हैव एक्सप्लोर्ड ऑल अबाउट द साइड्स एंड एंगल्स ऑफ ए पैरेललोग्राम।"
+ },
+ {
+  "id": "vo080",
+  "line": "Let's learn about its diagonals.",
+  "spoken": "Let's learn about its diagonals.",
+  "where": [
+   "screen 39 diagIntro: line"
+  ],
+  "devanagari": "लेट्स लर्न अबाउट इट्स डायगोनल्स।"
+ },
+ {
+  "id": "vo081",
+  "line": "Draw all the diagonals of this parallelogram.",
+  "spoken": "Draw all the diagonals of this parallelogram.",
+  "where": [
+   "screen 40 drawDiag: line"
+  ],
+  "devanagari": "ड्रॉ ऑल द डायगोनल्स ऑफ दिस पैरेललोग्राम।"
+ },
+ {
+  "id": "vo082",
+  "line": "That is a side. A diagonal joins two opposite corners.",
+  "spoken": "That is a side. A diagonal joins two opposite corners.",
+  "where": [
+   "screen 40 drawDiag: wrong tap"
+  ],
+  "devanagari": "दैट इज ए साइड। ए डायगोनल जॉइन्स टू ऑपोजिट कॉर्नर्स।"
+ },
+ {
+  "id": "vo084",
+  "line": "Great! You drew both diagonals.",
+  "spoken": "Great! You drew both diagonals.",
+  "where": [
+   "screen 40 drawDiag: after task"
+  ],
+  "devanagari": "ग्रेट! यू ड्रू बोथ डायगोनल्स."
+ },
+ {
+  "id": "vo085",
+  "line": "AC and BD are the diagonals of this parallelogram.",
+  "spoken": "A C and B D are the diagonals of this parallelogram.",
+  "where": [
+   "screen 41 diagNames: line"
+  ],
+  "devanagari": "ए सी एंड बी डी आर द डायगोनल्स ऑफ दिस पैरेललोग्राम।"
+ },
+ {
+  "id": "vo086",
+  "line": "They meet each other at point O.",
+  "spoken": "They meet each other at point O.",
+  "where": [
+   "screen 42 meetO: line"
+  ],
+  "devanagari": "दे मीट ईच अदर एट पॉइंट ओ।"
+ },
+ {
+  "id": "vo087",
+  "line": "Each diagonal divides the other into 2 segments.",
+  "spoken": "Each diagonal divides the other into two segments.",
+  "where": [
+   "screen 43 segs: line"
+  ],
+  "devanagari": "ईच डायगोनल डिवाइड्स द अदर इनटू टू सेगमेंट्स।"
+ },
+ {
+  "id": "vo089",
+  "line": "Let's compare the lengths of these segments.",
+  "spoken": "Let's compare the lengths of these segments.",
+  "where": [
+   "screen 45 compare: line"
+  ],
+  "devanagari": "लेट्स कंपेयर द लेंथ्स ऑफ दीज़ सेगमेंट्स।"
+ },
+ {
+  "id": "vo090",
+  "line": "Drag the segments to their correct place.",
+  "spoken": "Drag the segments to their correct place.",
+  "where": [
+   "screen 46 matchSeg: line"
+  ],
+  "devanagari": "ड्रैग द सेगमेंट्स टू देयर करेक्ट प्लेस।"
+ },
+ {
+  "id": "vo091",
+  "line": "Those two are not the same length. Look at the lengths again.",
+  "spoken": "Those two are not the same length. Look at the lengths again.",
+  "where": [
+   "screen 46 matchSeg: feedback any"
+  ],
+  "devanagari": "दोज़ टू आर नॉट द सेम लेंथ। लुक एट द लेंथ्स अगेन।"
+ },
+ {
+  "id": "vo093",
+  "line": "That's correct! The segments of the same diagonal are equal.",
+  "spoken": "That's correct! The segments of the same diagonal are equal.",
+  "where": [
+   "screen 46 matchSeg: right answer"
+  ],
+  "devanagari": "दैट्स करेक्ट! द सेगमेंट्स ऑफ द सेम डायगोनल आर इक्वल।"
+ },
+ {
+  "id": "vo094",
+  "line": "Each diagonal is divided into two equal parts by the other.",
+  "spoken": "Each diagonal is divided into two equal parts by the other.",
+  "where": [
+   "screen 47 bisectEq: line"
+  ],
+  "devanagari": "ईच डायगोनल इज डिवाइडेड इनटू टू इक्वल पार्ट्स बाय द अदर।"
+ },
+ {
+  "id": "vo095",
+  "line": "So the diagonals of a parallelogram bisect each other.",
+  "spoken": "So the diagonals of a parallelogram bisect each other.",
+  "where": [
+   "screen 48 bisect: line"
+  ],
+  "devanagari": "सो द डायगोनल्स ऑफ ए पैरेललोग्राम बाईसेक्ट ईच अदर।"
+ },
+ {
+  "id": "vo096",
+  "line": "In this parallelogram, AO = 6 cm. What is the length of OC?",
+  "spoken": "In this parallelogram, A O equals six centimetres. What is the length of O C?",
+  "where": [
+   "screen 49 cp3a: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स सिक्स सेंटीमीटर्स। वॉट इज द लेंथ ऑफ ओ सी?"
+ },
+ {
+  "id": "vo101",
+  "line": "In this parallelogram, AO = 5 cm and BO = 3 cm. Find the lengths of OC and OD.",
+  "spoken": "In this parallelogram, A O equals five centimetres and B O equals three centimetres. Find the lengths of O C and O D.",
+  "where": [
+   "screen 50 cp3b: line"
+  ],
+  "devanagari": "इन दिस पैरेललोग्राम, ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड बी ओ इक्वल्स थ्री सेंटीमीटर्स। फाइंड द लेंथ्स ऑफ ओ सी एंड ओ डी।"
+ },
+ {
+  "id": "vo104",
+  "line": "Well done! OC = AO = 5 cm and OD = BO = 3 cm.",
+  "spoken": "Well done! O C equals A O equals five centimetres and O D equals B O equals three centimetres.",
+  "where": [
+   "screen 50 cp3b: right answer"
+  ],
+  "devanagari": "वेल डन! ओ सी इक्वल्स ए ओ इक्वल्स फाइव सेंटीमीटर्स एंड ओ डी इक्वल्स बी ओ इक्वल्स थ्री सेंटीमीटर्स।"
+ },
+ {
+  "id": "vo105",
+  "line": "Which of the following are true for this parallelogram? Select all that apply.",
+  "spoken": "Which of the following are true for this parallelogram? Select all that apply.",
+  "where": [
+   "screen 51 cp3c: line"
+  ],
+  "devanagari": "विच ऑफ द फॉलोइंग आर ट्रू फॉर दिस पैरेललोग्राम? सिलेक्ट ऑल दैट अप्लाई।"
+ },
+ {
+  "id": "vo106",
+  "line": "AO and BO are parts of different diagonals, so they need not be equal.",
+  "spoken": "A O and B O are parts of different diagonals, so they need not be equal.",
+  "where": [
+   "screen 51 cp3c: feedback aobo"
+  ],
+  "devanagari": "ए ओ एंड बी ओ आर पार्ट्स ऑफ डिफरेंट डायगोनल्स, सो दे नीड नॉट बी इक्वल।"
+ },
+ {
+  "id": "vo107",
+  "line": "The two diagonals of this parallelogram have different lengths.",
+  "spoken": "The two diagonals of this parallelogram have different lengths.",
+  "where": [
+   "screen 51 cp3c: feedback acbd"
+  ],
+  "devanagari": "द टू डायगोनल्स ऑफ दिस पैरेललोग्राम हैव डिफरेंट लेंथ्स।"
+ },
+ {
+  "id": "vo109",
+  "line": "Perfect! AO = OC, BO = OD, so the diagonals bisect each other.",
+  "spoken": "Perfect! A O equals O C, B O equals O D, so the diagonals bisect each other.",
+  "where": [
+   "screen 51 cp3c: right answer"
+  ],
+  "devanagari": "परफेक्ट! ए ओ इक्वल्स ओ सी, बी ओ इक्वल्स ओ डी, सो द डायगोनल्स बाईसेक्ट ईच अदर।"
+ },
+ {
+  "id": "vo110",
+  "line": "Let's recall what we learnt about parallelograms.",
+  "spoken": "Let's recall what we learnt about parallelograms.",
+  "where": [
+   "screen 52 recall: line"
+  ],
+  "devanagari": "लेट्स रिकॉल वॉट वी लर्न्ट अबाउट पैरेललोग्राम्स."
+ },
+ {
+  "id": "vo111",
+  "line": "A parallelogram is a quadrilateral with two pairs of opposite sides parallel.",
+  "spoken": "A parallelogram is a quadrilateral with two pairs of opposite sides parallel.",
+  "where": [
+   "screen 53 recDef: line"
+  ],
+  "devanagari": "ए पैरेललोग्राम इज ए क्वाड्रिलैटरल विद टू पेयर्स ऑफ ऑपोजिट साइड्स पैरेलल।"
+ },
+ {
+  "id": "vo112",
+  "line": "Opposite sides are parallel.",
+  "spoken": "Opposite sides are parallel.",
+  "where": [
+   "screen 54 recPar: line"
+  ],
+  "devanagari": "ऑपोजिट साइड्स आर पैरेलल।"
+ },
+ {
+  "id": "vo114",
+  "line": "Opposite sides are equal.",
+  "spoken": "Opposite sides are equal.",
+  "where": [
+   "screen 55 recEq: line"
+  ],
+  "devanagari": "ऑपोजिट साइड्स आर इक्वल।"
+ },
+ {
+  "id": "vo115",
+  "line": "Opposite angles are equal.",
+  "spoken": "Opposite angles are equal.",
+  "where": [
+   "screen 56 recAng: line"
+  ],
+  "devanagari": "ऑपोजिट एंगल्स आर इक्वल।"
+ },
+ {
+  "id": "vo116",
+  "line": "Adjacent angles are supplementary. They add up to 180°.",
+  "spoken": "Adjacent angles are supplementary. They add up to one hundred and eighty degrees.",
+  "where": [
+   "screen 57 recSupp: line"
+  ],
+  "devanagari": "एडजेसेंट एंगल्स आर सप्लीमेंट्री। दे ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo117",
+  "line": "Diagonals bisect each other.",
+  "spoken": "Diagonals bisect each other.",
+  "where": [
+   "screen 58 recDiag: line"
+  ],
+  "devanagari": "डायगोनल्स बाईसेक्ट ईच अदर।"
+ },
+ {
+  "id": "vo118",
+  "line": "Amazing work! You know all about parallelograms now.",
+  "spoken": "Amazing work! You know all about parallelograms now.",
+  "where": [
+   "screen 59 end: line"
+  ],
+  "devanagari": "अमेज़िंग वर्क! यू नो ऑल अबाउट पैरेललोग्राम्स नाउ."
+ },
+ {
+  "id": "vo119",
+  "line": "Watch! BC must lean the same way as AD.",
+  "spoken": "Watch! B C must lean the same way as A D.",
+  "where": [
+   "screen 7 dragPar: the answer shown"
+  ],
+  "devanagari": "वॉच! बी सी मस्ट लीन द सेम वे एज़ ए डी।"
+ },
+ {
+  "id": "vo120",
+  "line": "Now BC is parallel to AD.",
+  "spoken": "Now B C is parallel to A D.",
+  "where": [
+   "screen 7 dragPar: after the answer shown"
+  ],
+  "devanagari": "नाउ बी सी इज पैरेलल टू ए डी।"
+ },
+ {
+  "id": "vo121",
+  "line": "Let's find out!",
+  "spoken": "Let's find out!",
+  "where": [
+   "screens 13 measure, 24 measureAng, 44 measureSeg: line"
+  ],
+  "devanagari": "लेट्स फाइंड आउट!"
+ },
+ {
+  "id": "vo122",
+  "line": "∠A and ∠C are opposite angles. 110° + 110° is not 180°.",
+  "spoken": "Angle A and angle C are opposite angles. One hundred and ten degrees plus one hundred and ten degrees is not one hundred and eighty degrees.",
+  "where": [
+   "screen 35 askAdj: feedback AC"
+  ],
+  "devanagari": "एंगल ए एंड एंगल सी आर ऑपोजिट एंगल्स। वन हंड्रेड एंड टेन डिग्रीज़ प्लस वन हंड्रेड एंड टेन डिग्रीज़ इज नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo123",
+  "line": "This shape is a trapezium. Only one pair of its sides is parallel.",
+  "spoken": "This shape is a trapezium. Only one pair of its sides is parallel.",
+  "where": [
+   "screen 19 cp1a: feedback B"
+  ],
+  "devanagari": "दिस शेप इज ए ट्रेपीज़ियम। ओनली वन पेयर ऑफ इट्स साइड्स इज पैरेलल।"
+ },
+ {
+  "id": "vo124",
+  "line": "This shape has five sides, so it is not a quadrilateral.",
+  "spoken": "This shape has five sides, so it is not a quadrilateral.",
+  "where": [
+   "screen 19 cp1a: feedback D"
+  ],
+  "devanagari": "दिस शेप हैज़ फाइव साइड्स, सो इट इज नॉट ए क्वाड्रिलैटरल।"
+ },
+ {
+  "id": "vo125",
+  "line": "Yes! Both these shapes have two pairs of parallel sides.",
+  "spoken": "Yes! Both these shapes have two pairs of parallel sides.",
+  "where": [
+   "screen 19 cp1a: right"
+  ],
+  "devanagari": "येस! बोथ दीज़ शेप्स हैव टू पेयर्स ऑफ पैरेलल साइड्स।"
+ },
+ {
+  "id": "vo126",
+  "line": "25° + 65° is only 90°. ∠A and ∠B must add up to 180°.",
+  "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle B must add up to one hundred and eighty degrees.",
+  "where": [
+   "screen 37 cp2c: feedback B 25"
+  ],
+  "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल बी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo127",
+  "line": "∠B is next to ∠A, not opposite it. ∠A + ∠B = 180°.",
+  "spoken": "Angle B is next to angle A, not opposite it. Angle A plus angle B equals one hundred and eighty degrees.",
+  "where": [
+   "screen 37 cp2c: feedback B 65"
+  ],
+  "devanagari": "एंगल बी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल बी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo128",
+  "line": "180° is ∠A and ∠B together. Take away the 65° of ∠A.",
+  "spoken": "One hundred and eighty degrees is angle A and angle B together. Take away the sixty-five degrees of angle A.",
+  "where": [
+   "screen 37 cp2c: feedback B 180"
+  ],
+  "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल बी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
+ },
+ {
+  "id": "vo129",
+  "line": "∠C is opposite ∠A, so it is equal to ∠A, not 25°.",
+  "spoken": "Angle C is opposite angle A, so it is equal to angle A, not twenty-five degrees.",
+  "where": [
+   "screen 37 cp2c: feedback C 25"
+  ],
+  "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट ट्वेंटी फाइव डिग्रीज़।"
+ },
+ {
+  "id": "vo130",
+  "line": "115° is the size of an angle next to ∠A. ∠C is opposite ∠A, so ∠C = ∠A.",
+  "spoken": "One hundred and fifteen degrees is the size of an angle next to angle A. Angle C is opposite angle A, so angle C equals angle A.",
+  "where": [
+   "screen 37 cp2c: feedback C 115"
+  ],
+  "devanagari": "वन हंड्रेड एंड फिफ्टीन डिग्रीज़ इज द साइज ऑफ एन एंगल नेक्स्ट टू एंगल ए। एंगल सी इज ऑपोजिट एंगल ए, सो एंगल सी इक्वल्स एंगल ए।"
+ },
+ {
+  "id": "vo131",
+  "line": "∠C is opposite ∠A, so it is equal to ∠A, not 180°.",
+  "spoken": "Angle C is opposite angle A, so it is equal to angle A, not one hundred and eighty degrees.",
+  "where": [
+   "screen 37 cp2c: feedback C 180"
+  ],
+  "devanagari": "एंगल सी इज ऑपोजिट एंगल ए, सो इट इज इक्वल टू एंगल ए, नॉट वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo132",
+  "line": "25° + 65° is only 90°. ∠A and ∠D must add up to 180°.",
+  "spoken": "Twenty-five degrees plus sixty-five degrees is only ninety degrees. Angle A and angle D must add up to one hundred and eighty degrees.",
+  "where": [
+   "screen 37 cp2c: feedback D 25"
+  ],
+  "devanagari": "ट्वेंटी फाइव डिग्रीज़ प्लस सिक्सटी फाइव डिग्रीज़ इज ओनली नाइंटी डिग्रीज़। एंगल ए एंड एंगल डी मस्ट ऐड अप टू वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo133",
+  "line": "∠D is next to ∠A, not opposite it. ∠A + ∠D = 180°.",
+  "spoken": "Angle D is next to angle A, not opposite it. Angle A plus angle D equals one hundred and eighty degrees.",
+  "where": [
+   "screen 37 cp2c: feedback D 65"
+  ],
+  "devanagari": "एंगल डी इज नेक्स्ट टू एंगल ए, नॉट ऑपोजिट इट। एंगल ए प्लस एंगल डी इक्वल्स वन हंड्रेड एंड एटी डिग्रीज़।"
+ },
+ {
+  "id": "vo134",
+  "line": "180° is ∠A and ∠D together. Take away the 65° of ∠A.",
+  "spoken": "One hundred and eighty degrees is angle A and angle D together. Take away the sixty-five degrees of angle A.",
+  "where": [
+   "screen 37 cp2c: feedback D 180"
+  ],
+  "devanagari": "वन हंड्रेड एंड एटी डिग्रीज़ इज एंगल ए एंड एंगल डी टुगेदर। टेक अवे द सिक्सटी फाइव डिग्रीज़ ऑफ एंगल ए।"
+ },
+ {
+  "id": "vo135",
+  "line": "OC is not half of AO. OC = AO.",
+  "spoken": "O C is not half of A O. O C equals A O.",
+  "where": [
+   "screen 49 cp3a: feedback 3"
+  ],
+  "devanagari": "ओ सी इज नॉट हाफ ऑफ ए ओ। ओ सी इक्वल्स ए ओ।"
+ },
+ {
+  "id": "vo136",
+  "line": "12 cm is the whole of AC. OC is only half of it.",
+  "spoken": "Twelve centimetres is the whole of A C. O C is only half of it.",
+  "where": [
+   "screen 49 cp3a: feedback 12"
+  ],
+  "devanagari": "ट्वेल्व सेंटीमीटर्स इज द होल ऑफ ए सी। ओ सी इज ओनली हाफ ऑफ इट।"
+ },
+ {
+  "id": "vo137",
+  "line": "Yes! O cuts AC in half, so OC = 6 cm.",
+  "spoken": "Yes! O cuts A C in half, so O C equals six centimetres.",
+  "where": [
+   "screen 49 cp3a: right"
+  ],
+  "devanagari": "येस! ओ कट्स ए सी इन हाफ, सो ओ सी इक्वल्स सिक्स सेंटीमीटर्स।"
+ },
+ {
+  "id": "vo138",
+  "line": "CD is opposite AB, so CD = AB.",
+  "spoken": "C D is opposite A B, so C D equals A B.",
+  "where": [
+   "screen 20 cp1c: feedback CD"
+  ],
+  "devanagari": "सी डी इज ऑपोजिट ए बी, सो सी डी इक्वल्स ए बी।"
+ },
+ {
+  "id": "vo139",
+  "line": "AD is opposite BC, so AD = BC.",
+  "spoken": "A D is opposite B C, so A D equals B C.",
+  "where": [
+   "screen 20 cp1c: feedback AD"
+  ],
+  "devanagari": "ए डी इज ऑपोजिट बी सी, सो ए डी इक्वल्स बी सी।"
+ },
+ {
+  "id": "vo140",
+  "line": "OC is the other half of AC, so OC = AO.",
+  "spoken": "O C is the other half of A C, so O C equals A O.",
+  "where": [
+   "screen 49 cp3b: feedback OC"
+  ],
+  "devanagari": "ओ सी इज द अदर हाफ ऑफ ए सी, सो ओ सी इक्वल्स ए ओ ।"
+ },
+ {
+  "id": "vo141",
+  "line": "OD is the other half of BD, so OD = BO.",
+  "spoken": "O D is the other half of B D, so O D equals B O.",
+  "where": [
+   "screen 49 cp3b: feedback OD"
+  ],
+  "devanagari": "ओ डी इज द अदर हाफ ऑफ बी डी, सो ओ डी इक्वल्स बी ओ।"
+ },
+ {
+  "id": "vo142",
+  "line": "Are the two segments of each diagonal equal?",
+  "spoken": "Are the two segments of each diagonal equal?",
+  "where": [
+   "screen 43 measureSeg: the question"
+  ],
+  "devanagari": "आर द टू सेगमेंट्स ऑफ ईच डायगोनल इक्वल?"
+ },
+ {
+  "id": "vo143",
+  "line": "Which angle is equal to ∠A?",
+  "spoken": "Which angle is equal to angle A?",
+  "where": [
+   "screen 26 tapEqA: line"
+  ],
+  "devanagari": "विच एंगल इज इक्वल टू एंगल ए?"
+ },
+ {
+  "id": "vo144",
+  "line": "Which angle is equal to ∠D?",
+  "spoken": "Which angle is equal to angle D?",
+  "where": [
+   "screen 27 tapEqD: line"
+  ],
+  "devanagari": "विच एंगल इज इक्वल टू एंगल डी?"
+ },
+ {
+  "id": "vo145",
+  "line": "CD = 8 cm, AD = 5 cm.",
+  "spoken": "C D equals eight centimetres, A D equals five centimetres.",
+  "where": [
+   "screen 20 cp1c: right answer"
+  ],
+  "devanagari": "सी डी इक्वल्स एट सेंटीमीटर्स, ए डी इक्वल्स फाइव सेंटीमीटर्स।"
+ }
 ]
