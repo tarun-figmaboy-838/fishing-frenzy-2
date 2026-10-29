@@ -48,6 +48,17 @@ Each line recorded again was taken up to three times, and the take closest to th
 its pitch (two pitch trackers), its pace and its tone (MFCC) against the lesson's other clips. Lines whose pitch was
 2.5 semitones or more from the rest (a flat, low question, an overexcited reply) were recorded again the same way.
 
+**One pitch (29 Oct).** Takes recorded at different times still sat at different pitches - from 4.1 semitones below
+the lesson's normal voice to 4.2 above - so a line could sound like someone else (a high, sing-song "Which pair of
+sides...", a low, flat "Which of these are parallelograms?"). New takes would not match: the studio's output today is up
+to 7 dB brighter than the lesson's clips. So 90 clips were evened instead, from their own audio: pitch moved to within
+0.4 semitones of the normal voice where it was 1 or more away (Praat PSOLA: the voice and its timing kept; shifted
+only where two pitch trackers agree on the offset, else by the smaller reading), intonation drawn partly toward the
+normal range where it was flat or sing-song (exclamations never flattened), and treble matched with a gentle shelf
+where it was 2 dB or more off. Then `tools/vo_build.js` as usual. 106 of 110 lines are now within 1 semitone (55
+before); every adjusted clip was transcribed again - word for word as before, the recogniser just as sure (0.921
+mean word confidence against 0.922) - and the word timings moved at most 0.03 s.
+
 ## Spoken form
 
 The bubble keeps the written form; the voice is given words. `spoken` in the script differs from `line` where needed:
