@@ -1104,6 +1104,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   }
   // a screen's tags come one at a time, each built from the shape (buildTag) and given its moment before the next
   addChips(cs) {
+    // (a right answer's tags: the answers go first, then the tags come in their place)
+    const st = this.cur();
+    if (st && st.opts && this.state.done && !this.state.optsGone && (cs || []).some((c) => this.state.chips.every((x) => x.t !== c.t))) {
+      // (tags already over the answers glide down into the room they leave first - css .chip-row, 0.7 s)
+      const tok = this.stepTok, wait = this.tagsAsked(st) ? 760 : 380; this.setState({ optsGone: true }); this.busyFor(wait + 20);
+      this.tm(() => { if (tok === this.stepTok) this.addChips(cs); }, wait); return;
+    }
     const have = this.state.chips.map((c) => c.t), add = (cs || []).filter((c) => have.indexOf(c.t) < 0);
     add.forEach((c) => this.tagStep(() => (this.state.chips.every((x) => x.t !== c.t) ? this.buildTag(c) : 0), this.tagMs(c)));
   }
@@ -1198,11 +1205,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const want = {}, take = (cs) => (cs || []).forEach((c) => { want[c.t] = c; });
     (st.lines || []).concat(st.after || []).forEach((Ln) => {
       if (!Ln.tagsWithSupp) take(Ln.chips); // (tags built with the screen's demos start fresh, each with its own demo)
-      (Ln.cues || []).forEach((c) => {
+      const visit = (c) => { // (and the tags made inside a cue's steps)
         if (c.chip) take([c.chip]);
         take(c.tags);
         if (c.merge) { c.merge.from.forEach((t) => { want[t] = want[t] || { t: t, k: ((this.state.chips || []).find((x) => x.t === t) || {}).k || 'white' }; }); take([c.merge.into]); }
-      });
+        (c.steps || []).forEach(visit);
+      };
+      (Ln.cues || []).forEach(visit);
     });
     take(st.enterChips);
     return (this.state.chips || []).filter((c) => want[c.t] && !c.arriving).map((c) => ({ t: c.t, k: want[c.t].k, kept: 1 }));
@@ -1272,8 +1281,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         if (!r.width && !r.height) return;
         hand.x = Math.round((r.left + r.width / 2 - sr.left) / sc);
         hand.y = Math.round((r.top + r.height / 2 - sr.top) / sc);
-        // near the bottom edge the hand would run off the stage: point down onto the target's top instead
-        if (hand.y + 75 > 715 && !T.fromTiles) { hand.down = true; hand.y = Math.round((r.top - sr.top) / sc) + 8; }
+        // near the bottom edge the hand would run off the stage: it stays upright and presses the target's top part instead
+        if (hand.y + 75 > 715 && !T.fromTiles) hand.y = Math.round((r.top - sr.top) / sc) + 12;
         if (T.fromTiles) { // (it starts among the free tiles, and carries one to the box)
           const free = [...stage.querySelectorAll('.tile:not(.used)')].map((x) => x.getBoundingClientRect()).filter((x) => x.width);
           if (!free.length) return;
@@ -1416,7 +1425,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hMarks: {}, pairsIn: {}, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hMarks: {}, pairsIn: {}, optsGone: false, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2073,6 +2082,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // another try. The screen is done when every blank is right. Nothing shows until the question has been asked.
   isDropdown() { const D = this.fillDef(); return !!(D && !D.match); }
   ddOpen(id) {
+    this.hideHand(); // (the hint goes as the menu opens: never behind it)
     const F = this.state.fill, D = this.fillDef();
     if (this.state.done || F.checking || F.locked[id] || this.busy()) return;
     if (F.open === id) { this.ddClose(); return; }
@@ -2120,7 +2130,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (st.fig) { // (its value jumps to its "?" on the figure: the figure's key for the box)
         const flip = { AD: 'DA', CB: 'BC', DC: 'CD' }, key = (st.fig.sides || {})[id] ? id : (st.fig.sides || {})[flip[id]] ? flip[id] : id;
         this.flyAnswer([key], typeof document !== 'undefined' ? document.querySelector('[data-blank="' + id + '"]') : null);
-        if ((st.fig.sides || {})[key]) this.lightFor([key], 1500); else if ((st.fig.angles || {})[key]) this.emphasize(['a' + key]); // (the part it measures comes forward as it lands)
+        // (the part it measures comes forward as it lands - the last one's in the right answer's own words, when it has them)
+        const last = D.blanks.every((x) => locked[x.id]) && !!st.okCues;
+        if (last) {} else if ((st.fig.sides || {})[key]) this.lightFor([key], 1500); else if ((st.fig.angles || {})[key]) this.emphasize(['a' + key]);
       }
       if (D.blanks.every((x) => locked[x.id])) {
         const s = this.state, results = Object.assign({}, s.results);
@@ -2700,15 +2712,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   belowH(st) {
     const C = CONFIG.card;
     if (st.opts) {
-      if (this.hasChips(st) && !st.grid) return C.chipGap + C.chipLane + C.optGap + C.optH; // (its tags' row, then the answers)
+      if (this.tagsAsked(st)) return C.chipGap + C.chipLane + C.optGap + C.optH; // (tags shown while it asks: their row, then the answers)
       if (!st.optWrap) return C.optGap + C.optH;
       const rows = (st.opts.some((o) => !o.wide) ? 1 : 0) + st.opts.filter((o) => o.wide).length; // short ones in a row, each wide one under
       return C.optGap + rows * C.optH + (rows - 1) * C.optGapX;
     }
-    if (st.fill) return C.optGap + C.fillH + (st.fill.match ? C.optGapX + C.tileH : 0); // (the answer boxes, and the segments under them; a number box's choices open from it)
+    if (st.fill) return C.optGap + C.fillH + C.optGapX + C.tileH; // (the answer boxes, and the choices under them: the segments, or a number box's menu - which opens there, off the figure)
     if (!this.hasChips(st) || (st.chipTop && st.chipTop < 200)) return 0; // (no tags, or tags above it: nothing kept under it)
     return C.chipGap + (st.chipRows ? C.rowsH : C.chipLane);
   }
+  // a question showing tags while it asks (screen 27: screen 26's): their row under the shape, over the answers. A
+  // question whose tags come with its right answer keeps no row for them - they take the answers' place as they go
+  tagsAsked(st) { return !!(st.opts && !st.grid && st.enterChips); }
+  tagsForAnswers(st) { return !!(st.opts && !st.grid && !st.enterChips && this.hasChips(st)); }
   // whether a screen shows cards under its shape at any point (so their row is kept free from the start)
   hasChips(st) {
     const f = st.f || {};
@@ -2895,13 +2911,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       wordSize: plate ? plate.size : wi > 15 || (s.line || '').length > 80 ? 22 : 24, // the plate's fit; a long bubble line gets the smaller size
       c1: c1, hasOpts: hasOpts, opts: opts,
       // the answers (and answer boxes) in a row under the shape, centred on the card
-      optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + (st.opts && !st.grid && this.hasChips(st) ? CONFIG.card.chipGap + CONFIG.card.chipLane : 0)) : 376, // (under a right answer's tags)
+      optTop: isLesson ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + (this.tagsAsked(st) ? CONFIG.card.chipGap + CONFIG.card.chipLane : 0)) : 376, // (under a right answer's tags)
       optLeft: this.optRow(st).left, optPill: this.optRow(st).pw, // (a pill's own width: a right answer left alone keeps it)
-      optW: this.optRow(st).w, optCls: fadeV + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (soloRow ? ' solo-ok' : ''),
+      optW: this.optRow(st).w, optCls: fadeV + (s.optsGone ? ' gone' : '') + (this.busy() ? ' wait' : ' go') + (st.optWrap ? ' wrap' : '') + (st.multi ? ' multi' : '') + (soloRow ? ' solo-ok' : ''),
       // the name tags: under the shape, or above it on a question screen (its answers have the space under it)
       // (tags under the shape: their row centred in the lane kept for them - between its letters and the answers or sand)
       // (tags above the shape: their row centred between the line's plate and the shape's letters)
-      chipTop: isLesson ? (st.chipTop && st.chipTop < 200 ? Math.round((CONFIG.card.plateBottom + this.sceneFit(st).head) / 2 - 52) : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap + CONFIG.card.chipLane / 2 - 52)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
+      chipTop: isLesson ? (this.tagsAsked(st) && s.optsGone ? Math.round((this.sceneFit(st).bottom + CONFIG.card.bottom) / 2 - 52) : this.tagsForAnswers(st) ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + CONFIG.card.optH / 2 - 52) : st.chipTop && st.chipTop < 200 ? Math.round((CONFIG.card.plateBottom + this.sceneFit(st).head) / 2 - 52) : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap + CONFIG.card.chipLane / 2 - 52)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left

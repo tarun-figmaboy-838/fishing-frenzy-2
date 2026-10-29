@@ -40,7 +40,7 @@ const VO_LINES = {
   "Not quite. Compare its size with ∠D. Look at the corner opposite D.": ["vo052",6.56,[0.27,0.6,1.67,2.21,2.49,2.83,3.17,4.3,4.58,4.75,4.98,5.38,5.89],6.07],
   "That's correct! ∠D is equal to ∠B.": ["vo054",3.94,[0.37,0.71,1.46,2.02,2.23,2.64,2.85],3.49],
   "So in any parallelogram, the pairs of opposite angles are also equal.": ["vo055",6.2,[0.31,0.56,0.8,1.13,2.67,2.94,3.35,3.56,4.18,4.65,4.93,5.27],5.76],
-  "But I see something else too.": ["vo056",2.78,[0.31,0.58,0.72,1,1.68,2.03],2.38],
+  "But I see something else too.": ["vo056",2.38,[0.26,0.49,0.61,0.85,1.43,1.73],2.03],
   "Look at ∠A and ∠D.": ["vo057",2.98,[0.34,0.73,0.96,1.58,1.89],2.6],
   "They add up to make 180°.": ["vo058",3.82,[0.36,0.65,0.88,1.06,1.23,1.53],3.4],
   "Which other angles add up to 180°?": ["vo059",4.61,[0.35,0.73,1.11,1.56,1.81,2,2.19],4.23],

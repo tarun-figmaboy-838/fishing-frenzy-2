@@ -138,7 +138,9 @@ const LESSON = {
         { id: 'all', t: 'All sides are equal', fb: 'Look at the lengths again. AB is 6 cm, but AD is only 3 cm.' },
         { id: 'opp', t: 'Opposite sides are equal', ok: true }
       ], f: LENS }, PRACTICE),
-    { pdf: 18, id: 'oppEq', onlyCues: 1, lines: [{ cues: [{ at: 'opposite', match: [['AB', 'CD'], ['DA', 'BC']], tags: [{ t: 'AB = CD', k: 'gold', pop: 1 }, { t: 'AD = BC', k: 'gold', pop: 1 }] }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.' }],
+    // (no sides sliding: as it is said, the names of each pair of opposite sides fly from their sides and merge into
+    // its tag - AB and CD into AB = CD, then AD and BC into AD = BC)
+    { pdf: 18, id: 'oppEq', onlyCues: 1, lines: [{ cues: [{ at: 'opposite', chip: { t: 'AB = CD', k: 'gold', byName: 1 } }, { at: 'equal', chip: { t: 'AD = BC', k: 'gold', byName: 1 } }], m: 'happy', t: 'In any parallelogram,\nopposite sides are of\nequal lengths.' }],
       f: Object.assign({ ticks: 1 }, LENS) },
     { pdf: 20, id: 'sidesSum', onlyCues: 1, lines: [{ m: 'happy', t: 'So, in any parallelogram,\nopposite sides are\nparallel and equal.', cues: [
       // (one after another from "parallel": "equal" follows it too closely for a sequence of its own)
@@ -157,15 +159,18 @@ const LESSON = {
         { id: 'C', ok: true },
         { id: 'D', fb: 'This shape has five sides, so it is not a quadrilateral.' }
       ] }, CP),
-    Object.assign({ pdf: 21, id: 'cp1b', handOnce: 1, cpTitle: 'Checkpoint 1 · Find the Missing Side',
-      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 7 cm. What is the\nlength of CD?' }],
-      ok: "That's right! Opposite sides\nare equal, so CD = 7 cm.",
+    // (each side traced, whole, as it is named: AB, then the side asked for; right: the opposite pair, on "Opposite")
+    Object.assign({ pdf: 21, id: 'cp1b', handOnce: 1, onlyCues: 1, cpTitle: 'Checkpoint 1 · Find the Missing Side',
+      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 7 cm. What is the\nlength of CD?', cues: [{ at: 'AB = 7 cm.', light: ['AB'], ms: 1400 }, { at: 'CD?', light: ['CD'], ms: 1600 }] }],
+      ok: "That's right! Opposite sides\nare equal, so CD = 7 cm.", okCues: [{ at: 'Opposite', light: ['AB', 'CD'], ms: 1800 }],
       fig: { P: FIG_SIDES, sides: { AB: '7 cm', CD: '? cm' } },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '7' }], tiles: ['3.5', '7', '14'],
         fb: { '3.5': 'CD is not half of AB. Opposite sides of a parallelogram are equal.', '14': 'CD is not double AB. Opposite sides of a parallelogram are equal.' } } }, CP),
-    Object.assign({ pdf: 21, id: 'cp1c', cpTitle: 'Checkpoint 1 · Find the Missing Sides',
-      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 8 cm and BC = 5 cm.\nFind the lengths of\nCD and AD.' }],
-      ok: 'CD = 8 cm, AD = 5 cm.',
+    // (each given side traced, whole, as it is named - AB, then BC - and the two asked for together, so no light cuts
+    // another short; right: CD, then AD, as they are said)
+    Object.assign({ pdf: 21, id: 'cp1c', onlyCues: 1, cpTitle: 'Checkpoint 1 · Find the Missing Sides',
+      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 8 cm and BC = 5 cm.\nFind the lengths of\nCD and AD.', cues: [{ at: 'AB = 8 cm', light: ['AB'], ms: 1300 }, { at: 'BC = 5 cm.', light: ['BC'], ms: 1300 }, { at: 'CD', light: ['CD', 'DA'], ms: 1900 }] }],
+      ok: 'CD = 8 cm, AD = 5 cm.', okCues: [{ at: 'CD = 8 cm,', light: ['CD'], ms: 1150 }, { at: 'AD = 5 cm.', light: ['DA'], ms: 1400 }],
       fig: { P: FIG_SIDES, sides: { AB: '8 cm', BC: '5 cm', CD: '?', DA: '?' } },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '8' }, { id: 'AD', pre: 'AD =', post: 'cm', ans: '5' }], tiles: ['3', '5', '8', '13'],
         fb: { CD: 'CD is opposite AB, so CD = AB.', AD: 'AD is opposite BC, so AD = BC.' } } }, CP), // (each box its own tip)
@@ -203,7 +208,7 @@ const LESSON = {
       cues: [{ at: 'opposite', steps: [{ focus: ['A', 'C'], hi: '∠A = ∠C', ms: 1300 }, { focus: ['D', 'B'], hi: '∠D = ∠B', ms: 1300 }], gap: 1600 }] }], f: { arcs: 'ABCD', pairCol: 1 } }, PRACTICE),
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
-    { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 32, id: 'seeElse', own: 1, lines: [{ narr: 1, t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts

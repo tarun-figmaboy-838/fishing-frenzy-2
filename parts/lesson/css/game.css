@@ -853,3 +853,5 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* the tag row moves with the shape when the screen changes (answers gone: it settles centred under the shape) */
 .stage .chip-row{transition:top .7s cubic-bezier(.22,.8,.3,1)}
 .vdot.used{opacity:.5;filter:grayscale(1)}
+/* a right answer's tags come in the answers' place: the answers go first */
+.stage .gone>.opt,.stage .gone .opt{opacity:0!important;pointer-events:none;transition:opacity .35s ease}
