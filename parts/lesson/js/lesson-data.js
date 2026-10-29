@@ -123,7 +123,8 @@ const LESSON = {
     // ---------- Part 2 · opposite side lengths (pages 12-20) ----------
     // (the sides light on "lengths" / "equal": the question is about them, and nothing else is on the board yet)
     { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?', cues: [{ at: 'lengths', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
-    { pdf: 13, id: 'equalQ', lines: [{ m: 'thinking', t: 'Are they equal too?' }], f: PG },
+    // (the narrator asks; Swiftee, beside the shape, answers on the next screen: "Let's find out!")
+    { pdf: 13, id: 'equalQ', own: 1, lines: [{ narr: 1, t: 'Are they equal too?' }], f: PG },
     { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
     { pdf: 15, id: 'interesting', own: 1, lines: [{ narr: 1, t: 'There is something\ninteresting about\nthe lengths.' }],
@@ -177,7 +178,7 @@ const LESSON = {
 
     // ---------- Part 4 · opposite angles (pages 22-31) ----------
     { pdf: 22, id: 'sidesDone', lines: [{ m: 'happy', t: 'We learnt all about the\nsides of a parallelogram.' }] },
-    { pdf: 23, id: 'angles', noTrace: 1, lines: [{ m: 'thinking', t: 'But what about its angles?\nAre they equal too?' }] },
+    { pdf: 23, id: 'angles', noTrace: 1, own: 1, lines: [{ narr: 1, t: 'But what about its angles?\nAre they equal too?' }] }, // (the narrator asks: as screen 13)
     // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
     { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
@@ -208,7 +209,7 @@ const LESSON = {
       cues: [{ at: 'opposite', steps: [{ focus: ['A', 'C'], hi: '∠A = ∠C', ms: 1300 }, { focus: ['D', 'B'], hi: '∠D = ∠B', ms: 1300 }], gap: 1600 }] }], f: { arcs: 'ABCD', pairCol: 1 } }, PRACTICE),
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
-    { pdf: 32, id: 'seeElse', own: 1, lines: [{ narr: 1, t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts

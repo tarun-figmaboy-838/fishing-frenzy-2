@@ -2602,7 +2602,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
           const ox = Om.x - c.x, oy = Om.y - 26 - c.y, along = Math.abs(ox * ux + oy * uy), across = Math.abs(ox * nx + oy * ny);
           return ok && (!f.O || along > hw + 20 || across > hh + 22) ? c : null;
         };
-        const first = measured ? { A: 'B', B: 'A', C: 'D', D: 'C' }[k] : nb[0], other = nb[0] === first ? nb[1] : nb[0];
+        // (above its line, as writing sits on a line - every length the same way: into whichever neighbour's triangle
+        // lies over its half, and only failing that the one under it)
+        const up = (into) => { const mx = (P[k].x + Om.x) / 2, my = (P[k].y + Om.y) / 2; let nx = -uy, ny = ux; if (nx * (P[into].x - mx) + ny * (P[into].y - my) < 0) { nx = -nx; ny = -ny; } return ny; };
+        const [first, other] = up(nb[0]) <= up(nb[1]) ? [nb[0], nb[1]] : [nb[1], nb[0]];
         let c = null;
         // (t: from the corner, 0, to O, 1 - tried from the half's middle outwards, nearest first)
         const ts = [0.5, 0.54, 0.46, 0.58, 0.42, 0.62, 0.38, 0.66, 0.34, 0.7, 0.3, 0.74, 0.26];
