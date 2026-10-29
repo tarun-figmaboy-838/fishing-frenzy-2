@@ -402,6 +402,9 @@ class Game {
   applyFocus(dt) {
     const f = this.focus;
     if (f.fit && f.want === 1 && f.t === 0) { f.fit = false; this.fitFocus(); }
+    // (the world is drawn as fine as the zoom shows it, from the zoom's start until it has opened out again)
+    const res = f.want === 1 || f.t > 0 ? f.zoom || 1 : 1;
+    if (this.stage.zoomRes !== res) { this.stage.zoomRes = res; this.stage.resize(); this.net.sharpRes = this.textureRes(); this.syncWaterCanvas(); }
     if (f.t !== f.want) {
       const step = dt / Math.max(0.001, f.ms / 1000);
       f.t = f.want > f.t ? Math.min(f.want, f.t + step) : Math.max(f.want, f.t - step);
@@ -856,7 +859,7 @@ class Game {
   // Texture pixels per stage pixel the screen can show: no more than it has (a small or
   // standard screen needs one), at most two.
   textureRes() {
-    return Math.max(1, Math.min(2, this.stage.scale * this.stage.dpr));
+    return Math.max(1, Math.min(3, this.stage.scale * this.stage.px));
   }
 
   // The net's labels are drawn in stage pixels; on a small screen the stage shrinks, so they
@@ -1310,10 +1313,15 @@ class Game {
     const top = Math.floor(this.waterline - 16);
     const w = x1 - x0;
     const h = 60;
+    // (drawn at the screen's sharpness, zoom and all, so its bright edge stays crisp on a Retina screen)
+    const res = Math.min(3, this.stage.px * this.stage.scale);
     const c = this.raftWaterCanvas || (this.raftWaterCanvas = document.createElement('canvas'));
-    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const cw = Math.ceil(w * res), ch = Math.ceil(h * res);
+    if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch; }
     const g = c.getContext('2d');
-    g.clearRect(0, 0, w, h);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, cw, ch);
+    g.setTransform(res, 0, 0, res, 0, 0);
     const t = this.fx.t;
     const amp = this.water.ok ? (this.fx.reduced ? 0.35 : 1) : 0;
     const lap = this.fx.reduced ? 0.4 : 1.6;
@@ -1351,7 +1359,7 @@ class Game {
     g.fillStyle = fade;
     g.fillRect(0, 0, w, h);
     g.globalCompositeOperation = 'source-over';
-    ctx.drawImage(c, x0, top);
+    ctx.drawImage(c, x0, top, w, h);
   }
 
   update(dt) {

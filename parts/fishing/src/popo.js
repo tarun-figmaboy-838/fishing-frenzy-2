@@ -112,7 +112,7 @@ class Popo {
     const k = PROP.scale;
     const x = atAnchor ? 0 : this.anchor.x;
     const y = atAnchor ? 0 : this.anchor.y;
-    ctx.drawImage(assets.props, 0, 0, 418, 418, x - PROP.mid * k, y - PROP.bottom * k, 418 * k, 418 * k);
+    ctx.drawImage(assets.props, 0, 0, assets.props.width, assets.props.height, x - PROP.mid * k, y - PROP.bottom * k, 418 * k, 418 * k); // (the art at 2.45x its 418 cell: sharp on a Retina screen)
   }
 
   // Tilt pivots on the raft's right end at the waterline, so a lean looks like the raft dipping.

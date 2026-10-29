@@ -20,7 +20,9 @@ class Stage {
     this.curtainCtx = this.curtain.getContext('2d');
     this.scale = 1;
     this.dpr = 1;
+    this.px = 1;
     this.dprCap = 2; // the most canvas pixels per screen pixel (Game.watchFrameRate lowers it on a slow device)
+    this.zoomRes = 1; // the scene's zoom on the net (Game.applyFocus): the world is drawn that much finer, so the zoom is sharp
     this.portrait = false;
     this.resize();
   }
@@ -39,12 +41,15 @@ class Stage {
     this.root.style.width = `${w}px`;
     this.root.style.height = `${h}px`;
     this.root.style.setProperty('--scale', scale);
-    this.canvas.width = Math.round(w * this.dpr);
-    this.canvas.height = Math.round(h * this.dpr);
+    // the world's canvas pixels per screen pixel: the screen's, times the zoom on the net - but a zoomed world never
+    // more than about 12 million pixels (a big screen), and never less sharp than the screen
+    this.px = Math.max(this.dpr, Math.min(this.dpr * this.zoomRes, Math.sqrt(12e6 / (w * h))));
+    this.canvas.width = Math.round(w * this.px);
+    this.canvas.height = Math.round(h * this.px);
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
-    this.curtain.width = this.canvas.width;
-    this.curtain.height = this.canvas.height;
+    this.curtain.width = Math.round(w * this.dpr); // (over the scene, not zoomed with it)
+    this.curtain.height = Math.round(h * this.dpr);
     this.curtain.style.width = `${w}px`;
     this.curtain.style.height = `${h}px`;
   }
@@ -53,7 +58,7 @@ class Stage {
   // (pictures drawn smaller or larger than their art are smoothed at the best quality: the browsers' default, 'low',
   // left the fish jagged and pixelated)
   begin() {
-    const k = this.dpr * this.scale;
+    const k = this.px * this.scale;
     this.ctx.setTransform(k, 0, 0, k, 0, 0);
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = 'high';
