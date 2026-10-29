@@ -601,9 +601,15 @@
       if (live >= 0) this.last = live;
       return this.last;
     },
+    // the front page's Next is the banner's Play: only once the game's own Play is up (its art loaded), as for a tap
+    playReady() {
+      try { const F = fishing(), b = F && F.status === 'ready' && F.el.contentWindow.document.getElementById('btn-play'); return !!b && !b.disabled; }
+      catch (e) { return true; } // (from disk: the part's page is out of reach; its Play decides)
+    },
     go(step) {
       const order = this.order();
       if (step > 0 && this.waiting(order)) return; // (a way on still playing: Next waits for it)
+      if (step > 0 && J.phase === 'front' && this.at(order) === 0 && !this.playReady()) return;
       this.onwardTo = -1;
       const from = this.at(order), to = from + step, o = order[to];
       if (!o) return;
@@ -680,7 +686,7 @@
       const label = this.el.querySelector('.nav-at');
       if (label.textContent !== name) label.textContent = name;
       this.back.disabled = at <= 0;
-      this.next.disabled = at >= order.length - 1 || this.waiting(order);
+      this.next.disabled = at >= order.length - 1 || this.waiting(order) || (J.phase === 'front' && at === 0 && !this.playReady());
     },
   };
 
