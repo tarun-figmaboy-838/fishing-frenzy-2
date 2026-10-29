@@ -820,8 +820,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ---- the measuring room (screens 13 and 24, as Fishing Frenzy's): Swiftee stands a little higher and further right,
    her feet on the sand's ledge, her bubble close above her (the walkers start and end at her size and place here) ---- */
 .stage.in-card.scene.measure-room .swiftee{left:53px!important;top:404px!important}
-.stage.in-card.scene.measure-room .bubble{left:63px!important;top:auto!important;bottom:300px!important;max-width:340px!important}
-.stage.in-card.scene.measure-room .bubble .bubble-tail{left:122px}
+.stage.in-card.scene.measure-room:not(.plate) .bubble{left:63px!important;top:auto!important;bottom:300px!important;max-width:340px!important} /* (her bubble beside her - a narrator's line keeps its plate across the top) */
+.stage.in-card.scene.measure-room:not(.plate) .bubble .bubble-tail{left:122px}
 
 /* the maths in motion (js/motion.js fx): an overlay over the board, under the hand and the tiles */
 .stage svg.math-fx{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:visible;pointer-events:none;z-index:9}
