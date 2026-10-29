@@ -1108,7 +1108,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const st = this.cur();
     if (st && st.opts && this.state.done && !this.state.optsGone && (cs || []).some((c) => this.state.chips.every((x) => x.t !== c.t))) {
       // (tags already over the answers glide down into the room they leave first - css .chip-row, 0.7 s)
-      const tok = this.stepTok, wait = this.tagsAsked(st) ? 760 : 380; this.setState({ optsGone: true }); this.busyFor(wait + 20);
+      const tok = this.stepTok, wait = 760; this.setState({ optsGone: true }); this.busyFor(wait + 20);
       this.tm(() => { if (tok === this.stepTok) this.addChips(cs); }, wait); return;
     }
     const have = this.state.chips.map((c) => c.t), add = (cs || []).filter((c) => have.indexOf(c.t) < 0);
@@ -1923,19 +1923,24 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ done: true, results: results });
-      if (st.okChips && !(st.okCues || []).some((c) => c.chip)) this.addChips(st.okChips); // (or each on its words: okCues)
       this.cheer();
-      this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues, fb: 1 });
+      this.answersGo(st, () => {
+        if (st.okChips && !(st.okCues || []).some((c) => c.chip)) this.addChips(st.okChips); // (or each on its words: okCues)
+        this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues, fb: 1 });
+      });
     } else if (o.ok) {
       picks[o.id] = 'good';
       const results = Object.assign({}, s.results);
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ picks: picks, done: true, results: results });
-      if (st.okChips && !(st.okCues || []).some((c) => c.chip)) this.addChips(st.okChips); // (or each on its words: okCues)
       this.cheer();
-      if (st.fig) this.flyAnswer(this.figUnknowns(st), typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null);
-      this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues, fb: 1 });
-      this.okGlow(st);
+      const el = typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null, r = el && el.getBoundingClientRect();
+      this.answersGo(st, () => {
+        if (st.okChips && !(st.okCues || []).some((c) => c.chip)) this.addChips(st.okChips); // (or each on its words: okCues)
+        if (st.fig) this.flyAnswer(this.figUnknowns(st), r ? { getBoundingClientRect: () => r } : null); // (from where the answer was)
+        this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues, fb: 1 });
+        this.okGlow(st);
+      });
     } else {
       picks[o.id] = 'bad';
       this.setState({ picks: picks, cfuFirst: false });
@@ -2711,6 +2716,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // tiles), or the name-tag lane - reserved on every explanation screen so the shape keeps one place from screen to screen
   belowH(st) {
     const C = CONFIG.card;
+    if (st.opts && !st.grid && st === this.cur() && this.state.optsGone) return this.hasChips(st) ? C.chipGap + C.chipLane : 0; // (answered: the answers have gone)
     if (st.opts) {
       if (this.tagsAsked(st)) return C.chipGap + C.chipLane + C.optGap + C.optH; // (tags shown while it asks: their row, then the answers)
       if (!st.optWrap) return C.optGap + C.optH;
@@ -2720,6 +2726,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (st.fill) return C.optGap + C.fillH + C.optGapX + C.tileH; // (the answer boxes, and the choices under them: the segments, or a number box's menu - which opens there, off the figure)
     if (!this.hasChips(st) || (st.chipTop && st.chipTop < 200)) return 0; // (no tags, or tags above it: nothing kept under it)
     return C.chipGap + (st.chipRows ? C.rowsH : C.chipLane);
+  }
+  // a right answer: the answers go, the shape (and its tags) settle into the room they leave - centred - and then the
+  // praise and its pictures (fn), so nothing is drawn where the shape is leaving; a grid's cards are the question: they stay
+  answersGo(st, fn) {
+    if (!st.opts || st.grid) { fn(); return; }
+    const tok = this.stepTok;
+    this.setState({ optsGone: true }); this.busyFor(800);
+    this.tm(() => { if (tok === this.stepTok) fn(); }, window.Motion && Motion.reduced ? 0 : 720); // (css .board, .chip-row: 0.7 s)
   }
   // a question showing tags while it asks (screen 27: screen 26's): their row under the shape, over the answers. A
   // question whose tags come with its right answer keeps no row for them - they take the answers' place as they go
@@ -2917,7 +2931,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // the name tags: under the shape, or above it on a question screen (its answers have the space under it)
       // (tags under the shape: their row centred in the lane kept for them - between its letters and the answers or sand)
       // (tags above the shape: their row centred between the line's plate and the shape's letters)
-      chipTop: isLesson ? (this.tagsAsked(st) && s.optsGone ? Math.round((this.sceneFit(st).bottom + CONFIG.card.bottom) / 2 - 52) : this.tagsForAnswers(st) ? Math.round(this.sceneFit(st).bottom + CONFIG.card.optGap + CONFIG.card.optH / 2 - 52) : st.chipTop && st.chipTop < 200 ? Math.round((CONFIG.card.plateBottom + this.sceneFit(st).head) / 2 - 52) : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap + CONFIG.card.chipLane / 2 - 52)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
+      chipTop: isLesson ? (st.chipTop && st.chipTop < 200 ? Math.round((CONFIG.card.plateBottom + this.sceneFit(st).head) / 2 - 52) : Math.round(this.sceneFit(st).bottom + CONFIG.card.chipGap + CONFIG.card.chipLane / 2 - 52)) : st.chipTop || 528, chipLeft: 200, // (the row: 1040 wide, centred on the card, so four tags stay one row)
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left
