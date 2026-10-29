@@ -1307,7 +1307,11 @@ class Net {
     // (the side nets are parallelograms in the making: both pairs carry their parallel marks - one chevron on AB and
     // CD, two on BC and AD - with the lengths, so opposite sides equal and parallel are seen together)
     const bothPairs = () => { this.drawTicks(ctx, c, ['AB', 'CD'], false, 1); this.drawTicks(ctx, c, ['BC', 'DA'], false, 2); };
-    this.markedSides = { sides: 1, parallelogram: 1 }[L.type] ? { AB: 1, CD: 1, BC: 2, DA: 2 } : L.type === 'parallel' ? Object.fromEntries(L.sides.map((k) => [k === 'AD' ? 'DA' : k, L.sides[0] === 'AB' ? 1 : 2])) : null;
+    // (a 'parallel' net: the pair already parallel - the one the corner slides along - carries the marks; the pair the
+    // child makes parallel gets them only once it is: a mark on it before would say it already was)
+    const parOther = L.type === 'parallel' ? (L.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD']) : null;
+    const pairMarks = (ks) => ks.map((k) => [k === 'AD' ? 'DA' : k, ks[0] === 'AB' ? 1 : 2]);
+    this.markedSides = { sides: 1, parallelogram: 1 }[L.type] ? { AB: 1, CD: 1, BC: 2, DA: 2 } : parOther ? Object.fromEntries(pairMarks(parOther).concat(this.locked ? pairMarks(L.sides) : [])) : null;
     switch (L.type) {
       case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel': {
@@ -1315,8 +1319,9 @@ class Net {
         // them) carries its lengths as the corner moves - the side the corner pulls live, its opposite fixed - and
         // they read the same exactly when the marked pair is parallel too (one pair parallel and equal makes a
         // parallelogram), so the child sees what the drag is doing; whether it is right is still Check's
-        this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2);
-        const other = L.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD'];
+        const other = parOther;
+        this.drawTicks(ctx, c, other, false, other[0] === 'AB' ? 1 : 2);
+        if (this.locked) this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2); // (made parallel: now marked too)
         for (const name of other) this.drawLength(ctx, c, name, m(name), name.includes(L.corner));
         break;
       }
@@ -1515,25 +1520,12 @@ class Net {
   }
 
   // The property highlight: sides, angles or diagonal halves light up, one step at a time.
-  // A hint's ghost: the corner being moved, a little way along its track - its two sides drawn to it dashed and faint,
-  // and a faint knob - so the child sees the move while the real corner stays where it is
+  // A hint's ghost: a faint knob, a little way along the corner's track (no dashed sides drawn to it - as the lesson's
+  // hint) - so the child sees the move while the real corner stays where it is
   drawGhost(ctx, c) {
-    const g = this.ghost, i = this.movable, a = c[(i + 3) % 4], b = c[(i + 1) % 4], k = this.textScale;
+    const g = this.ghost, k = this.textScale;
     ctx.save();
     ctx.globalAlpha *= 0.8 * (g.alpha == null ? 1 : g.alpha);
-    ctx.lineCap = 'round';
-    ctx.setLineDash([12 * k, 9 * k]);
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(g.x, g.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.lineWidth = 9 * k;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.stroke();
-    ctx.lineWidth = 4.5 * k;
-    ctx.strokeStyle = '#ffd23f';
-    ctx.stroke();
-    ctx.setLineDash([]);
     ctx.beginPath();
     ctx.arc(g.x, g.y, 16 * k, 0, TAU);
     ctx.fillStyle = 'rgba(255, 210, 63, 0.5)';
