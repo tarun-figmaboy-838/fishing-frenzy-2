@@ -304,6 +304,31 @@
         .to(el, { opacity: 0, duration: 0.18 }, 1.1));
       return 1300;
     },
+    // a measured length becoming its mark (stage px): the number glides onto the middle of its half, shrinking into the
+    // tick drawn there, in its half's colour
+    intoMark(text, from, to, col, onLand) {
+      const stage = document.querySelector('.stage');
+      if (!G || reduced || !stage) { if (onLand) onLand(); return; }
+      const el = document.createElement('div'); el.className = 'fly-val tomark'; el.textContent = text; el.style.color = col; stage.appendChild(el);
+      add(() => G.timeline({ onComplete: () => el.remove() })
+        .set(el, { left: from.x, top: from.y, xPercent: -50, yPercent: -50, scale: 1, opacity: 1 })
+        .to(el, { left: to.x, top: to.y, duration: 0.8, ease: 'sine.inOut' })
+        .to(el, { scale: 0.3, duration: 0.8, ease: 'sine.in' }, 0)
+        .to(el, { opacity: 0, duration: 0.35, ease: 'sine.in' }, 0.5)
+        .call(() => { if (onLand) onLand(); }, null, 0.8));
+    },
+    // a diagonal taking one colour (stage px): its colour runs from one corner through O to the other, painting over the
+    // half in the other colour, with a light at its head; onDone: the half itself takes the colour, and the paint goes
+    paintRun(l, col, w, onDone) {
+      if (!G || reduced || !this.fx()) { if (onDone) onDone(); return; }
+      const el = this.mk('line', { x1: l.x1.toFixed(1), y1: l.y1.toFixed(1), x2: l.x2.toFixed(1), y2: l.y2.toFixed(1), pathLength: 100, stroke: col,
+        'stroke-width': w, 'stroke-linecap': 'round', 'stroke-dasharray': '100 100', 'stroke-dashoffset': 100, 'class': 'math-paint' });
+      this.traceRun([l]);
+      add(() => G.timeline({ onComplete: () => el.remove() })
+        .to(el, { attr: { 'stroke-dashoffset': 0 }, duration: 1.0, ease: 'power1.inOut' })
+        .call(() => { if (onDone) onDone(); })
+        .to(el, { opacity: 0, duration: 0.3 }, '+=0.15'));
+    },
     // a tag merging into another (stage px): it slides straight along to it - no leap - easing in as it goes, and
     // melts into it as it arrives; onLand: the one it merges into takes over
     slideValue(text, from, to, onLand, cls) {
@@ -350,14 +375,17 @@
     // a hint's ghost (stage px): what the hand's drag would move goes with it, faint and dashed - B and its two sides
     // to the corners beside it (anchors), or the line being drawn from the corner (band) - in step with the hand's own
     // drag (css handDrag, 2.1 s: pressed at 22%, there at 66%, gone by 92%), as often as the hand repeats it
-    ghostDrag(from, dx, dy, anchors, band, cycles) {
+    // (pill: {w, h} - what moves is an answer tile, not a corner: a blank tile of that size rides with the hand)
+    ghostDrag(from, dx, dy, anchors, band, cycles, pill) {
       this.unghost();
       if (!G || reduced || !this.fx()) return;
       const g = this.mk('g', { 'class': 'math-ghost', opacity: 0 }), p = { x: from.x, y: from.y };
       const lines = anchors.concat(band ? [from] : []).map(() => this.mk('line', { stroke: '#ffd23f', 'stroke-width': 4, 'stroke-dasharray': '9 7', 'stroke-linecap': 'round' }, g));
-      const knob = this.mk('circle', { r: 7, fill: 'rgba(255,210,63,.55)', stroke: '#fff', 'stroke-width': 2.5 }, g); // (the corner's own size)
+      const knob = pill ? this.mk('rect', { width: pill.w, height: pill.h, rx: 14, fill: 'rgba(255,236,180,.7)', stroke: '#efcb6e', 'stroke-width': 2.5 }, g)
+        : this.mk('circle', { r: 7, fill: 'rgba(255,210,63,.55)', stroke: '#fff', 'stroke-width': 2.5 }, g); // (the corner's own size)
       const ends = anchors.concat(band ? [from] : []);
-      const draw = () => { lines.forEach((ln, i) => { ln.setAttribute('x1', ends[i].x); ln.setAttribute('y1', ends[i].y); ln.setAttribute('x2', p.x); ln.setAttribute('y2', p.y); }); knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); };
+      const draw = () => { lines.forEach((ln, i) => { ln.setAttribute('x1', ends[i].x); ln.setAttribute('y1', ends[i].y); ln.setAttribute('x2', p.x); ln.setAttribute('y2', p.y); });
+        if (pill) { knob.setAttribute('x', p.x - pill.w / 2); knob.setAttribute('y', p.y - pill.h / 2); } else { knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); } };
       draw();
       this.ghostEl = g;
       add(() => G.timeline({ repeat: Math.max(0, (cycles || 1) - 1), onComplete: () => this.unghost() })

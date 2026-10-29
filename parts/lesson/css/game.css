@@ -651,6 +651,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ---- caption screens (game-engine isPlate): no Swiftee - she drifts off back and down - and her line is the navy
    instruction plate across the top: white Fredoka on navy glass with a faint gold rim, key words in gold ---- */
 .stage.in-card.scene.plate .swiftee{opacity:0!important;pointer-events:none;transform:translate(-70px,36px) scale(.9)!important;transition:opacity .45s ease,transform .45s ease!important}
+.stage.in-card.scene.plate.sw-stay .swiftee{opacity:1!important;transform:none!important} /* (a narrator's line where she stays: she listens beside the shape) */
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:0!important;right:0!important;margin:0 auto!important;top:20px!important;bottom:auto!important;
   transform-origin:50% 0;min-width:0;max-width:1200px!important;height:70px;min-height:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 38px;
   border-radius:22px;background:rgba(8,36,84,.66)!important;border:2.4px solid rgba(255,214,140,.38)!important;
@@ -693,6 +694,10 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* a half-diagonal's measured length, in its half's own colour (equal halves share one), each coming in after the last */
 .stage.in-card .tag.mtag.hA{color:#e65100}.stage.in-card .tag.mtag.hB{color:#00963f}.stage.in-card .tag.mtag.hC{color:#6a35b8}.stage.in-card .tag.mtag.hD{color:#b86e00}
 .stage.in-card .tag.mtag.hv{animation:fade .45s ease-out backwards}
+/* the measured halves read beside their lines, not over them; a half not measured yet shows a quiet '?' (screen 43) */
+.stage.in-card .tag.mtag.hv{font-size:18px}.stage.in-card .tag.mtag.hv.wq{font-size:20px;opacity:.85}
+/* a diagonal's halves' lengths on the checkpoints: a little smaller than the sides' (two diagonals, four of them, in one shape) */
+.stage.in-card .tag.mtag.fig.hf{font-size:20px}.stage.in-card .tag.mtag.fig.hf.q{font-size:24px}
 .stage.in-card .tag.mtag.hv.hd1{animation-delay:.4s}.stage.in-card .tag.mtag.hv.hd2{animation-delay:.8s}.stage.in-card .tag.mtag.hv.hd3{animation-delay:1.2s}
 .stage.in-card .tag.vlab{color:#123b63;font-size:calc(21px / var(--mz, 1));transition:font-size .7s cubic-bezier(.22,.8,.3,1)}
 /* angle values keep one size on screen at any zoom, like their wedges (--bz: the board's zoom, from the engine), with the
@@ -843,3 +848,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .gridopt .pent-n{opacity:0;font:900 14px Nunito,system-ui,sans-serif;fill:#8a4a00;stroke:#fff;stroke-width:3px;paint-order:stroke;text-anchor:middle;dominant-baseline:central;transition:opacity .3s ease}
 .gridopt.bad .pent-n{opacity:1}
 .gridopt.bad .pent-n.n2{transition-delay:.35s}.gridopt.bad .pent-n.n3{transition-delay:.7s}.gridopt.bad .pent-n.n4{transition-delay:1.05s}.gridopt.bad .pent-n.n5{transition-delay:1.4s}
+.stage .blank-grp.gone{opacity:0;transition:opacity .25s ease;pointer-events:none}
+.stage .fly-val.tomark{background:none;border:0;box-shadow:none;padding:0;font:900 18px Nunito,system-ui,sans-serif}
+/* the tag row moves with the shape when the screen changes (answers gone: it settles centred under the shape) */
+.stage .chip-row{transition:top .7s cubic-bezier(.22,.8,.3,1)}
+.vdot.used{opacity:.5;filter:grayscale(1)}

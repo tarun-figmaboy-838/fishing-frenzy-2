@@ -192,9 +192,9 @@ def main():
                     pick('CD', '8'); pick('AD', '5')
                     check(st()['done'], 'Checkpoint 1c: CD = 8 and AD = 5 finish it')
                 elif sid == 'tapEqA':
-                    wrong_then('[data-qa="vtx-B"]', '[data-qa="vtx-C"]', 'Tap the angle equal to ∠A')
+                    wrong_then('[data-qa="opt-B"]', '[data-qa="opt-C"]', 'Which angle is equal to ∠A')
                 elif sid == 'tapEqD':
-                    wrong_then('[data-qa="vtx-A"]', '[data-qa="vtx-B"]', 'Tap the angle equal to ∠D')
+                    wrong_then('[data-qa="opt-A"]', '[data-qa="opt-B"]', 'Which angle is equal to ∠D')
                 elif sid == 'askAdj':
                     wrong_then('[data-qa="opt-BD"]', ['[data-qa="opt-BC"]', '[data-qa="opt-AB"]'], 'Which other angles add to 180° (select all)')
                 elif sid == 'cp2a':
@@ -219,15 +219,19 @@ def main():
                     check(st()['done'], 'Draw the diagonals: AC and BD finish it')
                 elif sid == 'matchSeg':
                     asked()
-                    for t in ('OA', 'OB', 'OC', 'OD'):  # wrong pairs first (OA = OB, OC = OD): checked once all four are in
-                        tap('[data-qa="tile-%d"]' % ['OA', 'OB', 'OC', 'OD'].index(t)); time.sleep(0.3)
-                    time.sleep(0.6)
-                    check(not st()['done'], 'Match the segments: OA with OB is not a pair')
+                    filled = lambda: page.evaluate('() => Object.keys(lessonDebug.state.fill.at).length')
+                    tile = lambda t: box('[data-qa="tile-%d"]' % ['OA', 'OB', 'OC', 'OD'].index(t))
+                    put = lambda t, b: drag(tile(t), box('[data-qa="blank-%s"]' % b))
+                    tap('[data-qa="tile-0"]'); time.sleep(0.4)  # a segment is dragged into place: a tap is no answer
+                    check(filled() == 0, 'Match the segments: a tap on a segment fills nothing')
+                    put('OA', 'p1a'); put('OB', 'p1b'); time.sleep(0.6)  # a wrong pair is checked as soon as it is made
+                    check(not st()['done'] and filled() == 2 and page.evaluate('() => Object.keys(lessonDebug.state.fill.bad).length') == 2, 'Match the segments: OA with OB is not a pair')
                     until(st, lambda s: not s['talking'], 20, 'the tip')  # meanwhile the wrong pair empties itself
-                    until(lambda: page.evaluate('() => Object.keys(lessonDebug.state.fill.at).length'), lambda n: n == 0, 5, 'the boxes to empty')
-                    for t in ('OA', 'OC', 'OB', 'OD'):  # a tapped tile fills the highlighted box
-                        tap('[data-qa="tile-%d"]' % ['OA', 'OB', 'OC', 'OD'].index(t)); time.sleep(0.3)
-                    time.sleep(0.8)
+                    until(filled, lambda n: n == 0, 5, 'the boxes to empty')
+                    time.sleep(0.4)
+                    put('OA', 'p1a'); put('OC', 'p1b'); time.sleep(0.7)  # a right pair stays, the next still to make
+                    check(not st()['done'] and page.evaluate('() => Object.keys(lessonDebug.state.fill.locked).length') == 2, 'Match the segments: OA = OC stays, checked on its own')
+                    put('OB', 'p2a'); put('OD', 'p2b'); time.sleep(0.8)
                     check(st()['done'], 'Match the segments: OA = OC and OB = OD finish it')
                 elif sid == 'cp3a':
                     wrong_then('[data-qa="opt-12"]', '[data-qa="opt-6"]', 'Checkpoint 3a')
