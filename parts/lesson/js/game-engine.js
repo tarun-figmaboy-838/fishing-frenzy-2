@@ -2160,7 +2160,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const at = Object.assign({}, F.at);
     if (D.match) Object.keys(at).forEach((k) => { if (at[k] === t) delete at[k]; }); // a segment sits in one place only
     at[id] = t;
-    this.setState({ fill: Object.assign({}, F, { at: at, sel: null, bad: {} }) });
+    this.setState({ fill: Object.assign({}, F, { at: at, sel: null, bad: D.match ? F.bad : {} }) }); // (a wrong equation still being shown keeps its orange)
     this.sfx('pop');
     // (segment pairs: each equation is checked as soon as both its boxes hold a segment, one at a time)
     const bk = D.blanks.find((x) => x.id === id), grp = D.match && bk && bk.pair ? D.blanks.filter((x) => x.pair === bk.pair) : D.blanks;
