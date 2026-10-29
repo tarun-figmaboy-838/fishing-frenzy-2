@@ -195,9 +195,11 @@ const LESSON = {
         { id: 'C', t: '∠C', ok: true },
         { id: 'D', t: '∠D', fb: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.' }
       ], f: { arcs: 'ABCD' } }, PRACTICE),
-    Object.assign({ pdf: '29-30', id: 'tapEqD', onlyCues: 1, enterChips: [{ t: '∠A = ∠C', k: 'gold', pop: 1 }], lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠D?' }],
+    // (asked with nothing between the shape and the answers - screen 26's tag is no hint here; right: it comes back on
+    // "equal", and this one's statement forms beside it on "∠B")
+    Object.assign({ pdf: '29-30', id: 'tapEqD', onlyCues: 1, lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠D?' }],
       ok: "That's correct! ∠D is\nequal to ∠B.", soloOk: 1,
-      okCues: [{ at: 'equal', focus: ['D', 'B'], ms: 3400 }, { at: '∠B.', chip: { t: '∠D = ∠B', k: 'gold', byName: 1 } }],
+      okCues: [{ at: 'equal', focus: ['D', 'B'], ms: 3400 }, { at: 'equal', chip: { t: '∠A = ∠C', k: 'gold', pop: 1 } }, { at: '∠B.', chip: { t: '∠D = ∠B', k: 'gold', byName: 1 } }],
       opts: [
         { id: 'A', t: '∠A', fb: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.' },
         { id: 'B', t: '∠B', ok: true },

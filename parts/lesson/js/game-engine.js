@@ -2734,9 +2734,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // praise and its pictures (fn), so nothing is drawn where the shape is leaving; a grid's cards are the question: they stay
   answersGo(st, fn) {
     if (!st.opts || st.grid) { fn(); return; }
-    const tok = this.stepTok;
-    this.setState({ optsGone: true }); this.busyFor(800);
-    this.tm(() => { if (tok === this.stepTok) fn(); }, window.Motion && Motion.reduced ? 0 : 720); // (css .board, .chip-row: 0.7 s)
+    // (the right answer first shows itself - green, in the middle - long enough to be seen; then it goes)
+    const tok = this.stepTok, hold = 1000, glide = window.Motion && Motion.reduced ? 0 : 720; // (css .board, .chip-row: 0.7 s)
+    this.busyFor(hold + glide + 100);
+    this.tm(() => { if (tok === this.stepTok) this.setState({ optsGone: true }); }, hold);
+    this.tm(() => { if (tok === this.stepTok) fn(); }, hold + glide);
   }
   // a question showing tags while it asks (screen 27: screen 26's): their row under the shape, over the answers. A
   // question whose tags come with its right answer keeps no row for them - they take the answers' place as they go
