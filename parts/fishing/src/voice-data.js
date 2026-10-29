@@ -28,10 +28,10 @@ PopoGame.VOICE_DATA = {
   "narrator:drag vertex b to make bc parallel to ad.": "../lesson/assets/vo/vo009.ogg#0.27",
   "narrator:drag vertex c to make ab parallel to cd.": "assets/voice/net-p2.mp3",
   "narrator:drag vertex c to make cd equal to ab.": "assets/voice/net-p3.mp3",
-  "narrator:drag vertex d so opposite sides are equal.": "assets/voice/net-p4.mp3",
+  "narrator:drag vertex d so that opposite sides are equal.": "assets/voice/net-p4.mp3",
   "narrator:drag vertex c to make ∠c equal to ∠a.": "assets/voice/net-p5.mp3",
-  "narrator:drag vertex b so ∠a and ∠b add up to 180°.": "assets/voice/net-p6.mp3",
-  "narrator:drag vertex c so the diagonals bisect each other.": "assets/voice/net-p7.mp3",
+  "narrator:drag vertex b so that ∠a and ∠b add up to 180°.": "assets/voice/net-p6.mp3",
+  "narrator:drag vertex c so that the diagonals bisect each other.": "assets/voice/net-p7.mp3",
   "narrator:drag vertex d to make a parallelogram.": "assets/voice/net-p8.mp3",
   "narrator:ab is shorter than cd. make ab longer.": "assets/voice/net-h1a.mp3",
   "narrator:ab is longer than cd. make ab shorter.": "assets/voice/net-h1b.mp3",
@@ -45,6 +45,6 @@ PopoGame.VOICE_DATA = {
   "narrator:opposite angles are equal. make ∠c smaller.": "assets/voice/net-h5b.mp3",
   "narrator:adjacent angles add up to 180°. make ∠b bigger.": "assets/voice/net-h6a.mp3",
   "narrator:adjacent angles add up to 180°. make ∠b smaller.": "assets/voice/net-h6b.mp3",
-  "narrator:diagonals bisect each other. make oc longer.": "assets/voice/net-h7a.mp3",
-  "narrator:diagonals bisect each other. make oc shorter.": "assets/voice/net-h7b.mp3"
+  "narrator:the diagonals bisect each other. make oc longer.": "assets/voice/net-h7a.mp3",
+  "narrator:the diagonals bisect each other. make oc shorter.": "assets/voice/net-h7b.mp3"
 };

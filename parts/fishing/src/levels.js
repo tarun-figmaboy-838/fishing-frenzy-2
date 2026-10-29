@@ -54,7 +54,7 @@ const LEVELS = [
   { title: 'Use Both Side Properties', type: 'sides', metres: { AB: 8, BC: 5 }, corner: 'D', along: 'BD',
     width: 380, height: 230, lean: 60, start: -7, // slides along the diagonal, toward B (AB and BC stay as they are)
     location: 1, fish: 5,
-    prompt: 'Drag vertex D so opposite sides are *equal*.',
+    prompt: 'Drag vertex D so that opposite sides are *equal*.',
     hints: ['Opposite sides are equal. Make CD and AD *longer*.', 'Opposite sides are equal. Make CD and AD *shorter*.'] },
   { title: 'Match the Opposite Angle', type: 'angle', vertex: 'C', reference: 'A', degrees: 68, corner: 'C', along: 'DC',
     width: 420, height: 210, angleA: 68, start: -7, // angle C starts near 100 degrees
@@ -64,13 +64,13 @@ const LEVELS = [
   { title: 'Make the Adjacent Angle', type: 'supplementary', vertex: 'B', reference: 'A', degrees: 72, corner: 'B', along: 'AB',
     width: 420, height: 210, angleA: 72, start: 8, // angle B starts near 85 degrees
     location: 2, fish: 6,
-    prompt: 'Drag vertex B so ∠A and ∠B add up to *180°*.',
+    prompt: 'Drag vertex B so that ∠A and ∠B add up to *180°*.',
     hints: ['Adjacent angles add up to 180°. Make ∠B *bigger*.', 'Adjacent angles add up to 180°. Make ∠B *smaller*.'] },
   { title: 'Balance the Diagonals', type: 'diagonals', metres: { AB: 6 }, corner: 'C', along: 'DC',
     width: 440, height: 210, lean: 50, start: -8, // along DC, so both diagonals' halves change as it slides
     location: 3, fish: 7,
-    prompt: 'Drag vertex C so the diagonals *bisect* each other.',
-    hints: ['Diagonals bisect each other. Make OC *longer*.', 'Diagonals bisect each other. Make OC *shorter*.'] },
+    prompt: 'Drag vertex C so that the diagonals *bisect* each other.',
+    hints: ['The diagonals bisect each other. Make OC *longer*.', 'The diagonals bisect each other. Make OC *shorter*.'] },
   { title: 'Final Catch', type: 'parallelogram', metres: { AB: 6 }, corner: 'D', along: 'BD',
     width: 400, height: 210, lean: 30, rotate: -7, start: -9, // slides along the diagonal, toward B
     location: 3, fish: 9, rare: true,
