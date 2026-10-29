@@ -983,9 +983,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (c.toMarks) { // (a pair's lengths become its marks: each number glides onto the middle of its half and shrinks into the tick drawn there)
       const ks = c.toMarks === 'A' ? ['A', 'C'] : ['B', 'D'], S = this.fxPts(), stage = typeof document !== 'undefined' && document.querySelector('.stage'), PAL = CONFIG.palette;
       const from = ks.map((k) => { const el = stage && stage.querySelector('.tag.mtag.hv.h' + k); const b = el && this.elBox(el); return b && { t: el.textContent.trim(), p: { x: b.x + b.w / 2, y: b.y + b.h / 2 } }; });
-      // (the numbers leave their places at once; the ticks draw in as they arrive - css tk-draw, 0.9 s)
-      this.setState({ hMarks: Object.assign({}, this.state.hMarks, { [c.toMarks]: 1 }) }); this.sfx('pop', { v: 0.6 });
-      if (window.Motion && S) ks.forEach((k, j) => { if (from[j]) Motion.intoMark(from[j].t, from[j].p, { x: (S[k].x + S.O.x) / 2, y: (S[k].y + S.O.y) / 2 }, PAL['v' + k]); });
+      // (the numbers glide off their places onto their halves' middles; the marks draw in only as they arrive)
+      const a = c.toMarks, marks = () => { if (tok === this.stepTok && !(this.state.hMarks || {})[a]) { this.setState({ hMarks: Object.assign({}, this.state.hMarks, { [a]: 1 }) }); this.sfx('pop', { v: 0.6 }); } };
+      this.setState({ hNum: Object.assign({}, this.state.hNum, { [a]: 1 }) });
+      if (window.Motion && S && from.some(Boolean)) ks.forEach((k, j) => { if (from[j]) Motion.intoMark(from[j].t, from[j].p, { x: (S[k].x + S.O.x) / 2, y: (S[k].y + S.O.y) / 2 }, PAL['v' + k], marks); });
+      else marks();
       this.busyFor(1100);
     }
     if (c.paint) { // (a diagonal's two colours become one: its corner's colour runs through O to the far corner, painting the other half)
@@ -1425,7 +1427,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hMarks: {}, pairsIn: {}, optsGone: false, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hNum: {}, hMarks: {}, pairsIn: {}, optsGone: false, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2352,7 +2354,8 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (fig) { Object.assign(fHalves, fig.halves || {}); this.askedHalves(st).forEach((k) => { fHalves[k] = '?'; }); }
     this.figPos = {}; // (where each of a checkpoint's labels sits, board px: the answers jump there, flyAnswer)
     // (toMarks: a pair's lengths become its marks on a cue - hMarks - screen 46)
-    const toMark = (k) => !!(f.toMarks && s.hMarks && s.hMarks[{ A: 'A', C: 'A', B: 'B', D: 'B' }[k]]);
+    // (its lengths leave as their copies glide off - hNum - and its marks draw in as they arrive - hMarks)
+    const pairK = { A: 'A', C: 'A', B: 'B', D: 'B' }, toMark = (k) => !!(f.toMarks && s.hNum && s.hNum[pairK[k]]), markIn = (k) => !!(f.toMarks && s.hMarks && s.hMarks[pairK[k]]);
     const halfOn = (k) => (fig ? !!fHalves[k] : !!(f.halves && (f.split || f.halfPairs)) && !toMark(k));
     const SIDES = { AB: [A, B], BC: [B, C], CD: [C, D], DA: [A, D] }; // (each the way its name is said: AD is A->D)
     const nArrows = { AB: showPar1 && !lenOn('AB') ? 2 : 0, CD: showPar1 && !lenOn('CD') ? 2 : 0, DA: showPar2 && !lenOn('DA') ? 1 : 0, BC: showPar2 && !lenOn('BC') ? 1 : 0 };
@@ -2464,7 +2467,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     {
       // (one path per pair, so each pair's marks can come in on their own: toMarks)
       const tk1 = (halfOn('A') ? '' : tick(O, A, true)) + (halfOn('C') ? '' : tick(O, C, true)), tk2 = (halfOn('B') ? '' : tick(O, B)) + (halfOn('D') ? '' : tick(O, D));
-      const mk = (a) => !f.toMarks || toMark(a);
+      const mk = (a) => !f.toMarks || markIn(a);
       g.htk = { p: tk1 || 'M0,0', d: dsp(f.hticks && !!tk1 && mk('A')) }; g.htk2 = { p: tk2 || 'M0,0', d: dsp(f.hticks && !!tk2 && mk('B')) };
     }
     // angles
@@ -2586,7 +2589,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         // the half it measures
         const L = this.dist(P[k], Om) || 1, ux = (Om.x - P[k].x) / L, uy = (Om.y - P[k].y) / L;
         const unknown = walked && !s.tap['O' + k], txt = unknown ? '?' : H[k]; // (not measured yet: its length is a question)
-        const hw = this.textW(txt, fig ? '900 20px Nunito' : '900 18px Nunito') / 2, hh = fig ? 13 : 12, gap = hh + 4; // (css .mtag.hv, .fig.hf)
+        const hw = this.textW(txt, fig ? '800 17px Nunito' : '800 16px Nunito') / 2, hh = fig ? 11 : 10, gap = hh + 5; // (css .mtag.hv, .fig.hf)
         let deg = Math.atan2(uy, ux) * 180 / Math.PI;
         if (deg > 90) deg -= 180; else if (deg <= -90) deg += 180;
         const nb = { A: ['B', 'D'], B: ['A', 'C'], C: ['D', 'B'], D: ['C', 'A'] }[k];

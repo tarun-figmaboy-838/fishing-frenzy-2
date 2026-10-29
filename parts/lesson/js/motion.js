@@ -312,10 +312,10 @@
       const el = document.createElement('div'); el.className = 'fly-val tomark'; el.textContent = text; el.style.color = col; stage.appendChild(el);
       add(() => G.timeline({ onComplete: () => el.remove() })
         .set(el, { left: from.x, top: from.y, xPercent: -50, yPercent: -50, scale: 1, opacity: 1 })
-        .to(el, { left: to.x, top: to.y, duration: 0.8, ease: 'sine.inOut' })
-        .to(el, { scale: 0.3, duration: 0.8, ease: 'sine.in' }, 0)
-        .to(el, { opacity: 0, duration: 0.35, ease: 'sine.in' }, 0.5)
-        .call(() => { if (onLand) onLand(); }, null, 0.8));
+        .to(el, { left: to.x, top: to.y, duration: 0.75, ease: 'power2.inOut' })
+        .to(el, { scale: 0.45, duration: 0.75, ease: 'power1.in' }, 0)
+        .call(() => { if (onLand) onLand(); }, null, 0.62) // (its mark draws in as it arrives)
+        .to(el, { opacity: 0, duration: 0.22, ease: 'sine.in' }, 0.62));
     },
     // a diagonal taking one colour (stage px): its colour runs from one corner through O to the other, painting over the
     // half in the other colour, with a light at its head; onDone: the half itself takes the colour, and the paint goes
