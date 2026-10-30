@@ -147,8 +147,8 @@ The game is deployed as part of the journey: the repository's root is the static
   nets hang from; it is not played as a level), then eight nets, each teaching one property with its own check (`type`), every prompt
   an action, short (one line, readable on a phone), the values given on the net itself (in centimetres): 1 drag
   vertex B to make BC parallel to AD, 2 drag C to make AB parallel to CD, 3 drag C to make CD equal to AB (7 cm),
-  4 drag D so that opposite sides are equal (AB 8 cm, BC 5 cm), 5 drag C to make ∠C equal to ∠A (68°), 6 drag B so that ∠A
-  and ∠B add up to 180° (∠A 72°), 7 drag C so that the diagonals bisect each other, 8 drag D to make the net a parallelogram,
+  4 drag D to make the net a parallelogram (opposite sides equal) (AB 8 cm, BC 5 cm), 5 drag C to make ∠C equal to ∠A (68°), 6 drag B to make the net a parallelogram (∠A
+  and ∠B add up to 180° (∠A 72°), 7 drag C to make the net a parallelogram (the diagonals bisect each other), 8 drag D to make the net a parallelogram,
   with no property named. Each says exactly what the net's check is, and every net's one right stop is a true
   parallelogram. Each level gives the solved net's width, height and lean (or the
   angle at A), the corner that moves, the side or diagonal its track runs along (`along`; a
