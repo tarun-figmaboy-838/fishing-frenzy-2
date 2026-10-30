@@ -153,7 +153,7 @@ class Fish {
       const dw = this.w / STRIPS;
       for (let i = 0; i < STRIPS; i += 1) {
         const u = (i + 0.5) / STRIPS;
-        const wave = Math.sin(this.swimPhase - u * 2.4) * (1 - u) ** 1.6 * this.h * 0.09;
+        const wave = Math.sin(this.swimPhase + u * 2.4) * (1 - u) ** 1.6 * this.h * 0.09; // (the wave runs head to tail, as a swimming fish's does)
         ctx.drawImage(this.img, x0 + i * sw, y0, sw, y1 - y0, -this.w / 2 + i * dw, -this.h / 2 + wave, dw + 0.7, this.h);
       }
     }
