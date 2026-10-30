@@ -177,6 +177,10 @@ class Net {
     this.stopAt = Math.max(this.track.min, Math.min(this.track.max, level.start));
     this.points[this.movable] = this.stop(this.stopAt);
     this.start = this.points.map((p) => ({ ...p }));
+    // which pairs this net comes down with already parallel (its given; the other pair is the child's to make)
+    const st = this.start, d = (a, b) => { const l = Math.hypot(st[b].x - st[a].x, st[b].y - st[a].y) || 1; return { x: (st[b].x - st[a].x) / l, y: (st[b].y - st[a].y) / l }; };
+    const pl = (u, v) => Math.abs(u.x * v.y - u.y * v.x) < 0.035;
+    this.givenPar = { AB: pl(d(0, 1), d(3, 2)), BC: pl(d(1, 2), d(0, 3)) };
   }
 
   // The point `k` stops from the corner's place along its track.
@@ -1347,10 +1351,11 @@ class Net {
     // is; they fade in and out (parA), never pop
     const dirOf = (n) => { const [i, j] = side(n); return normalize(sub(c[j], c[i])); };
     const isPar = (a, b) => { const u = dirOf(a), v = dirOf(b); return Math.abs(u.x * v.y - u.y * v.x) < 0.035; };
-    // (each pair's marks follow the geometry: a pair the net is given with - net 2's AB parallel to CD - is marked from
-    // the start, and the pair the child makes pops in the moment the drag makes it parallel, and goes if it is dragged
-    // off again; a locked wrong net is never marked)
-    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: isPar('AB', 'CD'), BC: isPar('BC', 'AD') };
+    // (a pair the net comes down with - net 2's AB parallel to CD - is marked from the start, as the net's given; the
+    // pair the child has to make is marked only once Check has locked the net right - never while they drag, which
+    // would give the answer away. givenPar: the pairs parallel as the level's net came down, Net.setLevel)
+    const given = this.givenPar || { AB: false, BC: false };
+    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: given.AB ? isPar('AB', 'CD') : this.locked && isPar('AB', 'CD'), BC: given.BC ? isPar('BC', 'AD') : this.locked && isPar('BC', 'AD') };
     const dtm = Math.max(0, Math.min(0.1, this.time - (this.parT == null ? this.time : this.parT))); this.parT = this.time;
     this.parA = this.parA || { AB: par.AB ? 1 : 0, BC: par.BC ? 1 : 0 };
     for (const k of ['AB', 'BC']) this.parA[k] += ((par[k] ? 1 : 0) - this.parA[k]) * Math.min(1, dtm * 6);
