@@ -108,8 +108,9 @@ const VO_LINES = {
   "AD is opposite BC, so AD = BC.": ["vo139",4.84,[0.3,0.67,0.94,1.77,2.64,2.93],4.48],
   "OC is the other half of AC, so OC = AO.": ["vo140",4.84,[0.29,0.57,0.78,1.06,1.48,1.83,2.04,2.71,3],4.56],
   "OD is the other half of BD, so OD = BO.": ["vo141",5.04,[0.27,0.57,0.79,1.09,1.53,1.91,2.13,2.87,3.17],4.78],
-  "Are the two segments of each diagonal equal?": ["vo142",3.64,[0.28,0.54,0.8,1.06,1.64,1.83,2.16,2.74],3.2],
+  "Are the two segments of each diagonal equal?": ["vo142",3.64,[0.31,0.57,0.84,1.1,1.69,1.89,2.22,2.81],3.28],
   "Which angle is equal to ∠A?": ["vo143",2.68,[0.24,0.62,0.99,1.18,1.56,1.75],2.32],
   "Which angle is equal to ∠D?": ["vo144",3.08,[0.27,0.69,1.11,1.32,1.74,1.95],2.59],
-  "CD = 8 cm, AD = 5 cm.": ["vo145",5.44,[0.34,3.05],5.12]
+  "CD = 8 cm, AD = 5 cm.": ["vo145",5.44,[0.34,3.05],5.12],
+  "Bye for now! See you on our next snowy adventure!": ["vo146",4.16,[0.27,0.55,0.83,1.51,1.75,1.99,2.17,2.41,2.72,3.08],3.75]
 };
