@@ -60,9 +60,13 @@ const JUMPS = [
   ['Wave in', () => {
     const g = game();
     level(LEVELS.findIndex((l) => !l.warmup));
+    g.focusReset(); g.setCamera({ zoom: 1, pan: 1 }); // (level() zoomed in on the net: the wave is seen from the lake's own view)
+    g.stopHint(); g.ui.hideHand();
     g.ui.showHandle(false);
     g.ui.setDrop('hidden');
+    g.ui.setAction('hidden');
     g.popo.travelShift = AWAY;
+    g.popoReturning = true;
     const token = newToken();
     state.phase = PHASE.TRANSITIONING;
     waveIn(g, token).then(() => welcome(g, token)).then(() => g.beginPuzzle()).catch(() => {});

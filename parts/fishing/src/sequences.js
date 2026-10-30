@@ -1262,6 +1262,7 @@ async function swifteeArrives(game, lines, token) {
   const to = { x: Math.min(STAGE_W - 170, Math.max(head.x + 720, netRight + 190)), y: Math.max(170, head.y - 20) };
   const bird = new PopoGame.Swiftee(from.x, from.y);
   bird.onDownstroke = () => audio.play('flap');
+  bird.faceViewer = lines === STORY.welcome; // (her welcome addresses the player, with the frontal flight atlas - as in part 1)
   game.swiftee = bird;
   audio.play('whoosh');
   await clock.tween(fx.reduced ? 1200 : 2400, token, (t) => {
@@ -1281,6 +1282,7 @@ async function swifteeArrives(game, lines, token) {
 // "Let's find out!": Swiftee twirls and flies off over Popo's head, up and out of the top left, to the lesson (where
 // she dives in). `up`: after her welcome she flies off up and out of the top right instead.
 async function swifteeDeparts(game, token, { up = false } = {}) {
+  if (game.swiftee) game.swiftee.faceViewer = false; // (side-on again for the flight out)
   const bird = game.swiftee;
   if (!bird) return;
   const from = { x: bird.x, y: bird.y };

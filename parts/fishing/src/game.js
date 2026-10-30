@@ -1047,9 +1047,9 @@ class Game {
       this.dialogue.tail = line.tail;
       this.placeSpeech();
       const voiced = this.audio.speak(line.who, line.text);
-      if (line.who === 'swiftee' && this.swiftee) { // (her front-facing talking sheet while her line plays)
-        const sw = this.swiftee; sw.talking = true;
-        setTimeout(() => { if (this.swiftee === sw) sw.talking = false; }, Math.max(600, (voiced || 0) * 1000 || this.dialogue.hold));
+      if (line.who === 'swiftee' && this.swiftee) { // (her beak moves while her line plays: swiftee.js speaking)
+        const sw = this.swiftee; sw.speaking = true;
+        setTimeout(() => { if (this.swiftee === sw) sw.speaking = false; }, Math.max(600, (voiced || 0) * 1000 || this.dialogue.hold));
       }
       if (voiced) { this.paceToVoice(this.dialogue, voiced); this.dialogue.src = this.audio.voiceSource; }
       else if (narrator) this.audio.play('narrate');

@@ -7,31 +7,12 @@ const { assets } = PopoGame;
 const BEAT = [0, 1, 2, 1, 3, 1, 2, 1];
 const SCALE = 0.68;
 
-// Her face to the child, as in Fishing Frenzy 1: the lesson's front-facing sheets (js/swiftee-manifest.js; happy
-// while she hovers, talking while her line plays) are drawn in place of the side-on wing-beat atlas once they are in
-// - the atlas stays as the fallback (and for the loop-de-loop)
-const FRONT_BASE = '../lesson/swiftee-assets/';
-const frontSheets = {};
-function frontSheet(anim) {
-  const m = window.SWIFTEE_MANIFEST;
-  if (!m) return null;
-  if (frontSheets[anim]) return frontSheets[anim];
-  const info = m.scales['1x'].sheets[anim];
-  if (!info) return null;
-  const img = new Image();
-  const sh = { img, info, ready: false, fps: (m.animations[anim] || {}).fps || m.fps || 20, pingpong: !!(m.animations[anim] || {}).pingpong };
-  img.decoding = 'async';
-  img.onload = () => { sh.ready = true; };
-  img.src = FRONT_BASE + info.image;
-  frontSheets[anim] = sh;
-  return sh;
-}
-
 class Swiftee {
   constructor(x, y) {
     this.x = x;
     this.y = y;
     this.dir = -1; // the art faces right; Swiftee arrives from the right, facing Popo
+    this.faceViewer = false; // the opening addresses the player with the frontal flight atlas
     this.time = 0;
     this.beat = 0; // wing-beat phase, in frames; the rate eases down as Swiftee settles
     this.lean = 0;
@@ -39,27 +20,35 @@ class Swiftee {
     this.flapRate = 16;
     this.lastBeat = -1;
     this.onDownstroke = null;
-    this.talking = false; // (her line is playing: the talking sheet)
-    frontSheet('happy'); frontSheet('talking');
+    this.speaking = false;
+    this.celebrating = false;
+    this.blinkIn = 2.1;
+    this.blink = 0;
+    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   // a quick loop-de-loop on the stressed word
   twirl() {
+    if (this.faceViewer) { this.hop(); return; }
     this.spin = { t: 0 };
   }
 
-  // a little bounce (a story line's hop)
+  // a little bounce, now and then while waiting for Next
   hop() {
     this.bounce = { t: 0 };
   }
 
   update(dt) {
     this.time += dt;
+    this.blinkIn -= dt;
+    this.blink = Math.max(0, this.blink - dt);
+    if (this.blinkIn <= 0) { this.blink = .18; this.blinkIn = 2.8 + Math.random() * 2; }
     this.beat += dt * this.flapRate;
     const beat = Math.floor(this.beat);
     if (beat !== this.lastBeat) {
       this.lastBeat = beat;
-      if (BEAT[beat % BEAT.length] === 2 && this.onDownstroke) this.onDownstroke();
+      const downstroke = this.faceViewer ? beat % 8 === 4 : BEAT[beat % BEAT.length] === 2;
+      if (downstroke && this.onDownstroke) this.onDownstroke();
     }
     if (this.spin) {
       this.spin.t += dt / 0.55;
@@ -78,29 +67,57 @@ class Swiftee {
   }
 
   bobY() {
-    const hop = this.bounce ? Math.sin(this.bounce.t * Math.PI) * 26 : 0;
-    return this.y + Math.sin(this.time * 7) * 6 - hop;
+    const hop = this.bounce && !this.reduced ? Math.sin(this.bounce.t * Math.PI) * 26 : 0;
+    return this.y + Math.sin(this.time * 7) * (this.reduced ? 1 : 6) - hop;
+  }
+
+  personalityFrame() {
+    // Retain the established flight cycle during swoops and loop-de-loops.
+    if (!assets.swifteePersonality || Math.abs(this.lean) > .025 || this.spin) return null;
+    if (this.laughing) return this.reduced ? 7 : [7, 3, 7, 2][Math.floor(this.time * 8) % 4];
+    if (this.blink > 0) return this.blink > .13 || this.blink < .04 ? 1 : 2;
+    if (this.speaking) return [3, 0, 4, 3, 5, 0][Math.floor(this.time * 10) % 6];
+    if (this.celebrating && Math.sin(this.time * 1.8) > .6) return 7;
+    return this.reduced ? 0 : [12, 0, 14, 0][Math.floor(this.beat / 2) % 4];
+  }
+
+  frontFrame() {
+    const beat = this.reduced ? 2 : Math.floor(this.beat) % 8;
+    // Four open-beak drawings share the up/level/down/level wing phases.
+    return this.speaking && Math.floor(this.time * 9) % 3 !== 0 ? 8 + Math.floor(beat / 2) : beat;
+  }
+
+  drawFront(ctx) {
+    const data = PopoGame.PERSONALITY_DATA['swiftee-front'];
+    const frame = this.frontFrame();
+    const [sx, sy, sw, sh] = data.frames[frame].box;
+    const k = 178 / data.frames[0].height;
+    ctx.save();ctx.translate(this.x, this.bobY() + 45);
+    // Gentle banking preserves eye contact; do not mirror or turn toward Popo.
+    if (!this.reduced) ctx.rotate(Math.max(-.06, Math.min(.06, this.lean * .18)));
+    ctx.scale(k, k);
+    ctx.drawImage(assets.swifteeFront, sx, sy, sw, sh, -128, -236, 256, 256);
+    ctx.restore();
   }
 
   draw(ctx) {
+    if (this.faceViewer && assets.swifteeFront) { this.drawFront(ctx); return; }
     const d = PopoGame.SWIFTEE_DATA;
     const img = assets.swiftee;
     if (!img || !d) return;
-    const frame = BEAT[Math.floor(this.beat) % BEAT.length];
-    const spin = this.spin ? Math.sin(this.spin.t * Math.PI / 2) ** 2 * Math.PI * 2 : 0;
-    const sh = frontSheet(this.talking ? 'talking' : 'happy');
-    if (sh && sh.ready && !this.spin) {
-      // the front-facing bird: the sheet's cell, its bird about as tall as the atlas's, registered on the belly
-      const { cell, frames, cols } = sh.info, n = sh.pingpong ? Math.max(1, frames * 2 - 2) : frames;
-      let i = Math.floor(this.time * sh.fps) % n; if (sh.pingpong && i >= frames) i = frames * 2 - 2 - i;
-      const size = d.height * SCALE * 1.3;
-      ctx.save();
-      ctx.translate(this.x, this.bobY());
-      ctx.rotate(this.lean * 0.35);
-      ctx.drawImage(sh.img, (i % cols) * cell, Math.floor(i / cols) * cell, cell, cell, -size / 2, -size * 0.66, size, size);
+    const personality = this.personalityFrame();
+    if (personality !== null) {
+      const data = PopoGame.PERSONALITY_DATA.swiftee;
+      const k = 178 / data.frames[0].height;
+      const [sx, sy, sw, sh] = data.frames[personality].box;
+      ctx.save();ctx.translate(this.x, this.bobY() + 45);
+      ctx.scale(this.dir * k, k);
+      ctx.drawImage(assets.swifteePersonality, sx, sy, sw, sh, -128, -236, 256, 256);
       ctx.restore();
       return;
     }
+    const frame = BEAT[Math.floor(this.beat) % BEAT.length];
+    const spin = this.spin ? Math.sin(this.spin.t * Math.PI / 2) ** 2 * Math.PI * 2 : 0;
     ctx.save();
     ctx.translate(this.x, this.bobY());
     ctx.rotate(this.dir * (this.lean + spin));

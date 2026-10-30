@@ -88,6 +88,8 @@ async function loadCoreAssets(progress = () => {}) {
   // Swiftee (four wing beats, her winter scarf baked in: Fishing Frenzy's own sheet), for the warm-up's end and her
   // welcome after the lesson; she is not needed for the banner, so she loads behind it
   loadImage('assets/sprites/swiftee.webp').then((img) => { assets.swiftee = img; }).catch(() => {});
+  loadImage('assets/sprites/swiftee-personality.webp').then((img) => { assets.swifteePersonality = img; }).catch(() => {}); // (her blinks, beak and laugh, side-on: swiftee.js)
+  loadImage('assets/sprites/swiftee-front-personality.webp').then((img) => { assets.swifteeFront = img; }).catch(() => {}); // (facing the player: the welcome)
   // the pause and final cards' panel (a CSS background) loads now, in the background, so the
   // first pause never shows a card without its frame
   loadImage('assets/generated-web/panel.webp').catch(() => {});
