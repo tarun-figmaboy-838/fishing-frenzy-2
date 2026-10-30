@@ -56,9 +56,11 @@ window.AngleWalker = class AngleWalker {
     const run = this.run, from = Object.assign({}, this.pose);
     if (target.rotation != null) target.rotation = from.rotation + AngleWalker.norm(target.rotation - from.rotation); // turn the short way
     return new Promise((res) => {
-      let t0 = null;
+      let t0 = null, last = null;
       const tick = (now) => {
         if (run !== this.run) { res(false); return; }
+        if (window.__lessonPaused) { if (t0 != null && last != null) t0 += now - last; last = now; requestAnimationFrame(tick); return; } // (paused: held)
+        last = now;
         if (t0 == null) t0 = now;
         const t = Math.min(1, (now - t0) / Math.max(1, ms)), e = t * t * (3 - 2 * t);
         Object.keys(target).forEach((key) => { this.pose[key] = from[key] + (target[key] - from[key]) * e; });

@@ -75,6 +75,9 @@ window.SwifteeWalker = class SwifteeWalker {
 
   // ---------- frame loop ----------
   loop(now) {
+    // (the lesson paused: she holds where she is - her move's clock shifts by the time held)
+    if (window.__lessonPaused) { const d = now - (this.lastNow || now); this.moves.forEach((m) => { m.t0 += d; }); this.last += d; this.lastNow = now; requestAnimationFrame(this.loop); return; }
+    this.lastNow = now;
     const mv = this.moves[0];
     if (mv) {
       const t = Math.min(1, (now - mv.t0) / mv.ms);

@@ -161,7 +161,7 @@
 <sc-if value="{{menuOn}}" hint-placeholder-val="{{ false }}">
 <div class="{{menu.cls}}" role="listbox" style="left: {{menu.x}}px; top: {{menu.y}}px; min-width: {{menu.w}}px; --nx: {{menu.nx}}px">
 <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="3">
-<button class="dd-item" role="option" data-qa="ddopt-{{mi.t}}" onClick="{{mi.pick}}">{{mi.t}}</button>
+<button class="{{mi.cls}}" role="option" data-qa="ddopt-{{mi.t}}" disabled="{{mi.dis}}" aria-disabled="{{mi.dis}}" onClick="{{mi.pick}}">{{mi.t}}</button>
 </sc-for>
 </div>
 </sc-if>

@@ -104,9 +104,9 @@ const LESSON = {
     // screen 9 (storyboard page 10): the cards come in under the shape with the voice, one row - "We": AB ∥ CD lifts;
     // "this": AD ∥ BC; "Parallelogram": the name lands beside them and the whole outline glows once
     { pdf: 10, id: 'defPg', chipTop: 428,
-      // the two pair tags built on screen 8 stay; on "parallelogram" they merge into the name, the outline lit
+      // the two pair tags built on screen 8 stay; on "parallelogram" they merge into the name (no tracing)
       lines: [{ t: 'We call this a parallelogram.', cues: [
-        { at: 'parallelogram', merge: { from: ['AB ∥ CD', 'AD ∥ BC'], into: { t: 'Parallelogram', k: 'name' } }, glow: ['AB', 'BC', 'CD', 'DA'], ms: 2600 }] }], f: PG },
+        { at: 'parallelogram', merge: { from: ['AB ∥ CD', 'AD ∥ BC'], into: { t: 'Parallelogram', k: 'name' } } }] }], f: PG },
     // screen 10 (storyboard page 11): screen 9's shape stays as it is (no rebuild) and the two pair cards come in; as
     // Swiftee says it, AB + CD glow with their card, then AD + BC with theirs; on "parallelogram" the name card (there
     // since screen 9, in the same row) lifts
@@ -122,12 +122,13 @@ const LESSON = {
 
     // ---------- Part 2 · opposite side lengths (pages 12-20) ----------
     // (the sides light on "lengths" / "equal": the question is about them, and nothing else is on the board yet)
-    { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?', cues: [{ at: 'lengths', glow: ['AB', 'BC', 'CD', 'DA'], ms: 1100 }] }], f: PG },
-    // (the narrator asks; Swiftee, beside the shape, answers on the next screen: "Let's find out!")
-    { pdf: 13, id: 'equalQ', own: 1, lines: [{ narr: 1, t: 'Are they equal too?' }], f: PG },
+    { pdf: 12, id: 'lengthsQ', lines: [{ m: 'thinking', t: 'But what about the\nside lengths?' }], f: PG }, // (no tracing)
+    // (the narrator asks - on the plate, Swiftee not on the card; she comes with her own line on the next screen: "Let's
+    // find out!")
+    { pdf: 13, id: 'equalQ', lines: [{ narr: 1, t: 'Are they equal too?' }], f: PG },
     { pdf: 14, id: 'measure', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measure', auto: 1, f: PG },
     // the lengths come in pair by pair: AB and CD (6 cm) together, then AD and BC (3 cm)
-    { pdf: 15, id: 'interesting', own: 1, lines: [{ narr: 1, t: 'There is something\ninteresting about\nthe lengths.' }],
+    { pdf: 15, id: 'interesting', lines: [{ narr: 1, t: 'There is something\ninteresting about\nthe lengths.' }],
       lenSeq: [[700, ['AB', 'CD']], [2300, ['DA', 'BC']]], f: Object.assign({ lenSeq: 1 }, PG, LENS) },
     Object.assign({ pdf: '16-17', id: 'askSides', lines: [{ m: 'curious', t: 'What do you notice\nabout the sides?' }],
       // right answer: the other option folds away, this one settles green in the centre; as the line says it, AB + CD
@@ -145,8 +146,8 @@ const LESSON = {
       f: Object.assign({ ticks: 1 }, LENS) },
     { pdf: 20, id: 'sidesSum', onlyCues: 1, lines: [{ m: 'happy', t: 'So, in any parallelogram,\nopposite sides are\nparallel and equal.', cues: [
       // (one after another from "parallel": "equal" follows it too closely for a sequence of its own)
-      { at: 'parallel', steps: [{ beat: ['AB', 'CD'], chip: { t: 'AB ∥ CD', k: 'white sm', pop: 1 } }, { beat: ['DA', 'BC'], chip: { t: 'AD ∥ BC', k: 'white sm', pop: 1 } },
-        { emph: ['lAB', 'lCD'], chip: { t: 'AB = CD', k: 'white sm', pop: 1 } }, { emph: ['lDA', 'lBC'], chip: { t: 'AD = BC', k: 'white sm', pop: 1 } }], gap: 800 }] }],
+      { at: 'parallel', steps: [{ beat: ['AB', 'CD'], chip: { t: 'AB ∥ CD', k: 'gold', pop: 1 } }, { beat: ['DA', 'BC'], chip: { t: 'AD ∥ BC', k: 'gold', pop: 1 } },
+        { emph: ['lAB', 'lCD'], chip: { t: 'AB = CD', k: 'gold', pop: 1 } }, { emph: ['lDA', 'lBC'], chip: { t: 'AD = BC', k: 'gold', pop: 1 } }], gap: 800 }] }], // (gold, as screen 16's)
       f: Object.assign({ ticks: 1 }, PG, LENS) },
 
     // ---------- Checkpoint 1 · Are you ready? (page 21) ----------
@@ -170,7 +171,7 @@ const LESSON = {
     // (each given side traced, whole, as it is named - AB, then BC - and the two asked for together, so no light cuts
     // another short; right: CD, then AD, as they are said)
     Object.assign({ pdf: 21, id: 'cp1c', onlyCues: 1, cpTitle: 'Checkpoint 1 · Find the Missing Sides',
-      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 8 cm and BC = 5 cm.\nFind the lengths of\nCD and AD.', cues: [{ at: 'AB = 8 cm', light: ['AB'], ms: 1300 }, { at: 'BC = 5 cm.', light: ['BC'], ms: 1300 }, { at: 'CD', light: ['CD', 'DA'], ms: 1900 }] }],
+      lines: [{ m: 'curious', t: 'In this parallelogram,\nAB = 8 cm and BC = 5 cm.\nFind the lengths of\nCD and AD.', cues: [{ at: 'AB = 8 cm', light: ['AB'], ms: 1300 }, { at: 'BC = 5 cm.', light: ['BC'], ms: 1300 }, { at: 'of', lightSeq: [['CD'], ['DA']], gap: 1050, hold: 1300 }] }], // (CD, then AD - one at a time)
       ok: 'CD = 8 cm, AD = 5 cm.', okCues: [{ at: 'CD = 8 cm,', light: ['CD'], ms: 1150 }, { at: 'AD = 5 cm.', light: ['DA'], ms: 1400 }],
       fig: { P: FIG_SIDES, sides: { AB: '8 cm', BC: '5 cm', CD: '?', DA: '?' } },
       fill: { blanks: [{ id: 'CD', pre: 'CD =', post: 'cm', ans: '8' }, { id: 'AD', pre: 'AD =', post: 'cm', ans: '5' }], tiles: ['3', '5', '8', '13'],
@@ -178,11 +179,11 @@ const LESSON = {
 
     // ---------- Part 4 · opposite angles (pages 22-31) ----------
     { pdf: 22, id: 'sidesDone', lines: [{ m: 'happy', t: 'We learnt all about the\nsides of a parallelogram.' }] },
-    { pdf: 23, id: 'angles', noTrace: 1, own: 1, lines: [{ narr: 1, t: 'But what about its angles?\nAre they equal too?' }] }, // (the narrator asks: as screen 13)
+    { pdf: 23, id: 'angles', noTrace: 1, lines: [{ narr: 1, t: 'But what about its angles?\nAre they equal too?' }] }, // (the narrator asks: as screen 13)
     // Swiftee carries a protractor round A, B, C, D; each angle and its size come in as she measures it
     { pdf: 24, id: 'measureAng', lines: [{ m: 'curious', t: "Let's find out!" }], task: 'measureAngles', auto: 1 },
     // the four arcs and their sizes draw in one after another
-    { pdf: 25, id: 'interestingAng', own: 1, lines: [{ narr: 1, t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 25, id: 'interestingAng', lines: [{ narr: 1, t: 'There is something\ninteresting here too.', cues: [{ at: 'here', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 26, id: 'someEq', lines: [{ t: 'Some angles are equal\nto one another.' }], f: { arcs: 'ABCD' } },
     // screens 26-27: the angle equal to ∠A is chosen from its name (the shape stays still: nothing on it is tapped, jumps or
     // is traced). Right: the two angles come forward, the others step back, and their names fly from the words just said
@@ -191,9 +192,9 @@ const LESSON = {
       ok: "That's correct! ∠A is\nequal to ∠C.", soloOk: 1,
       okCues: [{ at: 'equal', focus: ['A', 'C'], ms: 3400 }, { at: '∠C.', chip: { t: '∠A = ∠C', k: 'gold', byName: 1 } }],
       opts: [
-        { id: 'B', t: '∠B', fb: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.' },
-        { id: 'C', t: '∠C', ok: true },
-        { id: 'D', t: '∠D', fb: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.' }
+        { id: 'B', t: '∠B', emph: ['aB'], fb: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.' },
+        { id: 'C', t: '∠C', emph: ['aC'], ok: true },
+        { id: 'D', t: '∠D', emph: ['aD'], fb: 'Not quite. Compare its size with ∠A. Look at the corner opposite A.' }
       ], f: { arcs: 'ABCD' } }, PRACTICE),
     // (asked with nothing between the shape and the answers - screen 26's tag is no hint here; right: it comes back on
     // "equal", and this one's statement forms beside it on "∠B")
@@ -201,9 +202,9 @@ const LESSON = {
       ok: "That's correct! ∠D is\nequal to ∠B.", soloOk: 1,
       okCues: [{ at: 'equal', focus: ['D', 'B'], ms: 3400 }, { at: 'equal', chip: { t: '∠A = ∠C', k: 'gold', pop: 1 } }, { at: '∠B.', chip: { t: '∠D = ∠B', k: 'gold', byName: 1 } }],
       opts: [
-        { id: 'A', t: '∠A', fb: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.' },
-        { id: 'B', t: '∠B', ok: true },
-        { id: 'C', t: '∠C', fb: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.' }
+        { id: 'A', t: '∠A', emph: ['aA'], fb: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.' },
+        { id: 'B', t: '∠B', emph: ['aB'], ok: true },
+        { id: 'C', t: '∠C', emph: ['aC'], fb: 'Not quite. Compare its size with ∠D. Look at the corner opposite D.' }
       ], f: { arcs: 'ABCD', pairA: 1 } }, PRACTICE),
     // (the recap of screens 26-27, laid out as they are (PRACTICE: the tags keep their row, the shape its place): each
     // pair - its two angles and its tag - is pointed out in turn as it is said: ∠A and ∠C, then ∠D and ∠B)
@@ -211,7 +212,7 @@ const LESSON = {
       cues: [{ at: 'opposite', steps: [{ focus: ['A', 'C'], hi: '∠A = ∠C', ms: 1300 }, { focus: ['D', 'B'], hi: '∠D = ∠B', ms: 1300 }], gap: 1600 }] }], f: { arcs: 'ABCD', pairCol: 1 } }, PRACTICE),
 
     // ---------- Part 5 · adjacent angles (pages 32-36) ----------
-    { pdf: 32, id: 'seeElse', own: 1, lines: [{ narr: 1, t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
+    { pdf: 32, id: 'seeElse', own: 1, lines: [{ m: 'thinking', t: 'But I see something\nelse too.', cues: [{ at: 'something', emph: ['aA', 'aB', 'aC', 'aD'] }] }], f: { arcs: 'ABCD' } },
     { pdf: 33, id: 'lookAD', lines: [{ m: 'curious', t: 'Look at ∠A and ∠D.' }], f: { arcs: 'AD' } },
     // ∠A slides down to D: with ∠D it fills the straight line through D (110° + 70° = 180°)
     // "add": ∠A and ∠D stay vivid and the others step back; "180°": their sum card lifts
@@ -275,7 +276,7 @@ const LESSON = {
       wrong: 'That is a side. A diagonal joins two opposite corners.',
       after: [{ m: 'happy', t: 'Great! You drew both\ndiagonals.' }] },
     { pdf: 41, id: 'diagNames', lines: [{ t: 'AC and BD are the diagonals\nof this parallelogram.' }], f: { diag: 1 } },
-    { pdf: 42, id: 'meetO', lines: [{ t: 'They meet each other\nat point O.' }], f: DIAG },
+    { pdf: 42, id: 'meetO', lines: [{ t: 'They meet each other\nat point O.', cues: [{ at: 'O.', showO: 1 }] }], f: { diag: 1, Oat: 1 } }, // (point O comes in as it is named)
     // each diagonal splits into its two halves (four colours)
     // (the diagonals plain, and on "segments" their four parts come in one at a time: OA and OC, then OB and OD)
     { pdf: 43, id: 'segs', onlyCues: 1, lines: [{ t: 'Each diagonal divides\nthe other into\n2 segments.',
@@ -293,12 +294,11 @@ const LESSON = {
       fill: { match: 1, blanks: [{ id: 'p1a', pair: 1 }, { id: 'p1b', pair: 1 }, { id: 'p2a', pair: 2 }, { id: 'p2b', pair: 2 }], tiles: ['OA', 'OB', 'OC', 'OD'],
         pairs: [['OA', 'OC'], ['OB', 'OD']], fb: { any: 'Those two are not the same length. Look at the lengths again.' } },
       f: Object.assign({ split: 1, halves: 1 }, DIAG) }),
-    // (once the shape has settled from screen 45: its lengths become their marks - AO's and OC's, then BO's and OD's -
-    // then the line; on "diagonal" each diagonal takes one colour, its colour running from its corner through O to the
-    // other - AC, then BD. Screen 45's two tags stay)
-    { pdf: 48, id: 'bisectEq', noTrace: 1, onlyCues: 1, voiceDelay: 2500, enterChips: [{ t: 'OA = OC', k: 'gold', pop: 1 }, { t: 'OB = OD', k: 'gold', pop: 1 }],
-      enterCues: [{ at0: 850, toMarks: 'A' }, { at0: 1550, toMarks: 'B' }],
-      lines: [{ cues: [{ at: 'diagonal', steps: [{ paint: 'A' }, { paint: 'B' }], gap: 1300 }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.' }],
+    // (in time with its line, once the shape has settled from screen 45: on "diagonal" each diagonal takes one colour,
+    // its colour running from its corner through O to the other - AC, then BD; on "equal parts" their lengths become
+    // their equal marks - AO's and OC's, then BO's and OD's. Screen 45's two tags stay)
+    { pdf: 48, id: 'bisectEq', noTrace: 1, onlyCues: 1, voiceDelay: 800, enterChips: [{ t: 'OA = OC', k: 'gold', pop: 1 }, { t: 'OB = OD', k: 'gold', pop: 1 }],
+      lines: [{ cues: [{ at: 'diagonal', steps: [{ paint: 'A' }, { paint: 'B' }], gap: 1150 }, { at: 'equal', steps: [{ toMarks: 'A' }, { toMarks: 'B' }], gap: 850 }], t: 'Each diagonal is divided\ninto two equal parts\nby the other.' }],
       f: Object.assign({ split: 1, halves: 1, hticks: 1, toMarks: 1, pairSeq: 1 }, DIAG) },
     { pdf: 49, id: 'bisect', noTrace: 1, lines: [{ m: 'happy', t: 'So the diagonals of\na parallelogram bisect\neach other.', pulse: 1, pulseAt: 'bisect',
       cues: [{ at: 'bisect', merge: { from: ['OA = OC', 'OB = OD'], into: { t: 'Diagonals bisect each other.', k: 'name' } } }] }], // (screen 48's two tags merge into it)
@@ -329,10 +329,12 @@ const LESSON = {
       // (the halves' equal ticks would be the answer: they come with it, okF)
       // (as it is said, AO slides onto OC, then BO onto OD - each fits: the diagonals bisect each other)
       okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'AO = OC,', halfSlide: ['A', 'C'] }, { at: 'BO = OD,', halfSlide: ['B', 'D'] }],
-      fig: { P: FIG_SIDES, diag: 1 },
+      // (a right pick: its two halves traced in turn, AO then OC, and their equal marks come - the statement seen on the
+      // figure; hticks wait for them: toMarks)
+      fig: { P: FIG_SIDES, diag: 1, hticks: 1, toMarks: 1 },
       opts: [
-        { id: 'aooc', t: 'AO = OC', ok: true, emph: ['dAC', 'vO'] },
-        { id: 'bood', t: 'BO = OD', ok: true, emph: ['dBD', 'vO'] },
+        { id: 'aooc', t: 'AO = OC', ok: true, pickCues: [{ pairTrace: 'A' }] },
+        { id: 'bood', t: 'BO = OD', ok: true, pickCues: [{ pairTrace: 'B' }] },
         { id: 'aobo', t: 'AO = BO', fb: 'AO and BO are parts of different diagonals, so they need not be equal.' },
         { id: 'acbd', t: 'AC = BD', fb: 'The two diagonals of this parallelogram have different lengths.' }
       ] }, CP),

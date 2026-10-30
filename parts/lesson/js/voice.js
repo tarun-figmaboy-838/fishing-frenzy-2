@@ -9,7 +9,7 @@
   const q = (k) => { try { return new URLSearchParams(location.search).get(k); } catch (e) { return null; } };
   // in the journey: the shell's <audio>, which its Play tap has unlocked (shell/bridge.js)
   const shared = window.Journey && window.Journey.embedded ? window.Journey.voiceElement() : null;
-  let el = shared;
+  let el = shared, held = false;
   if (!el) { try { el = new Audio(); el.preload = 'auto'; } catch (e) { el = null; } }
   let canOgg = false;
   try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); } catch (e) {}
@@ -113,10 +113,13 @@
       if (unlocking) unlocking.then(go, go); else go();
       return true;
     },
-    // where the clip is now (s), for the line's timers; -1 when nothing is playing
-    now() { return el && !el.paused ? el.currentTime : -1; },
+    // where the clip is now (s), for the line's timers; -1 when nothing is playing (a held clip is still where it is)
+    now() { return el && (!el.paused || held) ? el.currentTime : -1; },
+    // the lesson's pause: the clip holds where it is, and goes on from there
+    hold() { if (el && !el.paused) { held = true; try { el.pause(); } catch (e) {} } },
+    unhold() { if (held && el) { held = false; try { const p = el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} } },
     stop() {
-      tok++;
+      tok++; held = false;
       if (!el) return;
       el.onplaying = el.onended = el.onerror = null;
       try { el.pause(); } catch (e) {}

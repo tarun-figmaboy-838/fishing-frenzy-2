@@ -651,7 +651,6 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* ---- caption screens (game-engine isPlate): no Swiftee - she drifts off back and down - and her line is the navy
    instruction plate across the top: white Fredoka on navy glass with a faint gold rim, key words in gold ---- */
 .stage.in-card.scene.plate .swiftee{opacity:0!important;pointer-events:none;transform:translate(-70px,36px) scale(.9)!important;transition:opacity .45s ease,transform .45s ease!important}
-.stage.in-card.scene.plate.sw-stay .swiftee{opacity:1!important;transform:none!important} /* (a narrator's line where she stays: she listens beside the shape) */
 .stage.in-card.scene.plate .bubble,.stage.in-card.scene.plate .bubble.manual{left:0!important;right:0!important;margin:0 auto!important;top:20px!important;bottom:auto!important;
   transform-origin:50% 0;min-width:0;max-width:1200px!important;height:70px;min-height:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 38px;
   border-radius:22px;background:rgba(8,36,84,.66)!important;border:2.4px solid rgba(255,214,140,.38)!important;
@@ -858,3 +857,28 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* a right answer's tags come in the answers' place: the answers go first */
 .stage .gone>.opt,.stage .gone .opt{opacity:0!important;pointer-events:none;transition:opacity .35s ease}
 .ticks.tk-draw.tk-fast{animation-duration:.4s} /* (a length's mark draws in as the number lands on it) */
+/* a number box's menu: a value tried and wrong is greyed and can't be picked again */
+.dd-item.tried{opacity:.38;filter:grayscale(1);cursor:default;pointer-events:none;box-shadow:none}
+/* a checkpoint's labels come in as the question names them (and the rest with it) */
+.stage.in-card.figsync .tag.mtag.fig:not(.solved),.stage.in-card.figsync .tag.alab:not(.solved){animation:fade .35s ease-out both}
+/* ---- pause: the button at the top right (as the game's), and its card ---- */
+.lesson-pause{position:fixed;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));z-index:60;width:58px;height:58px;padding:0;border-radius:50%;
+  border:3px solid #3b1d00;background:linear-gradient(180deg,#ffd860,#ff9a1c);color:#3b1d00;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 3px 0 #3b1d00,0 8px 18px rgba(0,20,60,.28),inset 0 2.5px 0 rgba(255,255,255,.6);transition:transform .12s ease,box-shadow .12s ease,opacity .3s ease;
+  opacity:0;pointer-events:none;touch-action:manipulation}
+.lesson-pause.on{opacity:1;pointer-events:auto}
+.lesson-pause svg{width:55%;height:55%}
+.lesson-pause:active{transform:translateY(2px) scale(.94);box-shadow:0 1px 0 #3b1d00,0 4px 10px rgba(0,20,60,.28)}
+.lesson-paused-card{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(6,26,60,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.lesson-paused-card[hidden]{display:none}
+.lp-card{min-width:min(420px,86vw);padding:30px 34px 28px;border-radius:28px;text-align:center;background:linear-gradient(180deg,#fff8ec,#ffeccc);border:4px solid #3b1d00;
+  box-shadow:0 6px 0 #3b1d00,0 18px 40px rgba(0,10,40,.4);font-family:'Fredoka','Nunito',system-ui,sans-serif;color:#3b1d00;animation:lpIn .32s cubic-bezier(.2,1.3,.5,1) both}
+.lp-kicker{display:block;font-weight:700;font-size:14px;letter-spacing:.14em;color:#c96a00}
+.lp-card h2{margin:6px 0 4px;font-size:34px;font-weight:700}
+.lp-card p{margin:0 0 20px;font-size:18px;font-weight:500;color:#6b4a1f}
+.lp-resume{font:700 22px 'Fredoka','Nunito',system-ui,sans-serif;padding:12px 42px;border-radius:999px;border:3px solid #3b1d00;background:linear-gradient(180deg,#9be86a,#4dc930);color:#173b05;
+  cursor:pointer;box-shadow:0 4px 0 #3b1d00,inset 0 2px 0 rgba(255,255,255,.55)}
+.lp-resume:active{transform:translateY(2px);box-shadow:0 2px 0 #3b1d00}
+@keyframes lpIn{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+/* paused: every css animation on the card holds where it is */
+.lesson-paused .stage,.lesson-paused .stage *{animation-play-state:paused!important}
