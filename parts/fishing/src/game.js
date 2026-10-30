@@ -477,6 +477,7 @@ class Game {
     const ends = this.breakEnds;
     this.breakEnds = null;
     if (ends) ends();
+    else if (this.embedded) { if (state.phase === PHASE.TITLE) this.title.leave(); backFromLesson(this); } // (the lesson reached by a ?dev=1 jump, nothing waiting: the wave brings Popo in and the nets follow)
   }
 
   // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
