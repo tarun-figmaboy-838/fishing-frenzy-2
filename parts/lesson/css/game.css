@@ -669,8 +669,8 @@ a{color:#123b63}a:hover{color:#0b2742}
   background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 16%,var(--c) 22% 70%,rgba(255,255,255,.4) 100%);box-shadow:0 2px 6px rgba(18,59,99,.18)}
 .dive-bub{position:absolute;border-radius:50%;pointer-events:none;z-index:7;border:2px solid rgba(255,255,255,.95);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 18%,rgba(220,250,255,.35) 22%,rgba(255,255,255,.08) 70%);animation:diveBub 1.2s ease-out forwards}
 @keyframes diveBub{from{transform:translate(-50%,-50%) scale(.6);opacity:.95}to{transform:translate(-50%,calc(-50% - 70px)) scale(1.1);opacity:0}}
-/* the recap's Next sits in the card's bottom-left corner (its end-screen twin stays bottom middle) */
-.stage .next.end-next.sum-next{left:36px}
+/* the recap's Next sits in the card's bottom-right corner (its end-screen twin stays bottom middle) */
+.stage .next.end-next.sum-next{left:auto;right:36px}
 /* (as Fishing Frenzy's plate: 20 px from the top, one line of Fredoka - a line's own breaks are ignored - at 26 px, or
    smaller for a line too long for the card: engine plateFit) */
 .stage.in-card.scene.plate .bubble-text{width:100%;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:'Fredoka','Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:600;
@@ -723,7 +723,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.in-card .chip.name.long{font-size:30px;padding:9px 34px 7px}
 .stage.in-card .chip.white,.stage.in-card .chip.gold{font-size:33px;padding:9px 38px 7px}
 .stage.in-card .chip.sm,.stage.in-card .chip.white.sm,.stage.in-card .chip.gold.sm{font-size:24px;padding:6px 20px 4px!important;margin:0}
-.stage.in-card .chip.md,.stage.in-card .chip.white.md,.stage.in-card .chip.gold.md{font-size:34px;padding:8px 24px 6px!important;margin:0}
+.stage.in-card .chip.md,.stage.in-card .chip.white.md,.stage.in-card .chip.gold.md{font-size:30px;padding:7px 20px 5px!important;margin:0} /* (four sums in one row: 34 px wrapped the fourth under the card) */
 .stage.in-card .chip.hascap .chip-cap{display:none}
 /* the row-break item between tag rows (chipRows) is not a tag: no gold rim or face (it showed as a gold line) */
 .stage.in-card .chip.brk{border:0!important;background:none!important;box-shadow:none!important;padding:0!important}
