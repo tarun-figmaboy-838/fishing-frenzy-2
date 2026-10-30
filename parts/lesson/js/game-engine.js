@@ -1936,10 +1936,11 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (results[st.id] === undefined && !st.practice) results[st.id] = s.cfuFirst;
       this.setState({ picks: picks, done: true, results: results });
       this.cheer();
-      const el = typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null, r = el && el.getBoundingClientRect();
+      // (the answer's value flies from the green answer itself, at once - it lands on the figure well before the answers
+      // go and the shape moves: answersGo holds 1.8 s, the flight takes 1.1)
+      if (st.fig) this.flyAnswer(this.figUnknowns(st), typeof document !== 'undefined' ? document.querySelector('[data-qa="opt-' + o.id + '"]') : null);
       this.answersGo(st, () => {
         if (st.okChips && !(st.okCues || []).some((c) => c.chip)) this.addChips(st.okChips); // (or each on its words: okCues)
-        if (st.fig) this.flyAnswer(this.figUnknowns(st), r ? { getBoundingClientRect: () => r } : null); // (from where the answer was)
         this.interject({ m: CONFIG.swiftee.correct, t: st.ok, cues: st.okCues, fb: 1 });
         this.okGlow(st);
       });
