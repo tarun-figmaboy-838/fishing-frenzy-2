@@ -228,9 +228,12 @@ const LESSON = {
         { id: 'AB', t: '∠A & ∠B', ok: true },
         { id: 'AC', t: '∠A & ∠C', fb: '∠A and ∠C are opposite angles. 110° + 110° is not 180°.' }
       ], f: { arcs: 'ABCD' } }, PRACTICE),
-    { pdf: 36, id: 'adjRule', lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.', tagsWithSupp: 1, // (each pair's tag is built with its own 180° demo)
-      chips: [{ t: '∠A + ∠D = 180°', k: 'white sm' }, { t: '∠A + ∠B = 180°', k: 'white sm' }, { t: '∠B + ∠C = 180°', k: 'white sm' }, { t: '∠C + ∠D = 180°', k: 'white sm' }] }],
-      f: { arcs: 'ABCD', supp: ['AD', 'BA', 'BC', 'DC'] } }, // (each demo at the corner whose side carries on clear of the letters)
+    // (the rule, seen whole: all four angles come forward together on "adjacent", and the four sums pop in together on
+    // "180°" (pop: no number-flight build) - one beat, not four demos in a row; each pair's demo was screen 31's)
+    { pdf: 36, id: 'adjRule', onlyCues: 1, lines: [{ m: 'happy', t: 'All the adjacent angles\nof this parallelogram\nadd up to 180°.',
+      cues: [{ at: 'adjacent', emph: ['aA', 'aB', 'aC', 'aD'], together: 1 },
+        { at: '180°.', chips: [{ t: '∠A + ∠D = 180°', k: 'white md', pop: 1 }, { t: '∠A + ∠B = 180°', k: 'white md', pop: 1 }, { t: '∠B + ∠C = 180°', k: 'white md', pop: 1 }, { t: '∠C + ∠D = 180°', k: 'white md', pop: 1 }] }] }],
+      f: { arcs: 'ABCD' } },
 
     // ---------- Checkpoint 2 · Let's use what we learnt! (page 37) ----------
     Object.assign({ pdf: 37, id: 'cp2a', cpTitle: 'Checkpoint 2 · Find the Opposite Angle',

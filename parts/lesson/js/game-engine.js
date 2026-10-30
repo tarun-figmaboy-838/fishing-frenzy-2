@@ -1036,7 +1036,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const L = q.lines[q.i++], prev = q.i > 1 ? q.lines[q.i - 2] : null;
     // (her line after the narrator's on the same screen - 'Are the segments equal?' then 'Let's find out!': she dives
     // in first, seen, as the plate goes)
-    if (prev && prev.narr && !L.narr && !this.isPlate(this.cur())) { this.curLine = L; this.curLineStep = this.state.step; const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) this.say(L, () => this.qNext()); })); return; }
+    if (prev && prev.narr && !L.narr && !this.isPlate(this.cur())) { this.curLine = L; this.curLineStep = this.state.step; const tok = this.stepTok; this.setState({ line: '', reveal: 0 }, () => this.dive(() => { if (tok === this.stepTok) this.say(L, () => this.qNext()); })); return; } // (the narrator's words leave with the plate: no bubble until her line)
     this.say(L, () => this.qNext());
   }
   interject(L) {
@@ -1087,7 +1087,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     }
     if (c.steps) { const gap = c.gap || 1100; c.steps.forEach((x, j) => this.tm(() => { if (tok === this.stepTok) this.runCue(x); }, j * gap)); this.busyFor(c.steps.length * gap + 600); }
     if (c.emph) { // parts that grow on the word (as the ones a line names do by itself); all four angles one at a time
-      if (c.emph.length === 4 && /^a/.test(c.emph[0])) this.angleSeq(c.emph); else this.emphasize(c.emph);
+      if (c.emph.length === 4 && /^a/.test(c.emph[0]) && !c.together) this.angleSeq(c.emph); else this.emphasize(c.emph); // (together: all at once)
     }
     if (c.focus) { // the named angles stay vivid, the others step back for a moment
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
@@ -1161,6 +1161,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       }
     }
     if (c.chip) this.addChips([c.chip]);
+    if (c.chips) this.addChips(c.chips); // (several cards on one word, a beat apart: css .chip.cd1-.cd3)
     if (c.merge) this.tagStep(() => this.mergeTags(c.merge.from, c.merge.into), 1500); // (tags that make one idea: into it)
     if (c.glow) { this.sfx('glint', { v: 0.9 }); this.busyFor(1100); } // a side (or the outline) lights up on its word: its light runs
     if (c.glow !== undefined) this.setState({ glow: c.glow, chipHi: c.hi || null });
