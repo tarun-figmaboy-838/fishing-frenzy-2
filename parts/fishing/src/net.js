@@ -1347,11 +1347,10 @@ class Net {
     // is; they fade in and out (parA), never pop
     const dirOf = (n) => { const [i, j] = side(n); return normalize(sub(c[j], c[i])); };
     const isPar = (a, b) => { const u = dirOf(a), v = dirOf(b); return Math.abs(u.x * v.y - u.y * v.x) < 0.035; };
-    // (the marks are the child's feedback: they pop in the moment the drag makes the WHOLE net a parallelogram, and
-    // go if it is dragged off again - never one pair ahead of time: on net 2 AB stays parallel to CD throughout, and
-    // marking that from the start read as the answer already given)
-    const whole = L.type !== 'free' && isPar('AB', 'CD') && isPar('BC', 'AD');
-    const par = { AB: whole, BC: whole };
+    // (each pair's marks follow the geometry: a pair the net is given with - net 2's AB parallel to CD - is marked from
+    // the start, and the pair the child makes pops in the moment the drag makes it parallel, and goes if it is dragged
+    // off again; a locked wrong net is never marked)
+    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: isPar('AB', 'CD'), BC: isPar('BC', 'AD') };
     const dtm = Math.max(0, Math.min(0.1, this.time - (this.parT == null ? this.time : this.parT))); this.parT = this.time;
     this.parA = this.parA || { AB: par.AB ? 1 : 0, BC: par.BC ? 1 : 0 };
     for (const k of ['AB', 'BC']) this.parA[k] += ((par[k] ? 1 : 0) - this.parA[k]) * Math.min(1, dtm * 6);

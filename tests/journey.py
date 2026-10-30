@@ -396,8 +396,9 @@ def hook(r):
                 shots.add('wave'); r.page.wait_for_timeout(500); r.shot('3c-hook-wave')
         r.page.wait_for_timeout(80)
     h = ff.evaluate(HOOK)
-    lines = ff.evaluate('() => window.__lines.slice(0, 11)')
-    check(lines == want, f'{r.tag}: the hook says its eleven lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
+    want = want[:7] + [want[1]] + want[7:]  # (Popo asks for the catch with his "Let's catch lots of fish!" again, after the net stays open)
+    lines = ff.evaluate('() => window.__lines.slice(0, 12)')
+    check(lines == want, f'{r.tag}: the hook says its twelve lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
     check(seen['tangles'] == 3 and seen['wrongTangled'] and not seen['invalid'],
           f'{r.tag}: the wrong nets (not parallelograms) tangle in the water, three times', f"{seen['tangles']} tangles")
     check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')

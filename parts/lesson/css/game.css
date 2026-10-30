@@ -24,7 +24,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .bubble-text{display:flex;flex-wrap:wrap;justify-content:center;column-gap:.28em;font-family:'Nunito','Noto Sans Math',system-ui,sans-serif;font-weight:800;line-height:1.25;color:#3b1d00;text-align:center}
 /* Tail sits on the inner edge of the bottom border: its fill opens the border, its edges run straight out of it,
    and anything above the border is clipped, so the outline reads as one continuous line */
-.bubble-tail{position:absolute;left:26px;top:100%;margin-top:-1px;display:block;overflow:hidden;filter:drop-shadow(0 4px 4px rgba(18,59,99,.10))}
+.bubble-tail{position:absolute;left:24px;top:100%;margin-top:-1px;display:block;overflow:hidden;filter:drop-shadow(0 4px 4px rgba(18,59,99,.10))} /* (2 px wider each side than its wedge: its edge stroke's ends are not clipped - that showed as a notch) */
 @keyframes bubA{from{transform:scale(.97);opacity:.8}to{transform:scale(1);opacity:1}}
 @keyframes bubB{from{transform:scale(.97);opacity:.8}to{transform:scale(1);opacity:1}}
 /* Swiftee is intentionally static on every screen: fixed position, no idle, talk or reaction motion */
@@ -150,7 +150,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.scene .swiftee{left:70px!important;top:412px!important}
 .stage.scene .bubble{left:87px!important;top:auto!important;bottom:290px!important;max-width:380px;transform-origin:138px 100%}
 .stage.scene .bubble.manual{max-width:420px}
-.stage.scene .bubble .bubble-tail{left:120px;top:100%;margin-top:-1px;transform:none}
+.stage.scene .bubble .bubble-tail{left:118px;top:100%;margin-top:-1px;transform:none}
 .stage.scene .opt{transition:transform .12s ease}
 
 /* screen 14: Swiftee steps away from her spot while the walker measures on the shape */
@@ -674,7 +674,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage.hero .panel-img{opacity:0}
 .stage.scene.hero .swiftee{left:510px!important;top:330px!important;animation:none!important}
 .stage.scene.hero .bubble{left:0!important;right:0!important;margin:0 auto;top:auto!important;bottom:372px!important;transform-origin:50% 100%}
-.stage.scene.hero .bubble .bubble-tail{left:calc(50% - 15px)}
+.stage.scene.hero .bubble .bubble-tail{left:calc(50% - 17px)}
 .stage.scene.hero.endhero .swiftee{top:330px!important}
 .stage.scene.hero.endhero .bubble{bottom:396px!important}
 /* the recap's Next sits in the card's bottom-right corner (its end-screen twin stays bottom middle) */
@@ -741,7 +741,7 @@ a{color:#123b63}a:hover{color:#0b2742}
 /* the bubble's tail: symmetric, its white fill covers the bubble's 3 px border where they meet and its two teal edges
    run straight out of that border (the svg's top is the border's inner edge: top 100% of the padding box) */
 .stage .bubble-tail{overflow:visible!important;margin-top:0!important;filter:drop-shadow(0 3px 3px rgba(18,59,99,.12))}
-.stage .bubble-tail .tail-fill{fill:#fff!important;stroke:none!important}
+.stage .bubble-tail .tail-fill{fill:#fff8e8!important;stroke:none!important} /* (the bubble's own cream: a white tail showed against it) */
 .stage .bubble-tail .tail-edge{fill:none!important;stroke:#0f6e6a!important;stroke-width:3px;stroke-linejoin:round;stroke-linecap:round}
 /* drag-and-drop answer boxes (screen 46) are not menus: no dropdown chevron, the value centred in the box */
 .stage .blank:not(.dd) .dd-val{margin:0 auto}
