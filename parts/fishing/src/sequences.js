@@ -1069,37 +1069,6 @@ function schoolSwimsOn() {
   for (const f of state.fish) if (f.lane && f.lane.speed === 0 && !f.caught && !f.gone) { f.leaving = true; f.speed = 140; }
 }
 
-// H7: a school swims in from the right and slows to a stop right inside the open net: each fish has its own place in
-// the net (three staggered rows of four, a little uneven), so the whole school always ends up in it. Its fish keep a
-// lane of their own, which the sea leaves alone.
-const SCHOOL_SLOTS = [0.3, 0.52, 0.74].flatMap((v, row) => [0.2, 0.4, 0.6, 0.8].map((u) => [u + (row % 2 ? 0.05 : -0.05), v]));
-async function schoolSwimsIn(game, token, ms) {
-  const { net } = game;
-  const lane = { dir: -1, y: net.toStage(net.meshPoint(0.5, 0.5)).y, speed: 0 };
-  const kinds = shuffled(NATURAL_FISH).slice(0, 3);
-  const fish = SCHOOL_SLOTS.map(([u, v], i) => {
-    const at = net.toStage(net.meshPoint(u + (Math.random() - 0.5) * 0.04, v + (Math.random() - 0.5) * 0.05));
-    const f = new Fish(kinds[i % kinds.length], at.x, at.y, -1, 0.44 + Math.random() * 0.08);
-    f.lane = lane;
-    f.depth = at.y - lane.y;
-    f.home = at.x;
-    f.lag = Math.random() * 0.18; // (they come in as a school, not in step)
-    return f;
-  });
-  const shift = STAGE_W + 120 - Math.min(...fish.map((f) => f.home));
-  fish.forEach((f) => { f.x = f.home + shift; f.speed = 160; });
-  state.fish.push(...fish);
-  game.audio.play('bubbles');
-  await clock.tween(ms, token, (t) => {
-    for (const f of fish) {
-      const k = 1 - (1 - Math.min(1, Math.max(0, (t - f.lag) / (1 - f.lag)))) ** 3;
-      f.x = f.home + shift * (1 - k);
-      f.speed = 160 * (1 - k) + 6;
-    }
-  });
-  return fish;
-}
-
 // The catch: the net closes round whoever is in it, gathers its mouth under the water and comes up a full bag.
 async function hookCatch(game, token) {
   const { net, winch, popo, fx, audio } = game;
@@ -1209,14 +1178,20 @@ async function hook(game, token) {
     for (const p of net.points) { const st = net.toStage(p); fx.sparkle(st.x, st.y, 4); }
     popo.react('happy', 1.4);
     await say(H.h6);
-    // H7: a school swims into the open net and waits there; the catch is the child's: Catch comes up (the net is
-    // already down, the school in it - the same button a right net gets) with the warm-up's prompt ("Now, let's help
-    // Popo catch some fish!"), and the net closes on their tap (Game.onAction)
-    await schoolSwimsIn(game, token, q ? 1200 : 2600);
-    await clock.wait(q ? 100 : 250, token);
+    // H7: the sea's own school swims on through the open net, as it will at every net; the catch is the child's and
+    // timed by them: Catch (the button a right net gets) is up whenever fish are inside the net, with the warm-up's
+    // prompt ("Now, let's help Popo catch some fish!"), and the net closes on their tap (Game.onAction) round
+    // whoever is in it then
     game.instruct(LEVELS[0].prompt);
-    game.ui.setAction('catch');
-    try { await Promise.race([new Promise((res) => { game.catchWaiter = res; }), clock.wait(1e9, token)]); } finally { game.catchWaiter = null; }
+    let tapped = false;
+    const tap = new Promise((res) => { game.catchWaiter = () => { tapped = true; res(); }; });
+    try {
+      while (!tapped) {
+        const inside = state.fish.filter((f) => !f.gone && !f.caught && !f.leaving && !f.waiting && net.contains(f)).length;
+        game.ui.setAction(inside ? 'catch' : 'hidden');
+        await Promise.race([tap, clock.wait(120, token)]);
+      }
+    } finally { game.catchWaiter = null; }
     game.ui.setAction('hidden');
     game.instruct('');
     const caught = await hookCatch(game, token);

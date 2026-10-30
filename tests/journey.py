@@ -401,8 +401,7 @@ def hook(r):
     check(seen['tangles'] == 3 and seen['wrongTangled'] and not seen['invalid'],
           f'{r.tag}: the wrong nets (not parallelograms) tangle in the water, three times', f"{seen['tangles']} tangles")
     check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')
-    check(seen['school'] == 12 and seen['caught'] == 12, f'{r.tag}: the scripted school swims into the open net and all of it is caught',
-          f"{seen['caught']} of {seen['school']}")
+    fs = r.fish(); check(fs['caught'] >= 1, f'{r.tag}: the sea\'s school swims on through the open net and the child\'s Catch takes what is inside', f"caught {fs['caught']}")
     check(seen['swiftee'] and seen['dropTap'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; the child\'s Catch tap is the one press in the hook')
     check(seen['duck'] and not h['duck'], f'{r.tag}: the hook\'s sound effects stepped down under its lines, and the usual mix is back after it')
     check(seen['wave'] and seen['hudAway'] and h['away'] >= 2000 and h['furl'] > 0.9 and not h['swiftee'],

@@ -432,7 +432,9 @@ class Game {
     this.backdropOn = false; // (the lake is the game again: drawn every frame)
     this.setCamera({ zoom: 1, pan: 1 }); // (the lesson's camera may have left the view down in the water)
     this.ui.el.hud.hidden = false;
-    this.popo.travelShift = 0;
+    // (after the lesson the story brings Popo back on the wave - sequences.js afterHook / backFromLesson - so he stays
+    // away until it does; a plain dev jump puts him straight on his raft)
+    if (!this.breakEnds && !this.afterLesson) this.popo.travelShift = 0;
     this.audio.hold(false);
     this.showIdleScene();
   }
@@ -570,9 +572,9 @@ class Game {
   // new lane depths and are joined by newcomers; each level's school swims a little quicker.
   spawnSchool() {
     const level = LEVELS[state.level];
-    // one school, quick and quicker net by net - a catch takes timing: 194 px/s at the first net (round its 2300 px loop
-    // in 12 s) to 362 at the eighth (416 for the golden school)
-    const pace = (170 + 24 * state.level) * (level.rare ? 1.15 : 1);
+    // one school, quick and quicker net by net - a catch takes timing: 238 px/s at the first net (round its 2300 px loop
+    // in under 10 s) to 434 at the eighth (499 for the golden school)
+    const pace = (210 + 28 * state.level) * (level.rare ? 1.15 : 1);
     state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
   }
 

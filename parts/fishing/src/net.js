@@ -816,7 +816,7 @@ class Net {
       this.textureKey = null;
     }
     if (this.textureKey !== surfaceKey) {
-      const res = changed ? Math.min(2, this.sharpRes) : this.sharpRes; // (drawn fine while it moves too - a drag is when it is looked at closest, zoomed in - up to 2x; its full sharpness once still)
+      const res = changed ? 1 : this.sharpRes; // (quick while it moves - redrawing the warp fine every frame of a drag made the drag lag - and its full sharpness the moment it is still)
       this.textureRes = res;
       this.textureKey = surfaceKey;
       const rows = this.pouch || this.tangle ? 24 : 6;
@@ -1347,8 +1347,11 @@ class Net {
     // is; they fade in and out (parA), never pop
     const dirOf = (n) => { const [i, j] = side(n); return normalize(sub(c[j], c[i])); };
     const isPar = (a, b) => { const u = dirOf(a), v = dirOf(b); return Math.abs(u.x * v.y - u.y * v.x) < 0.035; };
-    // (only once the net is checked and locked - never while the child drags, which would give the answer away)
-    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: this.locked && isPar('AB', 'CD'), BC: this.locked && isPar('BC', 'AD') };
+    // (the marks are the child's feedback: they pop in the moment the drag makes the WHOLE net a parallelogram, and
+    // go if it is dragged off again - never one pair ahead of time: on net 2 AB stays parallel to CD throughout, and
+    // marking that from the start read as the answer already given)
+    const whole = L.type !== 'free' && isPar('AB', 'CD') && isPar('BC', 'AD');
+    const par = { AB: whole, BC: whole };
     const dtm = Math.max(0, Math.min(0.1, this.time - (this.parT == null ? this.time : this.parT))); this.parT = this.time;
     this.parA = this.parA || { AB: par.AB ? 1 : 0, BC: par.BC ? 1 : 0 };
     for (const k of ['AB', 'BC']) this.parA[k] += ((par[k] ? 1 : 0) - this.parA[k]) * Math.min(1, dtm * 6);
