@@ -188,7 +188,7 @@ const LESSON = {
     // screens 26-27: the angle equal to ∠A is chosen from its name (the shape stays still: nothing on it is tapped, jumps or
     // is traced). Right: the two angles come forward, the others step back, and their names fly from the words just said
     // into the statement (∠A = ∠C), which completes as it lands
-    Object.assign({ pdf: '27-28', id: 'tapEqA', onlyCues: 1, lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠A?' }],
+    Object.assign({ pdf: '27-28', id: 'tapEqA', onlyCues: 1, lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠A?', cues: [{ at: '∠A?', asked: 'A' }] }],
       ok: "That's correct! ∠A is\nequal to ∠C.", soloOk: 1,
       okCues: [{ at: 'equal', focus: ['A', 'C'], ms: 3400 }, { at: '∠C.', chip: { t: '∠A = ∠C', k: 'gold', byName: 1 } }],
       opts: [
@@ -198,7 +198,7 @@ const LESSON = {
       ], f: { arcs: 'ABCD' } }, PRACTICE),
     // (asked with nothing between the shape and the answers - screen 26's tag is no hint here; right: it comes back on
     // "equal", and this one's statement forms beside it on "∠B")
-    Object.assign({ pdf: '29-30', id: 'tapEqD', onlyCues: 1, lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠D?' }],
+    Object.assign({ pdf: '29-30', id: 'tapEqD', onlyCues: 1, lines: [{ m: 'curious', t: 'Which angle is\nequal to ∠D?', cues: [{ at: '∠D?', asked: 'D' }] }],
       ok: "That's correct! ∠D is\nequal to ∠B.", soloOk: 1,
       okCues: [{ at: 'equal', focus: ['D', 'B'], ms: 3400 }, { at: 'equal', chip: { t: '∠A = ∠C', k: 'gold', pop: 1 } }, { at: '∠B.', chip: { t: '∠D = ∠B', k: 'gold', byName: 1 } }],
       opts: [

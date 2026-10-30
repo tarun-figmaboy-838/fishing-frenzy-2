@@ -352,6 +352,11 @@ a{color:#123b63}a:hover{color:#0b2742}
 @keyframes wedgeTry{0%,100%{transform:scale(1);filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px rgba(255,196,0,.55))}
   45%{transform:scale(1.18);filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,196,0,.95))}}
 @media (prefers-reduced-motion: reduce){.wedge.try{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
+/* the angle a question asks about ("Which angle is equal to ∠A?"): its wedge, edged in navy, beats the same way and its size
+   stays at its 1.2x emphasis size until the question is answered - so the one to compare with is never in doubt */
+.wedge.asked{stroke:#123b63;stroke-width:4px;paint-order:stroke;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px rgba(255,196,0,.7));animation:wedgeTry 1.4s ease-in-out infinite}
+.tag.alab.asked{transform:translate(-50%,-50%) scale(1.2)}
+@media (prefers-reduced-motion: reduce){.wedge.asked{animation:none;filter:drop-shadow(0 0 4px rgba(255,196,0,.85))}}
 @media (prefers-reduced-motion: reduce){.par-ch,.par-ch.tmp,.par-ch.tmp.out{animation:none}.hl.on{animation:none;stroke-dasharray:none;opacity:.45}.vdot{transition:none}.vdot.drag-cue,.vdot.dragging{animation:none}}
 
 /* angle focus (s.aFocus): the angles a line names stay vivid, the others fade back */

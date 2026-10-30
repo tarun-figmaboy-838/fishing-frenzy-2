@@ -1082,6 +1082,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const aF = {}; c.focus.forEach((k) => { aF[k] = 1; });
       this.setState({ aFocus: aF }); this.tm(() => { if (tok === this.stepTok) this.setState({ aFocus: null }); }, c.ms || 1500);
     }
+    if (c.asked) { this.setState({ askedAng: c.asked }); this.emphasize(['a' + c.asked]); } // (the angle the question is about: it grows now and beats until answered - css .asked)
     if (c.glideB) this.glideB();
     if (c.meet) { this.showMeet(c.meet, c.span); this.busyFor((Motion.reduced ? 0 : 800) + (c.span ? Math.max(0.9, c.span - 0.8) + 0.45 : 1.75) * 1000); }
     if (c.meetPulse && window.Motion) Motion.meetPulse(); // ("...if we made them longer": the lines carried on beat once)
@@ -1509,7 +1510,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       step: i, P: P, aFocus: null, done: !this.asks(st), listen: !!(st.lines || []).length && this.asks(st), fill: this.freshFill(), conn: null,
       lenOn: was && was.task === 'measure' ? { AB: 1, CD: 1, DA: 1, BC: 1 } : {}, endNext: false, sumNext: false, // (straight from the measuring walk the lengths stay up)
       supp: null, tap: {}, ang: {}, angIn: {}, diag: {}, chips: this.carryChips(st),
-      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hNum: {}, hMarks: {}, pairsIn: {}, optsGone: false, figIn: {}, oIn: false, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
+      moved: false, dragging: null, picks: {}, cfuFirst: true, hand: null, bubOff: false, glow: null, chipHi: null, emph: {}, askedAng: null, boxHi: null, boxVal: {}, boxBack: {}, boxGone: {}, hNum: {}, hMarks: {}, pairsIn: {}, optsGone: false, figIn: {}, oIn: false, landed: {}, parTmp: {}, meet: null, trace: null, build: null, measuring: null, tape: null, swAway: false, halvesIn: {}, line: '', reveal: 0, marked: {}, wrongs: 0, revealing: false
     });
     this.pose(this.restPose());
     this.setState({}, () => this.stepMotion(st)); // once the new screen is drawn
@@ -2584,7 +2585,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // when several angles come in together their values fade in one after another (css .d0-.d3)
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
       g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + r1(RW) + ',' + r1(RW) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
-        d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
+        d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (s.askedAng === k && !s.done ? ' asked' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
       // its size wears the darker shade of the wedge's colour (lA..lD; equal opposite angles share A's or B's)
       const lk = /\bpa\b/.test(pairCls(k)) ? 'A' : /\bpb\b/.test(pairCls(k)) ? 'B' : k;
       const at = fig ? this.figVal(this.cur(), k, (fig.angles || {})[k] || '') : V[k] + '°';
@@ -2605,7 +2606,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       let dl = RW + 6 / zs; while (dl < 160 && !clearOfD(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
       (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
       if (fig) this.figPos[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl };
-      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show && !figOff(k) ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (fig && s.done ? '' : aDim(k)) };
+      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show && !figOff(k) ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (s.askedAng === k && !s.done ? ' asked' : '') + (fig && s.done ? '' : aDim(k)) };
     });
     // vertices
     const dk = this.dragKey();
