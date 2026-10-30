@@ -6,7 +6,7 @@ installed is used if Playwright's own is missing), at 1280x720 with a mouse and 
 
   front page  the fishing game's own live banner, shown first; the lesson loads, unseen, behind it once it's ready
   intro       a real tap on the banner's Play: the shell's sound unlocks, the banner clears away and the game's story
-              starts at once: the hook, its ten lines in order (nothing to press meanwhile) - the wrong nets tangle, a
+              starts at once: the hook, its eleven lines in order (nothing to press meanwhile) - the wrong nets tangle, a
               leaping fish knocks the last one into a parallelogram, which stays open, the scripted school swims into
               it and all of it is caught, Swiftee names the shape, and on "Let's find out!" she flies off to the
               lesson, the HUD steps away, the net winds up and the giant wave carries Popo away
@@ -355,7 +355,7 @@ def end_lesson(r):
 
 
 def hook(r):
-    """The hook, from Play to the lesson: its ten lines in order, the wrong nets tangling, the parallelogram that stays
+    """The hook, from Play to the lesson: its eleven lines in order, the wrong nets tangling, the parallelogram that stays
     open, the scripted school all caught, Swiftee naming the shape, then the hand-over - all without a tap."""
     ff = part(r.page, 'fishing')
     want = ff.evaluate(HOOK_LINES)
@@ -393,7 +393,7 @@ def hook(r):
         r.page.wait_for_timeout(80)
     h = ff.evaluate(HOOK)
     lines = ff.evaluate('() => window.__lines.slice(0, 10)')
-    check(lines == want, f'{r.tag}: the hook says its ten lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
+    check(lines == want, f'{r.tag}: the hook says its eleven lines in order, each by its speaker (narrator, Popo, Swiftee)', ' | '.join(lines))
     check(seen['tangles'] == 3 and seen['wrongTangled'] and not seen['invalid'],
           f'{r.tag}: the wrong nets (not parallelograms) tangle in the water, three times', f"{seen['tangles']} tangles")
     check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')
