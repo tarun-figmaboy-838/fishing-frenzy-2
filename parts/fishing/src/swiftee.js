@@ -7,6 +7,26 @@ const { assets } = PopoGame;
 const BEAT = [0, 1, 2, 1, 3, 1, 2, 1];
 const SCALE = 0.68;
 
+// Her face to the child, as in Fishing Frenzy 1: the lesson's front-facing sheets (js/swiftee-manifest.js; happy
+// while she hovers, talking while her line plays) are drawn in place of the side-on wing-beat atlas once they are in
+// - the atlas stays as the fallback (and for the loop-de-loop)
+const FRONT_BASE = '../lesson/swiftee-assets/';
+const frontSheets = {};
+function frontSheet(anim) {
+  const m = window.SWIFTEE_MANIFEST;
+  if (!m) return null;
+  if (frontSheets[anim]) return frontSheets[anim];
+  const info = m.scales['1x'].sheets[anim];
+  if (!info) return null;
+  const img = new Image();
+  const sh = { img, info, ready: false, fps: (m.animations[anim] || {}).fps || m.fps || 20, pingpong: !!(m.animations[anim] || {}).pingpong };
+  img.decoding = 'async';
+  img.onload = () => { sh.ready = true; };
+  img.src = FRONT_BASE + info.image;
+  frontSheets[anim] = sh;
+  return sh;
+}
+
 class Swiftee {
   constructor(x, y) {
     this.x = x;
@@ -19,6 +39,8 @@ class Swiftee {
     this.flapRate = 16;
     this.lastBeat = -1;
     this.onDownstroke = null;
+    this.talking = false; // (her line is playing: the talking sheet)
+    frontSheet('happy'); frontSheet('talking');
   }
 
   // a quick loop-de-loop on the stressed word
@@ -66,6 +88,19 @@ class Swiftee {
     if (!img || !d) return;
     const frame = BEAT[Math.floor(this.beat) % BEAT.length];
     const spin = this.spin ? Math.sin(this.spin.t * Math.PI / 2) ** 2 * Math.PI * 2 : 0;
+    const sh = frontSheet(this.talking ? 'talking' : 'happy');
+    if (sh && sh.ready && !this.spin) {
+      // the front-facing bird: the sheet's cell, its bird about as tall as the atlas's, registered on the belly
+      const { cell, frames, cols } = sh.info, n = sh.pingpong ? Math.max(1, frames * 2 - 2) : frames;
+      let i = Math.floor(this.time * sh.fps) % n; if (sh.pingpong && i >= frames) i = frames * 2 - 2 - i;
+      const size = d.height * SCALE * 1.3;
+      ctx.save();
+      ctx.translate(this.x, this.bobY());
+      ctx.rotate(this.lean * 0.35);
+      ctx.drawImage(sh.img, (i % cols) * cell, Math.floor(i / cols) * cell, cell, cell, -size / 2, -size * 0.66, size, size);
+      ctx.restore();
+      return;
+    }
     ctx.save();
     ctx.translate(this.x, this.bobY());
     ctx.rotate(this.dir * (this.lean + spin));

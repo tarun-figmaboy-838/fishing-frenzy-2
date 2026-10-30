@@ -50,7 +50,7 @@ const CONFIG = {
   // restMs: after every animation (a side's light, marks coming in, sides carried on, a slide, a sequence) the screen is
   // still this long before anything new starts - its next line, the next animation, the next screen - so each can be
   // taken in (engine busyFor)
-  flow: { advanceMs: 2600, answersMaxMs: 15000, restMs: 1500 },
+  flow: { advanceMs: 1600, answersMaxMs: 15000, restMs: 1500 }, // (advanceMs: 2600 left a screen standing ~2.2 s after its voice - it read as stuck)
   plateMaxW: 1200,                   // the instruction plate's widest (stage px): a longer line is set smaller (engine plateFit)
   // the supplementary-angle demo: the copied angle slides from its own corner onto the shared side (CSS .supp)
   supp: { stepMs: 6500 }, // (each pair's demo, its tag built with it, and a rest)

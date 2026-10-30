@@ -1179,10 +1179,10 @@ async function hook(game, token) {
     popo.react('happy', 1.4);
     await say(H.h6);
     // H7: the sea's own school swims on through the open net, as it will at every net; the catch is the child's and
-    // timed by them: Catch (the button a right net gets) is up whenever fish are inside the net, with the warm-up's
-    // prompt ("Now, let's help Popo catch some fish!"), and the net closes on their tap (Game.onAction) round
-    // whoever is in it then
-    game.instruct(LEVELS[0].prompt);
+    // timed by them: Catch (the button a right net gets) is up whenever fish are inside the net - Popo asks for it
+    // ("Let's catch lots of fish!", his own line; the narrator's plate is not Swiftee's line) - and the net closes on
+    // their tap (Game.onAction) round whoever is in it then
+    say(H.h2).catch(swallow);
     let tapped = false;
     const tap = new Promise((res) => { game.catchWaiter = () => { tapped = true; res(); }; });
     try {
@@ -1193,7 +1193,6 @@ async function hook(game, token) {
       }
     } finally { game.catchWaiter = null; }
     game.ui.setAction('hidden');
-    game.instruct('');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
     state.caught += caught.length;
