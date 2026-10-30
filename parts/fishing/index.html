@@ -136,6 +136,6 @@
   <script src="src/sequences.js" defer></script>
   <script src="src/game.js" defer></script>
   <script src="src/main.js" defer></script>
-  <script>if (new URLSearchParams(location.search).get('dev') === '1') { const s = document.createElement('script'); s.src = 'src/dev.js'; s.defer = true; document.currentScript.after(s); }</script> <!-- (the dev panel only with ?dev=1: production never fetches it) -->
+  <script>if (new URLSearchParams(location.search).get('dev') === '1') document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('script'); s.src = 'src/dev.js'; document.body.appendChild(s); });</script> <!-- (the dev panel only with ?dev=1, and only once every deferred script above has run - a script added straight away could run before sequences.js, and its jumps found no hook: production never fetches it) -->
 </body>
 </html>
