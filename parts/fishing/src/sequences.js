@@ -1,6 +1,7 @@
 (function (PopoGame) {
 'use strict';
 const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
+const TAU = Math.PI * 2;
 
 function swallow(e) {
   if (!(e instanceof Cancelled)) throw e;
