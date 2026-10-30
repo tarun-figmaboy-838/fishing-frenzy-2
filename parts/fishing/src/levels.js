@@ -40,12 +40,12 @@ const LEVELS = [
     width: 440, height: 200, lean: 60, start: -5, // slides along AB (so AB stays parallel to CD), from the left of its place
     location: 0, fish: 3,
     prompt: 'Drag vertex B to make the net a *parallelogram*.',
-    hints: ['AB is shorter than CD. Make AB *longer*.', 'AB is longer than CD. Make AB *shorter*.'] },
+    hints: ['Opposite sides of a parallelogram are equal. Make AB *longer*.', 'Opposite sides of a parallelogram are equal. Make AB *shorter*.'] },
   { title: 'Complete the Parallelogram', type: 'parallel', sides: ['AB', 'CD'], both: true, corner: 'C', along: 'BC',
     width: 440, height: 210, lean: -60, start: -6, // slides along BC (so BC stays parallel to AD), from B's side
     location: 0, fish: 4,
     prompt: 'Drag vertex C to make the net a *parallelogram*.',
-    hints: ['BC is shorter than AD. Make BC *longer*.', 'BC is longer than AD. Make BC *shorter*.'] },
+    hints: ['Opposite sides of a parallelogram are equal. Make BC *longer*.', 'Opposite sides of a parallelogram are equal. Make BC *shorter*.'] },
   { title: 'Match the Opposite Side', type: 'length', side: 'CD', reference: 'AB', metres: { AB: 7 }, corner: 'C', along: 'DC',
     width: 420, height: 200, lean: 50, start: -6, // CD starts at about 5 cm
     location: 1, fish: 4,
