@@ -455,10 +455,10 @@
       else if (kind === 'pair' || kind === 'pairs') { this.trace([sd.AB, sd.DC], true); this.later(500, () => this.trace([sd.DA, sd.BC], true)); if (kind === 'pair') this.warmPulse(c._chev, '1.7'); } // one pair, then the other
       else if (kind === 'chev') this.warmPulse(c._chev, '1.7');
       else if (kind === 'lit') this.trace(c._lit, true);
-      else if (kind === 'ticks') { this.warmPulse(c._ticks, '1.6'); this.warmPulse(c._lengths, '1.3'); }
+      else if (kind === 'ticks') { this.warmPulse(c._ticks, '1.6'); this.warmPulse([c._tag], '1.08'); } // (the marks and the idea's name; the lengths stay still - their swell read as a jump)
       else if (kind === 'wedges') this.anglePulse(c);
       else if (kind === 'add') this.add(c);
-      else if (kind === 'values') this.warmPulse(c._values, '1.5');
+      else if (kind === 'values') this.warmPulse([c._tag], '1.08'); // (the idea's name pulses; the angle values stay still)
       else if (kind === 'sum') this.total(c);
       else if (kind === 'tag') this.warmPulse([c._tag], '1.05');
       else if (kind === 'diag') this.trace(c._diag, true);
