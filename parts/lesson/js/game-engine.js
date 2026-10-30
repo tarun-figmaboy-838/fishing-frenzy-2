@@ -805,7 +805,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       if (atIdx < 0) highlight();
     };
     const tok = ++this.narrTok;
-    this.curLine = L;
+    this.curLine = L; this.curLineStep = this.state.step; // (the line being said, and whose screen it is)
     this.cancelSpeech();
     if (keep) this.setState({ talking: true, aFocus: null });
     else this.setState({ aFocus: null, line: text, reveal: 0, talking: true, bub: this.state.bub === 'bubA' ? 'bubB' : 'bubA', bubOff: false });
@@ -945,7 +945,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
               if (!live() || sDone) return;
               const ct = VO.now();
               if (ct >= 0) while (i < tw.length && tw[i] <= ct + 0.04) show(i);
-              if (sEnd && ct >= sEnd) { end(); return; }
+              if (sEnd && ct >= sEnd + 0.12) { end(); return; } // (a hair past its last sound, so no final syllable is clipped)
               this.tm(follow, 30);
             };
             follow();
@@ -1023,7 +1023,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const rest = q.i > 0 && q.i < q.lines.length ? (this.seqEnd || 0) - Date.now() : 0; // (the last line's animation, and its rest)
     if (rest > 0) { this.tm(() => this.qNext(), rest); return; }
     if (q.i >= q.lines.length) { this.q = null; if (q.done) q.done(); this.armIdle(); return; }
-    const L = q.lines[q.i++];
+    const L = q.lines[q.i++], prev = q.i > 1 ? q.lines[q.i - 2] : null;
+    // (her line after the narrator's on the same screen - 'Are the segments equal?' then 'Let's find out!': she dives
+    // in first, seen, as the plate goes)
+    if (prev && prev.narr && !L.narr && !this.isPlate(this.cur())) { this.curLine = L; this.curLineStep = this.state.step; const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) this.say(L, () => this.qNext()); })); return; }
     this.say(L, () => this.qNext());
   }
   interject(L) {
@@ -1454,12 +1457,13 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     };
     const at = () => { const b = this.elBox(sw.querySelector('.swiftee-still') || sw); return b ? { x: b.x + b.w / 2, y: b.y + b.h * 0.45 } : null; };
     sw.classList.add('flying'); // (no CSS transition smooths the dive)
-    G.set(sw, { x: 150, y: -640, rotation: 38, scale: 0.9, transformOrigin: '50% 50%' });
+    G.set(sw, { x: 150, y: -640, rotation: 38, scale: 0.9, opacity: 0, transformOrigin: '50% 50%' });
+    this.setState({}); // (the plate goes as she sets off: narrLine)
     this.sfx('whoosh');
     let last = 0;
     this.diveTl = G.timeline({ onComplete: () => {
       this.diveTl = null;
-      G.set(sw, { clearProps: 'transform' }); sw.classList.remove('flying');
+      G.set(sw, { clearProps: 'transform,opacity' }); sw.classList.remove('flying');
       const p = at(); if (p) for (let i = 0; i < 6; i += 1) bubble(p.x + (Math.random() - 0.5) * 120, p.y + 70 + Math.random() * 30, 4 + Math.random() * 6); // the landing puff
       this.sfx('pop'); done();
     } })
@@ -1468,6 +1472,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         const p = at(); if (p) bubble(p.x + (Math.random() - 0.5) * 50, p.y - 20, 3 + Math.random() * 6);
       } }, 0)
       .to(sw, { x: 0, duration: 1.6, ease: 'sine.out' }, 0)
+      .to(sw, { opacity: 1, duration: 0.45, ease: 'sine.out' }, 0) // (she fades in as she comes: no pop)
       .to(sw, { rotation: -7, duration: 1.1, ease: 'power1.out' }, 0)
       .to(sw, { rotation: 0, duration: 0.5, ease: 'sine.inOut' }, 1.1)
       .to(sw, { scale: 1, duration: 1.3, ease: 'power2.out' }, 0);
@@ -2928,7 +2933,15 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this._plateStep !== step) { this._plateIn = !this._plateWas; this._plateWas = this.isPlate(st); this._plateStep = step; }
     return this._plateIn && this._plateWas;
   }
-  narrLine() { return !!(this.state.opened && this.curLine && this.curLine.narr); } // (a narrator's line where Swiftee stays: the plate, with her beside it)
+  // a narrator's line: the plate, without Swiftee. Before a screen's first line starts, its first line says; so the
+  // card is a plate from the moment a narrated screen opens, and a screen of hers drops the plate as it opens - her
+  // flight in is seen, not hidden behind the plate left by the screen before
+  narrLine() {
+    if (!this.state.opened || this.diveTl) return false; // (she is diving in: the card is hers)
+    const st = this.cur(), L0 = st && (st.lines || [])[0];
+    if (this.curLine && this.curLineStep === this.state.step) return !!this.curLine.narr;
+    return !!(L0 && L0.narr);
+  }
   isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.own && !st.end && !st.summary); } // (own: Swiftee's own thought, in her bubble)
   renderVals() {
     const s = this.state, steps = this.steps(), st = this.cur();

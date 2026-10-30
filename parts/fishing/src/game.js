@@ -703,12 +703,11 @@ class Game {
     this.cornerSet();
   }
 
-  // The corner set right, the shape is the answer: the net locks, glowing, and goes down by itself (checkNet), no
-  // button to press. Set anywhere else, Check is the child's - a checked wrong net goes down and tangles.
+  // The corner set, right or not: Check is the child's - a right net locks, glowing, and goes down; a wrong one goes
+  // down and tangles
   cornerSet() {
     if (!this.net.touched) return;
-    if (this.net.check().ok) checkNet(this);
-    else this.ui.setAction('check');
+    this.ui.setAction('check');
   }
 
   onNudge(dx, dy) {

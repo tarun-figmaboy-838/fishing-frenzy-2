@@ -745,3 +745,5 @@ html, body {
 .hud { transition: opacity 0.45s ease; }
 .hud.away { opacity: 0; }
 .hud.away * { pointer-events: none !important; }
+/* the end card's words: the unit under each number, the bar's caption (both at the labels' size) */
+.goal-stat .goal-unit { display: block; font-size: 2em; font-weight: 700; margin-top: 0.05em; }

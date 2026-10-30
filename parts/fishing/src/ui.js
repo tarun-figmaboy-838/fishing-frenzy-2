@@ -332,7 +332,10 @@ class UI {
     for (const a of avoid) if (ax < ((a.x0 + a.x1) / 2) * k) hi = Math.min(hi, a.x0 * k - 6);
     const fits = (l) => l - inset >= lo && l - inset + b.w <= hi;
     let left = Math.max(lo + inset, Math.min(ax, hi - b.w + inset));
-    let top = Math.max(y * this.scale - 0.88 * b.em, b.h + 14); // the tail's tip on (x, y) (css .speech::before); clear of the top edge, even as it pops
+    // the tail's tip on (x, y) (css .speech::before), the bubble's bottom clear above it; clear of the top edge, even
+    // as it pops, and never down over what it points at: if the room above is short, it stays up and the tail reaches
+    let top = Math.max(y * this.scale - 0.88 * b.em, b.h + 14);
+    const floor = (y - 10) * this.scale; if (top > floor) top = floor;
     for (const r of this.hudBoxes()) {
       const l0 = left - inset;
       if (l0 + b.w <= r.l - 6 || l0 >= r.r + 6 || top <= r.t - 6 || top - b.h >= r.b + 6) continue;
@@ -554,7 +557,7 @@ class UI {
     const won = n >= goal;
     this.countGoal(n, goal);
     document.getElementById('goal').classList.toggle('won', won);
-    document.getElementById('goal-line').textContent = won ? 'You reached the goal!' : 'Think you can catch more next time?';
+    document.getElementById('goal-line').textContent = 'Think you can catch more next time?';
     return won;
   }
 

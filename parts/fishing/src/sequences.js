@@ -536,23 +536,11 @@ async function catchNow(game) {
     const caught = [];
     const take = netter(game, caught, token);
     take();
-    await clock.tween((reduced ? 250 : 420) + 70 * caught.length, token, take);
-    if (caught.length) {
-      // the mouth closes under the water before the loaded bag rises
-      const smooth = (t) => t * t * t * (t * (t * 6 - 15) + 10);
-      winch.working = -1;
-      audio.crank(0.55);
-      let gathered = 0;
-      await clock.tween(reduced ? 300 : 550, token, (t) => {
-        take();
-        const k = smooth(t);
-        net.pouch = 0.55 * k;
-        winch.turn(-24 * (k - gathered));
-        gathered = k;
-      });
-    }
+    // (one motion: the mouth closes round the catch under the water as the net starts up - no stop between the scoop,
+    // the gather and the rise; raiseNet closes the bag as it lifts)
+    await clock.tween((reduced ? 120 : 220) + 40 * caught.length, token, take);
     state.phase = PHASE.NET_RAISING;
-    await raiseNet(game, token, caught, reduced ? 1100 : 1800, take);
+    await raiseNet(game, token, caught, reduced ? 1200 : 2300, take);
     if (!caught.length) {
       popo.react('think', 1.2);
       audio.play('wobble');
@@ -929,120 +917,146 @@ async function wrongTry(game, token, pull, pace) {
   await raiseNet(game, token, [], 1400 * pace * q);
 }
 
-// H6: a giant fish swims up under the net, leaps and crashes into corner C, where it is caught: it hangs there by its
-// nose and thrashes, the whole net shaking with it, until it wrenches itself free - dragging the corner over onto `to`
-// (B + D - A, the parallelogram's place), where it stays - and drops back with a splash and swims away.
+// H6: a big fish rises from the deep, leaps on a true arc and drives its head into corner C's mesh: the hit punches
+// the corner along its path and the whole net swings; it fights - four pulls, each dragging the corner out toward it
+// and snapping back, its body arching, spray and bubbles flying - and on the last it wrenches free: the corner tears
+// over onto `to` (B + D - A, the parallelogram's place) and settles with a wobble; the fish is flung back, tumbles
+// into the water with a big splash, surfaces dizzy, shakes it off and darts away.
 async function fishBumpsCorner(game, token, to) {
   const { net, fx, audio } = game;
   const wl = game.waterline, corner = () => net.toStage(net.points[2]), q = fx.reduced;
   const c0 = corner();
-  // into the net from corner C: the way to the net's middle (the fish is drawn under the mesh, so a head pushed in this
-  // way is seen caught in it, not touching its corner from outside)
-  const inward = () => { const P = net.points.map((p) => net.toStage(p)), c = corner(); const dx = (P[0].x + P[1].x + P[2].x + P[3].x) / 4 - c.x, dy = (P[0].y + P[1].y + P[2].y + P[3].y) / 4 - c.y, l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; };
-  // (a giant of the sea's own fish, four times the school that follows it into the net: its leap is the moment to watch)
-  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], 0, 0, -1, 2);
-  fish.beat = 11; // (its tail beats as it swims in)
-  fish.x = c0.x + 300 + fish.w;
-  fish.y = wl + 130 + fish.h / 2;
+  const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], 0, 0, -1, 1.7); // (three times the school)
+  fish.beat = 9;
+  fish.x = c0.x + 360 + fish.w;
+  fish.y = wl + 190 + fish.h / 2;
   game.leapers.push(fish);
-  // its nose, from its middle (the art faces right; dir turns it and pitch tilts it, as Fish.draw does): the leap tops
-  // out with the nose on the corner, however big the fish
-  const nose = (pitch) => { const a = pitch * fish.dir; return { x: fish.dir * 0.45 * fish.w * Math.cos(a), y: fish.dir * 0.45 * fish.w * Math.sin(a) }; };
+  // its nose from its middle (the art faces right; dir turns it, pitch tilts it, as Fish.draw does)
+  const nose = (pitch) => { const a = pitch * fish.dir; return { x: fish.dir * 0.46 * fish.w * Math.cos(a), y: fish.dir * 0.46 * fish.w * Math.sin(a) }; };
+  // into the net from corner C: toward the net's middle (the fish is drawn under the mesh: a head in this way is caught in it)
+  const inward = () => { const P = net.points.map((p) => net.toStage(p)), c = corner(); const dx = (P[0].x + P[1].x + P[2].x + P[3].x) / 4 - c.x, dy = (P[0].y + P[1].y + P[2].y + P[3].y) / 4 - c.y, l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; };
+  const trail = (p, n = 1) => { if (!q && Math.random() < p) fx.puff(fish.x + fish.dir * -fish.w * 0.4, fish.y + (Math.random() - 0.5) * 10, -fish.dir, n); };
   try {
-    // it comes in under the water, rising towards the corner
-    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + fish.w * 0.55 + 40, y: wl + fish.h * 0.2 };
-    await clock.tween(q ? 400 : 900, token, (t) => {
-      const k = ease.inOut(t);
-      fish.x = start.x + (launch.x - start.x) * k;
-      fish.y = start.y + (launch.y - start.y) * k;
-      fish.pitch = -0.45 * k;
-      if (Math.random() < 0.3) fx.puff(fish.x + fish.w * 0.4, fish.y, 1, 1);
+    // the run-up: from the deep, curving up toward the surface and gathering speed, the tail beating harder
+    const start = { x: fish.x, y: fish.y }, launch = { x: c0.x + fish.w * 0.5 + 60, y: wl + fish.h * 0.15 };
+    const strokes = 5; // (tail strokes through the run-up: each one drives it forward in a pulse)
+    await clock.tween(q ? 450 : 1300, token, (t) => {
+      const ph = t * strokes * TAU, pulse = 0.5 - 0.5 * Math.cos(ph); // (0 at each stroke's start, 1 at its push)
+      const kk = t * t + 0.06 * Math.sin(ph) * (1 - t); // (forward in pulses, settling to the launch)
+      const k = t * t * (3 - 2 * t);
+      fish.x = start.x + (launch.x - start.x) * Math.min(1, Math.max(0, kk));
+      fish.y = start.y + (launch.y - start.y) * k + 6 * Math.sin(ph * 0.5) * (1 - t); // (a slight undulation of the path)
+      fish.pitch = -0.1 - 0.5 * t * t + 0.08 * Math.sin(ph) * (1 - t * 0.6); // (the head yaws with each stroke; the nose rises through the run)
+      fish.beat = 10 + 22 * pulse * (0.4 + 0.6 * t);
+      trail(0.15 + 0.5 * pulse * t, 1);
     });
-    // the leap: one arc out of the water, the fish tilting with its flight, its nose meeting the corner just before
-    // the top of the arc - so the hit is seen
+    // the leap: a gravity arc from the launch to the corner, the body tilting along its own flight path
     audio.play('leap');
     fx.splash(launch.x, wl, true);
-    const from = { x: fish.x, y: fish.y }, n = nose(-0.6), hit = { x: c0.x - n.x, y: c0.y - n.y }, top = hit.y - 70;
-    await clock.tween(q ? 250 : 640, token, (t) => {
-      const u = 1 - t;
-      fish.x = from.x + (hit.x - from.x) * t;
-      fish.y = u * u * from.y + 2 * u * t * top + t * t * hit.y; // (a parabola through its peak)
-      fish.pitch = -0.95 + 0.35 * t;
+    fx.ripple(launch.x, wl + 4, 1.2);
+    const from = { x: fish.x, y: fish.y }, n0 = nose(-0.6), hit = { x: c0.x - n0.x, y: c0.y - n0.y };
+    const T = q ? 0.3 : 0.62, g = 1500, vx = (hit.x - from.x) / T, vy = (hit.y - from.y) / T - 0.5 * g * T; // (meets the corner on the way down)
+    let vel = { x: vx, y: vy };
+    await clock.tween(T * 1000, token, (t) => {
+      const s = t * T;
+      fish.x = from.x + vx * s;
+      fish.y = from.y + vy * s + 0.5 * g * s * s;
+      vel = { x: vx, y: vy + g * s };
+      fish.pitch = Math.atan2(vel.y, Math.abs(vel.x)) * 0.9; // (nose along the arc: up, then over and down)
+      fish.beat = 4;
+      if (!q && Math.random() < 0.3) fx.drips({ x: fish.x + (Math.random() - 0.5) * fish.w * 0.5, y: fish.y + fish.h * 0.3 });
     });
-    // the hit: a moment's stillness, the fish squashed against the corner, a burst of sparks and the bump
+    // the hit: the head drives into the mesh, the corner is punched along the fish's path, the frame swings and flashes
     audio.play('bump');
-    fx.sparkle(c0.x, c0.y, 14);
-    fx.puff(c0.x, c0.y, 0, 3, true);
+    fx.sparkle(c0.x, c0.y, 16);
+    fx.puff(c0.x, c0.y, 0, 4, true);
+    for (let i = 0; i < 5; i += 1) fx.drips({ x: c0.x + (Math.random() - 0.5) * 60, y: c0.y + (Math.random() - 0.5) * 30 });
+    net.flash = 1;
     fish.squash = q ? 0 : 1;
-    // the net gives: the corner is knocked on along the fish's path (it springs back as the fish starts to thrash)
-    const held = { ...net.points[2] }, il = Math.hypot(hit.x - from.x, hit.y - from.y) || 1, ix = (hit.x - from.x) / il, iy = (hit.y - from.y) / il;
+    const held = { ...net.points[2] }, vl = Math.hypot(vel.x, vel.y) || 1, ix = vel.x / vl, iy = vel.y / vl, inw = inward();
+    // caught by the head: the head a third of its length into the mesh along the bottom edge (D -> C, so the body hangs
+    // out past the corner, nose-up, over the water - a fish hooked at a corner), and it is drawn under the net there
+    const P = net.points.map((p) => net.toStage(p)), edge = (() => { const dx = P[2].x - P[3].x, dy = P[2].y - P[3].y, l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; })();
+    const bite = fish.w * 0.34, hang = -1.05; // (the nose up into the corner, the body down and out)
+    const sit = (pitch, extra) => { const c = corner(), n = nose(pitch); fish.x = c.x - n.x - edge.x * bite + (extra ? extra.x : 0); fish.y = c.y - n.y - edge.y * bite + (extra ? extra.y : 0); };
     await clock.tween(q ? 1 : 170, token, (t) => {
       const k = Math.sin(t * Math.PI / 2);
-      net.points[2] = { x: held.x + ix * 22 * k, y: held.y + iy * 22 * k };
-      const c = corner(), n = nose(fish.pitch);
-      fish.x = c.x - n.x; fish.y = c.y - n.y;
+      net.points[2] = { x: held.x + ix * 30 * k, y: held.y + iy * 30 * k };
+      net.swing = q ? 0 : 0.08 * k;
+      fish.pitch = -0.6 + (hang + 0.6) * k; // (swings round to hang nose-up)
+      sit(fish.pitch);
     });
-    // caught: its head drives into the corner's mesh (a third of its length in, under the net) and it fights - three
-    // hard tugs, each dragging the corner out towards it and springing back, its whole body thrashing, the net shaking
-    // with it and spray flying off - then a last gather before it wrenches free
+    // the fight: four pulls, each building then giving - the corner dragged out toward the fish and springing back, the
+    // body arching against the mesh, the frame swinging with every pull, spray and bubbles flying; the last pull is the
+    // biggest, and holds
     audio.play('struggle');
-    fish.beat = 34; // (thrashing: the tail whips)
-    await clock.tween(q ? 300 : 2300, token, (t) => {
-      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 9), give = 22 * (1 - Math.min(1, t * 3)) ** 2; // (the knock springing back)
-      const bite = fish.w * 0.32 * Math.min(1, t * 6), tug = Math.max(0, Math.sin(t * Math.PI * 3)) ** 2 * 34 * (0.5 + 0.5 * env); // (in; and the tugs)
-      fish.squash = 0.22 * Math.abs(Math.sin(t * Math.PI * 9)) * env + Math.max(0, 1 - t * 6);
-      fish.pitch = -0.6 + 0.55 * w * env;
-      const inw = inward();
-      net.points[2] = { x: held.x + ix * give - inw.x * tug + 24 * w * env, y: held.y + iy * give - inw.y * tug + 14 * Math.sin(t * Math.PI * 7) * env };
-      net.swing = q ? 0 : 0.09 * Math.sin(t * Math.PI * 5) * env;
-      const c = corner(), n = nose(fish.pitch);
-      fish.x = c.x - n.x + inw.x * bite + (q ? 0 : (Math.random() - 0.5) * 4 * env);
-      fish.y = c.y - n.y + inw.y * bite + (q ? 0 : (Math.random() - 0.5) * 4 * env);
-      if (!q && Math.random() < 0.45) fx.puff(c.x + (Math.random() - 0.5) * 60, c.y + 10, 0, 1, true);
-      if (!q && Math.random() < 0.12) fx.splash(c.x + (Math.random() - 0.5) * 40, wl, false);
+    fish.beat = 30;
+    net.thrashHold = true; // (the net thrashes with it all through the fight: Net.framed / meshPoint)
+    const pulls = 4, D = q ? 400 : 2600;
+    await clock.tween(D, token, (t) => {
+      const ph = t * pulls, i = Math.min(pulls - 1, Math.floor(ph)), u = ph - i; // (which pull, how far through it)
+      const strength = [0.55, 0.8, 0.7, 1][i], pull = i === pulls - 1 ? Math.min(1, u * 1.4) : Math.sin(Math.min(1, u * 1.25) * Math.PI); // (quick pull, slower give)
+      const rec = 30 * (1 - Math.min(1, t * 4)) ** 2; // (the hit's punch springing back)
+      const tug = 56 * strength * pull, out = { x: -inw.x, y: -inw.y }; // (out of the net, toward the fish)
+      const jitter = q ? 0 : 5 * pull * strength;
+      net.points[2] = { x: held.x + ix * rec + out.x * tug + (Math.random() - 0.5) * jitter, y: held.y + iy * rec + out.y * tug + (Math.random() - 0.5) * jitter };
+      net.swing = q ? 0 : 0.09 * pull * strength * (i % 2 ? -1 : 1) + 0.025 * Math.sin(t * Math.PI * 9);
+      net.thrash = q ? 0 : 0.35 + 0.65 * pull * strength; // (the whole net shaking, hardest at each pull)
+      // the body: it lunges back along the pull (the head held, the tail end swinging out), arches hard, and rolls
+      // its tail - the fight is read on the fish, the corner following it
+      const lunge = 34 * strength * pull, arch = 0.55 * strength * Math.sin(u * Math.PI * 2) * (i % 2 ? -1 : 1), roll = 0.18 * strength * Math.sin(u * Math.PI * 7) * pull;
+      fish.squash = -0.25 * pull * strength + Math.max(0, 1 - t * 8); // (stretched taut as it pulls, not squashed)
+      fish.pitch = hang + arch + roll; // (hanging nose-up, the body whipping side to side)
+      sit(fish.pitch, { x: out.x * lunge + (Math.random() - 0.5) * jitter, y: out.y * lunge + (Math.random() - 0.5) * jitter });
+      if (!q && pull > 0.5 && Math.random() < 0.5) fx.puff(corner().x + (Math.random() - 0.5) * 70, corner().y + 12, 0, 1, true);
+      if (!q && pull > 0.7 && Math.random() < 0.25) fx.drips({ x: corner().x + (Math.random() - 0.5) * 80, y: corner().y + (Math.random() - 0.5) * 40 });
+      if (!q && u < 0.05 && i > 0) audio.play('splashSmall');
     });
-    net.points[2] = held;
-    fish.beat = 14;
-    if (!q) audio.play('splashSmall');
-    // the wrench free: pulling with all its weight it drags the corner over to its new place, and as the mesh lets go
-    // it drops away; the net swings and settles; the fish tumbles back into the water with a big splash
+    // the wrench free: the last pull tears the corner over onto its new place - an overshoot and a settle - and the
+    // mesh lets go: the fish is flung back on a gravity fall, tumbling, into the water with a big splash
+    net.thrashHold = false; net.thrash = 1; // (the wrench: one last hard shake, dying away as the corner settles)
     const was = { ...net.points[2] }, fall = { x: fish.x, y: fish.y };
-    let back = false;
+    let back = false; const fv = { x: 60, y: -140 }; // (flung a little up and out as the mesh lets go, then down)
     await clock.tween(q ? 400 : 1000, token, (t) => {
-      net.points[2] = geo.lerp(was, to, q ? t : ease.out(t));
-      net.swing = q ? 0 : -0.05 * Math.sin(t * Math.PI * 2.5) * (1 - t);
+      net.points[2] = geo.lerp(was, to, q ? t : ease.outBack(t));
+      net.swing = q ? 0 : -0.08 * Math.sin(t * Math.PI * 2.5) * (1 - t);
       fish.squash = Math.max(0, 1 - t * 5);
-      fish.x = fall.x + 110 * t;
-      fish.y = fall.y - 70 * t + 560 * t * t;
-      fish.pitch = -0.6 + 2.2 * t; // (a tumble)
-      if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); fx.ripple(fish.x, wl + 4, 1.4); audio.play('splashBig'); } // (a big fish, a big splash)
+      const s = t;
+      fish.x = fall.x + fv.x * s;
+      fish.y = fall.y + fv.y * s + 0.5 * 1700 * s * s;
+      fish.pitch = hang + (0.2 - hang) * (t * t * (3 - 2 * t)); // (rights itself as it falls, tail first into the water)
+      if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); fx.ripple(fish.x, wl + 4, 1.5); audio.play('splashBig'); }
     });
     fx.sparkle(corner().x, corner().y, 6); // (the corner where it stays)
     net.points[2] = { ...to };
     net.swing = 0;
-    // then the comic beat: it bobs up just under the surface, dizzy - its head wobbling, sparkles circling it, a
-    // bubble popping out - shakes it off, and darts away to the left under the net, tail whipping, bobbing as it goes,
-    // a trail of bubbles behind it, out of sight (not awaited: the hook goes on as it swims off)
-    const gone = { x: fish.x, y: fish.y }, rest = { x: fish.x - 20, y: wl + fish.h * 0.55 };
-    fish.dir = -1; fish.beat = 6;
+    fish.beat = 6;
+    // then it bobs up just under the surface, dizzy - head wobbling, a bubble or two - shakes it off and darts away to the
+    // left under the net with a wake of bubbles, out of sight (not awaited: the hook goes on as it swims off)
+    const gone = { x: fish.x, y: fish.y }, rest = { x: fish.x - 30, y: wl + fish.h * 0.6 };
+    fish.dir = -1;
     (async () => {
-      await clock.tween(q ? 200 : 450, token, (t) => { const k = ease.out(t); fish.x = gone.x + (rest.x - gone.x) * k; fish.y = gone.y + (rest.y - gone.y) * k; fish.pitch = (1.6 - 1.6 * k) * (1 - t); });
+      await clock.tween(q ? 200 : 500, token, (t) => { const k = ease.out(t); fish.x = gone.x + (rest.x - gone.x) * k; fish.y = gone.y + (rest.y - gone.y) * k; fish.pitch = (1.8 - 1.8 * k) * -1; });
       if (!q) audio.play('boing');
-      await clock.tween(q ? 200 : 900, token, (t) => {
-        fish.pitch = 0.35 * Math.sin(t * Math.PI * 7) * (1 - t * 0.6); // (dizzy)
-        fish.y = rest.y + 6 * Math.sin(t * Math.PI * 3);
-        if (!q && Math.random() < 0.35) { const a = t * Math.PI * 6; fx.sparkle(fish.x + Math.cos(a) * fish.w * 0.45, fish.y - fish.h * 0.55 + Math.sin(a) * 14, 1); }
-        if (!q && Math.random() < 0.06) fx.puff(fish.x - fish.w * 0.42, fish.y - 6, 0, 1, true);
+      await clock.tween(q ? 200 : 800, token, (t) => {
+        fish.pitch = 0.3 * Math.sin(t * Math.PI * 6) * (1 - t * 0.7); // (dizzy)
+        fish.y = rest.y + 5 * Math.sin(t * Math.PI * 3);
+        if (!q && Math.random() < 0.08) fx.puff(fish.x - fish.w * 0.42, fish.y - 6, 0, 1, true);
       });
-      fish.pitch = 0; fish.beat = 26;
+      fish.pitch = 0; fish.beat = 14;
+      // the turn: it was facing right (dir 1) as it fell; it swings round to the left through the water, nose dipping
+      await clock.tween(q ? 120 : 420, token, (t) => { fish.pitch = 0.5 * Math.sin(t * Math.PI); fish.y += 0.4; if (t > 0.5 && fish.dir !== -1) { fish.dir = -1; } });
+      fish.dir = -1; fish.pitch = 0;
       if (!q) audio.play('whoosh');
-      const from = { x: fish.x, y: fish.y }, end = -fish.w * 1.2;
-      await clock.tween(q ? 500 : 1700, token, (t) => {
-        const k = t * t * (3 - 2 * t) * 0.35 + t * t * 0.65; // (a dash: quick to get going, faster still as it goes)
-        fish.x = from.x + (end - from.x) * k;
-        fish.y = from.y + 40 * t + 9 * Math.sin(t * Math.PI * 6);
-        fish.pitch = 0.12 * Math.cos(t * Math.PI * 6);
-        if (!q && Math.random() < 0.4) fx.puff(fish.x + fish.w * 0.45, fish.y + (Math.random() - 0.5) * 12, 1, 1);
+      const from2 = { x: fish.x, y: fish.y }, end = -fish.w * 1.2, strokes2 = 6;
+      await clock.tween(q ? 500 : 1800, token, (t) => {
+        const ph = t * strokes2 * TAU, pulse = 0.5 - 0.5 * Math.cos(ph);
+        const k = t * t * (3 - 2 * t) * 0.3 + t * t * 0.7 + 0.03 * Math.sin(ph) * (1 - t); // (away in strokes, faster as it goes)
+        fish.x = from2.x + (end - from2.x) * Math.min(1, Math.max(0, k));
+        fish.y = from2.y + 50 * t + 7 * Math.sin(ph * 0.5);
+        fish.pitch = 0.09 * Math.sin(ph) + 0.04;
+        fish.beat = 14 + 20 * pulse;
+        trail(0.2 + 0.5 * pulse, 1);
       });
     })().then(() => { game.leapers = game.leapers.filter((f) => f !== fish); }, () => { game.leapers = game.leapers.filter((f) => f !== fish); });
   } catch (e) {
