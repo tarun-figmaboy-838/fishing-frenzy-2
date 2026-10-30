@@ -89,7 +89,7 @@ HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net
   const school = s.fish.filter((f) => f.lane && f.lane.speed === 0);
   return { line: g.dialogue ? g.dialogue.who + ':' + g.dialogue.words.map((w) => w.text).join(' ') : '', tangle: n.tangle,
            par: level(v(0, 1), v(3, 2)) && level(v(0, 3), v(1, 2)), valid: PopoGame.geo.isValidQuad(p), under: n.drop > 0 && n.pouch === 0,
-           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden, drop: !$('btn-drop').hidden,
+           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden, catchBtn: !$('btn-action').hidden && $('btn-action').dataset.mode === 'catch',
            school: school.length, schoolCaught: school.filter((f) => f.caught).length, wave: !!g.wave, away: g.popo.travelShift, furl: n.furl,
            hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
 # every line the game says, as it says it (installed before Play, so none is missed however quick)
@@ -379,9 +379,9 @@ def hook(r):
             tangled = False
         if h['par'] and h['under'] and h['tangle'] == 0 and not seen['open']:
             seen['open'] = True
-        if h['drop'] and not seen['dropTap']:  # (the school waits in the open net: the catch is the child's tap)
-            seen['dropTap'] = True; r.shot('3a2-hook-drop-net'); r.tap_el(ff, '#btn-drop')
-        seen['pressable'] |= h['pressable'] and not h['drop']
+        if h['catchBtn'] and not seen['dropTap']:  # (the school waits in the open net: the catch is the child's Catch tap)
+            seen['dropTap'] = True; r.shot('3a2-hook-catch'); r.tap_el(ff, '#btn-action')
+        seen['pressable'] |= h['pressable'] and not h['catchBtn']
         seen['invalid'] |= not h['valid']
         seen['school'] = max(seen['school'], h['school'])
         seen['caught'] = max(seen['caught'], h['schoolCaught'])
@@ -403,7 +403,7 @@ def hook(r):
     check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')
     check(seen['school'] == 12 and seen['caught'] == 12, f'{r.tag}: the scripted school swims into the open net and all of it is caught',
           f"{seen['caught']} of {seen['school']}")
-    check(seen['swiftee'] and seen['dropTap'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; the child\'s Drop Net tap is the one press in the hook')
+    check(seen['swiftee'] and seen['dropTap'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; the child\'s Catch tap is the one press in the hook')
     check(seen['duck'] and not h['duck'], f'{r.tag}: the hook\'s sound effects stepped down under its lines, and the usual mix is back after it')
     check(seen['wave'] and seen['hudAway'] and h['away'] >= 2000 and h['furl'] > 0.9 and not h['swiftee'],
           f'{r.tag}: "Let\'s find out!": Swiftee flies off to the lesson, the HUD steps away, the net winds up and the giant wave carries Popo away',

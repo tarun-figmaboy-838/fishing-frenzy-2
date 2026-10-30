@@ -1209,14 +1209,15 @@ async function hook(game, token) {
     for (const p of net.points) { const st = net.toStage(p); fx.sparkle(st.x, st.y, 4); }
     popo.react('happy', 1.4);
     await say(H.h6);
-    // H7: a school swims into the open net and waits there; the catch is the child's: Drop Net comes up with the
-    // warm-up's prompt ("Now, let's help Popo catch some fish!"), and the net closes on their tap (Game.onDrop)
+    // H7: a school swims into the open net and waits there; the catch is the child's: Catch comes up (the net is
+    // already down, the school in it - the same button a right net gets) with the warm-up's prompt ("Now, let's help
+    // Popo catch some fish!"), and the net closes on their tap (Game.onAction)
     await schoolSwimsIn(game, token, q ? 1200 : 2600);
     await clock.wait(q ? 100 : 250, token);
     game.instruct(LEVELS[0].prompt);
-    game.ui.setDrop('on');
-    try { await Promise.race([new Promise((res) => { game.dropWaiter = res; }), clock.wait(1e9, token)]); } finally { game.dropWaiter = null; }
-    game.ui.setDrop('hidden');
+    game.ui.setAction('catch');
+    try { await Promise.race([new Promise((res) => { game.catchWaiter = res; }), clock.wait(1e9, token)]); } finally { game.catchWaiter = null; }
+    game.ui.setAction('hidden');
     game.instruct('');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)

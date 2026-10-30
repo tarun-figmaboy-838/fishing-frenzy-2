@@ -152,7 +152,7 @@ class Game {
     this.embedded = !!(window.Journey && window.Journey.embedded);
     this.holding = false;
     this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
-    this.dropWaiter = null;   // the hook waiting for the child's Drop Net tap (sequences.js hook, onDrop)
+    this.catchWaiter = null;  // the hook waiting for the child's Catch tap (sequences.js hook, onAction)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
@@ -735,9 +735,7 @@ class Game {
 
   // Drop Net, right or wrong: a wrong net goes down all the same (see dropNet).
   onDrop() {
-    if (state.paused) return;
-    if (this.dropWaiter) { const go = this.dropWaiter; this.dropWaiter = null; this.audio.play('ui'); go(); return; } // (the hook: the child's catch, sequences.js)
-    if (state.phase !== PHASE.PUZZLE_READY) return;
+    if (state.paused || state.phase !== PHASE.PUZZLE_READY) return;
     this.stopHint();
     this.audio.play('ui');
     dropNet(this);
@@ -748,6 +746,7 @@ class Game {
   onAction() {
     if (state.paused) return;
     const mode = this.ui.actionMode;
+    if (mode === 'catch' && this.catchWaiter) { const go = this.catchWaiter; this.catchWaiter = null; this.audio.play('ui'); go(); return; } // (the hook: the child's catch, sequences.js)
     if (mode === 'check' && state.phase === PHASE.PUZZLE_READY) { this.stopHint(); this.audio.play('ui'); checkNet(this); }
     else if (mode === 'catch' && state.phase === PHASE.FISHING) { this.stopHint(); this.audio.play('ui'); catchNow(this); }
     else if (mode === 'again' && state.phase === PHASE.TANGLED) { this.audio.play('ui'); tryAgain(this); }
