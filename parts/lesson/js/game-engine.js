@@ -1456,14 +1456,14 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     else if (this.fromPlate && !this.isPlate(st)) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); }
     else speak();
   }
-  // the summary's Next: the learner moves on when they choose (a replaying idea finishes first); in the journey the
-  // lesson hands over to the fishing there (as Fishing Frenzy's does)
+  // the summary's Next: the learner moves on when they choose (a replaying idea finishes first) - to the last screen,
+  // Swiftee's closing words; in the journey its own Next then hands over to the fishing (endNext)
   sumNextGo() {
     if (!this.state.sumNext || !window.Summary || !Summary.canLeave()) return;
     Summary.leave();
     this.sfx('tap');
     this.setState({ sumNext: false });
-    if (JOURNEY) this.handOff(); else this.maybeAdvance(false);
+    this.maybeAdvance(false);
   }
   finishTask() {
     if (this.state.done) return;
