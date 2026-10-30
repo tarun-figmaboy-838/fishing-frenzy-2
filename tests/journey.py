@@ -311,8 +311,10 @@ def catch_level(r, n, shot, wrong_first=False):
         st = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['handle'], 20, 'the net comes back')
         check(st['tangle'] == 0 and not st['ok'] and st['action'] is None, f'{r.tag}: Try again: the net is untangled and comes down in its starting shape')
     set_corner(r, 0)
-    st = until(r.fish, lambda s: s['stop'] == 0, 5, 'the corner on its place')
-    if st['action'] != 'check': set_corner(r, 0)  # (a drag that let go a hair short: once more)
+    st, t_end = r.fish(), time.time() + 5
+    while time.time() < t_end and st['stop'] != 0:
+        r.page.wait_for_timeout(150); st = r.fish()
+    if st['stop'] != 0 or st['action'] != 'check': set_corner(r, 0)  # (a drag that let go a hair short - the raft bobs, the view zooms: once more)
     st = until(r.fish, lambda s: s['action'] == 'check' and s['stop'] == 0, 8, 'Check comes up for the right net')
     check(st['stop'] == 0 and st['ok'], f'{r.tag}: the child puts the corner on its place ({"arrow taps" if r.touch else "a drag"}) on the zoomed-in net, and Check comes up', f"phase {st['phase']}")
     r.shot(f'{shot}a-level-{n + 1}')
