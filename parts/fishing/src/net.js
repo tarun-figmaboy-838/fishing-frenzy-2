@@ -816,7 +816,7 @@ class Net {
       this.textureKey = null;
     }
     if (this.textureKey !== surfaceKey) {
-      const res = changed ? 1 : this.sharpRes;
+      const res = changed ? Math.min(2, this.sharpRes) : this.sharpRes; // (drawn fine while it moves too - a drag is when it is looked at closest, zoomed in - up to 2x; its full sharpness once still)
       this.textureRes = res;
       this.textureKey = surfaceKey;
       const rows = this.pouch || this.tangle ? 24 : 6;
