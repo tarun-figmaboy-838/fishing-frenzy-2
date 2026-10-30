@@ -1049,7 +1049,7 @@ class Net {
     const k = this.wordScale;
     const lines = [[c[0], c[1], 12], [c[1], c[2], 4], [c[2], c[3], 4], [c[3], c[0], 4]]
       .map(([a, b, pad]) => ({ a, b, pad: pad * k, edge: true })); // (the top rope's floats stand out from it)
-    lines.push({ a: knot, b: c[0], pad: 3 * k }, { a: knot, b: c[1], pad: 3 * k }); // (the sling's legs: not crossed - a label may sit between them, over AB)
+    // (the sling's legs are not kept off: AB's length sits between them, centred over the rope, under the ring)
     lines.push({ a: this.ropeTop || { x: r.x, y: r.y - 600 }, b: r, pad: 3 * k });
     if (this.level && this.level.type === 'diagonals') lines.push({ a: c[0], b: c[2], pad: 4 * k }, { a: c[1], b: c[3], pad: 4 * k });
     lines.centre = midpoint(midpoint(c[0], c[1]), midpoint(c[2], c[3]));
@@ -1133,9 +1133,30 @@ class Net {
       }
       return moved;
     };
+    // every side's length at the middle of its side, outside it, one gap off - the same rule on every side of every
+    // net, so the four read as one set; only the lifting ring over AB slides AB's along AB, just enough to clear it;
+    // held there, so the pushes below leave it. Returns whether any moved.
+    const snapLengths = () => {
+      let any = false;
+      for (const l of labels) {
+        if (l.inside || l.letter || !l.near || !l.along || !lines.frame) continue;
+        const { a, b } = l.near, u = normalize(sub(b, a)); if (!Number.isFinite(u.x)) continue;
+        let n = { x: -u.y, y: u.x }; if (dot(n, sub(lines.centre, a)) > 0) n = times(n, -1); // (outward)
+        const hl = half(l), off = reach(hl, n) + 12 * k;
+        const spots = [0.5, 0.44, 0.56, 0.38, 0.62].map((t) => add(lerp(a, b, t), times(n, off)));
+        const ringBox = obstacles.find((o) => o.axis === 'x'); // (the lifting ring and its shackle, over AB)
+        const clearRing = (p) => !ringBox || !overlap(boxAt(p.x, p.y, hl), ringBox);
+        const spot = spots.find(clearRing) || spots[0];
+        if (Math.abs(l.x - spot.x) > 1 || Math.abs(l.y - spot.y) > 1) { l.x = spot.x; l.y = spot.y; any = true; }
+        l.pinned = true; l.held = true;
+      }
+      return any;
+    };
     for (let round = 0; round < 40; round += 1) {
       let moved = false;
-      // off whatever they must keep clear of (only the label moves), apart from each other, and last off the lines
+      // every side's length at its side's middle first (held there), then the rest: off whatever they must keep clear
+      // of (only the label moves), apart from each other, and last off the lines
+      if (snapLengths()) moved = true;
       for (const l of labels) {
         if (l.pinned) continue;
         const hl = half(l);
@@ -1173,22 +1194,6 @@ class Net {
         }
       }
       for (const l of labels) if (offLines(l)) moved = true;
-      // (a side's length shoved inside the frame by a box or another label goes back out, square off its own side -
-      // or, where the scene takes the whole outside of that side (the crane beside AD, the sling's knot over AB), it
-      // sits just inside its own side, square to it, at the middle: never drifting toward the net's centre)
-      for (const l of labels) {
-        if (l.pinned || l.inside || l.letter || !l.near || !lines.frame || !insideConvex({ x: l.x, y: l.y }, lines.frame)) continue;
-        const { a, b } = l.near, u = normalize(sub(b, a)); if (!Number.isFinite(u.x)) continue;
-        let n = { x: -u.y, y: u.x }; if (dot(n, sub(lines.centre, a)) > 0) n = times(n, -1); // (outward)
-        const hl = half(l), mid = midpoint(a, b), off = reach(hl, n) + 12 * k;
-        const clear = (p) => !obstacles.some((o) => o.scene && overlap(boxAt(p.x, p.y, hl), o)) && !(this.viewBox && (p.x - hl.w < this.viewBox.x0 || p.x + hl.w > this.viewBox.x1));
-        // (every length outside its side, the same on every side: at the middle, or further along the side where the
-        // scene - the crane, the sling's knot - covers the middle; with the whole side covered, outside at the middle
-        // anyway, over the crane: it is behind the net, and the label is outlined)
-        const spots = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74].map((t) => add(lerp(a, b, t), times(n, off)));
-        const spot = spots.find(clear) || spots[0];
-        if (Math.abs(l.x - spot.x) > 1 || Math.abs(l.y - spot.y) > 1) { l.x = spot.x; l.y = spot.y; l.pinned = true; l.held = true; moved = true; } // (held there: the pushes leave it)
-      }
       // ...and inside what the view shows (below the HUD's top row; through the zoom on the net)
       const v = this.viewBox;
       if (v) {

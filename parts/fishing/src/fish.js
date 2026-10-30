@@ -258,10 +258,10 @@ class Sea {
   // middle (x along the way it swims), and `reach`: how far the cloud extends from its middle, so it can start out
   // of sight.
   pack(fish, room) {
-    const GAP = 9; // (room for each fish's float and bob)
+    const GAP = 4; // (a little room for each fish's float and bob: a tight school)
     const sorted = [...fish].sort((a, b) => b.h - a.h);
     const ry = Math.max(room / 2 - 2, Math.max(...sorted.map((f) => f.h)) / 2 + 2);
-    let rx = Math.max(...sorted.map((f) => f.w)) * 0.8 + sorted.reduce((a, f) => a + (f.w + GAP) * (f.h + GAP), 0) * 1.4 / (Math.PI * ry);
+    let rx = Math.max(...sorted.map((f) => f.w)) * 0.7 + sorted.reduce((a, f) => a + (f.w + GAP) * (f.h + GAP), 0) * 1.15 / (Math.PI * ry);
     const placed = [], out = new Map();
     const clear = (x, y, w, h) => placed.every((b) => Math.abs(b.x - x) >= (b.w + w) / 2 + GAP || Math.abs(b.y - y) >= (b.h + h) / 2 + GAP);
     for (const f of sorted) {

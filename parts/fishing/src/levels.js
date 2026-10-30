@@ -39,37 +39,37 @@ const LEVELS = [
   { title: 'Make it Parallel', type: 'parallel', sides: ['BC', 'AD'], corner: 'B', along: 'AB',
     width: 440, height: 200, lean: 60, start: -5, // slides along AB (so AB stays parallel to CD), from the left of its place
     location: 0, fish: 3,
-    prompt: 'Drag vertex B to make the net a *parallelogram*: BC parallel to AD.',
+    prompt: 'Drag vertex B to make the net a *parallelogram*.',
     hints: ['AB is shorter than CD. Make AB *longer*.', 'AB is longer than CD. Make AB *shorter*.'] },
   { title: 'Complete the Parallelogram', type: 'parallel', sides: ['AB', 'CD'], both: true, corner: 'C', along: 'BC',
     width: 440, height: 210, lean: -60, start: -6, // slides along BC (so BC stays parallel to AD), from B's side
     location: 0, fish: 4,
-    prompt: 'Drag vertex C to make the net a *parallelogram*: AB parallel to CD.',
+    prompt: 'Drag vertex C to make the net a *parallelogram*.',
     hints: ['BC is shorter than AD. Make BC *longer*.', 'BC is longer than AD. Make BC *shorter*.'] },
   { title: 'Match the Opposite Side', type: 'length', side: 'CD', reference: 'AB', metres: { AB: 7 }, corner: 'C', along: 'DC',
     width: 420, height: 200, lean: 50, start: -6, // CD starts at about 5 cm
     location: 1, fish: 4,
-    prompt: 'Drag vertex C to make the net a *parallelogram*: CD equal to AB.',
+    prompt: 'Drag vertex C to make the net a *parallelogram*.',
     hints: ['Opposite sides are equal. Make CD *longer*.', 'Opposite sides are equal. Make CD *shorter*.'] },
   { title: 'Use Both Side Properties', type: 'sides', metres: { AB: 8, BC: 5 }, corner: 'D', along: 'BD',
     width: 380, height: 230, lean: 60, start: -7, // slides along the diagonal, toward B (AB and BC stay as they are)
     location: 1, fish: 5,
-    prompt: 'Drag vertex D to make the net a *parallelogram*: opposite sides equal.',
+    prompt: 'Drag vertex D to make the net a *parallelogram*.',
     hints: ['Opposite sides are equal. Make CD and AD *longer*.', 'Opposite sides are equal. Make CD and AD *shorter*.'] },
   { title: 'Match the Opposite Angle', type: 'angle', vertex: 'C', reference: 'A', degrees: 68, corner: 'C', along: 'DC',
     width: 420, height: 210, angleA: 68, start: -7, // angle C starts near 100 degrees
     location: 2, fish: 5,
-    prompt: 'Drag vertex C to make the net a *parallelogram*: ∠C equal to ∠A.',
+    prompt: 'Drag vertex C to make the net a *parallelogram*.',
     hints: ['Opposite angles are equal. Make ∠C *bigger*.', 'Opposite angles are equal. Make ∠C *smaller*.'] },
   { title: 'Make the Adjacent Angle', type: 'supplementary', vertex: 'B', reference: 'A', degrees: 72, corner: 'B', along: 'AB',
     width: 420, height: 210, angleA: 72, start: 8, // angle B starts near 85 degrees
     location: 2, fish: 6,
-    prompt: 'Drag vertex B to make the net a *parallelogram*: ∠A and ∠B add up to 180°.',
+    prompt: 'Drag vertex B to make the net a *parallelogram*.',
     hints: ['Adjacent angles add up to 180°. Make ∠B *bigger*.', 'Adjacent angles add up to 180°. Make ∠B *smaller*.'] },
   { title: 'Balance the Diagonals', type: 'diagonals', metres: { AB: 6 }, corner: 'C', along: 'DC',
     width: 440, height: 210, lean: 50, start: -8, // along DC, so both diagonals' halves change as it slides
     location: 3, fish: 7,
-    prompt: 'Drag vertex C to make the net a *parallelogram*: the diagonals bisect each other.',
+    prompt: 'Drag vertex C to make the net a *parallelogram*.',
     hints: ['The diagonals bisect each other. Make OC *longer*.', 'The diagonals bisect each other. Make OC *shorter*.'] },
   { title: 'Final Catch', type: 'parallelogram', metres: { AB: 6 }, corner: 'D', along: 'BD',
     width: 400, height: 210, lean: 30, rotate: -7, start: -9, // slides along the diagonal, toward B
@@ -166,6 +166,7 @@ const STORY = {
     h3: { who: 'popo', text: 'Oh no! This net got *tangled.*', tail: 500 },
     h4: { who: 'narrator', text: 'Popo tried different net shapes, but they kept getting *tangled.*', tail: 300 },
     h5: { who: 'popo', text: 'I need a net that stays *open* in the water!', tail: 400 },
+    whoa: { who: 'popo', text: 'Whoa! A *giant* fish!', cue: { word: 0, do: 'exclaim' }, tail: 200 },
     h6: { who: 'popo', text: 'Hey! This one stayed *open!*', tail: 400 },
     h7: { who: 'popo', text: 'It worked! What *shape* is this?', tail: 400 },
     h8: { who: 'swiftee', text: 'This shape is called a *parallelogram.*', cue: { word: 5, do: 'trace' }, tail: 500 },

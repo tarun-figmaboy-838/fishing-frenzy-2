@@ -978,14 +978,19 @@ async function fishBumpsCorner(game, token, to) {
     // caught by the head: the head a third of its length into the mesh along the bottom edge (D -> C, so the body hangs
     // out past the corner, nose-up, over the water - a fish hooked at a corner), and it is drawn under the net there
     const P = net.points.map((p) => net.toStage(p)), edge = (() => { const dx = P[2].x - P[3].x, dy = P[2].y - P[3].y, l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; })();
-    const bite = fish.w * 0.34, hang = -1.05; // (the nose up into the corner, the body down and out)
+    // (the hang: nose up into the corner's mesh, the body down and out past the corner - a fish hooked by the head.
+    // The art faces right and is turned by dir and tilted by pitch * dir, so for this left-facing fish a nose-up
+    // hang is a positive pitch; and the pose is reached by easing from where the leap arrived, never by a jump)
+    const bite = fish.w * 0.3, hang = 1.0, arrived = { x: fish.x, y: fish.y }, p0 = fish.pitch;
     const sit = (pitch, extra) => { const c = corner(), n = nose(pitch); fish.x = c.x - n.x - edge.x * bite + (extra ? extra.x : 0); fish.y = c.y - n.y - edge.y * bite + (extra ? extra.y : 0); };
-    await clock.tween(q ? 1 : 170, token, (t) => {
+    await clock.tween(q ? 1 : 260, token, (t) => {
       const k = Math.sin(t * Math.PI / 2);
-      net.points[2] = { x: held.x + ix * 30 * k, y: held.y + iy * 30 * k };
-      net.swing = q ? 0 : 0.08 * k;
-      fish.pitch = -0.6 + (hang + 0.6) * k; // (swings round to hang nose-up)
-      sit(fish.pitch);
+      net.points[2] = { x: held.x + ix * 34 * k, y: held.y + iy * 34 * k };
+      net.swing = q ? 0 : 0.1 * k;
+      const pitch = p0 + (hang - p0) * k, c = corner(), n = nose(pitch);
+      const want = { x: c.x - n.x - edge.x * bite, y: c.y - n.y - edge.y * bite };
+      fish.pitch = pitch;
+      fish.x = arrived.x + (want.x - arrived.x) * k; fish.y = arrived.y + (want.y - arrived.y) * k; // (swings round into the hang)
     });
     // the fight: four pulls, each building then giving - the corner dragged out toward the fish and springing back, the
     // body arching against the mesh, the frame swinging with every pull, spray and bubbles flying; the last pull is the
@@ -1002,7 +1007,7 @@ async function fishBumpsCorner(game, token, to) {
       const jitter = q ? 0 : 5 * pull * strength;
       net.points[2] = { x: held.x + ix * rec + out.x * tug + (Math.random() - 0.5) * jitter, y: held.y + iy * rec + out.y * tug + (Math.random() - 0.5) * jitter };
       net.swing = q ? 0 : 0.09 * pull * strength * (i % 2 ? -1 : 1) + 0.025 * Math.sin(t * Math.PI * 9);
-      net.thrash = q ? 0 : 0.35 + 0.65 * pull * strength; // (the whole net shaking, hardest at each pull)
+      net.thrash = q ? 0 : 0.6 + 0.9 * pull * strength; // (the whole net shaking, hardest at each pull)
       // the body: it lunges back along the pull (the head held, the tail end swinging out), arches hard, and rolls
       // its tail - the fight is read on the fish, the corner following it
       const lunge = 34 * strength * pull, arch = 0.55 * strength * Math.sin(u * Math.PI * 2) * (i % 2 ? -1 : 1), roll = 0.18 * strength * Math.sin(u * Math.PI * 7) * pull;
@@ -1025,7 +1030,7 @@ async function fishBumpsCorner(game, token, to) {
       const s = t;
       fish.x = fall.x + fv.x * s;
       fish.y = fall.y + fv.y * s + 0.5 * 1700 * s * s;
-      fish.pitch = hang + (0.2 - hang) * (t * t * (3 - 2 * t)); // (rights itself as it falls, tail first into the water)
+      fish.pitch = hang + (-0.25 - hang) * (t * t * (3 - 2 * t)); // (over and down: it falls tail first, nose dipping into the water)
       if (!back && fish.y > wl) { back = true; fx.splash(fish.x, wl, true); fx.ripple(fish.x, wl + 4, 1.5); audio.play('splashBig'); }
     });
     fx.sparkle(corner().x, corner().y, 6); // (the corner where it stays)
@@ -1046,7 +1051,9 @@ async function fishBumpsCorner(game, token, to) {
       });
       fish.pitch = 0; fish.beat = 14;
       // the turn: it was facing right (dir 1) as it fell; it swings round to the left through the water, nose dipping
-      await clock.tween(q ? 120 : 420, token, (t) => { fish.pitch = 0.5 * Math.sin(t * Math.PI); fish.y += 0.4; if (t > 0.5 && fish.dir !== -1) { fish.dir = -1; } });
+      // (it is facing right where it fell: it turns away through the water - the body swings round, dipping - and heads left)
+      fish.dir = 1; const tx = fish.x;
+      await clock.tween(q ? 120 : 520, token, (t) => { fish.pitch = 0.6 * Math.sin(t * Math.PI); fish.x = tx + 26 * Math.sin(t * Math.PI); fish.y += 0.5; if (t > 0.5 && fish.dir !== -1) fish.dir = -1; });
       fish.dir = -1; fish.pitch = 0;
       if (!q) audio.play('whoosh');
       const from2 = { x: fish.x, y: fish.y }, end = -fish.w * 1.2, strokes2 = 6;
@@ -1196,7 +1203,11 @@ async function hook(game, token) {
     // H6: a giant fish leaps into the net, is caught on corner C and thrashes, then wrenches free, dragging the corner
     // onto the parallelogram's place; Popo sees it change
     await clock.wait(q ? 100 : 500, token);
-    await fishBumpsCorner(game, token, hookNet(net, N.right)[2]);
+    const leap = fishBumpsCorner(game, token, hookNet(net, N.right)[2]);
+    await clock.wait(q ? 300 : 1250, token); // (as it breaks the surface)
+    popo.react('exclaim', 1.4);
+    say(H.whoa).catch(swallow); // (said over the fight, not awaited: the fish does not wait)
+    await leap;
     popo.react('think', 1.1);
     audio.play('bloop');
     await clock.wait(q ? 200 : 900, token);
