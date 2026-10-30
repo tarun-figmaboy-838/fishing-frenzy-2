@@ -23,6 +23,7 @@ PopoGame.VOICE_DATA = {
   "swiftee:this shape is called a parallelogram.": "assets/voice/hook-h8.mp3",
   "popo:parallelogram? what shape is that?": "assets/voice/hook-h9.mp3",
   "swiftee:let's find out!": "../lesson/assets/vo/vo121.ogg#0.24",
+  "swiftee:great job!": "assets/voice/ff-great-job.mp3",
   "narrator:now, let's help popo catch some fish!": "assets/voice/ff-help-popo.mp3",
   "narrator:drag vertex b to make the net a parallelogram.": "assets/voice/net-pB.mp3",
   "narrator:drag vertex c to make the net a parallelogram.": "assets/voice/net-pC.mp3",

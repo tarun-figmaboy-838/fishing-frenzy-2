@@ -172,6 +172,10 @@ const STORY = {
     h9: { who: 'popo', text: 'Parallelogram? What *shape* is that?', tail: 400 },
     h10: { who: 'swiftee', text: "Let's find *out!*", cue: { word: 2, do: 'twirl' }, tail: 300 },
   },
+  // after the lesson: the giant wave has brought Popo back, and Swiftee swoops in from it
+  welcome: [
+    { who: 'swiftee', text: '*Great* job!', cue: { word: 0, do: 'twirl' } },
+  ],
 };
 
 // The hook's nets, on the warm-up's net (its 420 x 200 frame): A top-left, B top-right, C bottom-right, D bottom-left,

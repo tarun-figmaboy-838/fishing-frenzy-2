@@ -111,6 +111,5 @@ const VO_LINES = {
   "Are the two segments of each diagonal equal?": ["vo142",3.64,[0.31,0.57,0.84,1.1,1.69,1.89,2.22,2.81],3.28],
   "Which angle is equal to ∠A?": ["vo143",2.68,[0.24,0.62,0.99,1.18,1.56,1.75],2.32],
   "Which angle is equal to ∠D?": ["vo144",3.08,[0.27,0.69,1.11,1.32,1.74,1.95],2.59],
-  "CD = 8 cm, AD = 5 cm.": ["vo145",5.44,[0.34,3.05],5.12],
-  "Bye for now! See you on our next snowy adventure!": ["vo146",4.16,[0.27,0.55,0.83,1.51,1.75,1.99,2.17,2.41,2.72,3.08],3.75]
+  "CD = 8 cm, AD = 5 cm.": ["vo145",5.44,[0.34,3.05],5.12]
 };

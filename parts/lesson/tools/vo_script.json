@@ -988,14 +988,5 @@
    "screen 20 cp1c: right answer"
   ],
   "devanagari": "सी डी इक्वल्स एट सेंटीमीटर्स, ए डी इक्वल्स फाइव सेंटीमीटर्स।"
- },
- {
-  "id": "vo146",
-  "line": "Bye for now! See you on our next snowy adventure!",
-  "spoken": "Bye for now! See you on our next snowy adventure!",
-  "where": [
-   "screen 52 end: line 2"
-  ],
-  "devanagari": "बाय फ़ॉर नाउ! सी यू ऑन अवर नेक्स्ट स्नोई एडवेंचर!"
  }
 ]

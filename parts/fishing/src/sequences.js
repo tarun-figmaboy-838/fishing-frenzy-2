@@ -1236,6 +1236,7 @@ async function afterHook(game, token) {
     net.furl = 1;
     winch.setRopeOut(-TUCK);
     await waveIn(game, token);
+    await welcome(game, token);
   } else {
     swifteeDeparts(game, token, { up: true }).catch(() => {});
     await windNetUp(game, token);
@@ -1388,10 +1389,20 @@ async function waveIn(game, token) {
   game.storyCue('hop');
   fishSaysHello(game, token);
   await clock.wait(700, token);
+  game.popoReturning = false; // (he is back: Game.wake may put him on his raft again)
 }
 
-// ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back and the parallelogram nets
-// begin (no warm-up after the lesson; Swiftee stays in the lesson - she does not come back for a welcome). The same when the journey's Back / Next bar takes the
+// Back from the lesson: Swiftee swoops in from the right with her welcome ("Great job! Now, let's help Popo catch
+// some fish!") and flies off again, up and out.
+async function welcome(game, token) {
+  await swifteeArrives(game, STORY.welcome, token);
+  await clock.wait(300, token);
+  await swifteeDeparts(game, token, { up: true });
+  await clock.wait(250, token);
+}
+
+// ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back, Swiftee welcomes him and
+// the parallelogram nets begin (no warm-up after the lesson). The same when the journey's Back / Next bar takes the
 // lesson's last screen on and no hook is waiting for it (Game.goOn).
 async function backFromLesson(game) {
   const token = newToken();
@@ -1406,6 +1417,7 @@ async function backFromLesson(game) {
     game.winch.setRopeOut(-TUCK);
     await clock.wait(game.fx.reduced ? 150 : 500, token);
     await waveIn(game, token);
+    await welcome(game, token);
     const first = LEVELS.findIndex((l) => !l.warmup);
     const before = game.prepareLevel(first);
     game.spawnSchool();
@@ -1621,5 +1633,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, AWAY });
+Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, welcome, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, AWAY });
 })(window.PopoGame = window.PopoGame || {});

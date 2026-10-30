@@ -481,8 +481,8 @@ def journey(p, engine, size, url):
     check(st['frames'] == ['fishing+live'] and not st['voice'] and 'lesson' not in st['outs'],
           f'{r.tag}: the lesson\'s frame is disposed; its voice and sound are stopped')
     fs = until(r.fish, lambda s: s['wave'] or not s['away'], 10, 'the wave brings Popo back')
-    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and not s['swiftee'], 25, 'the first net after the lesson')
-    check(fs['phase'] == 'puzzleReady' and not fs['swiftee'], f'{r.tag}: the giant wave brings Popo back and the first parallelogram net begins; Swiftee does not come back after the lesson')
+    until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
+    check(True, f'{r.tag}: the giant wave brings Popo back and Swiftee swoops in with her welcome')
     catch_level(r, 1, '6', wrong_first=not r.touch)
     check(True, f'{r.tag}: the game carried on at its first parallelogram net (same waters), and a real catch there')
 
@@ -580,8 +580,9 @@ def start_fishing(p, engine, url):
     r.shot('2-start-lesson')
     end_lesson(r)
     st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
-    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 1 and not s['swiftee'], 40, 'the first parallelogram net')
-    check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'] and not fs['swiftee'], f'{r.tag}: ?start=lesson: after the lesson the wave brings Popo in and the first parallelogram net begins (no Swiftee welcome), all eight nets to follow')
+    fs = until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
+    check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'], f'{r.tag}: ?start=lesson: after the lesson the wave brings Popo in and Swiftee welcomes him, all eight nets to follow')
+    until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 1, 30, 'the first parallelogram net')
     errs = r.errors()
     check(not errs, f'{r.tag}: no errors and no failed requests in any frame', '; '.join(errs[:5]))
     r.close()

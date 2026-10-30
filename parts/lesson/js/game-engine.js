@@ -1560,6 +1560,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     Summary.leave();
     this.sfx('tap');
     this.setState({ sumNext: false });
+    if (JOURNEY && !this.handedOff) { this.handOff(); return; } // (the journey: the recap's Next bursts the bubble; the wave brings Popo, and Swiftee comes with her welcome)
     this.maybeAdvance(false);
   }
   finishTask() {

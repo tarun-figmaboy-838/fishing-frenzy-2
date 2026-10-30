@@ -153,6 +153,7 @@ class Game {
     this.holding = false;
     this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
     this.catchWaiter = null;  // the hook waiting for the child's Catch tap (sequences.js hook, onAction)
+    this.popoReturning = false; // Popo away under the lesson until the giant wave brings him back (wake keeps him away meanwhile)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
@@ -312,6 +313,7 @@ class Game {
     this.focusReset();
     this.endLine();
     this.popo.travelShift = PopoGame.AWAY;
+    this.popoReturning = true;
     this.showIdleScene();
   }
 
@@ -434,7 +436,7 @@ class Game {
     this.ui.el.hud.hidden = false;
     // (after the lesson the story brings Popo back on the wave - sequences.js afterHook / backFromLesson - so he stays
     // away until it does; a plain dev jump puts him straight on his raft)
-    if (!this.breakEnds && !this.afterLesson) this.popo.travelShift = 0;
+    if (!this.popoReturning) this.popo.travelShift = 0;
     this.audio.hold(false);
     this.showIdleScene();
   }
