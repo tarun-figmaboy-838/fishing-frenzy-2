@@ -869,11 +869,11 @@ class Game {
     return Math.max(1, 0.75 / (this.stage.scale * 1.45));
   }
 
-  // The water pass renders up to one and a half times the painting's width (STAGE_W: sharp on a Retina screen, where
-  // the painting is scaled up); waterQuality drops on a slow device (watchFrameRate), and comes back.
+  // The water pass renders at the screen's own resolution, up to twice the painting's width (STAGE_W: native on a
+  // Retina screen); waterQuality drops on a slow device (watchFrameRate), and comes back.
   syncWaterCanvas() {
     const c = this.stage.canvas;
-    const k = Math.min(1, STAGE_W * 1.5 / c.width) * this.waterQuality;
+    const k = Math.min(1, STAGE_W * 2 / c.width) * this.waterQuality;
     this.water.resize(Math.round(c.width * k), Math.round(c.height * k), c.style.width, c.style.height);
   }
 
@@ -882,25 +882,24 @@ class Game {
   // pixel per screen pixel (a phone or tablet's 2-3 doubled the pixels drawn every frame), then the water at 42%. The
   // scene stays the same, a little softer; the game stays smooth.
   // (only while the game itself is played - not while it is the lake under the lesson or the tab is hidden, where the
-  // frames are slow for other reasons - and never for good: after eight seconds of fast frames it steps back up, one
-  // step at a time, so a slow moment never leaves the game soft)
+  // frames are slow for other reasons - only when the frames really drag (under about 24 a second for three seconds),
+  // never below one and a half pixels per screen pixel on a Retina screen, and never for good: after five seconds of
+  // fast frames it steps back up, one step at a time, so a slow moment never leaves the game soft)
   watchFrameRate(dt) {
     if (this.backdropOn || this.holding || document.hidden) { this.slowFor = 0; this.fastFor = 0; this.frameAvg = 1 / 60; return; }
     this.frameAvg = this.frameAvg * 0.97 + dt * 0.03;
-    this.slowFor = this.frameAvg > 0.026 ? this.slowFor + dt : 0;
-    this.fastFor = this.frameAvg < 0.0185 ? (this.fastFor || 0) + dt : 0;
+    this.slowFor = this.frameAvg > 0.042 ? this.slowFor + dt : 0;
+    this.fastFor = this.frameAvg < 0.02 ? (this.fastFor || 0) + dt : 0;
     const stage = this.stage, dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (this.slowFor > 2.5) {
+    if (this.slowFor > 3) {
       this.slowFor = 0; this.fastFor = 0;
       this.frameAvg = 1 / 60; // (measured afresh after each step)
       if (this.waterQuality > 0.6) this.waterQuality = 0.6;
       else if (stage.dprCap > 1.5 && dpr > 1.5) { stage.dprCap = 1.5; this.resize(); }
-      else if (stage.dprCap > 1 && dpr > 1) { stage.dprCap = 1; this.resize(); }
       else if (this.waterQuality > 0.42) this.waterQuality = 0.42;
-    } else if (this.fastFor > 8) {
+    } else if (this.fastFor > 5) {
       this.fastFor = 0; this.frameAvg = 1 / 60;
       if (this.waterQuality < 0.6) this.waterQuality = 0.6;
-      else if (stage.dprCap < 1.5 && dpr > 1) { stage.dprCap = 1.5; this.resize(); }
       else if (stage.dprCap < 2 && dpr > 1.5) { stage.dprCap = 2; this.resize(); }
       else if (this.waterQuality < 1) this.waterQuality = 1;
     }
