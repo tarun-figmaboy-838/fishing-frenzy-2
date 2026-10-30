@@ -89,7 +89,7 @@ HOOK = '''() => { const d = window.popoDebug, g = d.game, s = d.state, n = g.net
   const school = s.fish.filter((f) => f.lane && f.lane.speed === 0);
   return { line: g.dialogue ? g.dialogue.who + ':' + g.dialogue.words.map((w) => w.text).join(' ') : '', tangle: n.tangle,
            par: level(v(0, 1), v(3, 2)) && level(v(0, 3), v(1, 2)), valid: PopoGame.geo.isValidQuad(p), under: n.drop > 0 && n.pouch === 0,
-           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden,
+           pressable: !$('btn-drop').hidden || !$('btn-action').hidden || !$('handle').hidden, drop: !$('btn-drop').hidden,
            school: school.length, schoolCaught: school.filter((f) => f.caught).length, wave: !!g.wave, away: g.popo.travelShift, furl: n.furl,
            hudAway: $('hud').classList.contains('away'), swiftee: !!g.swiftee, alpha: n.alpha, duck: g.audio.duckSfx }; }'''
 # every line the game says, as it says it (installed before Play, so none is missed however quick)
