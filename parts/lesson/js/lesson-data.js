@@ -327,14 +327,16 @@ const LESSON = {
       lines: [{ m: 'curious', t: 'Which of the following are\ntrue for this parallelogram?\nSelect all that apply.' }],
       ok: 'Perfect! AO = OC, BO = OD,\nso the diagonals bisect\neach other.',
       // (the halves' equal ticks would be the answer: they come with it, okF)
-      // (as it is said, AO slides onto OC, then BO onto OD - each fits: the diagonals bisect each other)
-      okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'AO = OC,', halfSlide: ['A', 'C'] }, { at: 'BO = OD,', halfSlide: ['B', 'D'] }],
-      // (a right pick: its two halves traced in turn, AO then OC, and their equal marks come - the statement seen on the
-      // figure; hticks wait for them: toMarks)
+      // (in time with the praise, as screen 48's marks come with its words: as "AO = OC" is said (one spoken phrase,
+      // 1.9 s) AO is traced, then OC a second later as its name comes, and their equal marks follow; the same for
+      // "BO = OD"; "diagonals" brings both diagonals forward by itself. A right pick only turns green: the tracing is
+      // the praise's, once, with its words)
+      okF: { halfPairs: 1, hticks: 1 }, okCues: [{ at: 'AO = OC,', pairTrace: 'A', gap: 1000 }, { at: 'BO = OD,', pairTrace: 'B', gap: 1000 }],
+      // (hticks wait for the praise's tracing: toMarks)
       fig: { P: FIG_SIDES, diag: 1, hticks: 1, toMarks: 1 },
       opts: [
-        { id: 'aooc', t: 'AO = OC', ok: true, pickCues: [{ pairTrace: 'A' }] },
-        { id: 'bood', t: 'BO = OD', ok: true, pickCues: [{ pairTrace: 'B' }] },
+        { id: 'aooc', t: 'AO = OC', ok: true },
+        { id: 'bood', t: 'BO = OD', ok: true },
         { id: 'aobo', t: 'AO = BO', fb: 'AO and BO are parts of different diagonals, so they need not be equal.' },
         { id: 'acbd', t: 'AC = BD', fb: 'The two diagonals of this parallelogram have different lengths.' }
       ] }, CP),

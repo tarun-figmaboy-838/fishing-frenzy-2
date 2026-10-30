@@ -513,9 +513,19 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       const f = this.fl(), st = this.cur(), P = this.shapeP(), O = { x: (P.A.x + P.C.x) / 2, y: (P.A.y + P.C.y) / 2 }, pt = (k) => (k === 'O' ? O : P[k]);
       const diagOn = !!(f.diag || (this.state.diag && (this.state.diag.AC || this.state.diag.BD)) || (st.fig && st.fig.diag));
       const halvesOn = !!(f.split || f.halfPairs || (st.fig && st.fig.diag));
-      const runs = parts.map((k) => (k === 'dAC' || k === 'dBD') && diagOn ? [k[1], k[2]] : /^h[A-D]$/.test(k) && halvesOn ? (dirs && dirs[k]) || [k[1], 'O'] : null)
-        .filter(Boolean).map((e) => { const a = this.boardToStage(pt(e[0])), b = this.boardToStage(pt(e[1])); return a && b ? { x1: a.x, y1: a.y, x2: b.x, y2: b.y } : null; }).filter(Boolean);
+      const seg = (e) => { const a = this.boardToStage(pt(e[0])), b = this.boardToStage(pt(e[1])); return a && b ? { x1: a.x, y1: a.y, x2: b.x, y2: b.y } : null; };
+      // the two halves of one diagonal named together (AO = OC) are traced one after the other - A to O, then on
+      // from O to C - never both at once, which reads as the whole diagonal AC
+      const now = [], later = [], paired = {};
+      [['hA', 'hC'], ['hB', 'hD']].forEach(([p, q]) => {
+        if (!halvesOn || parts.indexOf(p) < 0 || parts.indexOf(q) < 0 || (dirs && (dirs[p] || dirs[q]))) return;
+        const first = parts.indexOf(p) < parts.indexOf(q) ? p : q, second = first === p ? q : p;
+        now.push(seg([first[1], 'O'])); later.push(seg(['O', second[1]])); paired[p] = paired[q] = 1;
+      });
+      parts.forEach((k) => { if (paired[k]) return; const e = (k === 'dAC' || k === 'dBD') && diagOn ? [k[1], k[2]] : /^h[A-D]$/.test(k) && halvesOn ? (dirs && dirs[k]) || [k[1], 'O'] : null; if (e) now.push(seg(e)); });
+      const runs = now.filter(Boolean), next = later.filter(Boolean);
       if (runs.length && !st.noTrace) { Motion.traceRun(runs); this.sfx('glint', { v: 0.7 }); } // (a line's light glints, as a side's does)
+      if (next.length && !st.noTrace) this.tm(() => { if (tok === this.stepTok) { Motion.traceRun(next); this.sfx('glint', { v: 0.6 }); } }, 650);
     }
     this.setState({ emph: Object.assign({}, this.state.emph, parts.reduce((o, k) => { o[k] = 1; return o; }, {})) });
     this.tm(() => {
@@ -1070,9 +1080,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (c.showO) { this.setState({ oIn: true }); this.sfx('pop', { v: 0.7 }); this.emphasize(['vO']); } // (point O, as it is named)
     if (c.pairTrace) { // (screen 50: a right pick's two halves traced, one after the other, then their equal marks)
       const a = c.pairTrace, b2 = this.opp(a), S = this.fxPts();
-      if (window.Motion && S) { Motion.traceRun([{ x1: S[a].x, y1: S[a].y, x2: S.O.x, y2: S.O.y }]); this.tm(() => { if (tok === this.stepTok) Motion.traceRun([{ x1: S.O.x, y1: S.O.y, x2: S[b2].x, y2: S[b2].y }]); }, 650); }
-      this.tm(() => { if (tok === this.stepTok) { this.setState({ hMarks: Object.assign({}, this.state.hMarks, { [a]: 1 }) }); this.sfx('pop', { v: 0.6 }); } }, 1350);
-      this.busyFor(1500);
+      const gap = c.gap || 650; // (the second half's start: as its name is said - "AO = OC" takes its time)
+      if (window.Motion && S) { Motion.traceRun([{ x1: S[a].x, y1: S[a].y, x2: S.O.x, y2: S.O.y }]); this.sfx('glint', { v: 0.7 }); this.tm(() => { if (tok === this.stepTok) { Motion.traceRun([{ x1: S.O.x, y1: S.O.y, x2: S[b2].x, y2: S[b2].y }]); this.sfx('glint', { v: 0.6 }); } }, gap); }
+      this.tm(() => { if (tok === this.stepTok) { this.setState({ hMarks: Object.assign({}, this.state.hMarks, { [a]: 1 }) }); this.sfx('pop', { v: 0.6 }); } }, gap + 700);
+      this.busyFor(gap + 850);
     }
     if (c.steps) { const gap = c.gap || 1100; c.steps.forEach((x, j) => this.tm(() => { if (tok === this.stepTok) this.runCue(x); }, j * gap)); this.busyFor(c.steps.length * gap + 600); }
     if (c.emph) { // parts that grow on the word (as the ones a line names do by itself); all four angles one at a time
