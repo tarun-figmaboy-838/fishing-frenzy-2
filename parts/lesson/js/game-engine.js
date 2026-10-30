@@ -2582,6 +2582,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const aTag = {}, em = s.emph || {}; // parts the voice-over is naming right now
     // angle focus: while a line names angles ("∠A and ∠D..."), the other angles and their values fade back (s.aFocus)
     const aDim = (k) => (s.aFocus && !s.aFocus[k] ? ' dim' : '');
+    // the angle a question asks about beats until it is answered (css .asked): the one its cue names (screens 26-27),
+    // or a checkpoint's '?' angle while its '?' is up
+    const askedK = (k) => !s.done && (s.askedAng === k || !!(fig && String(this.figVal(this.cur(), k, (fig.angles || {})[k] || '')).indexOf('?') >= 0 && !figOff(k)));
     // Angle marks (as in Fishing Frenzy's lesson): the angle filled in as a wedge in its corner's own colour (A orange,
     // B green, C violet, D amber; once opposite angles are shown equal, A and C share A's and B and D share B's), edged
     // in navy, and its size in a darker shade of that colour. The size rides the interior bisector, pushed out just far
@@ -2598,7 +2601,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       // when several angles come in together their values fade in one after another (css .d0-.d3)
       const stag = (f.arcs || '').length > 1 ? ' d' + (f.arcs || '').indexOf(k) : '';
       g['a' + k] = { p: 'M' + r1(Vk.x) + ',' + r1(Vk.y) + ' L' + r1(ws.x) + ',' + r1(ws.y) + ' A' + r1(RW) + ',' + r1(RW) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' + r1(we.x) + ',' + r1(we.y) + ' Z',
-        d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (s.askedAng === k && !s.done ? ' asked' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
+        d: dsp(show || peek), cls: 'wedge k' + k + stag + pairCls(k) + (peek ? ' peek' : em['a' + k] ? ' emph' : '') + (askedK(k) ? ' asked' : '') + (fig && s.done ? '' : aDim(k)), o: r1(Vk.x) + 'px ' + r1(Vk.y) + 'px' };
       // its size wears the darker shade of the wedge's colour (lA..lD; equal opposite angles share A's or B's)
       const lk = /\bpa\b/.test(pairCls(k)) ? 'A' : /\bpb\b/.test(pairCls(k)) ? 'B' : k;
       const at = fig ? this.figVal(this.cur(), k, (fig.angles || {})[k] || '') : V[k] + '°';
@@ -2619,7 +2622,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       let dl = RW + 6 / zs; while (dl < 160 && !clearOfD(Vk.x + bx * dl, Vk.y + by * dl)) dl += 1 / zs;
       (this.alabAt = this.alabAt || {})[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl }; // (where screen 24 counts the size up)
       if (fig) this.figPos[k] = { x: Vk.x + bx * dl, y: Vk.y + by * dl };
-      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show && !figOff(k) ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (s.askedAng === k && !s.done ? ' asked' : '') + (fig && s.done ? '' : aDim(k)) };
+      aTag[k] = { t: at, x: r1(Vk.x + bx * dl), y: r1(Vk.y + by * dl), cls: 'alab l' + lk + stag + (show && !figOff(k) ? '' : ' off') + (at.indexOf('?') >= 0 ? ' q' : fig && ((fig.angles || {})[k] || '').indexOf('?') >= 0 ? ' solved' : '') + (em['a' + k] ? ' emph' : '') + (askedK(k) ? ' asked' : '') + (fig && s.done ? '' : aDim(k)) };
     });
     // vertices
     const dk = this.dragKey();
