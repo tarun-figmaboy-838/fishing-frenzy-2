@@ -669,6 +669,14 @@ a{color:#123b63}a:hover{color:#0b2742}
   background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 16%,var(--c) 22% 70%,rgba(255,255,255,.4) 100%);box-shadow:0 2px 6px rgba(18,59,99,.18)}
 .dive-bub{position:absolute;border-radius:50%;pointer-events:none;z-index:7;border:2px solid rgba(255,255,255,.95);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 18%,rgba(220,250,255,.35) 22%,rgba(255,255,255,.08) 70%);animation:diveBub 1.2s ease-out forwards}
 @keyframes diveBub{from{transform:translate(-50%,-50%) scale(.6);opacity:.95}to{transform:translate(-50%,calc(-50% - 70px)) scale(1.1);opacity:0}}
+/* the end screen as Fishing Frenzy 1's: Swiftee centre stage (hero) with her bubble above her, the panel gone */
+.stage .panel-img{transition:opacity .45s ease}
+.stage.hero .panel-img{opacity:0}
+.stage.scene.hero .swiftee{left:510px!important;top:330px!important;animation:none!important}
+.stage.scene.hero .bubble{left:0!important;right:0!important;margin:0 auto;top:auto!important;bottom:372px!important;transform-origin:50% 100%}
+.stage.scene.hero .bubble .bubble-tail{left:calc(50% - 15px)}
+.stage.scene.hero.endhero .swiftee{top:330px!important}
+.stage.scene.hero.endhero .bubble{bottom:396px!important}
 /* the recap's Next sits in the card's bottom-right corner (its end-screen twin stays bottom middle) */
 .stage .next.end-next.sum-next{left:auto;right:36px}
 /* (as Fishing Frenzy's plate: 20 px from the top, one line of Fredoka - a line's own breaks are ignored - at 26 px, or

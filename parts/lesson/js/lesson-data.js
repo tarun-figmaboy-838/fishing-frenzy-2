@@ -348,6 +348,8 @@ const LESSON = {
     // idea in the middle of the card, Swiftee peeking over it to say its line (the recap clips), the bubbles gathering
     // into albums at the sides, then Next (in the journey, the hand-over to the fishing) ----------
     { pdf: '51-52', id: 'recap', summary: 1, lines: [{ m: 'happy', t: "Let's recall what we learnt\nabout parallelograms." }] },
-    { id: 'end', end: 1, lines: [{ m: 'celebrating', t: 'Amazing work! You know all\nabout parallelograms now.' }] }
+    // (as Fishing Frenzy 1's end: Swiftee flies to centre stage - hero - celebrates, then waves goodbye; Next then
+    // hands over to Popo)
+    { id: 'end', end: 1, hero: 1, lines: [{ m: 'celebrating', t: 'Amazing work! You know all\nabout parallelograms now.' }, { m: 'waving', holdM: 1, t: 'Bye for now! See you on\nour next snowy adventure!' }] }
   ]
 };
