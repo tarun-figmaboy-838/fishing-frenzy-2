@@ -493,7 +493,7 @@ async function tangled(game, token, hint) {
   net.tangle = 1;
   net.swing = 0;
   audio.play('wobble');
-  await game.say(STORY.oops, token);
+  await clock.wait(game.fx.reduced ? 200 : 500, token);
   popo.react('think', 1.4);
   game.instruct(hint);
   ui.setAction('again');
@@ -737,9 +737,9 @@ async function netBreaks(game, caught, token) {
     await clock.tween(220, token, (t) => { net.tear = 1 - (1 - t) ** 2; });
     net.tear = 1;
     audio.play('woah');
-    await Promise.all([...caught.map((f, i) => escape(game, f, i, hole, token)), game.say(STORY.oops, token)]);
+    await Promise.all(caught.map((f, i) => escape(game, f, i, hole, token)));
   } else {
-    await game.say(STORY.oops, token);
+    await clock.wait(game.fx.reduced ? 200 : 600, token);
   }
   state.misses += 1;
   popo.react('think', 1.4);
@@ -1209,9 +1209,15 @@ async function hook(game, token) {
     for (const p of net.points) { const st = net.toStage(p); fx.sparkle(st.x, st.y, 4); }
     popo.react('happy', 1.4);
     await say(H.h6);
-    // H7: a school swims into the open net; Popo closes it and hauls up the catch, and cheers
+    // H7: a school swims into the open net and waits there; the catch is the child's: Drop Net comes up with the
+    // warm-up's prompt ("Now, let's help Popo catch some fish!"), and the net closes on their tap (Game.onDrop)
     await schoolSwimsIn(game, token, q ? 1200 : 2600);
     await clock.wait(q ? 100 : 250, token);
+    game.instruct(LEVELS[0].prompt);
+    game.ui.setDrop('on');
+    try { await Promise.race([new Promise((res) => { game.dropWaiter = res; }), clock.wait(1e9, token)]); } finally { game.dropWaiter = null; }
+    game.ui.setDrop('hidden');
+    game.instruct('');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
     state.caught += caught.length;
@@ -1254,7 +1260,6 @@ async function afterHook(game, token) {
     net.furl = 1;
     winch.setRopeOut(-TUCK);
     await waveIn(game, token);
-    await welcome(game, token);
   } else {
     swifteeDeparts(game, token, { up: true }).catch(() => {});
     await windNetUp(game, token);
@@ -1409,17 +1414,8 @@ async function waveIn(game, token) {
   await clock.wait(700, token);
 }
 
-// Back from the lesson: Swiftee swoops in from the right with her welcome ("Great job! Now, let's help Popo catch
-// some fish!") and flies off again, up and out.
-async function welcome(game, token) {
-  await swifteeArrives(game, STORY.welcome, token);
-  await clock.wait(300, token);
-  await swifteeDeparts(game, token, { up: true });
-  await clock.wait(250, token);
-}
-
-// ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back, Swiftee welcomes him and
-// the parallelogram nets begin (no warm-up after the lesson). The same when the journey's Back / Next bar takes the
+// ?start=lesson: the lesson came first, with Popo away on the wave; now it brings him back and the parallelogram nets
+// begin (no warm-up after the lesson; Swiftee stays in the lesson - she does not come back for a welcome). The same when the journey's Back / Next bar takes the
 // lesson's last screen on and no hook is waiting for it (Game.goOn).
 async function backFromLesson(game) {
   const token = newToken();
@@ -1434,7 +1430,6 @@ async function backFromLesson(game) {
     game.winch.setRopeOut(-TUCK);
     await clock.wait(game.fx.reduced ? 150 : 500, token);
     await waveIn(game, token);
-    await welcome(game, token);
     const first = LEVELS.findIndex((l) => !l.warmup);
     const before = game.prepareLevel(first);
     game.spawnSchool();
@@ -1650,5 +1645,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
+Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, AWAY });
 })(window.PopoGame = window.PopoGame || {});

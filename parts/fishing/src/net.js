@@ -1347,7 +1347,8 @@ class Net {
     // is; they fade in and out (parA), never pop
     const dirOf = (n) => { const [i, j] = side(n); return normalize(sub(c[j], c[i])); };
     const isPar = (a, b) => { const u = dirOf(a), v = dirOf(b); return Math.abs(u.x * v.y - u.y * v.x) < 0.035; };
-    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: this.locked || isPar('AB', 'CD'), BC: this.locked || isPar('BC', 'AD') };
+    // (only once the net is checked and locked - never while the child drags, which would give the answer away)
+    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: this.locked && isPar('AB', 'CD'), BC: this.locked && isPar('BC', 'AD') };
     const dtm = Math.max(0, Math.min(0.1, this.time - (this.parT == null ? this.time : this.parT))); this.parT = this.time;
     this.parA = this.parA || { AB: par.AB ? 1 : 0, BC: par.BC ? 1 : 0 };
     for (const k of ['AB', 'BC']) this.parA[k] += ((par[k] ? 1 : 0) - this.parA[k]) * Math.min(1, dtm * 6);

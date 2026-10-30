@@ -362,7 +362,7 @@ def hook(r):
     ff = part(r.page, 'fishing')
     want = ff.evaluate(HOOK_LINES)
     lines, seen, shots = [], {'tangles': 0, 'wrongTangled': False, 'open': False, 'pressable': False, 'invalid': False, 'school': 0,
-                              'caught': 0, 'swiftee': False, 'wave': False, 'hudAway': False, 'duck': False}, set()
+                              'caught': 0, 'swiftee': False, 'wave': False, 'hudAway': False, 'duck': False, 'dropTap': False}, set()
     tangled = False
     end = time.time() + 150
     while r.shell()['current'] != 'lesson':
@@ -379,7 +379,9 @@ def hook(r):
             tangled = False
         if h['par'] and h['under'] and h['tangle'] == 0 and not seen['open']:
             seen['open'] = True
-        seen['pressable'] |= h['pressable']
+        if h['drop'] and not seen['dropTap']:  # (the school waits in the open net: the catch is the child's tap)
+            seen['dropTap'] = True; r.shot('3a2-hook-drop-net'); r.tap_el(ff, '#btn-drop')
+        seen['pressable'] |= h['pressable'] and not h['drop']
         seen['invalid'] |= not h['valid']
         seen['school'] = max(seen['school'], h['school'])
         seen['caught'] = max(seen['caught'], h['schoolCaught'])
@@ -401,7 +403,7 @@ def hook(r):
     check(seen['open'], f'{r.tag}: the leaping fish knocks the last net into a parallelogram, which stays open in the water')
     check(seen['school'] == 12 and seen['caught'] == 12, f'{r.tag}: the scripted school swims into the open net and all of it is caught',
           f"{seen['caught']} of {seen['school']}")
-    check(seen['swiftee'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; nothing could be pressed all through the hook')
+    check(seen['swiftee'] and seen['dropTap'] and not seen['pressable'], f'{r.tag}: Swiftee names the shape; the child\'s Drop Net tap is the one press in the hook')
     check(seen['duck'] and not h['duck'], f'{r.tag}: the hook\'s sound effects stepped down under its lines, and the usual mix is back after it')
     check(seen['wave'] and seen['hudAway'] and h['away'] >= 2000 and h['furl'] > 0.9 and not h['swiftee'],
           f'{r.tag}: "Let\'s find out!": Swiftee flies off to the lesson, the HUD steps away, the net winds up and the giant wave carries Popo away',
@@ -480,8 +482,8 @@ def journey(p, engine, size, url):
     check(st['frames'] == ['fishing+live'] and not st['voice'] and 'lesson' not in st['outs'],
           f'{r.tag}: the lesson\'s frame is disposed; its voice and sound are stopped')
     fs = until(r.fish, lambda s: s['wave'] or not s['away'], 10, 'the wave brings Popo back')
-    until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
-    check(True, f'{r.tag}: the giant wave brings Popo back and Swiftee swoops in with her welcome')
+    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and not s['swiftee'], 25, 'the first net after the lesson')
+    check(fs['phase'] == 'puzzleReady' and not fs['swiftee'], f'{r.tag}: the giant wave brings Popo back and the first parallelogram net begins; Swiftee does not come back after the lesson')
     catch_level(r, 1, '6', wrong_first=not r.touch)
     check(True, f'{r.tag}: the game carried on at its first parallelogram net (same waters), and a real catch there')
 

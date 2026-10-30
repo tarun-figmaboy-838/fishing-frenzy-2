@@ -146,7 +146,6 @@ function bunchesFor(level) {
 const STORY = {
   // Popo only reacts, as he does in Fishing Frenzy (his lines are his recordings from there):
   // a catch, a wrong net, a right net that came up empty, the golden school, and the end
-  oops: { who: 'popo', text: 'Whoopsie Doopsie!' },
   empty: { who: 'popo', text: 'Huh?!' },
   golden: { who: 'popo', text: '*Woah!*', cue: { word: 0, do: 'hop' } },
   complete: [{ who: 'popo', text: '*Wow!*', cue: { word: 0, do: 'hop' } }, { who: 'popo', text: 'What a *catch!*' }],
@@ -173,10 +172,6 @@ const STORY = {
     h9: { who: 'popo', text: 'Parallelogram? What *shape* is that?', tail: 400 },
     h10: { who: 'swiftee', text: "Let's find *out!*", cue: { word: 2, do: 'twirl' }, tail: 300 },
   },
-  // after the lesson: the giant wave has brought Popo back, and Swiftee swoops in from it
-  welcome: [
-    { who: 'swiftee', text: '*Great* job!', cue: { word: 0, do: 'twirl' } },
-  ],
 };
 
 // The hook's nets, on the warm-up's net (its 420 x 200 frame): A top-left, B top-right, C bottom-right, D bottom-left,

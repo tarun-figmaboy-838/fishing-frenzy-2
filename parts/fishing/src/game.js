@@ -152,6 +152,7 @@ class Game {
     this.embedded = !!(window.Journey && window.Journey.embedded);
     this.holding = false;
     this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
+    this.dropWaiter = null;   // the hook waiting for the child's Drop Net tap (sequences.js hook, onDrop)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
@@ -569,8 +570,9 @@ class Game {
   // new lane depths and are joined by newcomers; each level's school swims a little quicker.
   spawnSchool() {
     const level = LEVELS[state.level];
-    // one school, clearly quicker net by net: 150 px/s at the first net (round its 2300 px loop in 15 s) to 290 at the eighth
-    const pace = (130 + 20 * state.level) * (level.rare ? 1.15 : 1);
+    // one school, quick and quicker net by net - a catch takes timing: 194 px/s at the first net (round its 2300 px loop
+    // in 12 s) to 362 at the eighth (416 for the golden school)
+    const pace = (170 + 24 * state.level) * (level.rare ? 1.15 : 1);
     state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
   }
 
@@ -733,7 +735,9 @@ class Game {
 
   // Drop Net, right or wrong: a wrong net goes down all the same (see dropNet).
   onDrop() {
-    if (state.paused || state.phase !== PHASE.PUZZLE_READY) return;
+    if (state.paused) return;
+    if (this.dropWaiter) { const go = this.dropWaiter; this.dropWaiter = null; this.audio.play('ui'); go(); return; } // (the hook: the child's catch, sequences.js)
+    if (state.phase !== PHASE.PUZZLE_READY) return;
     this.stopHint();
     this.audio.play('ui');
     dropNet(this);
