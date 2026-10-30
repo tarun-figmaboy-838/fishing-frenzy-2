@@ -560,8 +560,13 @@ def start_fishing(p, engine, url):
     r.shot('1-story')
     st = r.shell()
     check(st['frames'] == ['fishing+live'], f'{r.tag}: no lesson frame anywhere', ', '.join(st['frames']))
-    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady', 150, 'the first net')
-    check(fs['level'] == 1, f'{r.tag}: the hook plays, then the first parallelogram net comes down', f"level {fs['level']}")
+    end, tapped = time.time() + 150, False  # (the hook's catch is the child's: tap Catch when fish are in the open net)
+    while time.time() < end:
+        fs = r.fish()
+        if fs['phase'] == 'puzzleReady': break
+        if fs['action'] == 'catch' and not tapped: r.tap_el(part(page, 'fishing'), '#btn-action'); tapped = True
+        page.wait_for_timeout(150)
+    check(fs['phase'] == 'puzzleReady' and fs['level'] == 1 and tapped, f'{r.tag}: the hook plays, the child\'s Catch takes the school, then the first parallelogram net comes down', f"phase {fs['phase']} level {fs['level']}")
     # ?start=lesson: the lesson first, over the game holding where its banner cleared away; then the story
     page.goto(url + '?start=lesson&debug')
     until(r.shell, lambda s: s['fishing'] == 'ready' and s['lesson'] == 'ready', 60, 'the game, then the lesson, load')
@@ -575,9 +580,8 @@ def start_fishing(p, engine, url):
     r.shot('2-start-lesson')
     end_lesson(r)
     st = until(r.shell, lambda s: s['current'] == 'fishing', 60, 'the lesson hands over')
-    fs = until(r.fish, lambda s: s['dialogue'] == 'swiftee', 15, 'Swiftee\'s welcome')
-    check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'], f'{r.tag}: ?start=lesson: after the lesson the wave brings Popo in and Swiftee welcomes him, all eight nets to follow')
-    until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 1, 30, 'the first parallelogram net')
+    fs = until(r.fish, lambda s: s['phase'] == 'puzzleReady' and s['level'] == 1 and not s['swiftee'], 40, 'the first parallelogram net')
+    check(st['phase'] == 'fishing' and not fs['lessonAfter'] and fs['music'] and not fs['swiftee'], f'{r.tag}: ?start=lesson: after the lesson the wave brings Popo in and the first parallelogram net begins (no Swiftee welcome), all eight nets to follow')
     errs = r.errors()
     check(not errs, f'{r.tag}: no errors and no failed requests in any frame', '; '.join(errs[:5]))
     r.close()
