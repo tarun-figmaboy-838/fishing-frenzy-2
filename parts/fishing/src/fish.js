@@ -141,16 +141,6 @@ class Fish {
     ctx.save();
     ctx.globalAlpha = this.alpha;
     ctx.translate(this.x, this.y + bob + hop);
-    if (this.rare) {
-      const r = Math.max(this.w, this.h) * 0.7 * this.scale;
-      const glow = ctx.createRadialGradient(0, 0, r * 0.3, 0, 0, r);
-      glow.addColorStop(0, `rgba(255, 225, 120, ${0.3 + Math.sin(this.bobPhase * 1.4) * 0.12})`);
-      glow.addColorStop(1, 'rgba(255, 225, 120, 0)');
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, TAU);
-      ctx.fill();
-    }
     ctx.rotate(rot + this.pitch * this.dir);
     ctx.scale(this.dir * this.scale * (1 - this.squash * 0.2), this.scale * (1 + this.squash * 0.16));
     const [x0, y0, x1, y1] = this.box;
@@ -256,9 +246,9 @@ class Sea {
       });
       newcomers += c.fish.length;
     });
-    // a whole new school (the first, or the golden one) rushes in: it swims fast for a moment, then eases to its
-    // pace; every fish speeds and slows together, so none gains on another
-    if (newcomers > staying.length) for (const lane of this.lanes) lane.rush = RUSH;
+    // the golden school rushes in (it swims fast for a moment, then eases to its pace; every fish speeds and slows
+    // together, so none gains on another); every other school comes in at its level's pace from the start
+    if (rare && newcomers > staying.length) for (const lane of this.lanes) lane.rush = RUSH;
     for (const f of school) f.driftAmp = 1; // (a gentle float; the cloud is packed with room for it)
     return school;
   }
@@ -331,7 +321,7 @@ class Sea {
       if (lane.base !== undefined) lane.y = lane.base + sway;
       const rush = lane.rush > 0 ? Math.min(1, lane.rush / (RUSH * 0.6)) : 0;
       lane.rush = Math.max(0, lane.rush - dt);
-      const pace = lane.speed * (1 + 0.08 * Math.sin(this.t * 0.45 + lane.phase)) * (1 + 2.6 * rush * rush * (3 - 2 * rush));
+      const pace = lane.speed * (1 + 0.08 * Math.sin(this.t * 0.45 + lane.phase)) * (1 + 0.9 * rush * rush * (3 - 2 * rush)); // (the golden school's rush: under twice its pace)
       for (const f of fish) if (f.lane === lane && !f.gone && !f.caught && !f.frozen) f.speed += (pace - f.speed) * Math.min(1, dt * 1.5);
     }
   }

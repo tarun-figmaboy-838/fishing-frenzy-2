@@ -211,34 +211,8 @@ async function opening(game, { arrived = false } = {}) {
   }
 }
 
-// On from a finished screen (the hook, a caught net) - unless the journey's Back / Next bar has been used (review):
-// then the screen holds where it ended (what follows it kept for the bar's Next: goOnward), and only the bar moves on.
-async function onward(game, token, next) {
-  if (game.review) { if (state.phase !== PHASE.INTRO) state.phase = PHASE.LEVEL_COMPLETE; game.held = { token, next }; return; }
-  await next();
-}
-
-// The journey's Next (its temporary Back / Next bar): the journey goes on as it would by itself. A held screen plays
-// what follows it (the hook: the wave and the lesson; a caught net: the next); the hook still playing hands over to the
-// lesson now. toLesson: the bar is on the hook, so the lesson comes next even after a jump to it. False: nothing to
-// play (the bar jumps instead).
-function goOnward(game, { toLesson = false } = {}) {
-  if (game.onwardTok && isCurrent(game.onwardTok)) return true; // (already on its way: a second Next waits for it)
-  const h = game.held;
-  game.held = null;
-  if (toLesson && game.embedded) game.lessonAfter = true;
-  if (h && isCurrent(h.token)) {
-    game.onwardTok = h.token;
-    h.next().catch(swallow);
-    return true;
-  }
-  if (toLesson && state.phase === PHASE.INTRO) {
-    const token = game.onwardTok = newToken();
-    afterHook(game, token).catch(swallow);
-    return true;
-  }
-  return false;
-}
+// On from a finished screen (the hook, a caught net) to what follows it
+async function onward(game, token, next) { await next(); }
 
 // Straight to the first parallelogram net, without the story (Play Again on the game's own page): its waters, its
 // school, and its net let down.
@@ -962,6 +936,9 @@ async function fishBumpsCorner(game, token, to) {
   const { net, fx, audio } = game;
   const wl = game.waterline, corner = () => net.toStage(net.points[2]), q = fx.reduced;
   const c0 = corner();
+  // into the net from corner C: the way to the net's middle (the fish is drawn under the mesh, so a head pushed in this
+  // way is seen caught in it, not touching its corner from outside)
+  const inward = () => { const P = net.points.map((p) => net.toStage(p)), c = corner(); const dx = (P[0].x + P[1].x + P[2].x + P[3].x) / 4 - c.x, dy = (P[0].y + P[1].y + P[2].y + P[3].y) / 4 - c.y, l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; };
   // (a giant of the sea's own fish, four times the school that follows it into the net: its leap is the moment to watch)
   const fish = new Fish(NATURAL_FISH[Math.floor(Math.random() * NATURAL_FISH.length)], 0, 0, -1, 2);
   fish.beat = 11; // (its tail beats as it swims in)
@@ -1005,20 +982,24 @@ async function fishBumpsCorner(game, token, to) {
       const c = corner(), n = nose(fish.pitch);
       fish.x = c.x - n.x; fish.y = c.y - n.y;
     });
-    // caught: its nose tangled in the corner's mesh, it hangs there and thrashes, tail swinging, the net shaking with
-    // it - the corner jerked about, the frame swinging, drops flying off - then a last gather before it wrenches free
+    // caught: its head drives into the corner's mesh (a third of its length in, under the net) and it fights - three
+    // hard tugs, each dragging the corner out towards it and springing back, its whole body thrashing, the net shaking
+    // with it and spray flying off - then a last gather before it wrenches free
     audio.play('struggle');
-    fish.beat = 26; // (thrashing: the tail whips)
-    await clock.tween(q ? 300 : 1600, token, (t) => {
-      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 10), give = 22 * (1 - Math.min(1, t * 3)) ** 2; // (the knock springing back)
-      fish.squash = Math.max(0, 1 - t * 6);
-      fish.pitch = -0.6 + 0.4 * w * env;
-      net.points[2] = { x: held.x + ix * give + 12 * w * env, y: held.y + iy * give + 7 * Math.sin(t * Math.PI * 7) * env };
-      net.swing = q ? 0 : 0.045 * Math.sin(t * Math.PI * 5) * env;
+    fish.beat = 34; // (thrashing: the tail whips)
+    await clock.tween(q ? 300 : 2300, token, (t) => {
+      const env = Math.sin(t * Math.PI), w = Math.sin(t * Math.PI * 9), give = 22 * (1 - Math.min(1, t * 3)) ** 2; // (the knock springing back)
+      const bite = fish.w * 0.32 * Math.min(1, t * 6), tug = Math.max(0, Math.sin(t * Math.PI * 3)) ** 2 * 34 * (0.5 + 0.5 * env); // (in; and the tugs)
+      fish.squash = 0.22 * Math.abs(Math.sin(t * Math.PI * 9)) * env + Math.max(0, 1 - t * 6);
+      fish.pitch = -0.6 + 0.55 * w * env;
+      const inw = inward();
+      net.points[2] = { x: held.x + ix * give - inw.x * tug + 24 * w * env, y: held.y + iy * give - inw.y * tug + 14 * Math.sin(t * Math.PI * 7) * env };
+      net.swing = q ? 0 : 0.09 * Math.sin(t * Math.PI * 5) * env;
       const c = corner(), n = nose(fish.pitch);
-      fish.x = c.x - n.x;
-      fish.y = c.y - n.y;
-      if (!q && Math.random() < 0.22) fx.puff(c.x + (Math.random() - 0.5) * 40, c.y + 10, 0, 1, true);
+      fish.x = c.x - n.x + inw.x * bite + (q ? 0 : (Math.random() - 0.5) * 4 * env);
+      fish.y = c.y - n.y + inw.y * bite + (q ? 0 : (Math.random() - 0.5) * 4 * env);
+      if (!q && Math.random() < 0.45) fx.puff(c.x + (Math.random() - 0.5) * 60, c.y + 10, 0, 1, true);
+      if (!q && Math.random() < 0.12) fx.splash(c.x + (Math.random() - 0.5) * 40, wl, false);
     });
     net.points[2] = held;
     fish.beat = 14;
@@ -1653,5 +1634,5 @@ async function closeCurtain(game, { title = false } = {}) {
   if (!title) startLevels(game);
 }
 
-Object.assign(PopoGame, { banner, opening, onward, goOnward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
+Object.assign(PopoGame, { banner, opening, onward, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, rowTo, celebrate, closeCurtain, letNetDown, hook, afterHook, swifteeArrives, swifteeDeparts, waveIn, welcome, AWAY });
 })(window.PopoGame = window.PopoGame || {});

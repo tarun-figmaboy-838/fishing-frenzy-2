@@ -74,7 +74,7 @@ const LEVELS = [
   { title: 'Final Catch', type: 'parallelogram', metres: { AB: 6 }, corner: 'D', along: 'BD',
     width: 400, height: 210, lean: 30, rotate: -7, start: -9, // slides along the diagonal, toward B
     location: 3, fish: 9, rare: true,
-    prompt: 'Drag vertex D to make a *parallelogram*.',
+    prompt: 'Drag vertex D to make the net a *parallelogram*.',
     hints: ['Opposite sides are equal. Make CD *longer*.', 'Opposite sides are equal. Make CD *shorter*.'] },
 ];
 

@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, goOnward, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
+const { assets, preloadBackground, clock, ease, Effects, WaterScene, surfaceWave, PAN_OVERLAP, Sea, refreshShadows, refreshDeep, LOCATIONS, LEVELS, NETS, freshLevels, bunchesFor, Popo, Winch, Net, TUCK, opening, startLevels, backFromLesson, dropNet, checkNet, catchNow, tryAgain, closeCurtain, Cancelled, STAGE_W, STAGE_H, SCENE_SHIFT, raftAnchor, state, PHASE, resetProgress, newToken, isCurrent, TitleScreen } = PopoGame;
 
 const HINT_REPEAT = 7;    // seconds a right net waits in the water before the hand shows where Catch is (once)
 const HINT_IDLE = 3;      // seconds without a touch before a net's ghost hint (and between one and the next)
@@ -154,8 +154,6 @@ class Game {
     this.lessonAfter = false; // the lesson follows the hook (sequences.js afterHook, Game.lessonTime)
     this.afterLesson = false; // ?start=lesson: the lesson came first, so the story starts with the wave bringing Popo back
     this.breakEnds = null;    // the lesson's break, while it plays
-    this.held = null;         // a finished screen held for the journey's Next (sequences.js onward, goOnward)
-    this.onwardTok = null;    // the journey's Next on its way (goOnward)
     this.swiftee = null;      // Swiftee, flying in at the warm-up's end and after the lesson (src/swiftee.js)
     this.wave = null;         // the giant wave carrying Popo off to the lesson and back (../shared/wave.js)
     this.warmCatches = 0;     // the warm-up's catches so far (LEVELS[0].drops of them before its problem)
@@ -479,11 +477,7 @@ class Game {
     const ends = this.breakEnds;
     this.breakEnds = null;
     if (ends) ends();
-    else if (this.review) backFromLesson(this); // (the lesson's end taken on by the journey's Next, no hook waiting: the wave, the welcome, the first net)
   }
-
-  // the journey's Next (its temporary Back / Next bar): on as the journey would go by itself (sequences.js goOnward)
-  onward(args) { goOnward(this, args || {}); }
 
   // The banner again from its start (after Play Again, or the dev panel's Front page). From the end screen its circle
   // closes and opens again on the banner.
@@ -874,11 +868,11 @@ class Game {
     return Math.max(1, 0.75 / (this.stage.scale * 1.45));
   }
 
-  // The painting is STAGE_W pixels wide, so the water pass never renders more pixels than
-  // that; on big or Retina screens the browser scales it up. waterQuality drops on slow devices.
+  // The water pass renders up to one and a half times the painting's width (STAGE_W: sharp on a Retina screen, where
+  // the painting is scaled up); waterQuality drops on a slow device (watchFrameRate), and comes back.
   syncWaterCanvas() {
     const c = this.stage.canvas;
-    const k = Math.min(1, STAGE_W / c.width) * this.waterQuality;
+    const k = Math.min(1, STAGE_W * 1.5 / c.width) * this.waterQuality;
     this.water.resize(Math.round(c.width * k), Math.round(c.height * k), c.style.width, c.style.height);
   }
 
@@ -886,17 +880,29 @@ class Game {
   // couple of seconds, for good: the water pass at 60% of its size, then the drawing at no more than 1.5 and then 1
   // pixel per screen pixel (a phone or tablet's 2-3 doubled the pixels drawn every frame), then the water at 42%. The
   // scene stays the same, a little softer; the game stays smooth.
+  // (only while the game itself is played - not while it is the lake under the lesson or the tab is hidden, where the
+  // frames are slow for other reasons - and never for good: after eight seconds of fast frames it steps back up, one
+  // step at a time, so a slow moment never leaves the game soft)
   watchFrameRate(dt) {
+    if (this.backdropOn || this.holding || document.hidden) { this.slowFor = 0; this.fastFor = 0; this.frameAvg = 1 / 60; return; }
     this.frameAvg = this.frameAvg * 0.97 + dt * 0.03;
     this.slowFor = this.frameAvg > 0.026 ? this.slowFor + dt : 0;
-    if (this.slowFor <= 2.5) return;
-    this.slowFor = 0;
-    this.frameAvg = 1 / 60; // (measured afresh after each step)
+    this.fastFor = this.frameAvg < 0.0185 ? (this.fastFor || 0) + dt : 0;
     const stage = this.stage, dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (this.waterQuality > 0.6) this.waterQuality = 0.6;
-    else if (stage.dprCap > 1.5 && dpr > 1.5) { stage.dprCap = 1.5; this.resize(); }
-    else if (stage.dprCap > 1 && dpr > 1) { stage.dprCap = 1; this.resize(); }
-    else if (this.waterQuality > 0.42) this.waterQuality = 0.42;
+    if (this.slowFor > 2.5) {
+      this.slowFor = 0; this.fastFor = 0;
+      this.frameAvg = 1 / 60; // (measured afresh after each step)
+      if (this.waterQuality > 0.6) this.waterQuality = 0.6;
+      else if (stage.dprCap > 1.5 && dpr > 1.5) { stage.dprCap = 1.5; this.resize(); }
+      else if (stage.dprCap > 1 && dpr > 1) { stage.dprCap = 1; this.resize(); }
+      else if (this.waterQuality > 0.42) this.waterQuality = 0.42;
+    } else if (this.fastFor > 8) {
+      this.fastFor = 0; this.frameAvg = 1 / 60;
+      if (this.waterQuality < 0.6) this.waterQuality = 0.6;
+      else if (stage.dprCap < 1.5 && dpr > 1) { stage.dprCap = 1.5; this.resize(); }
+      else if (stage.dprCap < 2 && dpr > 1.5) { stage.dprCap = 2; this.resize(); }
+      else if (this.waterQuality < 1) this.waterQuality = 1;
+    }
   }
 
   // --- hints ------------------------------------------------------------------

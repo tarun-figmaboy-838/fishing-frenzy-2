@@ -32,7 +32,7 @@ PopoGame.VOICE_DATA = {
   "narrator:drag vertex c to make ∠c equal to ∠a.": "assets/voice/net-p5.mp3",
   "narrator:drag vertex b so that ∠a and ∠b add up to 180°.": "assets/voice/net-p6.mp3",
   "narrator:drag vertex c so that the diagonals bisect each other.": "assets/voice/net-p7.mp3",
-  "narrator:drag vertex d to make a parallelogram.": "assets/voice/net-p8.mp3",
+  "narrator:drag vertex d to make the net a parallelogram.": "assets/voice/net-p8.mp3",
   "narrator:ab is shorter than cd. make ab longer.": "assets/voice/net-h1a.mp3",
   "narrator:ab is longer than cd. make ab shorter.": "assets/voice/net-h1b.mp3",
   "narrator:bc is shorter than ad. make bc longer.": "assets/voice/net-h2a.mp3",

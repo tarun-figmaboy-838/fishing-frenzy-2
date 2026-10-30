@@ -1304,14 +1304,22 @@ class Net {
     const deg = (letter) => `${this.degreesShown(letter)}°`;
     // Only what the task is about is on the net - the value given and the one the child sets - so nothing clutters
     // it: the net is checked by pressing Check, not by reading it
-    // (the side nets are parallelograms in the making: both pairs carry their parallel marks - one chevron on AB and
-    // CD, two on BC and AD - with the lengths, so opposite sides equal and parallel are seen together)
-    const bothPairs = () => { this.drawTicks(ctx, c, ['AB', 'CD'], false, 1); this.drawTicks(ctx, c, ['BC', 'DA'], false, 2); };
-    // (a 'parallel' net: the pair already parallel - the one the corner slides along - carries the marks; the pair the
-    // child makes parallel gets them only once it is: a mark on it before would say it already was)
-    const parOther = L.type === 'parallel' ? (L.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD']) : null;
-    const pairMarks = (ks) => ks.map((k) => [k === 'AD' ? 'DA' : k, ks[0] === 'AB' ? 1 : 2]);
-    this.markedSides = { sides: 1, parallelogram: 1 }[L.type] ? { AB: 1, CD: 1, BC: 2, DA: 2 } : parOther ? Object.fromEntries(pairMarks(parOther).concat(this.locked ? pairMarks(L.sides) : [])) : null;
+    // the parallel marks come from the net itself, on every net: a pair of opposite sides carries its marks (one
+    // chevron on AB and CD, two on BC and AD) while it is parallel - within about two degrees, or once the net is right
+    // - so a net shows exactly what is true of it, and a pair the child makes parallel gets its marks the moment it
+    // is; they fade in and out (parA), never pop
+    const dirOf = (n) => { const [i, j] = side(n); return normalize(sub(c[j], c[i])); };
+    const isPar = (a, b) => { const u = dirOf(a), v = dirOf(b); return Math.abs(u.x * v.y - u.y * v.x) < 0.035; };
+    const par = L.type === 'free' ? { AB: false, BC: false } : { AB: this.locked || isPar('AB', 'CD'), BC: this.locked || isPar('BC', 'AD') };
+    const dtm = Math.max(0, Math.min(0.1, this.time - (this.parT == null ? this.time : this.parT))); this.parT = this.time;
+    this.parA = this.parA || { AB: par.AB ? 1 : 0, BC: par.BC ? 1 : 0 };
+    for (const k of ['AB', 'BC']) this.parA[k] += ((par[k] ? 1 : 0) - this.parA[k]) * Math.min(1, dtm * 6);
+    this.markedSides = par.AB || par.BC ? Object.assign({}, par.AB ? { AB: 1, CD: 1 } : {}, par.BC ? { BC: 2, DA: 2 } : {}) : null;
+    const marks = () => {
+      if (this.parA.AB > 0.02) { ctx.save(); ctx.globalAlpha *= Math.min(1, this.parA.AB); this.drawTicks(ctx, c, ['AB', 'CD'], false, 1); ctx.restore(); }
+      if (this.parA.BC > 0.02) { ctx.save(); ctx.globalAlpha *= Math.min(1, this.parA.BC); this.drawTicks(ctx, c, ['BC', 'DA'], false, 2); ctx.restore(); }
+    };
+    marks();;
     switch (L.type) {
       case 'free': break; // (the warm-up: Popo's plain net)
       case 'parallel': {
@@ -1319,9 +1327,7 @@ class Net {
         // them) carries its lengths as the corner moves - the side the corner pulls live, its opposite fixed - and
         // they read the same exactly when the marked pair is parallel too (one pair parallel and equal makes a
         // parallelogram), so the child sees what the drag is doing; whether it is right is still Check's
-        const other = parOther;
-        this.drawTicks(ctx, c, other, false, other[0] === 'AB' ? 1 : 2);
-        if (this.locked) this.drawTicks(ctx, c, L.sides, false, L.sides[0] === 'AB' ? 1 : 2); // (made parallel: now marked too)
+        const other = L.sides[0] === 'AB' ? ['BC', 'AD'] : ['AB', 'CD'];
         for (const name of other) this.drawLength(ctx, c, name, m(name), name.includes(L.corner));
         break;
       }
@@ -1330,7 +1336,6 @@ class Net {
         this.drawLength(ctx, c, L.side, m(L.side), true);
         break;
       case 'sides': { // the two sides given, and the two the child sets (their opposites)
-        bothPairs();
         const given = Object.keys(L.metres);
         for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, given.includes(name) ? `${L.metres[name]} cm` : m(name), !given.includes(name));
         break;
@@ -1347,8 +1352,7 @@ class Net {
         this.drawDiagonals(ctx, c, true);
         break;
       default: {
-        // the whole parallelogram: both pairs of sides (the check is that opposite sides match)
-        bothPairs();
+        // the whole parallelogram: every side's length (the check is that opposite sides match)
         const mine = ['AB', 'BC', 'CD', 'AD'].filter((name) => name.includes(L.corner));
         for (const name of ['AB', 'BC', 'CD', 'AD']) this.drawLength(ctx, c, name, m(name), mine.includes(name));
       }
@@ -1368,7 +1372,7 @@ class Net {
     const u = normalize(sub(c[j], c[i]));
     let n = { x: -u.y, y: u.x };
     if (dot(n, sub(mid, centre)) < 0) n = times(n, -1);
-    const string = `${name} ${value}`, px = live ? 26 : 22, k = this.wordScale;
+    const string = `${name} ${value}`, px = 24, k = this.wordScale; // (one size, set or given: nothing jumps when the net is right)
     const off = 12 * k + reach(labelHalf(string, px, k), n), at = add(mid, times(n, off));
     // (where there's no room outside its side, just inside it beats far away: alt)
     this.text(ctx, string, at.x, at.y, px, live ? '#ffd84a' : '#fff', live,
@@ -1409,10 +1413,7 @@ class Net {
 
   // Where along side i-j its label sits: the middle, or toward the fixed end when the moving
   // corner is one end of it.
-  clearOfKnob(i, j) {
-    if (this.locked) return 0.5;
-    return j === this.movable ? 0.4 : i === this.movable ? 0.6 : 0.5;
-  }
+  clearOfKnob(i, j) { return 0.5; } // (a length sits at the middle of its side, always: it never slides as the corner moves)
 
   // An angle as the lesson draws it: a wedge filled in the corner's own colour, rimmed in white, and its degrees just
   // beyond it along the bisector, in that colour (gold while the child sets it).
