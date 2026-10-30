@@ -1536,7 +1536,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     const speak = () => { if (st.voiceDelay) this.tm(lines, st.voiceDelay); else lines(); };
     // the summary: Swiftee rises into the middle of the card first, and speaks once she is up
     if (st.summary && window.Summary) { const tok = this.stepTok; Summary.enter(this, () => { if (tok === this.stepTok) speak(); }); }
-    else if (this.fromPlate && !this.isPlate(st)) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); }
+    // (not when the screen opens with the narrator's line - 'Are the two segments of each diagonal equal?': the plate
+    // stays, and she dives in on her own line, qNext - else she would be seen for a second and fade as the plate came)
+    else if (this.fromPlate && !this.isPlate(st) && !((st.lines || [])[0] || {}).narr) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); }
     else speak();
   }
   // the summary's Next: the learner moves on when they choose (a replaying idea finishes first) - to the last screen,
