@@ -84,7 +84,9 @@
           // so Swiftee answers at once; the word timings follow the clip's own playhead, so they stay exact
           // (a seek once the clip's header has loaded, not a #t= fragment: Safari lands a fragment on the next 1 s Ogg
           // page and cut the line's first words)
-          const first = lines[key][2] && lines[key][2][0], lead = first ? Math.max(0, first - 0.06) : 0;
+          // (no seek: each clip opens with only ~0.3 s of quiet, and a seek to just before its first word cut that
+          // word's start on Chrome - the clip plays from 0, so every first word is whole)
+          const lead = 0;
           el.src = src(lines[key][0]);
           el.playbackRate = VO.rate;
           // an interrupted play() (AbortError: a pause or a new load got in first) is retried once before giving up
