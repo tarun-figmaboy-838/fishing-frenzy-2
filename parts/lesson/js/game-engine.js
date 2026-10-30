@@ -1550,7 +1550,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (st.summary && window.Summary) { const tok = this.stepTok; Summary.enter(this, () => { if (tok === this.stepTok) speak(); }); }
     // (not when the screen opens with the narrator's line - 'Are the two segments of each diagonal equal?': the plate
     // stays, and she dives in on her own line, qNext - else she would be seen for a second and fade as the plate came)
-    else if (st.hero || (this.fromPlate && !this.isPlate(st) && !((st.lines || [])[0] || {}).narr)) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); } // (hero: she flies to centre stage first)
+    else if ((st.hero && JOURNEY) || (this.fromPlate && !this.isPlate(st) && !((st.lines || [])[0] || {}).narr)) { const tok = this.stepTok; this.setState({}, () => this.dive(() => { if (tok === this.stepTok) speak(); })); } // (hero: she flies to centre stage first)
     else speak();
   }
   // the summary's Next: the learner moves on when they choose (a replaying idea finishes first) - to the last screen,
@@ -2960,7 +2960,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
     if (this.curLine && this.curLineStep === this.state.step) return !!this.curLine.narr;
     return !!(L0 && L0.narr);
   }
-  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.own && !st.end && !st.summary && !st.hero); } // (own: Swiftee's own thought, in her bubble)
+  isPlate(st) { return !!(this.state.opened && st && st.id !== 'intro' && st.task !== 'measure' && st.task !== 'measureAngles' && !st.own && !st.end && !st.summary && !(st.hero && JOURNEY)); } // (own: Swiftee's own thought, in her bubble)
   renderVals() {
     const s = this.state, steps = this.steps(), st = this.cur();
     const isLesson = !st.grid && !st.end && !st.summary; // (the summary draws its own ideas: no board)
@@ -3057,7 +3057,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
       stars: [0, 1, 2].map((i) => ({ cls: i < nStars ? 'on' : '' })),
       scoreText: 'You got ' + nRight + ' of ' + nChecks + ' checkpoint challenges right on the first try.',
       // every screen is a scene on the card: the shape centred on it, Swiftee (where she is) on the sand at the left
-      sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : this.narrLine() ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.summary ? ' summary' : '') + (st.hero ? ' hero endhero' : '') + (st.fig ? ' figsync' : '') + (st.task === 'measure' || st.task === 'measureAngles' || st.own ? ' measure-room' : '') + (st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look; summary / measure-room: their own places for Swiftee (css/game.css)
+      sceneCls: (s.opened ? 'in-card ' : s.opening ? 'card-wait ' : 'pre-open ') + 'scene' + (this.plateEnter(st) ? ' plate plate-enter' : this.isPlate(st) ? ' plate' : this.narrLine() ? ' plate' : '') + (st.skin ? ' skin-' + st.skin : '') + (st.summary ? ' summary' : '') + (st.hero && JOURNEY ? ' hero endhero' : '') + (st.fig ? ' figsync' : '') + (st.task === 'measure' || st.task === 'measureAngles' || st.own ? ' measure-room' : '') + (st.okGlow || (st.lines || []).some((L) => L.cues) ? ' cue-pulse' : ''), // skin: a screen's own look; summary / measure-room: their own places for Swiftee (css/game.css)
       boardTf: isLesson ? this.zoomTf(st) : 'none',
       boardZ: isLesson ? this.sceneFit(st).k : 1, // the board's zoom: angle values keep one size on screen (css .tag.alab)
       meetZ: (isLesson && this.meetZoom(st) || { f: 1 }).f.toFixed(3), // (zoomed out to show where sides meet: the letters keep their size)
