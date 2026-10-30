@@ -3,3 +3,10 @@ swiftee-assets/*at main*
 
 # screen recordings / reference videos (too large for GitHub)
 *.mp4
+
+# editor / OS / tooling leftovers
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+*.zip
