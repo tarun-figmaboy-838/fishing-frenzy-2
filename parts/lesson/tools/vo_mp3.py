@@ -1,6 +1,6 @@
 """The MP3 twin of every voice clip: assets/vo/<id>.mp3 beside each <id>.ogg (run by tools/vo_build.js; or by hand).
 An iPad before iPadOS 18.4 cannot play Ogg Opus at all - in Safari or in an app's browser (Instagram's) - and plays
-these instead (js/voice.js, and the game's ../fishing/src/audio.js for the clips it borrows). Mono, 24 kHz, 64 kbps
+these instead (js/voice.js, and the game's ../fishing/src/audio.js for the clips it borrows). Mono, 24 kHz, 48 kbps
 CBR: decoded from the Ogg, so the words, their timings and the loudness are the Ogg's.
 Needs numpy, scipy, soundfile (libsndfile >= 1.1, which reads Opus) and lameenc:
   python3 -m pip install numpy scipy soundfile lameenc     (or VO_PY=<that python> for vo_build.js)
@@ -11,7 +11,7 @@ import numpy as np, soundfile as sf, lameenc
 from scipy.signal import resample_poly
 
 VO = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'vo')
-RATE, KBPS = 24000, 64
+RATE, KBPS = 24000, 48
 force = '--force' in sys.argv
 n = 0
 for f in sorted(os.listdir(VO)):
