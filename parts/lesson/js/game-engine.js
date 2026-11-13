@@ -2004,7 +2004,9 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   // ---------- CFU ----------
   pick(o) {
     const st = this.cur(), s = this.state;
-    if (s.done || s.picks[o.id] || this.busy()) return;
+    if (s.done || s.picks[o.id]) return;
+    // (check 1's cards show while she asks: a tap then cuts the question short and counts; other answers are not shown yet)
+    if (this.busy()) { if (!st.grid) return; this.askedNow(); }
     const picks = Object.assign({}, s.picks);
     const tok = this.stepTok;
     if (o.emph) this.emphasize(o.emph); // (the part an answer names comes forward as it is picked - right or not)

@@ -631,8 +631,8 @@ a{color:#123b63}a:hover{color:#0b2742}
 .stage .wait{opacity:0!important;visibility:hidden;pointer-events:none;animation:none!important}
 .stage .wait *{animation:none!important}
 /* (check 1's pictures are the question itself: they show from the start, as Fishing Frenzy's check 1 does - an empty
-   card while the question was read looked like a missing screen - and take taps once it has been asked) */
-.stage .grid4.wait{opacity:1!important;visibility:visible;filter:none;animation:riseA .55s cubic-bezier(.25,1.25,.5,1) both!important}
+   card while the question was read looked like a missing screen - and take taps at once: a tap while she asks cuts the question short) */
+.stage .grid4.wait{opacity:1!important;visibility:visible;pointer-events:auto;filter:none;animation:riseA .55s cubic-bezier(.25,1.25,.5,1) both!important}
 .stage .grid4.wait.fadeB{animation-name:riseB!important}
 .stage .grid4.go>.opt:not(.good):not(.bad){animation:none} /* (already showing: no second entrance once the question is asked) */
 .stage .go{visibility:visible}
