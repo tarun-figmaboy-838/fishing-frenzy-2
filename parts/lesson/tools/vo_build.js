@@ -6,7 +6,8 @@
 //    (Ogg Opus, 32 kbps, mono, 48 kHz, matched to LUFS): Chromium decodes the MP3 and encodes Opus (WebCodecs); the Ogg pages are
 //    written here (RFC 7845). No ffmpeg needed. Needs Playwright: `npm i --no-save playwright` (or NODE_PATH).
 // 2. js/vo_lines.js is regenerated from tools/vo_script.json and the clips' real lengths.
-// 3. Clips no line uses are deleted. Lines with no clip, and lesson lines missing from the script, are listed.
+// 3. Every clip gets its MP3 twin (tools/vo_mp3.py) for iPads before iPadOS 18.4, which cannot play Ogg Opus.
+// 4. Clips no line uses are deleted. Lines with no clip, and lesson lines missing from the script, are listed.
 // Safe to run again; with no zips it only re-measures the clips and rewrites the map.
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
 const ROOT = path.join(__dirname, '..');
@@ -251,7 +252,11 @@ function lessonLines() {
     console.log('encoded ' + mp3s.size + ' clip(s), matched to ' + LUFS + ' LUFS' + (lv.length ? ' (they came in at ' + Math.min(...lv).toFixed(1) + ' .. ' + Math.max(...lv).toFixed(1) + ')' : ''));
   }
   // clips no line uses (and anything else) leave assets/vo/
-  fs.readdirSync(VO).forEach((f) => { const m = /^(vo\d{3})\.ogg$/.exec(f); if (!m || !ids.has(m[1])) { fs.unlinkSync(path.join(VO, f)); console.log('removed assets/vo/' + f); } });
+  fs.readdirSync(VO).forEach((f) => { const m = /^(vo\d{3})\.(ogg|mp3)$/.exec(f); if (!m || !ids.has(m[1])) { fs.unlinkSync(path.join(VO, f)); console.log('removed assets/vo/' + f); } });
+  // and each clip's MP3 twin, for the iPads that cannot play Ogg Opus (tools/vo_mp3.py; VO_PY = a python with its modules)
+  const py = require('child_process').spawnSync(process.env.VO_PY || 'python3', [path.join(__dirname, 'vo_mp3.py')], { encoding: 'utf8' });
+  if (py.status === 0) console.log(py.stdout.trim());
+  else console.log('WARNING: the MP3 twins were not made (tools/vo_mp3.py: ' + ((py.stderr || String(py.error || '')).trim().split('\n').pop()) + '); an iPad before 18.4 will not hear a new clip until they are');
   const map = {}, missing = [];
   // word timings: measured from every clip; without Playwright the ones already in js/vo_lines.js are kept
   const have = script.filter((r) => fs.existsSync(path.join(VO, r.id + '.ogg')));

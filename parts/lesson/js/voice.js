@@ -3,7 +3,9 @@
 // One reused <audio> element. A line is looked up by the exact plain text the bubble shows (a voice-only line by its
 // spoken text). The engine's say() (js/game-engine.js) uses it as the clock for the line; when a clip is missing or
 // cannot play, say() shows the line's words silently at a speaking pace.
-// Off when the browser cannot play Ogg Opus (older Safari / iPad) or with ?vo=0. ?speed=2 plays clips faster (QA).
+// Every clip is there twice: Ogg Opus (the smaller, for every browser that plays it) and MP3 (an iPad before iPadOS
+// 18.4 cannot play Ogg Opus at all - in Safari or in an app's browser such as Instagram's - and went silent). Off with
+// ?vo=0. ?speed=2 plays clips faster (QA).
 // =====================================================================
 (function () {
   const q = (k) => { try { return new URLSearchParams(location.search).get(k); } catch (e) { return null; } };
@@ -11,13 +13,23 @@
   const shared = window.Journey && window.Journey.embedded ? window.Journey.voiceElement() : null;
   let el = shared, held = false;
   if (!el) { try { el = new Audio(); el.preload = 'auto'; } catch (e) { el = null; } }
-  let canOgg = false;
-  try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); } catch (e) {}
+  let canOgg = false, canMp3 = false;
+  try { canOgg = !!(el && el.canPlayType('audio/ogg; codecs="opus"')); canMp3 = !!(el && el.canPlayType('audio/mpeg')); } catch (e) {}
+  // the format asked for: Ogg where the browser says it plays it, else MP3. A browser that says yes to Ogg and then
+  // fails on a clip is moved to MP3 for good (toMp3), and that line is tried again in MP3.
+  let ext = canOgg ? 'ogg' : 'mp3';
   const lines = typeof VO_LINES !== 'undefined' ? VO_LINES : {};
   // absolute, so it resolves against the lesson's page even on the shell's <audio> (in the journey); a clip fetched ahead
   // (VO.want) plays from memory, so it starts at once - Safari does not preload an <audio> it was only asked to load
-  const url = (id) => new URL('assets/vo/' + id + '.ogg', location.href).href;
+  const url = (id) => new URL('assets/vo/' + id + '.' + ext, location.href).href;
   const mem = {};
+  const toMp3 = () => {
+    if (ext === 'mp3' || !canMp3) return false;
+    ext = 'mp3';
+    Object.keys(mem).forEach((id) => { try { URL.revokeObjectURL(mem[id]); } catch (e) {} delete mem[id]; });
+    Object.keys(fetched).forEach((id) => { delete fetched[id]; });
+    return true;
+  };
   const src = (id) => mem[id] || url(id);
   let tok = 0, played = false, unlocked = !!shared, unlocking = null; // unlocking: the muted unlock play() still settling
   // the quiet fetcher (VO.want): one reused element - a new Audio() per clip left players alive until garbage collection,
@@ -44,7 +56,8 @@
   }
 
   const VO = {
-    on: !!el && canOgg && q('vo') !== '0' && Object.keys(lines).length > 0,
+    on: !!el && (canOgg || canMp3) && q('vo') !== '0' && Object.keys(lines).length > 0,
+    format() { return ext; },
     rate: Math.max(0.5, Math.min(4, parseFloat(q('speed')) || 1)),
     has(key) { return VO.on && !!lines[key]; },
     seconds(key) { const v = lines[key]; return v ? v[1] : 0; },
@@ -73,9 +86,13 @@
       let started = false;
       played = true;
       el.muted = false;
+      // an Ogg clip that fails before it starts (the browser said it plays Ogg, and cannot) is tried once more, as MP3;
+      // n: the attempt, so the first attempt's late refusal cannot end the second
+      let again = false, n = 0;
+      const retryMp3 = () => { if (again || started || !toMp3()) return false; again = true; setTimeout(() => { if (live() && !started) go(); }, 30); return true; };
       el.onplaying = () => { if (live() && !started) { started = true; if (cb.start) cb.start(); } };
       el.onended = () => { if (live()) { tok++; if (cb.end) cb.end(); } };
-      el.onerror = () => { if (!live()) return; tok++; if (started) { if (cb.end) cb.end(); } else if (cb.fail) cb.fail(); };
+      el.onerror = () => { if (!live()) return; if (retryMp3()) return; tok++; if (started) { if (cb.end) cb.end(); } else if (cb.fail) cb.fail(); };
       const go = () => {
         if (!live()) return;
         el.muted = false;
@@ -91,12 +108,14 @@
           el.playbackRate = VO.rate;
           // an interrupted play() (AbortError: a pause or a new load got in first) is retried once before giving up
           let retried = false;
+          const my = ++n;
           const tryPlay = () => {
             const p = el.play();
             if (p && p.catch) p.catch((e) => {
               VO.lastError = (e && e.name) + ': ' + (e && e.message);
-              if (!live() || started) return;
+              if (!live() || started || my !== n) return;
               if (e && e.name === 'AbortError' && !retried) { retried = true; setTimeout(() => { if (live() && !started) tryPlay(); }, 60); return; }
+              if (e && e.name === 'NotSupportedError' && retryMp3()) return; // (Safari's answer to a format it cannot play)
               tok++; if (cb.fail) cb.fail();
             });
           };

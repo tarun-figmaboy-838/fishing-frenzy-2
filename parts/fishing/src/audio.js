@@ -83,10 +83,16 @@ class AudioEngine {
   fetchLaterVoices() {
     const later = this.laterVoices;
     this.laterVoices = [];
+    // the lesson's clips are there as Ogg Opus and as MP3: an iPad before iPadOS 18.4 cannot decode Ogg Opus (its line
+    // went silent), so it gets the MP3; a browser that says yes to Ogg and then cannot decode one gets the MP3 too
+    let ogg = false;
+    try { ogg = !!new Audio().canPlayType('audio/ogg; codecs="opus"'); } catch (e) { /* no Audio: MP3 */ }
+    const load = (url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && this.decodeVoice(bytes)).catch(() => null);
     for (const [key, src] of later) {
       const [url, at] = src.split('#');
       const measured = lessonLine(url);
-      fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && this.decodeVoice(bytes))
+      const mp3 = url.replace(/\.ogg$/, '.mp3');
+      (ogg || mp3 === url ? load(url).then((buf) => buf || (mp3 !== url ? load(mp3) : null)) : load(mp3))
         .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration), measured }); })
         .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
     }
