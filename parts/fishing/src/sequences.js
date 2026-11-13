@@ -1182,7 +1182,8 @@ async function hook(game, token) {
     // timed by them: Catch (the button a right net gets) comes up as the net opens in the water and stays up, ready, until
     // they tap it (it used to blink on and off as fish swam in and out of the net) - Popo asks for it ("Let's catch lots
     // of fish!", his own line) - and the net closes on their tap (Game.onAction) round whoever is in it then. A tap with
-    // no fish in the net is not a miss: a soft sound, Popo thinks, a tip on the plate, and the net stays down, Catch up.
+    // no fish in the net is not a miss: a soft sound, Popo thinks (the first time with his recorded "Huh?!"), and the net
+    // stays down, Catch up. No written tip: every line on screen here is a voiced one.
     say(H.h2).catch(swallow);
     const inNet = () => state.fish.filter((f) => !f.gone && !f.caught && !f.leaving && !f.waiting && net.contains(f)).length;
     let taps = 0, seen = 0, wake = () => {}, tip = false;
@@ -1197,10 +1198,9 @@ async function hook(game, token) {
         if (inNet()) break;
         audio.play('hmm');
         popo.react('think', 1.2);
-        if (tip) game.ui.pulseInstruction(); else { tip = true; game.instruct(STORY.hookTip, { voice: false }); }
+        if (!tip) { tip = true; say({ who: 'popo', text: 'Huh?!' }); }
       }
     } finally { game.catchWaiter = null; }
-    if (tip) game.ui.setInstruction('');
     game.ui.setAction('hidden');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
