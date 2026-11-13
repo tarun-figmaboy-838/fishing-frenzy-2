@@ -214,8 +214,15 @@ function timeWords(key, env) {
 // ---------- the lesson's own lines (to spot new or changed ones) ----------
 // same keys as js/voice.js: a shown line by its plain text, a voice-only line (keep) by its spoken text
 function lessonLines() {
+  // the lesson's data takes its English from locales/locales.json through I18n (shell/i18n.js): loaded here as the page
+  // loads it, in English, with just enough of a page round it
+  const REPO = path.join(ROOT, '..', '..'), w = { location: { search: '', href: 'http://localhost/parts/lesson/index.html' }, URLSearchParams,
+    document: { currentScript: null, readyState: 'complete', documentElement: {}, querySelectorAll: () => [], addEventListener() {} }, console: { warn() {}, info() {} } };
+  w.window = w;
+  w.I18N_DATA = JSON.parse(fs.readFileSync(path.join(REPO, 'locales', 'locales.json'), 'utf8'));
+  new Function('window', 'document', 'location', 'console', fs.readFileSync(path.join(REPO, 'shell', 'i18n.js'), 'utf8'))(w, w.document, w.location, w.console);
   const src = fs.readFileSync(path.join(ROOT, 'js', 'config.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'js', 'lesson-data.js'), 'utf8');
-  const LESSON = new Function(src + '; return LESSON;')();
+  const LESSON = new Function('window', 'document', 'I18n', 'T', src + '; return LESSON;')(w, w.document, w.I18n, w.T);
   const plain = (t) => t.replace(/\s*\n\s*/g, ' ').trim(), keys = new Set();
   const shown = (L) => keys.add(L.keep ? L.s : plain(L.t));
   // lines js/game-engine.js says itself on the tasks this lesson uses (checkDrag)
