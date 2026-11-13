@@ -1179,19 +1179,28 @@ async function hook(game, token) {
     popo.react('happy', 1.4);
     await say(H.h6);
     // H7: the sea's own school swims on through the open net, as it will at every net; the catch is the child's and
-    // timed by them: Catch (the button a right net gets) is up whenever fish are inside the net - Popo asks for it
-    // ("Let's catch lots of fish!", his own line; the narrator's plate is not Swiftee's line) - and the net closes on
-    // their tap (Game.onAction) round whoever is in it then
+    // timed by them: Catch (the button a right net gets) comes up as the net opens in the water and stays up, ready, until
+    // they tap it (it used to blink on and off as fish swam in and out of the net) - Popo asks for it ("Let's catch lots
+    // of fish!", his own line) - and the net closes on their tap (Game.onAction) round whoever is in it then. A tap with
+    // no fish in the net is not a miss: a soft sound, Popo thinks, a tip on the plate, and the net stays down, Catch up.
     say(H.h2).catch(swallow);
-    let tapped = false;
-    const tap = new Promise((res) => { game.catchWaiter = () => { tapped = true; res(); }; });
+    const inNet = () => state.fish.filter((f) => !f.gone && !f.caught && !f.leaving && !f.waiting && net.contains(f)).length;
+    let taps = 0, seen = 0, wake = () => {}, tip = false;
+    const arm = () => { game.catchWaiter = () => { taps += 1; arm(); wake(); }; };
+    arm();
+    game.ui.setAction('catch');
     try {
-      while (!tapped) {
-        const inside = state.fish.filter((f) => !f.gone && !f.caught && !f.leaving && !f.waiting && net.contains(f)).length;
-        game.ui.setAction(inside ? 'catch' : 'hidden');
-        await Promise.race([tap, clock.wait(120, token)]);
+      for (;;) {
+        await Promise.race([new Promise((res) => { wake = res; }), clock.wait(300, token)]);
+        if (taps === seen) continue;
+        seen = taps;
+        if (inNet()) break;
+        audio.play('hmm');
+        popo.react('think', 1.2);
+        if (tip) game.ui.pulseInstruction(); else { tip = true; game.instruct(STORY.hookTip, { voice: false }); }
       }
     } finally { game.catchWaiter = null; }
+    if (tip) game.ui.setInstruction('');
     game.ui.setAction('hidden');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
