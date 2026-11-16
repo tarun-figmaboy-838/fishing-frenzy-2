@@ -574,9 +574,10 @@ class Game {
   // new lane depths and are joined by newcomers; each level's school swims a little quicker.
   spawnSchool() {
     const level = LEVELS[state.level];
-    // one school, quick and quicker net by net - a catch takes timing: 238 px/s at the first net (round its 2300 px loop
-    // in under 10 s) to 434 at the eighth (499 for the golden school)
-    const pace = (210 + 28 * state.level) * (level.rare ? 1.15 : 1);
+    // one school, quick and quicker net by net - a catch takes timing: the first net's school swims as the seventh's
+    // used to (406 px/s: round its 2300 px loop in under 6 s), and each net's 28 px/s quicker than the one before, to
+    // 602 at the eighth (692 for the golden school). (It ran from 238 to 434: the nets were caught too easily.)
+    const pace = (378 + 28 * state.level) * (level.rare ? 1.15 : 1);
     state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
   }
 
