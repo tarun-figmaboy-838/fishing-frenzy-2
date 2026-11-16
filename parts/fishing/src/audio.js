@@ -55,8 +55,10 @@ class AudioEngine {
   // Recorded voice lines (voice-data.js), decoded with an offline context so they are ready before they are needed.
   // A line is embedded (a data URL: decoded before the banner is ready) or the lesson's own clip ('<path>#<seconds>':
   // fetched behind the banner, played from where its first word starts, past the clip's quiet lead-in).
+  // In a language recorded in full (shell/i18n.js I18n.voiced: ?lan=hi) each line plays that language's clip instead
+  // (inLanguage).
   prepareVoices(data) {
-    const entries = Object.entries(data || {});
+    const entries = Object.entries(window.I18n && I18n.voiced ? this.inLanguage(data) : data || {});
     const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (!entries.length || !OAC) return Promise.resolve();
     const decoder = new OAC(1, 1, 24000);
@@ -77,25 +79,45 @@ class AudioEngine {
     return Promise.all(embedded);
   }
 
+  // The lines' clips in the player's language (assets/VO-<LANG>/ at the repository's root: VO-HI, VO-MR, VO-GU), each found by its line's key
+  // (I18n.keyOf: the voice key's text is the line's English): fetched as files behind the banner, played from their start
+  // (they open with only a few hundredths of a second of quiet). One voice: a line with no clip in that language is left
+  // out (it shows at a reading pace), rather than said in English.
+  inLanguage(data) {
+    const out = {};
+    for (const key of Object.keys(data || {})) {
+      const clip = I18n.voiceClip(I18n.keyOf(key.slice(key.indexOf(':') + 1)));
+      if (clip) out[key] = clip.url;
+    }
+    return out;
+  }
+
   // The lesson's clips the nets borrow, fetched once Play is tapped (they are first needed after the lesson), so the
   // banner loads without them. Each brings the lesson's own measure of when every word starts in it
   // (../lesson/js/vo_lines.js), so the words on the plate come exactly as they are said (wordTimes).
   fetchLaterVoices() {
     const later = this.laterVoices;
     this.laterVoices = [];
-    // the lesson's clips are there as Ogg Opus and as MP3: an iPad before iPadOS 18.4 cannot decode Ogg Opus (its line
-    // went silent), so it gets the MP3; a browser that says yes to Ogg and then cannot decode one gets the MP3 too
+    // the lesson's clips, and a recorded language's (assets/VO-<LANG>/), are there as Ogg Opus and as MP3: an iPad before
+    // iPadOS 18.4 cannot decode Ogg Opus (its line went silent), so it gets the MP3; a browser that says yes to Ogg and
+    // then cannot decode one gets the MP3 too - Safari's Web Audio decodes no Ogg Opus, whatever its canPlayType says
     let ogg = false;
     try { ogg = !!new Audio().canPlayType('audio/ogg; codecs="opus"'); } catch (e) { /* no Audio: MP3 */ }
     const load = (url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).then((bytes) => bytes && this.decodeVoice(bytes)).catch(() => null);
-    for (const [key, src] of later) {
+    const isOgg = ([, src]) => /\.ogg(#|$)/.test(src);
+    const one = ([key, src]) => {
       const [url, at] = src.split('#');
       const measured = lessonLine(url);
-      const mp3 = url.replace(/\.ogg$/, '.mp3');
-      (ogg || mp3 === url ? load(url).then((buf) => buf || (mp3 !== url ? load(mp3) : null)) : load(mp3))
+      const mp3 = url.replace(/\.ogg$/, '.mp3'), twin = mp3 !== url;
+      return (ogg || !twin ? load(url).then((buf) => { if (buf || !twin) return buf; ogg = false; return load(mp3); }) : load(mp3))
         .then((buf) => { if (buf) this.voiceBuffers.set(key, { buf, lead: Math.min(parseFloat(at) || 0, buf.duration), measured }); })
         .catch(() => { /* (opened from disk, or offline: the line shows without its voice) */ });
-    }
+    };
+    // the game's own MP3s at once; of the Ogg clips the first goes alone, and if it will not decode the rest are asked
+    // for as MP3 straight away (a language's 37 lines are not each downloaded twice in Safari)
+    later.filter((e) => !isOgg(e)).forEach(one);
+    const oggs = later.filter(isOgg);
+    if (oggs.length) one(oggs[0]).then(() => oggs.slice(1).forEach(one));
   }
 
   // When each of `words` (the plate's words, UI wordsOf) is said, in seconds from the line's start, from the lesson's

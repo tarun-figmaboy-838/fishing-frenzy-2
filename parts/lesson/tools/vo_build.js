@@ -169,7 +169,13 @@ const saidLen = (w) => w.replace(/ /g, ' ').replace(/∠\s?([A-DO])/g, 'angle $
 // not a short breath nearer its expected place; an unmatched long pause costs more than a short one), and inside each
 // phrase the words share the time by their spoken length.
 function timeWords(key, env) {
-  const words = toWords(key), w = words.map(saidLen), n = env.length;
+  const words = toWords(key);
+  return alignWords(words, words.map(saidLen), env);
+}
+// the same for any language's words (tools/vo_lang_build.js): `words` as shown, `w` how long each is when said
+// (। - the danda - is Hindi's full stop)
+function alignWords(words, w, env) {
+  const n = env.length;
   const sorted = env.slice().sort((a, b) => a - b), th = Math.max(0.006, 0.08 * sorted[Math.floor(n * 0.95)]);
   let s0 = 0; while (s0 < n - 3 && !(env[s0] >= th && env[s0 + 1] >= th && env[s0 + 2] >= th)) s0++;
   let s1 = n - 1; while (s1 > s0 && env[s1] < th) s1--;
@@ -179,7 +185,7 @@ function timeWords(key, env) {
   }
   const cum = []; let tot = 0; w.forEach((x) => { cum.push(tot); tot += x; });
   const bnd = [], full = [];
-  words.forEach((x, i) => { if (i < words.length - 1 && /[.,!?;:…]$/.test(x)) { bnd.push(cum[i] + w[i]); full.push(/[.!?…]$/.test(x)); } });
+  words.forEach((x, i) => { if (i < words.length - 1 && /[.,!?;:…।]$/.test(x)) { bnd.push(cum[i] + w[i]); full.push(/[.!?…।]$/.test(x)); } });
   const span = Math.max(1, s1 - s0), expect = bnd.map((c) => s0 + span * c / tot);
   // alignment (frames): match boundary b to pause p in order. Skipping a pause costs 10 + 2 per frame of it; skipping a
   // full stop 80, a comma 40; a match costs its distance from the expected place, less 1.5 (full stop) or 0.5 (comma)
@@ -240,7 +246,10 @@ function lessonLines() {
   return keys;
 }
 
-(async () => {
+// (tools/vo_lang_build.js, the voice-over in other languages, encodes and times its clips with these)
+module.exports = { encodeAll, envelopes, alignWords, oggSeconds, LUFS };
+
+if (require.main === module) (async () => {
   const script = JSON.parse(fs.readFileSync(SCRIPT, 'utf8')), ids = new Set(script.map((r) => r.id));
   fs.mkdirSync(VO, { recursive: true });
   const mp3s = new Map();
