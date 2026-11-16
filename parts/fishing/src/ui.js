@@ -548,16 +548,16 @@ class UI {
   // the catch so far, and the bar filled to it (full at the goal), its fish riding the tip
   countGoal(n, goal) {
     document.getElementById('goal-n').textContent = n;
-    document.getElementById('goal-bar').style.setProperty('--k', `${(goal > 0 ? Math.min(100, (100 * n) / goal) : 0).toFixed(1)}%`);
+    document.getElementById('goal-bar').style.setProperty('--k', `${Math.min(100, (100 * n) / goal).toFixed(1)}%`);
   }
 
   // The count is done: reached, the star at the bar's end lights and the line says so; short of it, the line asks
   // for more. Returns whether the goal was reached.
   endGoal(n, goal) {
-    const won = goal > 0 && n >= goal;
+    const won = n >= goal;
     this.countGoal(n, goal);
     document.getElementById('goal').classList.toggle('won', won);
-    document.getElementById('goal-line').textContent = won ? '' : T('goalLine'); // (every fish caught: nothing more to ask for - the star says it)
+    document.getElementById('goal-line').textContent = T('goalLine');
     return won;
   }
 

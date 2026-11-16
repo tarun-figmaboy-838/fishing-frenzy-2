@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
+const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
 const TAU = Math.PI * 2;
 
 function swallow(e) {
@@ -554,7 +554,7 @@ async function catchNow(game) {
       return;
     }
     state.phase = PHASE.LEVEL_COMPLETE;
-    game.tallyCatch(caught.length);
+    state.caught += caught.length;
     popo.react('laugh', 1.6);
     audio.play('catch');
     const ring = net.ring();
@@ -674,7 +674,7 @@ async function dropNet(game) {
       return;
     }
     state.phase = PHASE.LEVEL_COMPLETE;
-    game.tallyCatch(caught.length);
+    state.caught += caught.length;
     popo.react('laugh', 1.6);
     audio.play('catch');
     const ring = net.ring();
@@ -1204,7 +1204,7 @@ async function hook(game, token) {
     game.ui.setAction('hidden');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
-    game.tallyCatch(caught.length);
+    state.caught += caught.length;
     popo.react('laugh', 1.8);
     audio.play('catch');
     const ring = net.ring();
@@ -1588,11 +1588,12 @@ async function theEnd(game, token) {
   audio.play('tada');
   ui.setCatch(game.landed, 'cheer');
   await clock.wait(reduced ? 100 : 250, token);
-  // the run's catch against the most it could have been: it counts up from nought as the bar fills, ticking every few
-  // fish; then a puff of bubbles from the trophy, or, every fish caught, a stream of them and the star lit
-  // (the most this run could have caught: its schools, each caught whole - never less than the catch itself)
-  const n = game.landed, GOAL = Math.max(game.possible, n);
-  ui.showGoal(GOAL);
+  // the run's catch against the goal (the Master Catch): it counts up from nought as the bar fills, ticking every few
+  // fish; then a puff of bubbles from the trophy, or, the goal reached, a stream of them and the star lit
+  // "Maximum possible" is the Master Catch (75) - or the catch itself once it has passed it, so the card never shows a
+  // catch above its maximum (90 of 75 read as a mistake): 69 -> of 75, 84 -> of 84
+  const n = game.landed, goal = Math.max(GOAL, n);
+  ui.showGoal(goal);
   audio.play('bloop');
   await clock.wait(reduced ? 200 : 650, token);
   let shown = 0;
@@ -1602,10 +1603,10 @@ async function theEnd(game, token) {
       if (k === shown) return;
       if (Math.floor(k / 3) > Math.floor(shown / 3)) audio.play('count');
       shown = k;
-      ui.countGoal(k, GOAL);
+      ui.countGoal(k, goal);
     });
   }
-  const won = ui.endGoal(n, GOAL);
+  const won = ui.endGoal(n, goal);
   const cup = ui.goalCup();
   audio.play(won ? 'tada' : 'bloop');
   game.confettiFrom(cup.x, cup.y, won ? 26 : 10);
