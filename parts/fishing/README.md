@@ -117,10 +117,10 @@ The game is deployed as part of the journey: the repository's root is the static
   first tap anywhere (browsers hold sound back until then; effects meanwhile are skipped, not
   saved up). Play pops the logo away, the fish leap back into the lake, and the story begins
   with Popo already in place.
-- **The Master Catch.** 75 fish (`GOAL` in `src/levels.js`); the counter shows only the catch so far. The most a run
-  can net is about 95, so it takes the biggest bunch each time, caught whole. The End's card shows the run's catch
-  against it, counting up as a bar fills to a star: short of it, "Think you can catch more next time?"; reached, the
-  star lights, "You reached the goal!", and a stream of bubbles rises from the trophy. Play Again brings new nets (`freshLevels`): the same eight lessons in the same order, but each net its
+- **The End's card.** The counter shows only the catch so far. The End's card shows the run's catch against the
+  *maximum possible*: every fish the run offered (`Game.possible`: the warm-up's school and the eight nets', 10 to 14
+  fish each, so 90 to 126), counting up as a bar fills to a star: short of it, "Think you can catch more next time?";
+  every fish caught, the star lights and a stream of bubbles rises from the trophy. Play Again brings new nets (`freshLevels`): the same eight lessons in the same order, but each net its
   own shape, a little wider or taller, leaning more or less, the corner starting elsewhere on its track, the final net
   turned a little differently, and the tour of the waters starting one lake on, so a second game is never the first
   again (in the journey too: the game's frame stays, so it counts the runs).

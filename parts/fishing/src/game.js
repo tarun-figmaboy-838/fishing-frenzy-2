@@ -127,6 +127,8 @@ class Game {
     this.netRight = false; // the frame has been proven right this level; only the timing is left
     this.ending = null;    // the end screen: its circle and the scene's pan (see theEnd)
     this.landed = 0;       // fish counted this game (the counter at the top left)
+    this.possible = 0;     // every fish this game has offered so far: each school whole (tallyCatch; The End's card)
+    this.schoolSize = 0;   // the school the net in the water is offered (spawnSchool)
     this.fliers = [];      // caught fish flying from the bucket up to the counter
     this.confetti = [];    // bubble confetti: a catch's bright bubbles bursting up and popping
     this.handShown = false;
@@ -209,7 +211,7 @@ class Game {
       this.ending.closing = true; // (once)
       this.ui.showAgain(false);
       this.ui.hideGoal();
-      window.Journey.finish({ levels: NETS, fish: state.caught }); // inside the tap
+      window.Journey.finish({ levels: NETS, fish: state.caught, maxFish: Math.max(this.possible, state.caught) }); // inside the tap
       return;
     }
     if (this.ending) {
@@ -267,6 +269,8 @@ class Game {
     this.netRight = false;
     this.ending = null;
     this.landed = 0;
+    this.possible = 0;
+    this.schoolSize = 0;
     this.fliers = [];
     this.confetti = [];
     this.ui.setCatch(0);
@@ -579,6 +583,16 @@ class Game {
     // 602 at the eighth (692 for the golden school). (It ran from 238 to 434: the nets were caught too easily.)
     const pace = (378 + 28 * state.level) * (level.rare ? 1.15 : 1);
     state.fish = this.sea.stock(state.fish, this.swimArea, bunchesFor(level), { rare: level.rare, pace });
+    // the school this net is offered: the fish that stay or swim in (not those swimming off for good)
+    this.schoolSize = state.fish.filter((f) => !f.gone && !f.leaving && !f.caught).length;
+  }
+
+  // A catch that counts: its fish go to the run's count, and the whole school they came from to the run's total (every
+  // one of them could have been netted: the whole school fits in the net at once)
+  tallyCatch(n) {
+    state.caught += n;
+    this.possible += Math.max(this.schoolSize, n);
+    this.schoolSize = 0; // (counted once: the next school is the next net's)
   }
 
   // The first school swims in on the narrator's cue (or straight away on Play Again).
@@ -668,7 +682,7 @@ class Game {
   }
 
   announceComplete() {
-    const detail = { levels: NETS, fish: state.caught };
+    const detail = { levels: NETS, fish: state.caught, maxFish: Math.max(this.possible, state.caught) };
     window.dispatchEvent(new CustomEvent('popo:complete', { detail }));
     if (window.parent !== window) window.parent.postMessage({ type: 'popo:complete', ...detail }, '*');
   }

@@ -81,11 +81,10 @@ const LEVELS = [
     hints: [I18n.source('hintCdLonger'), I18n.source('hintCdShorter')] },
 ];
 
-// The catch to go for over the eight nets, the Master Catch: the most a run can net is about 95 (the biggest bunch
-// each time, caught whole), so it takes good choices and good timing, and a run that falls short has a reason to go
-// again (The End shows the catch against it: Game.theEnd, UI.showGoal). A catch that passes it becomes the card's
-// "Maximum possible" itself: the card never shows a catch above its maximum.
-const GOAL = 75;
+// The End shows the run's catch against the most it could have been (Game.possible, UI.showGoal): every fish the run
+// offered - the warm-up's school and the eight nets', each 10 to 14 fish, so 90 to 126 and different run by run.
+// (A fixed 75 stood here as "Maximum possible": a good run passed it, 90 of 75, and a number that is not the sea's
+// own read as made up.)
 
 // Play Again brings new nets (Game.playAgain): the same eight lessons in the same order, but each net its own shape
 // (a little wider or taller, leaning more or less, the corner starting elsewhere on its track), the final net turned
@@ -208,5 +207,5 @@ const HOOK_NETS = {
 // the parallelogram nets (the warm-up is not one of them)
 const NETS = LEVELS.filter((l) => !l.warmup).length;
 
-Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, GOAL, freshLevels, NATURAL_FISH, STORY, HOOK_NETS, shuffle, bunchesFor });
+Object.assign(PopoGame, { LOCATIONS, LEVELS, NETS, freshLevels, NATURAL_FISH, STORY, HOOK_NETS, shuffle, bunchesFor });
 })(window.PopoGame = window.PopoGame || {});
