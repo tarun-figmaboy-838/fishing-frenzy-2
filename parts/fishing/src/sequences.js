@@ -1,6 +1,6 @@
 (function (PopoGame) {
 'use strict';
-const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, GOAL, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
+const { clock, ease, Cancelled, state, PHASE, newToken, isCurrent, Fish, STORY, LEVELS, NATURAL_FISH, HOOK_NETS, STAGE_W, STAGE_H, geo, TUCK } = PopoGame;
 const TAU = Math.PI * 2;
 
 function swallow(e) {
@@ -554,7 +554,7 @@ async function catchNow(game) {
       return;
     }
     state.phase = PHASE.LEVEL_COMPLETE;
-    state.caught += caught.length;
+    game.tallyCatch(caught.length);
     popo.react('laugh', 1.6);
     audio.play('catch');
     const ring = net.ring();
@@ -674,7 +674,7 @@ async function dropNet(game) {
       return;
     }
     state.phase = PHASE.LEVEL_COMPLETE;
-    state.caught += caught.length;
+    game.tallyCatch(caught.length);
     popo.react('laugh', 1.6);
     audio.play('catch');
     const ring = net.ring();
@@ -1204,7 +1204,7 @@ async function hook(game, token) {
     game.ui.setAction('hidden');
     const caught = await hookCatch(game, token);
     schoolSwimsOn(); // (any of the school it missed)
-    state.caught += caught.length;
+    game.tallyCatch(caught.length);
     popo.react('laugh', 1.8);
     audio.play('catch');
     const ring = net.ring();
@@ -1588,12 +1588,13 @@ async function theEnd(game, token) {
   audio.play('tada');
   ui.setCatch(game.landed, 'cheer');
   await clock.wait(reduced ? 100 : 250, token);
-  // the run's catch against the goal (the Master Catch): it counts up from nought as the bar fills, ticking every few
-  // fish; then a puff of bubbles from the trophy, or, the goal reached, a stream of them and the star lit
+  // the run's catch against the most it could have been: it counts up from nought as the bar fills, ticking every few
+  // fish; then a puff of bubbles from the trophy, or, every fish caught, a stream of them and the star lit
+  // (the most this run could have caught: its schools, each caught whole - never less than the catch itself)
+  const n = game.landed, GOAL = Math.max(game.possible, n);
   ui.showGoal(GOAL);
   audio.play('bloop');
   await clock.wait(reduced ? 200 : 650, token);
-  const n = game.landed;
   let shown = 0;
   if (!reduced && n) {
     await clock.tween(Math.min(1800, 600 + n * 16), token, (t) => {
