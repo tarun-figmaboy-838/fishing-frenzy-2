@@ -6,9 +6,10 @@
 // Every clip is there twice: Ogg Opus (the smaller, for every browser that plays it) and MP3 (an iPad before iPadOS
 // 18.4 cannot play Ogg Opus at all - in Safari or in an app's browser such as Instagram's - and went silent). Off with
 // ?vo=0. ?speed=2 plays clips faster (QA).
-// In a language recorded in full (shell/i18n.js I18n.voiced: ?lan=hi, ?lan=mr, ?lan=gu) its own clips play instead, found by the line's
-// key (I18n.keyOf, I18n.voiceClip: assets/VO-<LANG>/ at the repository's root), and no English clip is used. Those clips
-// are there twice too (<key>.ogg and <key>.mp3: tools/vo_lang_mp3.py), picked the same way.
+// In a language recorded in full (shell/i18n.js I18n.voiced: English, ?lan=hi, ?lan=mr, ?lan=gu) its own clips play instead, found by
+// the line's key (I18n.keyOf, I18n.voiceClip: assets/VO-<LANG>/ at the repository's root). Another language uses no English
+// clip; English (assets/VO-EN/) falls back to this folder's clip for a line it has none for. Those clips are there twice
+// too (<key>.ogg and <key>.mp3: tools/vo_lang_mp3.py), picked the same way.
 // =====================================================================
 (function () {
   const q = (k) => { try { return new URLSearchParams(location.search).get(k); } catch (e) { return null; } };
@@ -40,7 +41,8 @@
     if (!own) return lines[key] || null;
     if (!mine.has(key)) {
       const c = I18n.voiceClip(I18n.keyOf(key));
-      mine.set(key, c ? [c.url, c.seconds, reveal(key, c.times), c.end] : null);
+      // (in English, a line with no clip in assets/VO-EN/ keeps its own: assets/vo/)
+      mine.set(key, c ? [c.url, c.seconds, reveal(key, c.times), c.end] : (I18n.isSource && lines[key]) || null);
     }
     return mine.get(key);
   };
