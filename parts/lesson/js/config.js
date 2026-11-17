@@ -33,7 +33,8 @@ const CONFIG = {
   snap: { parallelPx: 40, holdMs: 600 },
   reveal: { afterTips: 2, glideMs: 1100 }, // a drag missed after this many tips shows the answer (dragB: st.showAnswer)
   connect: { reach: 40 }, // drawing a diagonal: how near a corner the pointer must be for the line to go to it (board px)
-  // recorded sound effects (others are synthesised): 'good' = every correct action (with the confetti), 'bad' = every wrong one
+  // recorded sound effects (others are synthesised): 'good' = every correct action (with the confetti), 'bad' = every wrong one.
+  // WebM Opus where the browser plays it; the .mp3 twin of each elsewhere (an iPad before WebM Opus would go silent)
   sounds: { good: 'assets/audio/correct.webm', bad: 'assets/audio/incorrect.webm' },
   soundVolume: 0.9,
   // a part named in the voice-over grows (CSS .emph, ~0.3 s in / 0.3 s out) and holds this long before easing back

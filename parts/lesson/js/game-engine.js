@@ -438,8 +438,10 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
   loadSounds() {
     if (this.sndBuf) return;
     this.sndBuf = {}; this.sndEl = {};
+    let webm = false;
+    try { webm = !!new Audio().canPlayType('audio/webm; codecs="opus"'); } catch (e) {}
     Object.keys(CONFIG.sounds || {}).forEach((k) => {
-      const src = CONFIG.sounds[k];
+      const src = webm ? CONFIG.sounds[k] : CONFIG.sounds[k].replace(/\.webm$/, '.mp3');
       try { const a = new Audio(src); a.preload = 'auto'; this.sndEl[k] = a; } catch (e) {}
       if (!this.actx || typeof fetch === 'undefined') return;
       fetch(src).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, no) => { const p = this.actx.decodeAudioData(b, ok, no); if (p && p.catch) p.catch(no); })) // (Safari also rejects the promise it returns)
@@ -456,7 +458,7 @@ window.TrapeziumGame = class TrapeziumGame extends DCLogic {
         return true;
       }
       const el = this.sndEl && this.sndEl[kind];
-      if (el) { const a = el.cloneNode(); a.volume = CONFIG.soundVolume; const p = a.play(); if (p && p.catch) p.catch(() => {}); return true; }
+      if (el && !el.error) { const a = el.cloneNode(); a.volume = CONFIG.soundVolume; const p = a.play(); if (p && p.catch) p.catch(() => {}); return true; }
     } catch (e) {}
     return false;
   }
